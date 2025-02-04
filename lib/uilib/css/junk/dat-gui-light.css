@@ -1,0 +1,180 @@
+:root {
+  --views-ui-offset: 85;
+  --ui-bot-offset: 80;
+  --left-ui-v-offset: 0;
+  --ui-button-h-gap: 3px;
+  --ui-h-gap: 60px;
+  --text-color: #111111;
+  --soft-text-color: #777;
+  --link-color: #F00;
+  --tile-text-color: #1756a9;
+  --tile-highlight-color: #1756a9;
+  --hover-color: #134484;
+  --button-color: #1756a9;
+  --toggled-on-hover-color: #b6d4fa;
+  --hover-background-color: #f8f8f8;
+  --background-color: #eef;
+  --ui-button-color: #606060;
+  --ui-button-background-color: #ffffff;
+  --ui-button-border-color: rgba(0, 0, 0, 0.4);
+  --ui-button-highlight-color: #ffffff;
+  --ui-button-hover-color: #000000;
+  --tile-border-color: rgba(27, 31, 36, 0.15);
+  --font-weight: 400;
+  --stop-recording-color: #ff0000;
+  --ui-background-color: var(--background-color);
+  --equation-background-color: #ededed;
+  --input-background-color: #DDF;
+  --slider-fill-color: #2fa1d6;
+  --active-button-background-color: #cbe2ff;
+  --views-hover-color: #eee;
+  --button-inline-icon-color: #333333;
+  --folder_padding_left: -10px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  /*background-color: white;*/
+  font-family: system-ui;
+}
+
+/*
+.dg.main.taller-than-window .close-button {
+    border-top: 1px solid #ddd;
+}
+*/
+.dg .c .slider {
+  display: none;
+}
+
+.dg {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    
+}
+
+.dg .close-button {
+    background-color: var(--background-color)  !important;
+    color: var(--text-color)  !important;
+    
+}
+ 
+.dg.main .close-button:hover {
+    background-color: #ddd;
+}
+
+.dg {
+    color: var(--text-color);
+    text-shadow: none !important;
+    
+    
+}
+
+.dg li.title {
+  background: var(--background-color) !important;
+  overflow: hidden;
+  font-weight: 600;
+  font-size: 1.3em;
+  /*background: #fff url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 13px no-repeat !important; */
+}
+
+.dg li {
+  font-family: sans-serif;
+ background: var(--background-color)!important;
+  overflow: hidden;
+  font-weight: 400;
+  /*font-size: 1.3em;*/
+  color: var(--text-color);
+  /*background: #222 url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 13px no-repeat !important; */
+}
+
+.dg li folder {
+    border: 1px solid #F00 !important;
+}
+
+ 
+.dg li:not(.folder) {
+    background: #fafafa;
+    border: 0px solid #F0F  !important;
+}
+
+ 
+.dg ul li.title::before {
+  display: inline-block;
+  width: 15px;
+  content: url("images/ui_arrow_down.svg");
+  font-weight: 700;
+  margin-left: var(--folder_padding_left);
+  margin-right: 2px;
+  padding-right: 2px;
+  color: var(--link-color);
+}
+ 
+ 
+.dg ul.closed li.title::before {
+  display: inline-block;
+  width: 15px;
+  content: url("images/ui_arrow_right.svg");
+  font-weight: 700;
+  margin-left:  var(--folder_padding_left);
+  margin-right: 2px;
+  padding-right: 2px;
+  color: var(--link-color);
+}
+ 
+ 
+.dg li.save-row .button {
+    text-shadow: none !important;
+}
+
+.dg li.title {
+    /*background: #e8e8e8 url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 10px no-repeat;*/
+}
+
+.dg .cr.function:hover,.dg .cr.boolean:hover {
+    background-color: var(--input-background-color);
+}
+ 
+.dg .c input[type=text] {
+    width: 100%;
+    background-color: var(--input-background-color);
+    
+}
+
+.dg .c input[type="text"] {
+  background: var(--input-background-color) !important;
+  color: #000 !important;
+  margin: 3px !important;
+  height: 15px !important;
+  border-radius: 3px !important;
+  
+  border: solid #222 1px !important;  
+  width: 90% !important;
+  margin-right: 2px;
+}
+
+
+input[type="range"]{
+    width: 100%;
+    background-color: var(--input-background-color);
+    
+}
+
+ 
+.dg .c input[type=text]:hover {
+    background: var(--input-background-color);
+}
+ 
+.dg .c input[type=text]:focus {
+    background: var(--input-background-color);
+    color: #555;
+}
+ 
+.dg .c .slider {
+    background: #e9e9e9;
+}
+
+.dg .c .slider:hover {
+    background: #eee;
+}

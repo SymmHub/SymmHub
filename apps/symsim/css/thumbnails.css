@@ -1,0 +1,21 @@
+// make default box-sizing model to border-box
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+html, body {
+    background-color: #FFF;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+}
+
+img.thumbnail {
+    width:128px; height: 128px;
+    margin: 4px;
+    border: solid #222;
+}

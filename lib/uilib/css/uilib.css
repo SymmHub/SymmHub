@@ -1,0 +1,66 @@
+@import url('dat-gui-mod.css');
+
+:root {
+    --drag-header-size: 17px;
+}
+
+.drag-style  {
+    position: absolute;
+    overflow-x: auto;
+    border:  1px solid #aaa;
+    border-radius: 6px;
+    background-color: #500;
+    box-shadow: 0 5px 10px #1113;
+
+    
+}
+
+.hide-overflow  {
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+
+.interior-style  {
+
+  position: absolute;
+  height: calc(100% - var(--drag-header-size));
+  width: 100%;
+  top: var(--drag-header-size);
+  cursor: crosshair;
+  background-color: #eee;
+  overflow: auto;
+
+}
+
+.header-style  {
+    
+    position : absolute;
+    top : 0px;
+    height : var(--drag-header-size);
+    width : 100%;
+    cursor: move;
+    background-color: #BBB;
+}
+
+.header-style:hover  {
+    
+    background-color: #0078d4;
+}
+
+.close-button-style {
+  
+  position: absolute;
+  top:    0px;
+  right:   0px;
+  height: var(--drag-header-size);
+  width:  var(--drag-header-size);
+  cursor:  default;  
+  background-color: #FFF0;
+  background-image: url('images/btn_close.svg');
+  background-size:  var(--drag-header-size);
+}
+
+.close-button-style:hover {
+  background-color: #c42b1c;
+}
