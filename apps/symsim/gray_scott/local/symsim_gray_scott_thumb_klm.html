@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Cache-Control" content="no-cache">
+        <link rel="icon" type="image/x-icon" href="../images/icon_gs.svg">
+        <title>Gray-Scott KLM</title>
+        <meta name="description" content="Gray-Scott Simulation with KLM symmetry">
+        <link rel="stylesheet" href="../css/thumbnails.css"/>
+    </head>
+    <body>   
+    <h1>Gray-Scott Simulation with KLM Symmetry</h1>
+    <div id='thumbnails'>
+        
+    </div>
+    </body>
+    <script type='module'>
+    
+    import {
+        appendThumbnails
+    } from '../js/modules.js';
+        
+    import {
+        presets
+    } from './js/presets_klm.js';
+    
+        
+    //const pa = getPresetsArray(presets);
+    //console.log('pa type: ', (typeof pa));
+    let pFolder = new URL('presets',import.meta.url).pathname;
+    console.log('presetsFolder:', pFolder);
+    
+    //console.log('pa:', pa);
+    
+    const thumbDiv = document.getElementById('thumbnails');
+    const appPage = '../symsim_gray_scott_klm.html';
+    const presetsFolder = pFolder + '/klm/';
+    
+    appendThumbnails(thumbDiv, appPage, presetsFolder, presets);    
+    
+    </script>              
+</html>
