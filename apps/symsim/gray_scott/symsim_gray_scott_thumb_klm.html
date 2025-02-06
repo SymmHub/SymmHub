@@ -10,16 +10,27 @@
     </head>
     <body>   
     <h1>Gray-Scott equation simulation with KLM Symmetry</h1>
-    <div id='list'>
+    <div id='thumbnails'>
         
     </div>
     </body>
+
     <script type='module'>
-    import {
-        init
-    } from './js/gray_scott_thumb_klm.js';
-        
-    init();
-    
+
+import {
+    appendThumbnails
+} from './js/modules.js'
+import {
+    presets
+} from './js/presets_klm.js';
+
+function init(){
+     let list = document.getElementById('thumbnails');
+     let appPage = 'symsim_gray_scott_klm.html';
+     let presetsFolder = 'presets/klm/';
+     appendThumbnails(list, appPage, presetsFolder, presets);
+}
+init();    
+
     </script>              
 </html>
