@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Cache-Control" content="no-cache">
+        <link rel="icon" type="image/x-icon" href="./icon_gl1.svg">
+        <title>Gray-Scott WP INV</title>
+        <meta name="description" content="Ginzburg-Landau Simulation Wallpaper Symmetry">
+        <link rel="stylesheet" href="css/thumbnails.css"/>
+    </head>
+    <body>   
+    <h1>Gray-Scott equation simulation with Wallpaper Symmetry and Conformal Maps</h1>
+    <div id='thumbnails'>
+        
+    </div>
+    </body>
+    <script type='module'>
+import {
+    appendThumbnails
+} from './js/modules.js'
+        
+import {
+    presets
+} from './js/presets_wp_inv.js';
+
+function init(){
+     let list = document.getElementById('thumbnails');
+     let appPage = 'symsim_gray_scott_wp_inv.html';
+     let presetsFolder = 'presets/wp_inv/';
+     appendThumbnails(list, appPage, presetsFolder, presets);
+}
+init();    
+    
+    </script>              
+</html>

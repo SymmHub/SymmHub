@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Cache-Control" content="no-cache">
+        <link rel="icon" type="image/x-icon" href="../images/icon_gs.svg">
+        <title>Gray-Scott WP INV</title>
+        <meta name="description" content="Gray-Scott Simulation with KLM symmetry">
+        <link rel="stylesheet" href="../css/thumbnails.css"/>
+    </head>
+    <body>   
+    <h1>Gray-Scott Simulation with Wallpaper Symmetry + Mapping</h1>
+    <div id='thumbnails'>
+        
+    </div>
+    </body>
+    <script type='module'>
+    
+    import {
+        appendThumbnails
+    } from '../js/modules.js';
+        
+    import {
+        presets
+    } from './js/presets_wp_inv.js';
+    
+    function init(){
+        let pFolder = new URL('presets',import.meta.url).pathname;        
+        const thumbDiv = document.getElementById('thumbnails');
+        const appPage = '../symsim_gray_scott_wp_inv.html';
+        const presetsFolder = pFolder + '/wp_inv/';   
+        appendThumbnails(thumbDiv, appPage, presetsFolder, presets);    
+   } 
+   init();     
+    
+    </script>              
+</html>
