@@ -1,0 +1,84 @@
+{
+  "name": "334",
+  "params": {
+    "className": "GroupRenderer",
+    "params": {
+      "view": {
+        "className": "InversiveNavigator",
+        "params": {
+          "hasGrid": true,
+          "projection": "circle",
+          "zoom": 0.7049373709464514,
+          "position": [
+            0.22109142707694074,
+            -0.07085230205469595
+          ],
+          "transforms": [],
+          "expScale": {
+            "enabled": false,
+            "a1x": 1,
+            "a1y": 0,
+            "a2x": 0,
+            "a2y": 1,
+            "n1": 1,
+            "n2": 0
+          }
+        }
+      },
+      "group": {
+        "className": "WallPaperGroup_General",
+        "params": {
+          "name": "334"
+        }
+      },
+      "config": {
+        "className": "GroupRendererConfig",
+        "params": {
+          "background": "#200f0f",
+          "glBackground": "#00000000",
+          "lineColor": "#000000FF",
+          "errorColor": "#FF00AAFF",
+          "domainColor": "#FF000077",
+          "lineWidth": 1,
+          "tileColors": [
+            "#0080c0ff",
+            "#fbab04ff"
+          ],
+          "symmetry": true,
+          "fill": true,
+          "texture": true,
+          "texCrown": false,
+          "texCrownFactor": 1,
+          "lines": false,
+          "domain": true,
+          "iterations": 30
+        }
+      },
+      "pattern": {
+        "className": "PatternTextures",
+        "params": {
+          "showUI": true,
+          "textures": [
+            {
+              "active": true,
+              "name": "haeckel 21",
+              "alpha": 1,
+              "scale": -2.0333333333,
+              "angle": -47.0360211634,
+              "center": [
+                -0.04572786903610651,
+                -0.0421814510355502
+              ]
+            }
+          ]
+        }
+      },
+      "domain": {
+        "className": "DefaultDomainBuilder",
+        "params": {
+          "showBaseGens": false
+        }
+      }
+    }
+  }
+}

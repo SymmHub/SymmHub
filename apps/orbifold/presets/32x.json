@@ -1,0 +1,85 @@
+{
+  "name": "32x",
+  "params": {
+    "className": "GroupRenderer",
+    "params": {
+      "view": {
+        "className": "InversiveNavigator",
+        "params": {
+          "hasGrid": false,
+          "projection": "circle",
+          "zoom": 0.6778909137216955,
+          "position": [
+            0.33759870491545385,
+            -0.15095630314431188
+          ],
+          "transforms": [],
+          "expScale": {
+            "enabled": false,
+            "a1x": 1,
+            "a1y": 0,
+            "a2x": 0,
+            "a2y": 1,
+            "n1": 1,
+            "n2": 0
+          }
+        }
+      },
+      "group": {
+        "className": "WallPaperGroup_General",
+        "params": {
+          "name": "32x",
+          "cap_1_l": 0.7366818700000002
+        }
+      },
+      "config": {
+        "className": "GroupRendererConfig",
+        "params": {
+          "background": "#FFFFFF",
+          "glBackground": "#00000000",
+          "lineColor": "#000000FF",
+          "errorColor": "#FF00AAFF",
+          "domainColor": "#FF000077",
+          "lineWidth": 1,
+          "tileColors": [
+            "#800000FF",
+            "#FF0000FF"
+          ],
+          "symmetry": true,
+          "fill": false,
+          "texture": true,
+          "texCrown": true,
+          "texCrownFactor": 1,
+          "lines": false,
+          "domain": false,
+          "iterations": 50
+        }
+      },
+      "pattern": {
+        "className": "PatternTextures",
+        "params": {
+          "showUI": false,
+          "textures": [
+            {
+              "active": true,
+              "name": "haeckel 17",
+              "alpha": 1,
+              "scale": -0.5237784355830388,
+              "angle": -30.176191616944227,
+              "center": [
+                -0.16168119447456625,
+                0.06837503654632057
+              ]
+            }
+          ]
+        }
+      },
+      "domain": {
+        "className": "DefaultDomainBuilder",
+        "params": {
+          "showBaseGens": false
+        }
+      }
+    }
+  }
+}

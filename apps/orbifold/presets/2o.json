@@ -1,0 +1,86 @@
+{
+  "name": "2o",
+  "params": {
+    "className": "GroupRenderer",
+    "params": {
+      "view": {
+        "className": "InversiveNavigator",
+        "params": {
+          "hasGrid": true,
+          "projection": "circle",
+          "zoom": 0.7106813301301214,
+          "position": [
+            0.2204951402410858,
+            -0.0694483862133159
+          ],
+          "transforms": [],
+          "expScale": {
+            "enabled": false,
+            "a1x": 1,
+            "a1y": 0,
+            "a2x": 0,
+            "a2y": 1,
+            "n1": 1,
+            "n2": 0
+          }
+        }
+      },
+      "group": {
+        "className": "WallPaperGroup_General",
+        "params": {
+          "name": "2o",
+          "handle_1_l": 0.7901718699999996,
+          "handle_1_t": 0
+        }
+      },
+      "config": {
+        "className": "GroupRendererConfig",
+        "params": {
+          "background": "#200f0f",
+          "glBackground": "#00000000",
+          "lineColor": "#000000FF",
+          "errorColor": "#FF00AAFF",
+          "domainColor": "#FF000077",
+          "lineWidth": 1,
+          "tileColors": [
+            "#0080c0ff",
+            "#fbab04ff"
+          ],
+          "symmetry": true,
+          "fill": true,
+          "texture": true,
+          "texCrown": false,
+          "texCrownFactor": 1,
+          "lines": false,
+          "domain": true,
+          "iterations": 50
+        }
+      },
+      "pattern": {
+        "className": "PatternTextures",
+        "params": {
+          "showUI": true,
+          "textures": [
+            {
+              "active": true,
+              "name": "haeckel 21",
+              "alpha": 0.3611111111,
+              "scale": -0.23802855237456838,
+              "angle": -61.03602116336593,
+              "center": [
+                -0.06814102087854268,
+                -0.0832722294133499
+              ]
+            }
+          ]
+        }
+      },
+      "domain": {
+        "className": "DefaultDomainBuilder",
+        "params": {
+          "showBaseGens": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+body {
+  background-color: #000000;
+  margin: 0px;
+  //overflow: hidden;
+}
+a.button {
+  border-style: solid;
+  border-width: 1px;
+  background-color: #FFFFFF;	
+}
+div.glDiv {
+  position: relative;
+  margin: 1px;
+  //padding: 2px 2px 2px 2px;
+  float: left;
+  //box-sizing: border-box;
+  border-style: solid;
+  border-width: 3px;
+  border-color: #AAAAFFFF; 
+  background-color: #0000FF22; 
+}
+  canvas.glCanvas {
+    display: block;  /* prevents scrollbar */
+    position: absolute;
+    width: 99vw;
+    height: 99vh;
+    border-width: 1px;
+    /*margin: 0.4vw;*/
+    margin-top: 0.4vh;
+    margin-bottom: 0.4vh;
+    margin-left: 0.4vw;
+    margin-right: 0.4vw;
+    
+  }
+  canvas.overlay {
+    display: block;  /* prevents scrollbar */
+    position: absolute;
+    width: 99vw;
+    height: 99vh;
+    /*background-color: #FF000000*/; 
+    background-color: #00000000; 
+    /*border-color: #FF0000; 
+    border-style: solid;
+    border-width: 1px;*/
+    /*margin: 0.4vw;*/
+    margin-top: 0.4vh;
+    margin-bottom: 0.4vh;
+    margin-left: 0.4vw;
+    margin-right: 0.4vw;
+  }
+
+#canvas2 {
+  width:400px;
+  height:300px;			
+}
+#canvas3 {
+  width:200px;
+  height:400px;			
+}
+#info {
+  position: absolute;
+  top: 10px;
+  left: 10px;			
+}
