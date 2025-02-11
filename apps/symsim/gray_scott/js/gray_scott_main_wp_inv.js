@@ -4,24 +4,24 @@ import {
     Group_WP,
     InversiveNavigator,
     PlaneNavigator, 
-
+    makeSamplesArray,
 }
 from './modules.js';
 
 import {
-    gray_scott_samples_wp
+    presets
 }
-from './gray_scott_samples_wp.js';
+from './presets_wp_inv.js';
 
-try {
+//try {
     let ss = SymRenderer({
         simCreator: GrayScottSimulationCreator,
-        samples: gray_scott_samples_wp,
+        samples: makeSamplesArray(presets, 'presets/wp_inv/'),
         groupMaker:  new Group_WP({type: '333',a: 0.4}), // maker of the groups
         navigator:   new InversiveNavigator(),
     });
     ss.run();
 
-} catch (err) {
-    console.error('error: ', err);
-}
+//} catch (err) {
+//    console.error('error: ', err);
+//}

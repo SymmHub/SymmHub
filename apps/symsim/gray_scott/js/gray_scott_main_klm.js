@@ -2,20 +2,21 @@ import {
     SymRenderer,
     GrayScottSimulationCreator,
     Group_KLM,
-
+    makeSamplesArray,
 }
 from './modules.js';
 
 import {
-    gray_scott_samples_klm
-}
-from './gray_scott_samples_klm.js';
+    presets 
+} from './presets_klm.js';
+
+
 
 try {
 
     let ss = SymRenderer({
         simCreator: GrayScottSimulationCreator,
-        samples: gray_scott_samples_klm,
+        samples: makeSamplesArray(presets, 'presets/klm/'),
         groupMaker:  new Group_KLM({}), // maker of the groups
     });
     ss.run();

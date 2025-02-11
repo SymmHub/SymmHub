@@ -33,6 +33,7 @@ export {
     buildProgramsCached,
     initFragments,
     appendThumbnails,
+    makeSamplesArray,
 }
 from '../../../../lib/symhublib/symhublib.js';
 

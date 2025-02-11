@@ -3,19 +3,18 @@ import {
     GrayScottSimulationCreator,
     Group_WP,
     PlaneNavigator, 
-
+    makeSamplesArray,
 }
 from './modules.js';
 
 import {
-    gray_scott_samples_wp
-}
-from './gray_scott_samples_wp.js';
+    presets as presets_wp
+} from './presets_wp.js';
 
 //try {
     let ss = SymRenderer({
         simCreator: GrayScottSimulationCreator,
-        samples: gray_scott_samples_wp,
+        samples: makeSamplesArray(presets_wp, 'presets/wp/'),
         groupMaker:  new Group_WP({type: '333',a: 0.4}), // maker of the groups
     });
     ss.run();
