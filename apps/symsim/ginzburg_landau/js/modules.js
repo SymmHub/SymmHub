@@ -36,7 +36,11 @@ export {
     getTime,
     PlaneNavigator,
     SymRenderer,
+    buildProgramsCached,
+    initFragments,
     appendThumbnails,
+    makeSamplesArray,    
+    
 }
 from '../../../../lib/symhublib/symhublib.js';
 
@@ -83,15 +87,4 @@ export {
 
 }
 from '../../../../lib/uilib/modules.js';
-
-export {
-    buildProgramsCached,
-    initFragments,
-
-}
-from '../../../../lib/symhublib/symhublib.js';
-
-
-
-
 

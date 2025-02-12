@@ -2,18 +2,19 @@ import {
     SymRenderer,
     GinzburgLandauSimulationCreator,
     Group_WP,
+    makeSamplesArray,
 }
 from './modules.js';
 
 import {
-    ginzburg_landau_samples_wp
+    presets
 }
-from './ginzburg_landau_samples_wp.js';
+from './presets_wp.js';
 
 //try {
     let ss = SymRenderer({
         simCreator: GinzburgLandauSimulationCreator,
-        samples: ginzburg_landau_samples_wp,
+        samples: makeSamplesArray(presets, 'presets/wp/'),
         groupMaker:  new Group_WP({type: '2222',a: 0.4}), // maker of the groups
     });
     ss.run();

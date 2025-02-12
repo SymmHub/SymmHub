@@ -2,18 +2,20 @@ import {
     SymRenderer,
     GinzburgLandauSimulationCreator,
     Group_KLMN,
+    makeSamplesArray,
+    
 }
 from './modules.js';
 
 import {
-    ginzburg_landau_samples_klmn
+    presets
 }
-from './ginzburg_landau_samples_klmn.js';
+from './presets_klmn.js';
 
 try {
     let ss = SymRenderer({
         simCreator: GinzburgLandauSimulationCreator,
-        samples: ginzburg_landau_samples_klmn,
+        samples: makeSamplesArray(presets, 'presets/klmn/'),
         groupMaker:  new Group_KLMN(), // maker of the groups
     });
     ss.run();
