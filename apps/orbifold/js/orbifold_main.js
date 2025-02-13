@@ -115,31 +115,31 @@
  const maxgenCount = 20;
 
  let render = new GroupRenderer({
-     glCanvas: document.getElementById('glCanvas'),
+     glCanvas:      document.getElementById('glCanvas'),
      overlayCanvas: document.getElementById('overlay'),
-     groupMaker: grouphandler,
-     patternMaker: new PatternTextures({
-         textures: [Textures.t2, Textures.t1]
-     }),
+     groupMaker:    grouphandler,
+     patternMaker:  new PatternTextures({
+                            textures: [Textures.t2, Textures.t1]
+                        }),
      domainBuilder: new DomainBuilder({
-         MAX_GEN_COUNT: maxgenCount,
-         MAX_TOTAL_REF_COUNT: 30,
-         USE_PACKING: true
-     }),
-     guiOrder: ["group", "domain"],
-     fragShader: [
-         FRAG_FOLDER + "fsMain.frag",
-         FRAG_FOLDER + "inversive.frag",
-         FRAG_FOLDER + "complex.frag",
-         FRAG_FOLDER + "patternTextures.frag",
-         FRAG_FOLDER + "generalGroupMain_v2.frag"
-     ],
-     vertShader: [
-         FRAG_FOLDER + "vertexShader.frag",     
-     ],
-     JSONpresets: JSONpresets,
-     JSONpreset: "32x",
-     useParamGui: true,
+                            MAX_GEN_COUNT: maxgenCount,
+                            MAX_TOTAL_REF_COUNT: 30,
+                            USE_PACKING: true
+                        }),
+     guiOrder:      ["group", "domain"],
+     fragShader:    [
+                        FRAG_FOLDER + "fsMain.frag",
+                        FRAG_FOLDER + "inversive.frag",
+                        FRAG_FOLDER + "complex.frag",
+                        FRAG_FOLDER + "patternTextures.frag",
+                        FRAG_FOLDER + "generalGroupMain_v2.frag"
+                    ],
+     vertShader:    [
+                        FRAG_FOLDER + "vertexShader.frag",     
+                    ],
+     JSONpresets:   JSONpresets,
+     JSONpreset:    JSONpresets[0].name,
+     useParamGui:   false,
  });
 
  render.init();
