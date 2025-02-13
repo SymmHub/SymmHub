@@ -1,4 +1,4 @@
- const LIBRARYPATH = '../library/';
+ const FRAG_FOLDER = 'js/frag/';
 
  import {
      Textures,
@@ -81,25 +81,25 @@
 
  // GLOBALS
 
- var preFolder = 'presets/';
- var JSONpresets = [{
+ const PRE_FOLDER = 'presets/';
+ const JSONpresets = [{
          name: '32x',
-         path: preFolder + '32x.json'
+         path: PRE_FOLDER + '32x.json'
      }, {
          name: 'xx2',
-         path: preFolder + 'xx2.json'
+         path: PRE_FOLDER + 'xx2.json'
      }, {
          name: 'xo',
-         path: preFolder + 'xo.json'
+         path: PRE_FOLDER + 'xo.json'
      }, {
          name: '325',
-         path: preFolder + '325.json'
+         path: PRE_FOLDER + '325.json'
      }, {
          name: '326',
-         path: preFolder + '326.json'
+         path: PRE_FOLDER + '326.json'
      }, {
          name: '327',
-         path: preFolder + '327.json'
+         path: PRE_FOLDER + '327.json'
      },
  ];
 
@@ -114,7 +114,7 @@
 
  const maxgenCount = 20;
 
- var render = new GroupRenderer({
+ let render = new GroupRenderer({
      glCanvas: document.getElementById('glCanvas'),
      overlayCanvas: document.getElementById('overlay'),
      groupMaker: grouphandler,
@@ -128,13 +128,15 @@
      }),
      guiOrder: ["group", "domain"],
      fragShader: [
-         LIBRARYPATH + "frag/fsMain.frag",
-         LIBRARYPATH + "frag/inversive.frag",
-         LIBRARYPATH + "frag/complex.frag",
-         LIBRARYPATH + "frag/patternTextures.frag",
-         LIBRARYPATH + "frag/generalGroupMain_v2.frag"
+         FRAG_FOLDER + "fsMain.frag",
+         FRAG_FOLDER + "inversive.frag",
+         FRAG_FOLDER + "complex.frag",
+         FRAG_FOLDER + "patternTextures.frag",
+         FRAG_FOLDER + "generalGroupMain_v2.frag"
      ],
-     //vertShader:[]
+     vertShader: [
+         FRAG_FOLDER + "vertexShader.frag",     
+     ],
      JSONpresets: JSONpresets,
      JSONpreset: "32x",
      useParamGui: true,
