@@ -8,12 +8,22 @@
         "params": {
           "hasGrid": false,
           "projection": "circle",
-          "zoom": 0.6778909137216955,
+          "offsetZ": 0,
+          "zoom": 0.8954094217070255,
           "position": [
-            0.33759870491545385,
-            -0.02335080166674515
+            0.09348271494918514,
+            -0.02144542580944476
           ],
-          "transforms": []
+          "transforms": [],
+          "expScale": {
+            "enabled": false,
+            "a1x": 1,
+            "a1y": 0,
+            "a2x": 0,
+            "a2y": 1,
+            "n1": 1,
+            "n2": 0
+          }
         }
       },
       "group": {
@@ -29,6 +39,15 @@
         "className": "GroupRendererConfig",
         "params": {
           "background": "#FFFFFF",
+          "glBackground": "#00000000",
+          "lineColor": "#000000FF",
+          "errorColor": "#FF00AAFF",
+          "domainColor": "#FF000077",
+          "lineWidth": 1,
+          "tileColors": [
+            "#800000FF",
+            "#FF0000FF"
+          ],
           "symmetry": true,
           "fill": false,
           "texture": true,
@@ -36,24 +55,34 @@
           "texCrownFactor": 1,
           "lines": false,
           "domain": true,
-          "iterations": 50,
-          "antialias": 1
+          "iterations": 50
         }
       },
       "pattern": {
         "className": "PatternTextures",
         "params": {
-          "showUI": false,
+          "showUI": true,
           "textures": [
             {
               "active": true,
               "name": "haeckel 17",
               "alpha": 1,
-              "scale": 0.10225247486794894,
-              "angle": -53.0827576701643,
+              "scale": -0.04256158084510995,
+              "angle": -24.59088110102575,
               "center": [
-                -0.1616811944745662,
-                -0.125233310523091
+                -0.23796631920473094,
+                -0.029876904619086556
+              ]
+            },
+            {
+              "active": false,
+              "name": "leaf",
+              "alpha": 1,
+              "scale": -1.5143700075738395,
+              "angle": -36.03114216084239,
+              "center": [
+                0.10240245513000931,
+                0.04891519515042567
               ]
             }
           ]
