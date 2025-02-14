@@ -120,13 +120,16 @@ var grouphandler = new WallPaperGroup_General({
 
 const maxgenCount = 20;
 
+let tex = Textures.t1.concat(Textures.t2);
+
 let render = new GroupRenderer({
-    glCanvas: document.getElementById('glCanvas'),
-    overlayCanvas: document.getElementById('overlay'),
-    groupMaker: grouphandler,
-    patternMaker: new PatternTextures({
-        textures: [Textures.t2, Textures.t1]
-    }),
+    // optional. use these to get custom canvas elements 
+    glCanvas:       document.getElementById('glCanvas'),
+    overlayCanvas:  document.getElementById('overlay'),
+    container:      document.getElementById('canvasContainer'),
+    
+    groupMaker:    grouphandler,
+    patternMaker: new PatternTextures({textures: [tex, tex, tex]}),
     domainBuilder: new DomainBuilder({
         MAX_GEN_COUNT: maxgenCount,
         MAX_TOTAL_REF_COUNT: 30,
@@ -146,6 +149,7 @@ let render = new GroupRenderer({
     JSONpresets: JSONpresets,
     JSONpreset: JSONpresets[0].name,
     useParamGui: false,
+    useInternalWindows: true,
 });
 
 render.init();

@@ -15,6 +15,7 @@ import {
   //ParamGui,
   GUI as DatGui,
   twgl,
+  createInternalWindow, 
 } from './modules.js';
   
 //import {ParamGui} from '../libm/paramgui/paramGui.js'
@@ -41,6 +42,8 @@ const GL_CANVAS_STYLES = [
     CANVAS_CUSTOM.name
   ];
 
+const MYNAME = 'GroupRenderer';
+
 const EXPORT_ANIMATION = 'Animation Export';
 const STOP_EXPORT_ANIMATION = 'Stop Animation Export';
 
@@ -55,14 +58,24 @@ export class GroupRenderer {
   //
   //
   constructor(options){
-    
-    
-    
+          
     this.constructorParams = options;
     
-    this.glCanvas = options.glCanvas;
-    
-    this.overlayCanvas = options.overlayCanvas;
+    if(options.useInternalWindows) {
+        
+      this.mCanvas = createLayeredCanvas({onresize: this.onCanvasResize.bind(this)});
+      this.glCanvas = this.mCanvas.glCanvas;
+      this.overlayCanvas = this.mCanvas.overlay;
+      
+        
+    } else {
+        this.mCanvas = {
+                    glCanvas: options.glCanvas, 
+                    overlay: options.overlayCanvas, 
+                    container: options.container};
+        this.glCanvas = options.glCanvas;    
+        this.overlayCanvas = options.overlayCanvas;
+    }
     
     if(isDefined(this.overlayCanvas)){
       this.drawContext = this.overlayCanvas.getContext("2d");
@@ -187,7 +200,7 @@ export class GroupRenderer {
     
     requestAnimationFrame(this.animationFrame.bind(this));
     
-  }
+  }  // animationFrame(time)
     
   //
   //
@@ -568,6 +581,11 @@ export class GroupRenderer {
     
   }
   
+  onCanvasResize(evt){
+        //console.log(`${MYNAME}.onCanvasResize()`, evt);
+    this.repaint();
+  }
+  
   //
   //  called when window was resized 
   //
@@ -767,10 +785,8 @@ export class GroupRenderer {
       
       default:
       case CANVAS_FIT_TO_WINDOW.name: // fit to window        
-        this.glCanvas.style.width = '99vw';
-        this.glCanvas.style.height = '99vh';
-        this.overlayCanvas.style.width = '99vw';
-        this.overlayCanvas.style.height = '99vh';        
+        this.mCanvas.container.style.width = '100%';
+        this.mCanvas.container.style.height = '100%';
         break;
         
       case CANVAS_CUSTOM.name:
@@ -797,10 +813,13 @@ export class GroupRenderer {
     var swidth = width + 'px';
     var sheight = height + 'px';
     
-    this.glCanvas.style.width = swidth;
-    this.glCanvas.style.height = sheight;
-    this.overlayCanvas.style.width = swidth;
-    this.overlayCanvas.style.height = sheight;
+    this.mCanvas.container.style.width = swidth;
+    this.mCanvas.container.style.height = sheight;
+    
+    //this.glCanvas.style.width = swidth;
+    //this.glCanvas.style.height = sheight;
+    //this.overlayCanvas.style.width = swidth;
+    //this.overlayCanvas.style.height = sheight;
 
   }
   
@@ -845,4 +864,55 @@ export class GroupRenderer {
     }
   }
   
+} // class GroupRenderer
+
+
+
+//
+//    creates layered canvas for GL rendering and 2D rendering
+//
+function createLayeredCanvas(options){
+    
+    let canvasContainer = document.createElement('div');
+    canvasContainer.id = 'canvasContainer';
+    let glCanvas = document.createElement('canvas');
+    glCanvas.className = 'layeredCanvas';
+    let overlay = document.createElement('canvas');
+    overlay.className = 'layeredCanvas';
+    canvasContainer.appendChild(glCanvas);
+    canvasContainer.appendChild(overlay);
+   // document.body.appendChild(canvasContainer);
+                    
+    let btnWidth = 40;
+    let btnCount = 9;
+    let extra = 22;
+    let titleHeight = 22;
+    
+    // floating window
+    let intWin = createInternalWindow({
+                                    width: '50%', 
+                                    height: '50%',
+                                    left: '1px', 
+                                    top:  '1px',
+                                    title: 'visualization',
+                                    canResize: true,
+                                    storageId: 'orbifold_visualization',
+                                    onResize: options.onresize,
+                                    });  
+    let interior = intWin.interior;
+    
+    interior.style.overflowY = "auto";
+    interior.style.overflowX = "auto";
+    //interior.style.width = 'max-content';
+    //interior.style.height = 'max-content';
+    
+    //document.body.appendChild(toolbox);
+    interior.appendChild(canvasContainer);
+                    
+                    
+    return {
+        container: canvasContainer,
+        glCanvas:  glCanvas,
+        overlay:   overlay,            
+    };
 }

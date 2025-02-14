@@ -55,6 +55,10 @@ export {
 export {
     GroupRenderer,
 } from './GroupRenderer.js';
+
+export {
+  createInternalWindow, 
+} from '../../../lib/uilib/modules.js'
      
 export {
     GUI 
