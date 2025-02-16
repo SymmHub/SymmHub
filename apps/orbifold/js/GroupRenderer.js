@@ -551,7 +551,7 @@ export class GroupRenderer {
         }
         //
         //TODO - proper way to select the program 
-        let pr = this.programs[0].program;
+        let pr = this.programs.symRenderer.program;
         
         pr.bind();
         pr.setUniforms(un);

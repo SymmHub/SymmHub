@@ -151,9 +151,9 @@ const progSymRenderer = {
             ]},  
 };
 
-const orbPrograms = [
-    progSymRenderer,
-];
+const orbPrograms = {
+    symRenderer: progSymRenderer,
+};
 
 const myDomainBuilder = new DomainBuilder({
         MAX_GEN_COUNT:       20,
