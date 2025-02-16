@@ -50,6 +50,7 @@ export {
     iReflectU4,
     iTransformU4,
     GroupUtils,
+    iDrawSplane,
 } from '../../../lib/invlib/invlib.js';
 
 export {
@@ -63,6 +64,9 @@ export {
 
 export {
   createInternalWindow, 
+  resizeCanvas,
+  getPixelRatio,
+  
 } from '../../../lib/uilib/modules.js'
 
 export {

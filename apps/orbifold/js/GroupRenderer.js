@@ -25,6 +25,9 @@ import {
     createLayeredCanvas,
     buildProgramsCached,
     getWebGLContext,
+    resizeCanvas,
+    getPixelRatio,
+    
 }
 
 from './modules.js';
@@ -536,11 +539,16 @@ export class GroupRenderer {
         if (!this.needToRender)
             return;
         this.needToRender = false;
+        // TODO 
+        //resizeCanvas(this.mCanvas.glCanvas);
+        //resizeCanvas(this.mCanvas.overlay);
+        twgl.resizeCanvasToDisplaySize(this.mCanvas.glCanvas);
+        twgl.resizeCanvasToDisplaySize(this.mCanvas.overlay);
+
         //
         // render GL 
         // 
         let glc = this.mCanvas.glCanvas;
-        twgl.resizeCanvasToDisplaySize(glc);
         this.mGLCtx.gl.viewport(0, 0, glc.width, glc.height);
         
         let un = {}
@@ -549,20 +557,18 @@ export class GroupRenderer {
             console.log('uniforms: ', un);            
             console.log('programs: ', this.programs);
         }
-        //
-        //TODO - proper way to select the program 
+
         let pr = this.programs.symRenderer.program;
         
         pr.bind();
         pr.setUniforms(un);
-        pr.blit(null);
+        pr.blit(null);   // render program on canvas 
         
         
         // render overlay
         
         var canvas = this.mCanvas.overlay;
         var context = this.drawContext;
-        twgl.resizeCanvasToDisplaySize(canvas);
 
         var trans = this.myNavigator;
 
