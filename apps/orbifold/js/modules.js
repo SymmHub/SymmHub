@@ -53,13 +53,21 @@ export {
 } from '../../../lib/invlib/invlib.js';
 
 export {
+    buildProgramsCached,
+    getWebGLContext,
+} from '../../../lib/symhublib/modules.js';
+
+export {
     GroupRenderer,
 } from './GroupRenderer.js';
 
 export {
   createInternalWindow, 
 } from '../../../lib/uilib/modules.js'
-     
+
+export {
+    createLayeredCanvas
+} from './ui_utils.js';     
 export {
     GUI 
 } from '../../../lib/extlib/dat.gui.module.js';

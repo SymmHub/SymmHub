@@ -124,7 +124,7 @@ export class WallPaperGroup_General {
         this.renderer = options.renderer;
         this.transform = this.renderer.myNavigator;
 
-        this.gui.remember(this.guiParams);
+        //this.gui.remember(this.guiParams);
 
         this.symmetryUIController.init({
             renderer: this.renderer,

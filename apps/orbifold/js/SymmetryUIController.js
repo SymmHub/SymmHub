@@ -192,12 +192,12 @@ export class SymmetryUIController{
   
   onMouseDown(evt){
     //for now, just grab the focus
-    this.renderer.overlayCanvas.focus();
+    this.renderer.getOverlay().focus();
   }
   
   onMouseOver(evt){
     //for now, just grab the focus
-    this.renderer.overlayCanvas.focus();
+    this.renderer.getOverlay().focus();
   }
   
   

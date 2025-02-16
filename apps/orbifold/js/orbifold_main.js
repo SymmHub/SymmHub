@@ -10,6 +10,11 @@ import {
 }
 from './modules.js';
 
+import {
+    OrbifoldFragments as OF, 
+} from './shaders/modules.js';
+
+
 // if "active", overlay yellow and thicken.
 const STYLES = {
     "activeColor": {
@@ -118,37 +123,61 @@ var grouphandler = new WallPaperGroup_General({
     })
 })
 
-const maxgenCount = 20;
+const MyTextures = Textures.t1.concat(Textures.t2);
 
-let tex = Textures.t1.concat(Textures.t2);
+
+const fragComplex           = { obj: OF, id:'complex'};
+const fragFSMain            = { obj: OF, id:'fsMain'};
+const fragGeneralGroupMain  = { obj: OF, id:'generalGroupMain_v2'};
+const fragInversive         = { obj: OF, id:'inversive'};
+const fragPatternTextures   = { obj: OF, id:'patternTextures'};
+const fragVertexShader      = { obj: OF, id:'vertexShader'};
+
+const vertexShader = {
+    frags: [fragVertexShader],
+};
+
+
+const progSymRenderer = {
+    name:   'SymRenderer', 
+    vs:     vertexShader,
+    fs: { 
+        frags: [ 
+            fragFSMain,
+            fragInversive,
+            fragComplex,
+            fragPatternTextures,
+            fragGeneralGroupMain,
+            ]},  
+};
+
+const orbPrograms = [
+    progSymRenderer,
+];
+
+const myDomainBuilder = new DomainBuilder({
+        MAX_GEN_COUNT:       20,
+        MAX_TOTAL_REF_COUNT: 30,
+        USE_PACKING:        true
+    });
+    
+    
+const myPatternMaker = new PatternTextures({textures: [MyTextures, MyTextures, MyTextures]})
+
 
 let render = new GroupRenderer({
     // optional. use these to get custom canvas elements 
-    glCanvas:       document.getElementById('glCanvas'),
-    overlayCanvas:  document.getElementById('overlay'),
-    container:      document.getElementById('canvasContainer'),
-    
-    groupMaker:    grouphandler,
-    patternMaker: new PatternTextures({textures: [tex, tex, tex]}),
-    domainBuilder: new DomainBuilder({
-        MAX_GEN_COUNT: maxgenCount,
-        MAX_TOTAL_REF_COUNT: 30,
-        USE_PACKING: true
-    }),
-    guiOrder: ["group", "domain"],
-    fragShader: [
-        FRAG_FOLDER + "fsMain.frag",
-        FRAG_FOLDER + "inversive.frag",
-        FRAG_FOLDER + "complex.frag",
-        FRAG_FOLDER + "patternTextures.frag",
-        FRAG_FOLDER + "generalGroupMain_v2.frag"
-    ],
-    vertShader: [
-        FRAG_FOLDER + "vertexShader.frag",
-    ],
-    JSONpresets: JSONpresets,
-    JSONpreset: JSONpresets[0].name,
-    useParamGui: false,
+    //glCanvas:       document.getElementById('glCanvas'),
+    //overlayCanvas:  document.getElementById('overlay'),
+    //container:      document.getElementById('canvasContainer'),    
+    groupMaker:         grouphandler,
+    patternMaker:       myPatternMaker,
+    domainBuilder:      myDomainBuilder, 
+    guiOrder:           ["group", "domain"],    
+    programs:           orbPrograms,
+    JSONpresets:        JSONpresets,
+    JSONpreset:         JSONpresets[0].name,
+    useParamGui:        false,
     useInternalWindows: true,
 });
 
