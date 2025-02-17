@@ -492,7 +492,13 @@ export class GroupRenderer {
     //  handles all UI events on canvas
     //
     handleEvent(evt) {
-
+        
+        let scaling = getPixelRatio(); // TODO add extra scaling 
+        
+        // store event coordinates in canvas' pixels 
+        evt.canvasX = evt.offsetX * scaling; 
+        evt.canvasY = evt.offsetY * scaling;
+                
         try {
             this.mCanvas.overlay.style.cursor = 'default';
 
@@ -540,10 +546,10 @@ export class GroupRenderer {
             return;
         this.needToRender = false;
         // TODO 
-        //resizeCanvas(this.mCanvas.glCanvas);
-        //resizeCanvas(this.mCanvas.overlay);
-        twgl.resizeCanvasToDisplaySize(this.mCanvas.glCanvas);
-        twgl.resizeCanvasToDisplaySize(this.mCanvas.overlay);
+        resizeCanvas(this.mCanvas.glCanvas);
+        resizeCanvas(this.mCanvas.overlay);
+        //twgl.resizeCanvasToDisplaySize(this.mCanvas.glCanvas);
+        //twgl.resizeCanvasToDisplaySize(this.mCanvas.overlay);
 
         //
         // render GL 

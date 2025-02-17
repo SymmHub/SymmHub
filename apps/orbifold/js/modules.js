@@ -51,6 +51,7 @@ export {
     iTransformU4,
     GroupUtils,
     iDrawSplane,
+    getCanvasPnt, 
 } from '../../../lib/invlib/invlib.js';
 
 export {

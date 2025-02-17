@@ -1,5 +1,6 @@
 import {
-    GroupRenderer
+    GroupRenderer,
+    getCanvasPnt, 
 } from './modules.js'
 
 import {
@@ -243,7 +244,7 @@ export class SymmetryUIController{
         edge = gp.s[i][0];
         check = edge.label[0];}
       if(lengthKeys.includes(check)){
-        this.midDist= nearArcQ([evt.offsetX,evt.offsetY],this.FDPoints[i], this.transform,7);
+        this.midDist= nearArcQ(getCanvasPnt(evt),this.FDPoints[i], this.transform,7);
         //this returns the proportion along the edge, as a distance. 
         foundFDQ=!(this.midDist==-1000)}//-1000 is returned if not found
       if(!foundFDQ) i++;
@@ -344,7 +345,7 @@ export class SymmetryUIController{
     let gp = this.groupMaker.getGroup();
     let edge;
     let evt = this.lastevt;
-    let pt = [evt.offsetX,evt.offsetY];
+    let pt = getCanvasPnt(evt);
     let trans = this.transform;
     let toscreen = ((isFunction(trans.transform2screen))? trans.transform2screen : trans.world2screen).bind(trans);
     let toworld = ((isFunction(trans.transform2world))? trans.transform2world : trans.screen2world).bind(trans);

@@ -29,41 +29,32 @@ import {
   cDisk2Band,
   cBand2Disk,
   GroupUtils, 
+  getCanvasPnt, 
 } from './modules.js';
 
-//import {
-//  iDrawSplane,
-//} from './IDrawing.js';
 
-//import {
-//  iSphere, 
-//  iPoint, 
-//  iPlane,
-//} from './ISplane.js';
+export const PROJECTION_NAMES = [
+    'circle', 
+    'log',
+    'band',
+    'uhp', 
+    'exp',
+    'sphere',
+    ];
 
-//import {
-//  GroupUtils
-//} from './Modules.js';
+const DEFAULT_INCREMENT = (1.e-10);
 
-        
-//import {PI,abs, sqrt, sin, cos, isDefined} from './Utilities.js';
-//import {add,mul,eDistanceSquared} from './LinearAlgebra.js';
-//import {cExp,cDiv, cLog,cDisk2Band,cBand2Disk} from './ComplexArithmetic.js';
-
-export const PROJECTION_NAMES = ['circle', 'log','band','uhp', 'exp',
-  'sphere'];
-
-/**
-  
-*/
+//
+//
+//
 function setParamValues(paramMap, ctrlMap){
   
- for (var name in paramMap) {
-  if (paramMap.hasOwnProperty(name)) {
-    if(isDefined(ctrlMap[name]))
-      ctrlMap[name].setValue(paramMap[name]);
-    } 
-  }
+    for (var name in paramMap) {
+        if (paramMap.hasOwnProperty(name)) {
+            if(isDefined(ctrlMap[name]))
+              ctrlMap[name].setValue(paramMap[name]);
+            } 
+    }
 }
 
 
@@ -83,7 +74,7 @@ export class InversiveNavigator {
     this.params = {
       // navigation 
       resetView: this.onResetView.bind(this),
-			hasGrid: false,
+            hasGrid: false,
       projection:PROJECTION_NAMES[0],
       offsetZ: 0.,
       transform: this.getTransformString(),
@@ -159,9 +150,9 @@ export class InversiveNavigator {
     
   }
   
-  /**
-    init GUI controls 
-  */
+  //
+  //  init GUI controls 
+  //
   initGUI(options){
     
     var folder = options.folder;
@@ -170,18 +161,18 @@ export class InversiveNavigator {
     
     this.onChanged = onChanged;
 
-    var amin = -1, amax = 10, inc = 1.e-10;
+    var amin = -1, amax = 10, inc = DEFAULT_INCREMENT;
     var nmin = -20, nmax = 20, ninc = 1;
     
     var par = this.params;
     var cntrs = this.controllers;
     
-		folder.add(par, 'resetView').name("Reset View");
-    
-		cntrs.hasGrid    = folder.add(par, 'hasGrid').onChange(onChanged).name("grid");
-		cntrs.projection = folder.add(par, 'projection',PROJECTION_NAMES).onChange(onChanged);    
-		cntrs.offsetZ = folder.add(par, 'offsetZ',-1, 1, inc).onChange(onChanged);        
-		cntrs.transform  = folder.add(par, 'transform').onChange(this.onTransformChanged.bind(this)).listen().name("transformation");
+    folder.add(par, 'resetView').name("Reset View");
+
+    cntrs.hasGrid    = folder.add(par, 'hasGrid').onChange(onChanged).name("grid");
+    cntrs.projection = folder.add(par, 'projection',PROJECTION_NAMES).onChange(onChanged);    
+    cntrs.offsetZ = folder.add(par, 'offsetZ',-1, 1, inc).onChange(onChanged);        
+    cntrs.transform  = folder.add(par, 'transform').onChange(this.onTransformChanged.bind(this)).listen().name("transformation");
     
     var sfolder = folder.addFolder('expScale');
     cntrs.expScale = {};
@@ -197,13 +188,16 @@ export class InversiveNavigator {
     sctrl.n2  = sfolder.add(pscale, 'n2',nmin,nmax, ninc).onChange(onChanged);
     //gui.remember(par);
     
-  }
+  } //   initGUI(options){
+
 
   //
   //  transform param was changed via controller 
   // 
   onTransformChanged(){
+      
     this.setTransformFromString(this.params.transform);
+    
   }
   //
   //  called form UI on resetView button click 
@@ -211,7 +205,7 @@ export class InversiveNavigator {
   onResetView(){
     
     this.reset();    
-		this.onChanged();
+        this.onChanged();
     
   }
   
@@ -231,7 +225,7 @@ export class InversiveNavigator {
   //
   render(context, transform){
     
-		if(!this.params.hasGrid)
+    if(!this.params.hasGrid)
        return;
       
     var thickLine = {lineStyle:"#2222FF",lineWidth:3,shadowWidth:0};
@@ -244,8 +238,8 @@ export class InversiveNavigator {
     
       case 'circle':
       case 'uhp':
-        iDrawSplane(iSphere([0,0,0,1]), context, ctrans, thickLine);				
-        //iDrawSplane(iPlane([1,0,0,0]), context, ctrans,thickLine);				
+        iDrawSplane(iSphere([0,0,0,1]), context, ctrans, thickLine);                
+        //iDrawSplane(iPlane([1,0,0,0]), context, ctrans,thickLine);                
         //iDrawSplane(iPlane([0,1,0,0]), context, ctrans,thickLine); 
         break;
     }      
@@ -322,7 +316,7 @@ export class InversiveNavigator {
     
     // log of smallest size with rounded ends 
     var logsize = Math.log(size)*Math.LOG10E;
-    var fl = Math.floor(logsize-0.3);    
+    var fl = Math.floor(logsize - 0.3);    
     return 1 * Math.pow(10, fl);      
 
     //var fract = logsize-fl;    
@@ -505,17 +499,17 @@ export class InversiveNavigator {
     
     //console.log("InversiveNavigator.getUniforms()");
     var trans = this.canvasTransform;
-   	trans.initTransform();
+       trans.initTransform();
     
     var un = uniforms;
     if(!isDefined(un))
-      un = {};
+    un = {};
     
-		un.u_projection = this.getProjectionID();
-		un.u_aspect = trans.aspect;
-		un.u_scale = 1./trans.zoom;
-		un.u_center = trans.position;
-		un.u_pixelSize = trans.pixelSize;
+    un.u_projection = this.getProjectionID();
+    un.u_aspect = trans.aspect;
+    un.u_scale = 1./trans.zoom;
+    un.u_center = trans.position;
+    un.u_pixelSize = trans.pixelSize;
     un.u_offsetZ = this.params.offsetZ;
     //console.log("transforms.length:" + this.transforms.length);
     if(this.transforms.length >= 5){
@@ -525,7 +519,7 @@ export class InversiveNavigator {
     //console.log("transform to send: " + transformToString(this.transforms,3));
     //
     // we have to send inverse transform because gpu works in pixel mode 
-		un.u_moebiusTransformData = iPackTransforms([GroupUtils.getInverseTransform(this.transforms)], 1, 5);
+        un.u_moebiusTransformData = iPackTransforms([GroupUtils.getInverseTransform(this.transforms)], 1, 5);
     //console.log("transformArray: " + iArrayToString(un.u_moebiusTransformData,3));
     
     var scale = this.params.expScale;
@@ -543,213 +537,213 @@ export class InversiveNavigator {
     
   }
   
-	//
-	// handler of all registered events 
-	//
-	handleEvent(evt){		
-		evt.preventDefault();
-		switch(evt.type) {
-		case 'click':
-			this.buttonClicked(evt);
-			break;
-		case 'mousemove':
-			this.onMouseMove(evt);
-		break;
-		case 'mousedown':
-			this.onMouseDown(evt);
-		break;
-		case 'mouseup':
-			this.onMouseUp(evt);
-		break;
-		case 'wheel':
-			this.onMouseWheel(evt);
-		break;
-		
-		default:
-			return;
-	  }		   
-  }
-
-  //
-  //
-  //
-	onMouseWheel(evt){
-    
-    //console.log("InversiveNavigator.onMouseWheel()");		
-    
-    if(evt.ctrlKey) {
-      this.hyperbolicIncrement(evt);
-      //return;
-    } else if(evt.shiftKey) {
-      
-      this.ellipticIncrement(evt);
-      //return;
-    } else {
-      this.euclideanZoom(evt);
+    //
+    // handler of all registered events 
+    //
+    handleEvent(evt){        
+        evt.preventDefault();
+        switch(evt.type) {
+        case 'click':
+            this.buttonClicked(evt);
+            break;
+        case 'mousemove':
+            this.onMouseMove(evt);
+        break;
+        case 'mousedown':
+            this.onMouseDown(evt);
+        break;
+        case 'mouseup':
+            this.onMouseUp(evt);
+        break;
+        case 'wheel':
+            this.onMouseWheel(evt);
+        break;
+        
+        default:
+            return;
+      }           
     }
-    		
-	}	
 
-  //
-  //
-  //
-	onMouseMove(evt){
+    //
+    //
+    //
+    onMouseWheel(evt){
     
-		var trans = this.canvasTransform;
+        //console.log("InversiveNavigator.onMouseWheel()");        
+        
+        if(evt.ctrlKey) {
+          this.hyperbolicIncrement(evt);
+          //return;
+        } else if(evt.shiftKey) {
+          
+          this.ellipticIncrement(evt);
+          //return;
+        } else {
+          this.euclideanZoom(evt);
+        }
+            
+    }     
+
+    //
+    //
+    //
+    onMouseMove(evt){
     
-		var pw = trans.screen2world([evt.offsetX,evt.offsetY]);
-    this.mousePosition = pw;
+        var trans = this.canvasTransform;
     
-    if(this.mouseDown){
+        var pw = trans.screen2world(getCanvasPnt(evt));
+        this.mousePosition = pw;
+    
+        if(this.mouseDown){
       
-      //console.log("PlaneNavigator.onMouseDown()");		
-      trans.position[0] -= (pw[0] - this.mouseDownPos[0]);
-      trans.position[1] -= (pw[1] - this.mouseDownPos[1]);
-			
-			this.informListener();
-			
-		}
-	}
-	
-  //
-  //
-  //
-	onMouseDown(evt){
+            //console.log("PlaneNavigator.onMouseDown()");        
+            trans.position[0] -= (pw[0] - this.mouseDownPos[0]);
+            trans.position[1] -= (pw[1] - this.mouseDownPos[1]);            
+            this.informListener();
+            
+        }
+    }
     
-		var pw = this.canvasTransform.screen2world([evt.offsetX,evt.offsetY]);
-    var pr = Math.max(0,Math.floor(-Math.log(this.gridIncrement)*Math.LOG10E))+2;
-    this.params.position = '[' + pw[0].toFixed(pr) + ',' + pw[1].toFixed(pr) + ']';
-		//console.log("down [%s %s]:%s",pw[0].toFixed(8),pw[1].toFixed(8), this.params.fs[0]);
-		this.mouseDown = true;
-		this.mouseDownPos = pw;
-	}
+    //
+    //
+    //
+    onMouseDown(evt){
+    
+        var pw = this.canvasTransform.screen2world(getCanvasPnt(evt));
+        var pr = Math.max(0,Math.floor(-Math.log(this.gridIncrement)*Math.LOG10E))+2;
+        this.params.position = '[' + pw[0].toFixed(pr) + ',' + pw[1].toFixed(pr) + ']';
+        //console.log("down [%s %s]:%s",pw[0].toFixed(8),pw[1].toFixed(8), this.params.fs[0]);
+        this.mouseDown = true;
+        this.mouseDownPos = pw;
+    }
   
-  //
-  //
-  //
-	onMouseUp(evt){
-		var pw = this.canvasTransform.screen2world([evt.offsetX,evt.offsetY]);
-		//console.log("up [%s %s]:%s",pw[0].toFixed(8),pw[1].toFixed(8), this.params.fs[0]);
-		this.mouseDown = false;
-	}
+    //
+    //
+    //
+    onMouseUp(evt){
+        var pw = this.canvasTransform.screen2world(getCanvasPnt(evt));
+        //console.log("up [%s %s]:%s",pw[0].toFixed(8),pw[1].toFixed(8), this.params.fs[0]);
+        this.mouseDown = false;
+    }
 
   
-  //
-  // hyperbolic motion with 2 fixed points - mouse position and reflected 
-  //
-  hyperbolicIncrement(evt){
-    
-    var delta = Math.sign(evt.deltaY);    
-    var increment = this.getIncrement(delta, this.hyperDelta);
+    //
+    // hyperbolic motion with 2 fixed points - mouse position and reflected 
+    //
+    hyperbolicIncrement(evt){
 
-    var pos = this.mousePosition;
-    var p0 = iPoint([pos[0],pos[1],0,0]);
-    // polar opposite point 
-    var p1 = iReflectU4(iPoint([0,0,0,1]),p0);
-    var ri = sqrt(eDistanceSquared(p0.v, p1.v));
-    // inversion sphere
-    var si = iSphere([p1.v[0],p1.v[1],p1.v[2],ri]);
-    // si keep p0 fixed and moves p1 to infinity 
-    var s1 = iSphere([p0.v[0],p0.v[1],p0.v[2],1]);    
-    var s2 = iSphere([p0.v[0],p0.v[1],p0.v[2],1 + increment]);
-    var tr = this.transforms;
-    
-    if(delta > 0){
-      tr.push(si);  // conjugate scaling by the inversion sphere 
-      tr.push(s2);  
-      tr.push(s1);
-      tr.push(si);
-    }  else {        
-      tr.push(si);
-      tr.push(s1);
-      tr.push(s2);
-      tr.push(si);
-    }        
+        var delta = Math.sign(evt.deltaY);    
+        var increment = this.getIncrement(delta, this.hyperDelta);
 
-    this.informListener();
-    
-  }  
+        var pos = this.mousePosition;
+        var p0 = iPoint([pos[0],pos[1],0,0]);
+        // polar opposite point 
+        var p1 = iReflectU4(iPoint([0,0,0,1]),p0);
+        var ri = sqrt(eDistanceSquared(p0.v, p1.v));
+        // inversion sphere
+        var si = iSphere([p1.v[0],p1.v[1],p1.v[2],ri]);
+        // si keep p0 fixed and moves p1 to infinity 
+        var s1 = iSphere([p0.v[0],p0.v[1],p0.v[2],1]);    
+        var s2 = iSphere([p0.v[0],p0.v[1],p0.v[2],1 + increment]);
+        var tr = this.transforms;
 
-  //
-  // elliptic motion with 2 fixed points - mouse position and reflected 
-  //
-  ellipticIncrement(evt){
-    
-    var delta = Math.sign(evt.deltaY);
-    
-    var increment = this.getIncrement(delta, this.ellipticDelta);
-    var angle = increment;
+        if(delta > 0){
+            tr.push(si);  // conjugate scaling by the inversion sphere 
+            tr.push(s2);  
+            tr.push(s1);
+            tr.push(si);
+        }  else {        
+            tr.push(si);
+            tr.push(s1);
+            tr.push(s2);
+            tr.push(si);
+        }        
 
-    var pos = this.mousePosition;
-    var p0 = iPoint([pos[0],pos[1],0,0]);
-    // polar opposite point 
-    var p1 = iReflectU4(iPoint([0,0,0,1]),p0);
-    var ri = sqrt(eDistanceSquared(p0.v, p1.v));
-    // inversion sphere
-    var si = iSphere([p1.v[0],p1.v[1],p1.v[2],ri]);
-    // si keep p0 fixed and moves p1 to infinity 
-    var s1 = iPlane([1,0,0,p0.v[0]]);
-    var ca = cos(angle);
-    var sa = sin(angle);
-    var s2 = iPlane([ca, sa,0,p0.v[0]*ca + p0.v[1]*sa]);
-    var tr = this.transforms;
-    if(delta > 0){ 
-      tr.push(si);  // conjugate scaling by the inversion sphere 
-      tr.push(s2);  
-      tr.push(s1);
-      tr.push(si);
-    }  else {        
-      tr.push(si);
-      tr.push(s1);
-      tr.push(s2);
-      tr.push(si);
-    }        
-    this.informListener();    
-  }
+        this.informListener();
+
+    }  
+
+    //
+    // elliptic motion with 2 fixed points - mouse position and reflected 
+    //
+    ellipticIncrement(evt){
+
+        var delta = Math.sign(evt.deltaY);
+
+        var increment = this.getIncrement(delta, this.ellipticDelta);
+        var angle = increment;
+
+        var pos = this.mousePosition;
+        var p0 = iPoint([pos[0],pos[1],0,0]);
+        // polar opposite point 
+        var p1 = iReflectU4(iPoint([0,0,0,1]),p0);
+        var ri = sqrt(eDistanceSquared(p0.v, p1.v));
+        // inversion sphere
+        var si = iSphere([p1.v[0],p1.v[1],p1.v[2],ri]);
+        // si keep p0 fixed and moves p1 to infinity 
+        var s1 = iPlane([1,0,0,p0.v[0]]);
+        var ca = cos(angle);
+        var sa = sin(angle);
+        var s2 = iPlane([ca, sa,0,p0.v[0]*ca + p0.v[1]*sa]);
+        var tr = this.transforms;
+        if(delta > 0){ 
+            tr.push(si);  // conjugate scaling by the inversion sphere 
+            tr.push(s2);  
+            tr.push(s1);
+            tr.push(si);
+        }  else {        
+            tr.push(si);
+            tr.push(s1);
+            tr.push(s2);
+            tr.push(si);
+        }        
+        this.informListener();    
+    }
   
-  euclideanZoom(evt){
+    euclideanZoom(evt){
     
-    //console.log("euclideanZoom()");
-		var delta = Math.sign(evt.deltaY);
-    var increment = this.getIncrement(delta, this.zoomDelta);
+        //console.log("euclideanZoom()");
+        var delta = Math.sign(evt.deltaY);
+        var increment = this.getIncrement(delta, this.zoomDelta);
 
-		var zoomFactor = 1 + increment;
+        var zoomFactor = 1 + increment;
     
-		// no keys pressed 
-		var trans = this.canvasTransform;
-		
-		var pw = trans.screen2world([evt.offsetX,evt.offsetY]);		
-		if(delta > 0) {
-			trans.zoom /= zoomFactor;
-		} else {
-			trans.zoom *= zoomFactor;
-		}
-		// location with new zoom 
-		var pw1 = trans.screen2world([evt.offsetX,evt.offsetY]);		
-		//location shall remain fixed be the same, therefore we adjust camera position 
-		trans.position[0] -= pw1[0] - pw[0];
-		trans.position[1] -= pw1[1] - pw[1];
-		
-		//console.log("zoom:%s",this.CameraZoom.toFixed(8));
-		this.informListener();
-  }
+        // no keys pressed 
+        var trans = this.canvasTransform;
+        
+        var pw = trans.screen2world(getCanvasPnt(evt));        
+        if(delta > 0) {
+            trans.zoom /= zoomFactor;
+        } else {
+            trans.zoom *= zoomFactor;
+        }
+        // location with new zoom 
+        var pw1 = trans.screen2world(getCanvasPnt(evt));        
+        //location shall remain fixed be the same, therefore we adjust camera position 
+        trans.position[0] -= pw1[0] - pw[0];
+        trans.position[1] -= pw1[1] - pw[1];
+        
+        //console.log("zoom:%s",this.CameraZoom.toFixed(8));
+        this.informListener();
+    } // euclideanZoom(evt){
   
-  getIncrement(direction, deltaData){
+    getIncrement(direction, deltaData){
     
-    if(direction == deltaData.direction) {
-      // accelerate increment
-      //console.log("accelerate increment");
-      deltaData.delta *= deltaData.factor;
-      deltaData.delta = Math.min(deltaData.delta, deltaData.maxDelta);      
-      
-    } else {
-      // reset delta
-      //console.log("reset delta");
-      deltaData.delta = deltaData.defaultDelta;
-      deltaData.direction = direction;      
-    }    
-    //console.log("return ", deltaData.delta);
-    return deltaData.delta;
+        if(direction == deltaData.direction) {
+            // accelerate increment
+            //console.log("accelerate increment");
+            deltaData.delta *= deltaData.factor;
+            deltaData.delta = Math.min(deltaData.delta, deltaData.maxDelta);      
+          
+        } else {
+            // reset delta
+            //console.log("reset delta");
+            deltaData.delta = deltaData.defaultDelta;
+            deltaData.direction = direction;      
+        }    
+        //console.log("return ", deltaData.delta);
+        return deltaData.delta;
     
-  }
+    }
+  
 } // class InversiveNavigator 
