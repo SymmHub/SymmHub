@@ -797,7 +797,7 @@ function GinzburgLandauSimulation(){
         program.bind();
 
         // map [-1,1] range or rendering quad into [0,1] range of sampler input 
-        let ctUni = { uAspect: (buffer.height/buffer.width), uScale: 1, uCenter: [0.,0.] };
+        let ctUni = { u_aspect: (buffer.height/buffer.width), u_scale: 1, u_center: [0.,0.] };
         program.setUniforms(ctUni);
               
         let symUni = {
@@ -835,7 +835,7 @@ function GinzburgLandauSimulation(){
         program.bind();
          
         // map [-1,1] range of rendering quad into [0,1] range of sampler input 
-        let ctUni = { uAspect: (buffer.height/buffer.width), uScale: 0.5, uCenter: [0.5,0.5] };
+        let ctUni = { u_aspect: (buffer.height/buffer.width), u_scale: 0.5, u_center: [0.5,0.5] };
         program.setUniforms(ctUni);
 
           

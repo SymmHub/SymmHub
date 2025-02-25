@@ -11,6 +11,11 @@ import {
 from './modules.js';
 
 import {
+    InversiveNavigator
+} from './InversiveNavigator_v1.js';
+//} from './InversiveNavigator_v0.js';
+
+import {
     OrbifoldFragments as OF, 
 } from './shaders/modules.js';
 
@@ -88,6 +93,9 @@ const STYLES = {
 const PRE_FOLDER = 'presets/';
 const JSONpresets = [
     {
+        name: '3333_test',
+        path: PRE_FOLDER + '3333_test.json'
+    }, {
         name: '3333',
         path: PRE_FOLDER + '3333.json'
     }, {
@@ -164,6 +172,7 @@ const myDomainBuilder = new DomainBuilder({
     
 const myPatternMaker = new PatternTextures({textures: [MyTextures, MyTextures, MyTextures]})
 
+const myNavigator = new InversiveNavigator();
 
 let render = new GroupRenderer({
     // optional. use these to get custom canvas elements 
@@ -173,6 +182,7 @@ let render = new GroupRenderer({
     groupMaker:         grouphandler,
     patternMaker:       myPatternMaker,
     domainBuilder:      myDomainBuilder, 
+    navigator:          myNavigator,
     guiOrder:           ["group", "domain"],    
     programs:           orbPrograms,
     JSONpresets:        JSONpresets,

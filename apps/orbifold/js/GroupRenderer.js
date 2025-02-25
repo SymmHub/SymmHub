@@ -5,11 +5,6 @@ import {
 from './GroupRendererConfig.js'
 
 import {
-    InversiveNavigator
-}
-from './InversiveNavigator.js'
-
-import {
     getParam,
     isFunction,
     isDefined,
@@ -113,9 +108,8 @@ export class GroupRenderer {
 
         this.domainBuilder = (isDefined(options.domainBuilder)) ? (options.domainBuilder) : (new DefaultDomainBuilder());
 
-        this.myNavigator = new InversiveNavigator({
-            canvas: this.mCanvas.overlay
-        });
+        this.myNavigator = options.navigator;
+        this.myNavigator.init({canvas: this.mCanvas.overlay, onChanged: this.onNavigationChanged.bind(this)});
 
         this.patternMaker = options.patternMaker;
 
@@ -399,9 +393,9 @@ export class GroupRenderer {
 
         this.controllers.paramsName = pfolder.add(par, 'paramsName').name('Preset Name');
 
-        let onCnvsSz = this.onGLCanvasWidth.bind(this)
-            let onCnvsStl = this.onGLCanvasStyle.bind(this)
-            pfolder.add(par, 'revertParams').name('Revert');
+        let onCnvsSz = this.onGLCanvasWidth.bind(this);
+        let onCnvsStl = this.onGLCanvasStyle.bind(this);
+        pfolder.add(par, 'revertParams').name('Revert');
         pfolder.add(par, 'saveParams').name('Save');
         pfolder.add(par, 'saveParamsAs').name('Save As...');
         pfolder.add(par, 'readParams').name('Open...');
@@ -429,11 +423,11 @@ export class GroupRenderer {
     initPatternGUI(pmaker, gui, folder, onChanged) {
 
         pmaker.initGUI({
-            gui: gui,
-            folder: folder,
-            onChanged: onChanged,
-            gl:     this.mGLCtx.gl,
-            canvas: this.mCanvas.overlay,
+            gui:        gui,
+            folder:     folder,
+            onChanged:  onChanged,
+            gl:         this.mGLCtx.gl,
+            canvas:     this.mCanvas.overlay,
             groupMaker: this.groupMaker
         });
 
@@ -445,12 +439,12 @@ export class GroupRenderer {
     initDomainGUI(dbuilder, gui, folder, onChanged) {
 
         dbuilder.initGUI({
-            gui: gui,
-            folder: folder,
-            onChanged: onChanged,
+            gui:        gui,
+            folder:     folder,
+            onChanged:  onChanged,
             groupMaker: this.groupMaker,
-            canvas: this.mCanvas.overlay,
-            gl: this.mGLCtx.gl,
+            canvas:     this.mCanvas.overlay,
+            gl:         this.mGLCtx.gl,
         });
 
     }
@@ -528,10 +522,13 @@ export class GroupRenderer {
     //
     initEventsHandler(canvas, listener) {
 
-        canvas.addEventListener('mousemove', listener);
-        canvas.addEventListener('mouseenter', listener);
-        canvas.addEventListener('mousedown', listener);
-        canvas.addEventListener('mouseup', listener);
+        //canvas.addEventListener('mousemove', listener);
+        canvas.addEventListener('pointerenter', listener);
+        canvas.addEventListener('pointerleave', listener);
+        canvas.addEventListener('pointermove', listener);
+        canvas.addEventListener('pointerenter', listener);
+        canvas.addEventListener('pointerdown', listener);
+        canvas.addEventListener('pointerup', listener);
         canvas.addEventListener('keydown', listener);
         canvas.addEventListener('keyup', listener);
         canvas.addEventListener('wheel', listener);

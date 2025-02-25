@@ -684,7 +684,7 @@ function GrayScottSimulation(){
     // map [-1,1] (range or rendering quad) 
     //  into 
     // [0,1] - range of sampler input 
-    let ctUni = { uAspect: (buffer.height/buffer.width), uScale: 1, uCenter: [0.,0.] };
+    let ctUni = { u_aspect: (buffer.height/buffer.width), u_scale: 1, u_center: [0.,0.] };
     program.setUniforms(ctUni);
     
     let noiseCfg = config.noise;
@@ -728,7 +728,7 @@ function GrayScottSimulation(){
     gl.viewport(0, 0, buffer.width, buffer.height);      
      program.bind();
     // map [-1,1] range or rendering quad into [0,1] range of sampler input 
-    let ctUni = { uAspect: (buffer.height/buffer.width), uScale: 1, uCenter: [0.,0.] };
+    let ctUni = { u_aspect: (buffer.height/buffer.width), u_scale: 1, u_center: [0.,0.] };
     program.setUniforms(ctUni);
     
     let fd = group.getFundDomain();
@@ -785,7 +785,7 @@ function GrayScottSimulation(){
         program.bind();
 
         // map [-1,1] range or rendering quad into [0,1] range of sampler input 
-        let ctUni = { uAspect: (buffer.height/buffer.width), uScale: 1, uCenter: [0.,0.] };
+        let ctUni = { u_aspect: (buffer.height/buffer.width), u_scale: 1, u_center: [0.,0.] };
         program.setUniforms(ctUni);
               
         let symUni = {
@@ -818,7 +818,7 @@ function GrayScottSimulation(){
         gl.viewport(0, 0, buffer.width, buffer.height);      
         
         // map [-1,1] range or rendering quad into [0,1] range of sampler input 
-        let ctUni = { uAspect: (buffer.height/buffer.width), uScale: 0.5, uCenter: [0.5,0.5] };
+        let ctUni = { u_aspect: (buffer.height/buffer.width), u_scale: 0.5, u_center: [0.5,0.5] };
                       
         //console.log('ctUni:', ctUni);
         let boundaryCfg = config.boundary;

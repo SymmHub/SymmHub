@@ -53,6 +53,9 @@ import {
     poincareMobiusFromSPlanesList
 } from '../../../lib/invlib/ComplexArithmetic.js';
 
+const DEBUG = false;
+const MYNAME = 'SymmetryUIController';
+
 /////////////////////
 //
 //
@@ -168,20 +171,24 @@ export class SymmetryUIController{
       this.onKeyDown(evt);
       break;
     case 'mousemove':
+    case 'pointermove':
       this.resetWheel();
       this.onMouseMove(evt);
       break;
     case 'wheel':
       this.onWheel(evt);
       break;
+    case 'pointerdown':
     case 'mousedown':
       this.resetWheel();
       this.onMouseDown(evt);
       break;
+    case 'pointerenter':
     case 'mouseenter':
         this.resetWheel();
         this.onMouseOver(evt);
         break;
+    case 'pointerover':
     case 'mouseover':
         this.resetWheel();
         this.onMouseOver(evt);
@@ -284,7 +291,7 @@ export class SymmetryUIController{
       
       evt.grabInput = true; 
       this.onChanged();  
-      this.stashedTransforms = getCopy(this.transform.transforms); 
+      this.stashedTransforms = getCopy(this.transform.getInversiveTransform()); 
      // console.log("found "+this.activeFDPart.toString()+" "+this.midDist.toString());
       
       return;}
@@ -292,7 +299,7 @@ export class SymmetryUIController{
   
   onWheel(evt){
     if(this.activeFDPart == -1){return;}
-    this.transform.transforms = getCopy(this.stashedTransforms);
+    this.transform.setInversiveTransform(getCopy(this.stashedTransforms));
     let delta = sign(evt.deltaY);
     //let's locate the active part:
     let gm = this.groupMaker;
@@ -391,7 +398,7 @@ export class SymmetryUIController{
       
       // These are all in untransformed coordinates; we transform them:
       
-      let trans = poincareMobiusFromSPlanesList(this.transform.transforms);
+      let trans = poincareMobiusFromSPlanesList(this.transform.getInversiveTransform());
       mid = mid.applyMobius(trans);
       pt = pt.applyMobius(trans);
     
@@ -403,9 +410,10 @@ export class SymmetryUIController{
           [mid,pt],
           [this.savedMid,this.savedPt]);
     
-        this.transform.transforms = [...this.transform.transforms,...newTransforms];
-        if(this.transform.transforms.length >= 5){
-            this.transform.transforms = iGetFactorizationU4(this.transform.transforms);}
+        this.transform.setInversiveTransform([...this.transform.transforms,...newTransforms]);
+        //if(this.transform.transforms.length >= 5){
+        //    this.transform.transforms = iGetFactorizationU4(this.transform.transforms);
+        //}
         this.transform.informListener();
       }
     }
@@ -436,51 +444,67 @@ export class SymmetryUIController{
   
   
   
-  render(context,transform){
-    if(!this.domainShowingQ) {
-      this.FDPoints=[];
-      return;}
+    render(context,transform){
+        if(DEBUG)console.log(`${MYNAME}.render()`,this.domainShowingQ);
+        if(!this.domainShowingQ) {
+            this.FDPoints=[];
+            return;
+        }
     
-    this.drawEdgesOfFD(context,transform);
-  }
-  
-  // turn off the generator drawing inside of domain builder
-  drawEdgesOfFD(context,transform){
-    let gm = this.groupMaker;
-    let gp = gm.getGroup();
-    let fd = [...gp.s,...gp.i];
-    let ap=this.activeFDPart;  // -1 if nothing active
-      //not yet clear what form this should have if a cone point
-    let color, width,shadowwidth;
-    
-    // need to write fd's for spherical and euclidean
-    if(gm.curvature<0)
-    { color = this.styles.activeColor.color;
-      width = this.styles.activeColor.width;
-      shadowwidth=5;
-      if(ap>=0){
-        iDrawSplane(fd[ap][0], context, transform, 
-           {lineStyle:color,shadowStyle:"#00007733", 
-           lineWidth:width,shadowWidth:shadowwidth});}
-      
-      var i;
-      this.FDPoints=[];
-      for(i=0;i<fd.length;i++){
-        color = this.styles[fd[i][0].label[0]].color;
-        width = this.styles[fd[i][0].label[0]].width;
-        shadowwidth = 4;
-        this.FDPoints.push(
-         iDrawSplane(fd[i][0], context, transform, 
-           {lineStyle:color,shadowStyle:"#00007733", 
-           lineWidth:width,shadowWidth:shadowwidth}));
-      }
+        this.drawEdgesOfFD(context,transform);
     }
-  }
   
-  getUniforms(uniforms){
-    // just for extra UI control
-    uniforms.u_fillOutDomain=0; //temp
-  }
+    //
+    // turn off the generator drawing inside of domain builder
+    //
+    drawEdgesOfFD(context, transform) {
+        
+        if(DEBUG) console.log(`${MYNAME}.drawEdgesOfFD()`);
+        let gm = this.groupMaker;
+        let gp = gm.getGroup();
+        let fd = [...gp.s, ...gp.i];
+        let ap = this.activeFDPart; // -1 if nothing active
+        //not yet clear what form this should have if a cone point
+        let color,
+        width,
+        shadowwidth;
+
+        // need to write fd's for spherical and euclidean
+        if (gm.curvature < 0) {
+            color = this.styles.activeColor.color;
+            width = this.styles.activeColor.width;
+            shadowwidth = 5;
+            if (ap >= 0) {
+                iDrawSplane(fd[ap][0], context, transform, {
+                    lineStyle: color,
+                    shadowStyle: "#00007733",
+                    lineWidth: width,
+                    shadowWidth: shadowwidth
+                });
+            }
+
+            var i;
+            this.FDPoints = [];
+            for (i = 0; i < fd.length; i++) {
+                color = this.styles[fd[i][0].label[0]].color;
+                width = this.styles[fd[i][0].label[0]].width;
+                shadowwidth = 4;
+                this.FDPoints.push(
+                    iDrawSplane(fd[i][0], context, transform, {
+                        lineStyle: color,
+                        shadowStyle: "#00007733",
+                        lineWidth: width,
+                        shadowWidth: shadowwidth
+                    }));
+            }
+        }
+    }  // drawEdgesOfFD(context, transform) {
+    
+    
+    getUniforms(uniforms){
+        // just for extra UI control
+        uniforms.u_fillOutDomain=0; //temp
+    }
 }
 
 

@@ -15,6 +15,7 @@ export {
     DefaultDomainBuilder,
     iPlane, 
     iSphere,
+    iPoint,
     sin,
     cos, 
     sqrt, 
@@ -33,10 +34,12 @@ export {
     hexToRGBA,
     premultColor, 
     addLineNumbers, 
-    CanvasTransform, 
     abs, 
     add, 
     mul, 
+    sub,
+    eLength,
+
     cBand2Disk, 
     cDisk2Band, 
     cDiv, 
@@ -46,17 +49,22 @@ export {
     iGetFactorizationU4,
     iInverseTransformU4,  
     iPackTransforms,
-    iPoint, 
     iReflectU4,
     iTransformU4,
     GroupUtils,
     iDrawSplane,
     getCanvasPnt, 
+    iDifferenceU4,
+    iGetBisectorU4, 
+    iGetBisectorH4, 
+    isProperReflection,
+    //CanvasTransform,    // to use with InversiveNavigator_v0
 } from '../../../lib/invlib/invlib.js';
 
 export {
     buildProgramsCached,
     getWebGLContext,
+    CanvasTransform, // to use with InversiveNavigator_v1
 } from '../../../lib/symhublib/modules.js';
 
 export {
@@ -64,10 +72,18 @@ export {
 } from './GroupRenderer.js';
 
 export {
-  createInternalWindow, 
-  resizeCanvas,
-  getPixelRatio,
-  
+    createInternalWindow, 
+    resizeCanvas,
+    getPixelRatio,
+    ParamFloat,
+    ParamFunc,
+    ParamBool,
+    ParamChoice,
+    ParamString,
+    createParamUI,
+    setParamValues,
+    getParamValues,
+    
 } from '../../../lib/uilib/modules.js'
 
 export {

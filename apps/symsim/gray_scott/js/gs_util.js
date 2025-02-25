@@ -165,7 +165,7 @@ function drawGrayScottImage(gl, blitMaker, program, target, simBuffer){
     gl.viewport(0,0,width, height);
   
     // map [-1,1] into [0,1] 
-    let ctUni = { uAspect: (height/width), uScale: 0.5, uCenter: [0.5,0.5] };
+    let ctUni = { u_aspect: (height/width), u_scale: 0.5, u_center: [0.5,0.5] };
     program.setUniforms(ctUni);
 
     let texUni = {uSimBuffer: simBuffer};
@@ -187,7 +187,7 @@ function drawGrayScottImage2(gl, blitMaker, program, target, simBuffer, params){
     gl.viewport(0,0,width, height);
   
     // map [-1,1] into [0,1] 
-    let ctUni = { uAspect: (height/width), uScale: 0.5, uCenter: [0.5,0.5] };
+    let ctUni = { u_aspect: (height/width), u_scale: 0.5, u_center: [0.5,0.5] };
     program.setUniforms(ctUni);
 
     let visualComponent = getParam(params.component, 1);
