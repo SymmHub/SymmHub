@@ -63,7 +63,7 @@ uniform int u_texPermutationsBase;
 #define USE_MOEBIUS_TRANSFORM 1
 
 #ifdef USE_MOEBIUS_TRANSFORM
-uniform float uMoebiusTransformData[TRANSFORM_DATA_SIZE];  // moebius transforms data 
+uniform float u_moebiusTransformData[TRANSFORM_DATA_SIZE];  // moebius transforms data 
 #endif 	
 
 uniform int u_projection;
@@ -426,9 +426,9 @@ vec4 getColor(vec2 p){
 
   #ifdef USE_SAMPLER
     //  TODO replace with Sampler code 
-    transformPoint(p3, uMoebiusTransformData, scale);
+    transformPoint(p3, u_moebiusTransformData, scale);
   #else 
-    transformPoint(p3, uMoebiusTransformData, scale);
+    transformPoint(p3, u_moebiusTransformData, scale);
   #endif   
   
   // point in transformed coordinates 
