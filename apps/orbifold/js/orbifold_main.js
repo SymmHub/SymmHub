@@ -7,12 +7,13 @@ import {
     GroupRenderer,
     WallPaperGroup_General,
     SymmetryUIController,
+    InversiveNavigator,
 }
 from './modules.js';
 
-import {
-    InversiveNavigator
-} from './InversiveNavigator_v1.js';
+//import {
+    //InversiveNavigator
+//} from './InversiveNavigator_v1.js';
 //} from './InversiveNavigator_v0.js';
 
 import {

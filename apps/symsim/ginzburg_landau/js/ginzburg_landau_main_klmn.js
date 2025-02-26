@@ -3,6 +3,7 @@ import {
     GinzburgLandauSimulationCreator,
     Group_KLMN,
     makeSamplesArray,
+    InversiveNavigator
     
 }
 from './modules.js';
@@ -17,6 +18,7 @@ try {
         simCreator: GinzburgLandauSimulationCreator,
         samples: makeSamplesArray(presets, 'presets/klmn/'),
         groupMaker:  new Group_KLMN(), // maker of the groups
+        navigator: new InversiveNavigator(),
     });
     ss.run();
 } catch (err) {

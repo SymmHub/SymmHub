@@ -3,6 +3,7 @@ import {
     GinzburgLandauSimulationCreator,
     Group_WP,
     makeSamplesArray,
+    InversiveNavigator,
 }
 from './modules.js';
 
@@ -16,6 +17,7 @@ from './presets_wp.js';
         simCreator: GinzburgLandauSimulationCreator,
         samples: makeSamplesArray(presets, 'presets/wp/'),
         groupMaker:  new Group_WP({type: '2222',a: 0.4}), // maker of the groups
+        navigator:  new InversiveNavigator(),
     });
     ss.run();
 //} catch (err) {

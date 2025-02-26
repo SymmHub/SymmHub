@@ -65,7 +65,8 @@ export {
     buildProgramsCached,
     getWebGLContext,
     CanvasTransform, // to use with InversiveNavigator_v1
-} from '../../../lib/symhublib/modules.js';
+    InversiveNavigator, 
+} from '../../../lib/symhublib/symhublib.js';
 
 export {
     GroupRenderer,

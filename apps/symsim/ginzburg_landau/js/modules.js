@@ -40,7 +40,8 @@ export {
     initFragments,
     appendThumbnails,
     makeSamplesArray,    
-    
+    InversiveNavigator,
+
 }
 from '../../../../lib/symhublib/symhublib.js';
 
@@ -50,7 +51,6 @@ export {
     GroupUtils,
     isDefined,
     sqrt,
-    InversiveNavigator,
 } from '../../../../lib/invlib/invlib.js';
 
 export {

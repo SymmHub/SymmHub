@@ -1,0 +1,130 @@
+{
+  "name": "3333_b",
+  "params": {
+    "className": "GroupRenderer",
+    "params": {
+      "view": {
+        "className": "InversiveNavigator",
+        "params": {
+          "hasGrid": false,
+          "projection": "circle",
+          "offsetZ": 0,
+          "zoom": [
+            0.9164937785463454
+          ],
+          "position": [
+            -0.009531799899416387,
+            0.022789290994088662
+          ],
+          "transforms": [
+            {
+              "v": [
+                -45.42616062780423,
+                12.503120086468941,
+                0.00007907193804834103,
+                47.104819142462254
+              ],
+              "type": 1
+            },
+            {
+              "v": [
+                -34.32146996171149,
+                -33.28992106723686,
+                0.000011838513981673938,
+                47.803578639292404
+              ],
+              "type": 1
+            }
+          ],
+          "expScale": {
+            "enabled": false,
+            "a1x": 1,
+            "a1y": 0,
+            "a2x": 0,
+            "a2y": 1,
+            "n1": 1,
+            "n2": 0
+          }
+        }
+      },
+      "group": {
+        "className": "WallPaperGroup_General",
+        "params": {
+          "name": "3333",
+          "tube_1_l": 3.24,
+          "tube_1_t": 0.4
+        }
+      },
+      "config": {
+        "className": "GroupRendererConfig",
+        "params": {
+          "background": "#FFFFFF",
+          "glBackground": "#00000000",
+          "lineColor": "#000000FF",
+          "errorColor": "#FF00AAFF",
+          "domainColor": "#FF000077",
+          "lineWidth": 1,
+          "tileColors": [
+            "#800000FF",
+            "#FF0000FF"
+          ],
+          "symmetry": true,
+          "fill": false,
+          "texture": true,
+          "texCrown": true,
+          "texCrownFactor": 1,
+          "lines": false,
+          "domain": false,
+          "iterations": 50
+        }
+      },
+      "pattern": {
+        "className": "PatternTextures",
+        "params": {
+          "showUI": true,
+          "textures": [
+            {
+              "active": true,
+              "name": "haeckel 14",
+              "alpha": 1,
+              "scale": 0.23302428840438952,
+              "angle": 135.93561474349056,
+              "center": [
+                -0.04604667596676752,
+                -0.001507236416726218
+              ]
+            },
+            {
+              "active": false,
+              "name": "leaf",
+              "alpha": 1,
+              "scale": -0.3538525020118192,
+              "angle": -66.81305821987941,
+              "center": [
+                -0.33752430334431954,
+                0.12895992376603016
+              ]
+            },
+            {
+              "active": false,
+              "name": "leaf",
+              "alpha": 1,
+              "scale": 0,
+              "angle": 0,
+              "center": [
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      },
+      "domain": {
+        "className": "DefaultDomainBuilder",
+        "params": {
+          "showBaseGens": false
+        }
+      }
+    }
+  }
+}
