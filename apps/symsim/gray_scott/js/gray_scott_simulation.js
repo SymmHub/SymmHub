@@ -34,7 +34,7 @@ import {
 const debug = false;
 
 
-const myName = 'Gray-Scott';
+const MYNAME = 'Gray-Scott';
 //const GrayScottPresets = GsPresets;
 
 const fragGsSimulation     = {obj:GS,id:'grayScottShader'};
@@ -179,7 +179,7 @@ function GrayScottSimulation(){
     function init(context) {
 
         if (debug)
-            console.log(myName + '.init()', context);
+            console.log(MYNAME + '.init()', context);
         glCtx = context;
         let res = initFragments(gsFragments);
 
@@ -317,7 +317,7 @@ function GrayScottSimulation(){
 
   function scheduleRepaint(){
     
-    //if(debug)console.log('scheduleRepaint()', myName);
+    //if(debug)console.log('scheduleRepaint()', MYNAME);
     gNeedTexRender = true;
     informListeners();
     
@@ -328,7 +328,7 @@ function GrayScottSimulation(){
   //
   function onClearSimUni(){
     
-    if(debug)console.log(`${myName}.onClearSimIni()`);
+    if(debug)console.log(`${MYNAME}.onClearSimIni()`);
     let uv = gs_uniformUV(config.feedCoeff, config.killCoeff);
     clearSimBuffer([uv[0],uv[1],0,1]);
     scheduleRepaint();
@@ -612,19 +612,19 @@ function GrayScottSimulation(){
     
   function addEventListener(evtType, listener){
       
-    if(debug)console.log(`${myName}.addEventListener(${evtType}, ${listener})`);            
+    if(debug)console.log(`${MYNAME}.addEventListener(${evtType}, ${listener})`);            
     gEventDispatcher.addEventListener(evtType, listener);
     
   }
   
   function handleEvent(evt){
-    if(false)console.log(`${myName}.handleEvent(evt)`);            
+    if(false)console.log(`${MYNAME}.handleEvent(evt)`);            
       
   }
     
   function getSimBuffer(){
     
-    if(debug)console.log(`${myName}.getSimBuffer()`);            
+    if(debug)console.log(`${MYNAME}.getSimBuffer()`);            
     return gSimBuffer;
     
   }
@@ -652,7 +652,7 @@ function GrayScottSimulation(){
   //
   function clearSimUni(){
     
-    if(debug)console.log(`${myName}.onClearSimIni()`);
+    if(debug)console.log(`${MYNAME}.onClearSimIni()`);
     let uv = gs_uniformUV(config.feedCoeff, config.killCoeff);
     clearSimBuffer([uv[0],uv[1],0,1]);
     scheduleRepaint();
@@ -664,7 +664,7 @@ function GrayScottSimulation(){
   //
   function clearSim10(){
     
-    if(debug)console.log(`${myName}.onClearSim10()`);
+    if(debug)console.log(`${MYNAME}.onClearSim10()`);
     clearSimBuffer([1,0,0,1]);
     scheduleRepaint();
   }
@@ -674,7 +674,7 @@ function GrayScottSimulation(){
   //
   function applyNoise(){
     
-    if(debug)console.log(`${myName}.applyNoise()`);
+    if(debug)console.log(`${MYNAME}.applyNoise()`);
     
     let gl = glCtx.gl;
     let program = progGsNoise1.program;
@@ -712,10 +712,10 @@ function GrayScottSimulation(){
   function applySymNoise(){
     
     let group = gGroup;
-    if(debug)console.log(`${myName}.onSymNoise() group:`, group);
+    if(debug)console.log(`${MYNAME}.onSymNoise() group:`, group);
     let noiseCfg = config.noise;    
     let gens = group.getReverseITransforms();
-    if(debug)console.log(`${myName}.gens:`, gens);
+    if(debug)console.log(`${MYNAME}.gens:`, gens);
     let trans = GroupUtils.makeTransforms(gens, {maxWordLength: noiseCfg.noiseCrownWordCount});
     //console.log('trans.length:', trans.length);    
     //console.log('trans:', trans);
@@ -732,7 +732,7 @@ function GrayScottSimulation(){
     program.setUniforms(ctUni);
     
     let fd = group.getFundDomain();
-    if(debug) console.log(`${myName}.fd:`, fd);    
+    if(debug) console.log(`${MYNAME}.fd:`, fd);    
     let crownDataSampler = DataPacking.createGroupDataSampler(gl);    
     DataPacking.packGroupToSampler(gl, crownDataSampler, {s: fd, t:trans});
           
@@ -772,7 +772,7 @@ function GrayScottSimulation(){
     //
     function applySymmetry(){
 
-        if(false)console.log(`${myName}.applySymmetry()`);
+        if(false)console.log(`${MYNAME}.applySymmetry()`);
         let symCfg    = config.symmetry;
         let program   = progSymSampler.program;
 
@@ -802,13 +802,13 @@ function GrayScottSimulation(){
     }
 
     function onSymmetryChanged(){
-        if(debug)console.log(`${myName}.onSymmetryChanged()`);
+        if(debug)console.log(`${MYNAME}.onSymmetryChanged()`);
         scheduleRepaint();
     }
 
     function onDoStep(){
         
-        if(debug)console.log(`${myName}.onDoStep()`);
+        if(debug)console.log(`${MYNAME}.onDoStep()`);
                 
         let gl = glCtx.gl;      
         
@@ -880,7 +880,7 @@ function GrayScottSimulation(){
           }                  
         }
         
-        if(debug)console.log(`${myName}.config.symmetry.symSim: `, config.symmetry.symSim);
+        if(debug)console.log(`${MYNAME}.config.symmetry.symSim: `, config.symmetry.symSim);
         if(config.symmetry.symSim && sInterval != config.symmetry.symInteval){
             
           if(false)console.log(`symInterval: ${symInterval} last applySymmetry()`);
@@ -961,7 +961,7 @@ function GrayScottSimulation(){
 
     function setGroup(group){
       
-        if(debug)console.log(`${myName}.setGroup()`);      
+        if(debug)console.log(`${MYNAME}.setGroup()`);      
         gGroup = group;
         DataPacking.packGroupToSampler(glCtx.gl, gGroupDataSampler, gGroup); 
         scheduleRepaint();
@@ -975,26 +975,26 @@ function GrayScottSimulation(){
 
     function getImage(){
       
-        if(debug)console.log(`${myName}.getImage()`);            
+        if(debug)console.log(`${MYNAME}.getImage()`);            
       
     }
   
     function doStep(){
       
-        if(debug)console.log(`${myName}.doStep()`);                  
+        if(debug)console.log(`${MYNAME}.doStep()`);                  
         onDoStep();
     
     }
 
     //function repaint(){
       
-    //    if(debug)console.log(`${myName}.repaint()`);                  
+    //    if(debug)console.log(`${MYNAME}.repaint()`);                  
     
     //}
   
     function getPlotData(){
       
-        if(debug)console.log(`${myName}.getPlotData()`);                  
+        if(debug)console.log(`${MYNAME}.getPlotData()`);                  
       
     } 
   
@@ -1009,7 +1009,7 @@ function GrayScottSimulation(){
 
     var myself = {
       
-        getName: ()=>{return myName;},
+        getName: ()=>{return MYNAME;},
         init: init,
         setGroup: setGroup,
         getGroupData: getGroupData,
@@ -1041,7 +1041,8 @@ const GrayScottSimulationCreator = {
     //  create new simulation 
     //
     create: ()=> {return GrayScottSimulation();},
-    getName: () => {return myName;},
+    getName: () => {return MYNAME;},
+    getClassName: () => {return MYNAME;},
     
 }
 
