@@ -1,0 +1,59 @@
+ul, #myUL {
+  list-style-type: none;
+  padding-inline-start: 10px;
+}
+
+#myUL {
+  margin: 0;
+  padding: 0;
+}
+
+.caret {
+  /*cursor: pointer;*/
+  /*user-select: none;*/
+}
+
+.tree_node_clickable {
+  cursor: pointer;
+  background-color: #DFDFDF;
+  
+  /*user-select: none;*/
+}
+
+.caret::before {
+  font-size: 0.7em; 
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.folder-arrow-right {
+  font-size: 0.8em; 
+  content: "\25B6";
+  color: black;
+  cursor: pointer;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.folder-arrow-down {
+  transform: rotate(90deg);  
+}
+
+.caret-down::before {
+  transform: rotate(90deg);  
+}
+
+.nested {
+  display: none;
+}
+
+.active {
+  display: block;
+}
+
+.selected-node {
+  
+  background-color: #AAF;
+}
