@@ -269,8 +269,11 @@ function GrayScottSimulation(){
   function onPresetChanged(){
     
     let set = GrayScottPresets[config.preset];
-    
-    setParamsFromPlot([set.feed,set.kill]);
+    if(isDefined(set)){
+        if(isDefined(set.feed) && isDefined(set.kill)){
+            setParamsFromPlot([set.feed,set.kill]);
+        }
+    }
         
   }
   
@@ -279,7 +282,7 @@ function GrayScottSimulation(){
   }
   
   //
-  // create simulation double buffewr and visualizaiton texture buffer 
+  // create simulation double buffer and visualizaiton texture buffer 
   //
   function initBuffers(){
 

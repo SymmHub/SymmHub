@@ -930,6 +930,11 @@ export class GroupRenderer {
             });
         }
     } // onStartAnimationExport()
+    
+    getGroup(){
+        //let gm = this.groupMaker.get
+        return null;
+    }
 
 } // class GroupRenderer
 
