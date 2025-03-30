@@ -36,7 +36,7 @@ import {
 const DEBUG = true;
 
 
-const MY_NAME = 'Ginzburg-Landau';
+const MYNAME = 'Ginzburg-Landau';
 const Presets = GinzburgLandauPresets;
 
 const INIT_TYPE_CLEAR = 'clear';
@@ -214,7 +214,7 @@ function GinzburgLandauSimulation(){
     function init(context) {
 
         if (DEBUG)
-            console.log(MY_NAME + '.init()', context);
+            console.log(MYNAME + '.init()', context);
         glCtx = context;
         let res = initFragments(gsFragments);
 
@@ -359,7 +359,7 @@ function GinzburgLandauSimulation(){
 
   function scheduleRepaint(){
     
-    //if(DEBUG)console.log('scheduleRepaint()', MY_NAME);
+    //if(DEBUG)console.log('scheduleRepaint()', MYNAME);
     gNeedTexRender = true;
     informListeners();
     
@@ -383,7 +383,7 @@ function GinzburgLandauSimulation(){
     function makeNoise(){
         
         
-        if(DEBUG)console.log(`${MY_NAME}.onReset()`, MY_NAME);
+        if(DEBUG)console.log(`${MYNAME}.onReset()`, MYNAME);
         let gl = glCtx.gl;      
         
         gl.disable(gl.BLEND);        
@@ -538,7 +538,7 @@ function GinzburgLandauSimulation(){
     
     function initGUI(folder){
       
-        if(DEBUG)console.log(`${MY_NAME}.initGUI()`);      
+        if(DEBUG)console.log(`${MYNAME}.initGUI()`);      
         
         m_guiFolder = folder;
         
@@ -691,7 +691,7 @@ function GinzburgLandauSimulation(){
     
     
     function onAlphaBetaChanged(){
-        console.log('onAlphaBetaChanged()');
+        if(false)console.log('onAlphaBetaChanged()');
     }
     
     function getInternalBufferData(){
@@ -760,19 +760,19 @@ function GinzburgLandauSimulation(){
     
   function addEventListener(evtType, listener){
       
-    if(DEBUG)console.log(`${MY_NAME}.addEventListener(${evtType}, ${listener})`);            
+    if(DEBUG)console.log(`${MYNAME}.addEventListener(${evtType}, ${listener})`);            
     gEventDispatcher.addEventListener(evtType, listener);
     
   }
   
   function handleEvent(evt){
-    if(DEBUG)console.log(`${MY_NAME}.handleEvent(evt)`);            
+    if(DEBUG)console.log(`${MYNAME}.handleEvent(evt)`);            
       
   }
     
   function getSimBuffer(){
     
-    if(false)console.log(`${MY_NAME}.getSimBuffer()`);            
+    if(false)console.log(`${MYNAME}.getSimBuffer()`);            
     return gSimBuffer;
     
   }
@@ -782,7 +782,7 @@ function GinzburgLandauSimulation(){
     //
     function applySymmetry(){
 
-        if(false)console.log(`${MY_NAME}.applySymmetry()`);
+        if(false)console.log(`${MYNAME}.applySymmetry()`);
         let symCfg = mConfig.symmetry;
         let iteration = symCfg.symIterations;
         let symMix = symCfg.symMix;
@@ -815,7 +815,7 @@ function GinzburgLandauSimulation(){
     }
 
     function onSymmetryChanged(){
-        if(DEBUG)console.log(`${MY_NAME}.onSymmetryChanged()`);
+        if(DEBUG)console.log(`${MYNAME}.onSymmetryChanged()`);
         scheduleRepaint();
     }
     
@@ -823,7 +823,7 @@ function GinzburgLandauSimulation(){
     
     function onStep(){
         
-        if(false)console.log(`${MY_NAME}.onStep()`);
+        if(false)console.log(`${MYNAME}.onStep()`);
                 
         let gl = glCtx.gl;      
         
@@ -875,7 +875,7 @@ function GinzburgLandauSimulation(){
                               
         }
         
-        //if(DEBUG)console.log(`${MY_NAME}.mConfig.symmetry.symSim: `, mConfig.symmetry.symSim);
+        //if(DEBUG)console.log(`${MYNAME}.mConfig.symmetry.symSim: `, mConfig.symmetry.symSim);
         if(mConfig.symmetry.symSim)
           applySymmetry();
                     
@@ -890,7 +890,7 @@ function GinzburgLandauSimulation(){
 
     function setGroup(group){
       
-        if(DEBUG)console.log(`${MY_NAME}.setGroup()`);      
+        if(DEBUG)console.log(`${MYNAME}.setGroup()`);      
         gGroup = group;
         DataPacking.packGroupToSampler(glCtx.gl, gGroupDataSampler, gGroup); 
         scheduleRepaint();
@@ -899,20 +899,20 @@ function GinzburgLandauSimulation(){
       
     function doStep(){
       
-        if(false)console.log(`${MY_NAME}.doStep()`);                  
+        if(false)console.log(`${MYNAME}.doStep()`);                  
         onStep();
     
     }
 
     //function _repaint(){
       
-    //    if(DEBUG)console.log(`${MY_NAME}.repaint()`);                  
+    //    if(DEBUG)console.log(`${MYNAME}.repaint()`);                  
     
     //}
   
     function getPlotData(){
       
-        if(DEBUG)console.log(`${MY_NAME}.getPlotData()`);                  
+        if(DEBUG)console.log(`${MYNAME}.getPlotData()`);                  
       
     } 
     
@@ -926,7 +926,7 @@ function GinzburgLandauSimulation(){
 
     var myself = {
       
-        getName: ()=>{return MY_NAME;},
+        getName: ()=>{return MYNAME;},
         init: init,
         setGroup: setGroup,
         addEventListener: addEventListener,
@@ -940,7 +940,6 @@ function GinzburgLandauSimulation(){
         applySymmetry: applySymmetry,
         initSimulation:  initSimulation,
         getParams:       getParams,
-        
     };
   
     return myself;
@@ -953,7 +952,8 @@ const GinzburgLandauSimulationCreator = {
     //  create new simulation 
     //
     create: ()=> {return GinzburgLandauSimulation();},
-    getName: () => {return MY_NAME;},
+    getName: () => {return MYNAME;},
+    getClassName: ()=>{return MYNAME;}
     
 }
 

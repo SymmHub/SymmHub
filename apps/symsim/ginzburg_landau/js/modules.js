@@ -73,7 +73,7 @@ export {
     createParamUI,
     getParamValues,
     setParamValues,
-    updateParamsDisplay,
+    updateParamDisplay,
     createInternalWindow,
     createImageSelector,
     createPresetsFilesFilter,
