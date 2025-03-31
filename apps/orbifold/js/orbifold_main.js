@@ -138,10 +138,6 @@ var grouphandler = new WallPaperGroup_General({
 const MyTextures = Textures.t1.concat(Textures.t2);
 
 
-// assemble the various shaders; these can be traced back to 
-// shaders/modules.js
-
-
 const fragComplex           = { obj: OF, id:'complex'};
 const fragFSMain            = { obj: OF, id:'fsMain'};
 const fragGeneralGroupMain  = { obj: OF, id:'generalGroupMain_v2'};
@@ -153,29 +149,27 @@ const vertexShader = {
     frags: [fragVertexShader],
 };
 
+
 const progSymRenderer = {
     name:   'SymRenderer', 
     vs:     vertexShader,
     fs: { 
-        frags: [  // listed in this order
+        frags: [ 
             fragFSMain,
             fragInversive,
             fragComplex,
             fragPatternTextures,
             fragGeneralGroupMain,
             ]},  
-}; 
-
-// multiple programs can be used here
+};
 
 const orbPrograms = {
     symRenderer: progSymRenderer,
 };
 
 const myDomainBuilder = new DomainBuilder({
-        MAX_GEN_COUNT:       40,
-        MAX_REF_COUNT:       60, 
-        MAX_TOTAL_REF_COUNT: 120,
+        MAX_GEN_COUNT:       20,
+        MAX_TOTAL_REF_COUNT: 30,
         USE_PACKING:        true
     });
     
