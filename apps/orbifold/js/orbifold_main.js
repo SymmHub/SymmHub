@@ -145,6 +145,7 @@ const fragInversive         = { obj: OF, id:'inversive'};
 const fragPatternTextures   = { obj: OF, id:'patternTextures'};
 const fragVertexShader      = { obj: OF, id:'vertexShader'};
 
+const fragNewGeneralGroupMain = { obj: OF, id:'generalGroupMain_test'};
 const vertexShader = {
     frags: [fragVertexShader],
 };
@@ -163,8 +164,26 @@ const progSymRenderer = {
             ]},  
 };
 
+const progLayerRenderer = {
+    name:   'layerRenderer', 
+    vs:     vertexShader,
+    fs: { 
+        frags: [ 
+            fragFSMain,
+            fragInversive,
+            fragComplex,
+            fragPatternTextures,
+            fragNewGeneralGroupMain,
+            ]},  
+};
+
+
+
+
+
 const orbPrograms = {
     symRenderer: progSymRenderer,
+    layerRenderer:progLayerRenderer,
 };
 
 const myDomainBuilder = new DomainBuilder({

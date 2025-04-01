@@ -5,6 +5,11 @@ import { inversive }        from './inversive.glsl.mjs';
 import { patternTextures }  from './patternTextures.glsl.mjs';
 import { vertexShader }     from './vertexShader.glsl.mjs';
 
+// new stuff
+import { generalGroupMain_test} from './generalGroupMain_test.glsl.mjs';
+
+
+
 const MyName = 'OrbifoldFragments';
 
 const OrbifoldFragments = {
@@ -17,6 +22,8 @@ const OrbifoldFragments = {
     inversive,
     patternTextures,
     vertexShader,
+// new pieces
+    generalGroupMain_test
 };
 
 

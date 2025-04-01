@@ -561,13 +561,24 @@ export class GroupRenderer {
             console.log('programs: ', this.programs);
         }
 
-        let pr = this.programs.symRenderer.program;
+       /* let pr = this.programs.symRenderer.program;
         
         pr.bind();
         pr.setUniforms(un);
         pr.blit(null);   // render program on canvas 
+        */
+        let pr2 = this.programs.layerRenderer.program;
+        
+        pr2.bind();
+        pr2.setUniforms(un);
+        pr2.blit(null);   // render program on canvas 
         
         
+
+
+
+
+
         // render overlay
         
         var canvas = this.mCanvas.overlay;
