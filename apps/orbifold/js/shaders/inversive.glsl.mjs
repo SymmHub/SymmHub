@@ -709,7 +709,7 @@ void initCrown(in float transData[CROWN_DATA_SIZE], // array of raw transform da
 
 
 //
-//  apply moebius transform to the point 
+//  apply series of inversions to the point 
 //
 void transformPoint(inout vec3 v, float td[TRANSFORM_DATA_SIZE], inout float ss){
 

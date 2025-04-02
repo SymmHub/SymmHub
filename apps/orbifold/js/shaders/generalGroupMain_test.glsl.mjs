@@ -12,7 +12,9 @@ export const generalGroupMain_test =
 #define TILE_COLOR_COUNT 2
 #endif 
 
-//general reflection group params 
+///////////////////////////////////
+////general reflection group params 
+
 uniform int u_iterations;
 uniform int u_hasSymmetry;
 uniform int u_drawFill;
@@ -31,10 +33,24 @@ uniform vec4 u_lineColor;
 uniform vec4 u_errorColor; 
 uniform vec4 u_tileColors[TILE_COLOR_COUNT]; 
 
+
+/////////////////////////
+// 
+// Transform info
+//
+// These constants are set when the defines are 
+// constructed, dispatched through getDefines in 
+// local library /GroupRenderer.js. 
+// They are assembled in buildProgramsCached in 
+// ../../lib/invlib/program_loader.js
+// Most of the defines we care
+// about are added in by ../../lib/invlib/defaultDomainBuilder
+// which in turn will pull them from orbifold_main.js
+// (TODO There's some gap, because changing them there leads to a crash)
+
 uniform int u_genCount;  // count of group generators 
 
 uniform float u_domainData[DOMAIN_DATA_SIZE];
-
 
 uniform int u_domainCount[MAX_GEN_COUNT];
 uniform int u_groupCumRefCount[MAX_GEN_COUNT];
@@ -44,14 +60,13 @@ uniform int u_texCrownCount;   // count of transforms in the crown
 uniform float u_texCrownData[CROWN_DATA_SIZE];  // crown transforms data 
 uniform int u_texCrownRefCount[MAX_CROWN_COUNT];          // reflections count per transform
 
+// a global transformation of the plane, a sequence of inversions
 
+uniform float u_moebiusTransformData[TRANSFORM_DATA_SIZE];  
 
+// TRANSFORM_DATA_SIZE is the max size a transform may have, 
+//= MAX_REF_COUNT*SPLANE_DATA_SIZE
 
-#define USE_MOEBIUS_TRANSFORM 1
-
-#ifdef USE_MOEBIUS_TRANSFORM
-uniform float u_moebiusTransformData[TRANSFORM_DATA_SIZE];  // moebius transforms data 
-#endif 	
 
 uniform int u_projection;
 // scale to apply after projection 
@@ -60,27 +75,15 @@ uniform vec2 u_cScale;
 
 
 void init(void){
-    
 }
 
-/**
-  conversion from array coordinates to texture coordinates 
-*/
+
+// conversion from array coordinates to texture coordinates 
 vec2 toTexCoord(vec2 arrayCoord, vec2 texScale){
   
   return (arrayCoord + vec2(0.5,0.5))*texScale;
 }
 
-/**
-  return splane read from sampler data 
-*/
-iSPlane getSplaneFromTex(sampler2D data, vec2 texScale,int offset){
-  
-  vec4 sdata = texture(data, toTexCoord(vec2(float(offset),0), texScale));
-  int stype = int(texture(data, toTexCoord(vec2(float(offset + 1),0), texScale)).x);  
-  return iGeneralSplane(sdata, stype);
-  
-}
 
 /**
   return one value from texture at given offset 
@@ -100,38 +103,6 @@ vec2 getTexScale(sampler2D data){
     
 }
 
-/**
-  calculate contribution of textures from the crown . group data stored in sampler2D 
-*/
-vec4 getCrownTextureSampler(vec3 pnt, sampler2D groupData, int groupOffset, float scale){
-  
-	vec4 color = vec4(0,0,0,0);
-  vec2 texScale = getTexScale(groupData);
-  
-  int domainOffset = int(getValueFromTex(groupData, texScale, groupOffset).x);
-  int domainSize = int(getValueFromTex(groupData, texScale, domainOffset).x);
-  int transformsOffset = int(getValueFromTex(groupData, texScale, groupOffset+1).x);
-  
-  for(int g = 0; g < domainSize; g++){
-    // remember the original point and scale 
-		vec3 v  = pnt;  
-		float ss = scale;
-
-    int transformOffset = int(getValueFromTex(groupData, texScale, transformsOffset + g + 1).x);
-    int refCount = int(getValueFromTex(groupData, texScale, transformOffset).x);
-    int transformSplanesOffset = transformOffset+1;
-
-    for(int r = 0; r  < refCount; r++){
-      
-      iSPlane rsp = getSplaneFromTex(groupData,texScale, transformSplanesOffset + r*2); 
-      iReflect(rsp, v, ss);
-    }
-		overlay(color, getTexture(v, ss));					
-  }
-  
-	return color;
-    
-}
   
 vec4 getCrownTexturePacked(vec3 pnt, 
                     //float cd[CROWN_DATA_SIZE], // transforms data 
@@ -165,35 +136,6 @@ vec4 getCrownTexturePacked(vec3 pnt,
 	return color;
 }
 
-vec4 getCrownTexture(vec3 pnt, 
-                    //float cd[CROWN_DATA_SIZE], // transforms data 
-                    float cd[TRANSFORMS_DATA_SIZE], // transforms data 
-                    //int rc[MAX_CROWN_COUNT],  // reflection counts per transform 
-                    int rc[MAX_GEN_COUNT],  // reflection counts per transform 
-                    int count, // count of transforms 
-                    float scale  // scale to use 
-                    ){
-	
-	vec4 color = vec4(0,0,0,0);
-
-	for(int g = 0; g < count; g++){
-		int rCount = rc[g];
-		
-		vec3 v  = pnt;  
-		float ss = scale;
-		// apply transform g
-		for(int r = 0; r  < rCount; r++){
-			#define RIND (5*(g*MAX_REF_COUNT + r))
-			iSPlane splane = iGeneralSplane(vec4(cd[RIND], cd[RIND+1], cd[RIND+2], cd[RIND+3]), int(cd[RIND+4]));
-			iReflect(splane, v, ss);					
-			#undef RIND			
-		}
-		overlay(color, getTexture(v, ss));					
-	}
-	return color;
-}
-
-
 
 vec3 projectionExp(inout vec3 p, inout float scale){
   
@@ -206,58 +148,6 @@ vec3 projectionExp(inout vec3 p, inout float scale){
 
 
 
-/**
-  return color of interior of fund domain stored insid eof sampler ad given offest 
-  
-*/
-float iGetFundDomainInteriorDensitySampler(vec3 pnt, sampler2D groupData, int offset, float pixelSize){
-	  
-	float dens = 1.;
-  vec2 texScale = getTexScale(groupData);
-  int domainOffset = int(getValueFromTex(groupData, texScale, offset).x);
-  int count = int(getValueFromTex(groupData, texScale, domainOffset).x);
-  
-  int splanesOffset = domainOffset+1;
-  
-	for(int i =0; i < count; i++){
-    
-    iSPlane sp = getSplaneFromTex(groupData,texScale, splanesOffset + i*2);
-    dens *= iToDensity(iDistance(sp, pnt),pixelSize);				
-	}
-	
-	return dens;
-		
-}
-
-/**
-  return outline of fundamental domain sides 
-*/
-float iGetFundDomainOutlineSampler(vec3 pnt,  sampler2D groupData, int groupOffset, float lineWidth, float pixelSize){
-	
-  float dMax = 0.;
-  
-  vec2 texScale = getTexScale(groupData);
-  int domainOffset = int(getValueFromTex(groupData, texScale, groupOffset).x);
-  // splanes count 
-  int count = int(getValueFromTex(groupData, texScale, domainOffset).x);
-  // location of splanes array 
-  int splanesOffset = domainOffset+1;
-  
-	for(int i =0; i < count; i++){
-    
-    iSPlane sp = getSplaneFromTex(groupData,texScale, splanesOffset + i*2);
-    float d = abs(iDistance(sp, pnt));		
-    if(d < lineWidth){
-      float a = clamp((lineWidth-d)/pixelSize,0.,1.);			
-      dMax  = max(a, dMax);
-    }		
-		
-	}
-		
-	
-	return dMax;	
-	
-}
 
 vec4 getColor(vec2 p){
   
