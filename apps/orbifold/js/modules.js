@@ -58,6 +58,7 @@ export {
     iGetBisectorU4, 
     iGetBisectorH4, 
     isProperReflection,
+
     //CanvasTransform,    // to use with InversiveNavigator_v0
 } from '../../../lib/invlib/invlib.js';
 
@@ -66,6 +67,7 @@ export {
     getWebGLContext,
     CanvasTransform, // to use with InversiveNavigator_v1
     InversiveNavigator, 
+    createDoubleFBO,
 } from '../../../lib/symhublib/symhublib.js';
 
 export {

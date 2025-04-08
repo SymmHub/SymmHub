@@ -101,6 +101,10 @@ void overlay(inout vec4 ca, vec4 cb){
 	ca = (1.-cb.w)*ca + cb;
 }
 
+void layover(inout vec4 ca, vec4 cb){
+	ca = (1.-ca.w)*cb+ca;
+}
+
 void iCombineBoverA(inout vec4 ca, vec4 cb){
 	overlay(ca, cb);
 }
@@ -330,6 +334,9 @@ float iToFundamentalDomain(iFundamentalDomain fd, inout vec3 p, inout int inDoma
 	return dist;
 	
 }
+
+
+
 
 //
 //  transforms point into fundamental domain of inversive group 
@@ -798,6 +805,83 @@ void iToWalledFundamentalDomain(
 }
 
 
+
+int inDomainQ(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int domainCount[MAX_GEN_COUNT], int count, vec4 color, float pixelSize){
+	float d = 1.;
+	int ind;
+	int ii;
+	int insideQ = 1;
+	
+	for(int i =0; i < count && insideQ>0; i++){
+			int use = 0;//a priori, doesn't count against being inside
+
+			if(i==0){ii=0;}
+			else{ii=domainCount[i-1];}
+			ind = 5*ii;			
+			iSPlane sp = iGeneralSplane(vec4(sides[ind], sides[ind+1], sides[ind+2], sides[ind+3]), int(sides[ind+4]));      
+			float dd = iDistance(sp,pnt);
+			// are we on the inside of this wall?
+			// 
+			if(dd>0.*pixelSize){
+				// further check to see if this domain wall should even count:
+				// In other words, check against the bounds of the wall, if there are any
+				use = 1; // now presume that we do use this part of the fd
+				int n = domainCount[i]-ii;
+				for(int j=1; j<n && use>0; j++){
+					ind = 5*(ii+j);
+					sp = iGeneralSplane(vec4(sides[ind], sides[ind+1], sides[ind+2], sides[ind+3]), int(sides[ind+4]));      
+					if(iDistance(sp,pnt)<0.){
+						use = 0;// but if we ever fall outside, then we do not use this part.	
+						}
+				}
+				if(use>0){insideQ=0;}
+			}
+	}
+							
+	return insideQ;	
+}
+
+float getDist2Domain(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int domainCount[MAX_GEN_COUNT], int count, vec4 color, float pixelSize){
+	// if we are inside the domain (if all distances are negative), we want the greatest (negative) distance
+	// if we are on the outside (if any distance is positive), we want the smallest (positive) one.
+
+	int ind;
+	int ii;
+	float closestToWall = -1000.;
+	
+	for(int i =0; i < count ; i++){//note: a variable length loop!
+			if(i==0){ii=0;}
+			else{ii=domainCount[i-1];}
+			ind = 5*ii;			
+			iSPlane sp0 = iGeneralSplane(vec4(sides[ind], sides[ind+1], sides[ind+2], sides[ind+3]), int(sides[ind+4]));      
+			//let's check to see if we want to bother 
+			int use = 1;
+			for(int j=1; j<domainCount[i]-ii && use>0; j++){
+					ind = 5*(ii+j);
+					iSPlane sp = iGeneralSplane(vec4(sides[ind], sides[ind+1], sides[ind+2], sides[ind+3]), int(sides[ind+4]));      
+					if(iDistance(sp,pnt)<0.){
+						use = 0;// If we ever fall outside a bound, then we do not use this part.	
+					}
+				}//Coming out of this, we care iff use>0.
+
+				//If all previous dd's have been negative, we remain inside
+				// and we seek the smallest (in absolute value) negative closestToWall. Once a single dd is positive, we
+				// take the smallest positive closestToWall.
+			
+			if(use>0)
+			{
+				float dd = iDistance(sp0,pnt);
+				if(closestToWall<=0. && dd>closestToWall)
+				{
+					closestToWall = dd;
+				}
+				if(closestToWall>0. && dd>closestToWall && dd>=0.){
+					closestToWall = dd;
+				}
+			}	
+		}
+		return closestToWall;
+}
 
 //
 //

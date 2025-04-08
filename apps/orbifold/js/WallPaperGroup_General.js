@@ -361,6 +361,7 @@ export class WallPaperGroup_General {
                 // the third vertex should also be supplemented with a "wall".
                 // Coming out of assembleFundamentalDomain, this information is stashed as an
                 // additional pair of points at the end of the edge key;
+                // so, uhm, which way is positive?
                 for (var j = 2; j < this.assembledFD[0][1][i].length; j += 2) {
                     bound.push(sPlaneThrough(
                             this.assembledFD[0][1][i][j], this.assembledFD[0][1][i][j + 1]))

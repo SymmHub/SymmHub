@@ -22,7 +22,7 @@ import {
     getWebGLContext,
     resizeCanvas,
     getPixelRatio,
-    
+    createDoubleFBO,
 }
 
 from './modules.js';
@@ -118,6 +118,7 @@ export class GroupRenderer {
 
         this.programs = options.programs;
 
+        this.gSimBuffer = null;
         this.params = {
 
             groupParamChanged: true,
@@ -265,13 +266,17 @@ export class GroupRenderer {
     };
 
     //
-    //  return all uniforms needed for the rendering
+    //  return all uniforms needed for all of the rendering
     //
+    //  specific shaders select out the uniforms they need: these 
+    // are in orbifold_main.js
+
     getUniforms(un) {
 
         if (!isDefined(un))
             un = {};
         this.getExtUniforms(this.domainBuilder, un, this.timeStamp);
+            //domainBuilder delivers the fundamental domain, the group, etc.
         this.getExtUniforms(this.config, un, this.timeStamp);
         this.getExtUniforms(this.patternMaker, un, this.timeStamp);
         this.getExtUniforms(this.myNavigator, un, this.timeStamp);
@@ -557,22 +562,43 @@ export class GroupRenderer {
         let un = {}
         this.getUniforms(un);
         if(this.renderDebugCount && this.renderDebugCount-- > 0){
-            console.log('uniforms: ', un);            
+            console.log('uniforms: ', un);   
+            console.log('uniforms keys: ', Object.keys(un));           
             console.log('programs: ', this.programs);
         }
 
-       /* let pr = this.programs.symRenderer.program;
+
+        //make a buffer
+        // FDbuffer
+        let format = this.mGLCtx.gl.RG, intFormat = this.mGLCtx.gl.RG32F, texType = this.mGLCtx.gl.FLOAT;
+        let filtering = this.mGLCtx.gl.LINEAR;
+        this.gSimBuffer = createDoubleFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
+      
+        this.mGLCtx.gl.disable(this.mGLCtx.gl.BLEND);        
+        this.mGLCtx.gl.viewport(0, 0, this.gSimBuffer.width, this.gSimBuffer.height);      
         
+
+        let pr = this.programs.FDRenderer.program;
+        pr.bind();
+        let center = un.u_center; 
+        // this is the center of clip coords in math coords.
+        // For the intermediate buffer, it's much easier to keep this centered for now;
+        // once the position of the FD is calculated, this should shift over.
+        // un.u_FDcenter = un.u_center;  // MATH COORDS
+        //  keep the same zoom, or maybe increase the resolution.
+        
+        un.u_center = [0.0,0.0]; 
+        pr.setUniforms(un);
+        pr.blit(this.gSimBuffer.write);
+        this.gSimBuffer.swap();
+        
+        un['u_FDdata'] = this.gSimBuffer.read;
+        un.u_center = center;
+        pr = this.programs.patternFromFDRenderer.program;
         pr.bind();
         pr.setUniforms(un);
-        pr.blit(null);   // render program on canvas 
-        */
-        let pr2 = this.programs.layerRenderer.program;
-        
-        pr2.bind();
-        pr2.setUniforms(un);
-        pr2.blit(null);   // render program on canvas 
-        
+        pr.blit();   
+
         
 
 

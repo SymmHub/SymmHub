@@ -1,0 +1,161 @@
+{
+  "name": "23x",
+  "params": {
+    "className": "GroupRenderer",
+    "params": {
+      "view": {
+        "className": "InversiveNavigator",
+        "params": {
+          "projection": {
+            "className": "ProjectionTransform",
+            "params": {
+              "fpdMap": {},
+              "bandMap": {
+                "enabled": false
+              },
+              "logMap": {
+                "enabled": false
+              },
+              "periodicMap": {
+                "enabled": false,
+                "a1x": 1,
+                "a1y": 0,
+                "a2x": 0,
+                "a2y": 1,
+                "cx": 0,
+                "cy": 0
+              },
+              "expMap": {
+                "enabled": false
+              },
+              "loxMap": {
+                "enabled": false
+              },
+              "scaleMap": {
+                "enabled": false,
+                "a1x": 1,
+                "a1y": 0,
+                "a2x": 0,
+                "a2y": 1,
+                "n1": 10,
+                "n2": 0,
+                "x0": 0,
+                "y0": 0
+              },
+              "uhpMap": {
+                "enabled": false
+              },
+              "rationalMap": {
+                "enabled": false,
+                "x1": 1,
+                "y1": 0,
+                "n1": 1,
+                "x2": 0,
+                "y2": 1,
+                "n2": -1,
+                "x3": -1,
+                "y3": 0,
+                "n3": 1,
+                "x4": 0,
+                "y4": -1,
+                "n4": -1
+              }
+            }
+          },
+          "inversive": {
+            "enabled": true,
+            "itrans": []
+          },
+          "spherical": {
+            "enabled": false
+          },
+          "euclidean": {
+            "centerX": 0.7263807660712158,
+            "centerY": -0.2466979341736512,
+            "zoom": [
+              0.550130365863386
+            ]
+          }
+        }
+      },
+      "group": {
+        "className": "WallPaperGroup_General",
+        "params": {
+          "name": "32x",
+          "cap_1_l": 1.1004325400000001
+        }
+      },
+      "config": {
+        "className": "GroupRendererConfig",
+        "params": {
+          "background": "#FFFFFF",
+          "glBackground": "#00000000",
+          "lineColor": "#000000FF",
+          "errorColor": "#FF00AAFF",
+          "domainColor": "#FF000077",
+          "lineWidth": 0.02,
+          "maxlineWidth": 10,
+          "tileColors": [
+            "#800000FF",
+            "#FF0000FF"
+          ],
+          "symmetry": true,
+          "fill": true,
+          "texture": true,
+          "texCrown": true,
+          "texCrownFactor": 1,
+          "lines": true,
+          "domain": false,
+          "iterations": 50
+        }
+      },
+      "pattern": {
+        "className": "PatternTextures",
+        "params": {
+          "showUI": false,
+          "textures": [
+            {
+              "active": true,
+              "name": "leaf",
+              "alpha": 1,
+              "scale": 0,
+              "angle": 0,
+              "center": [
+                0,
+                0
+              ]
+            },
+            {
+              "active": false,
+              "name": "leaf",
+              "alpha": 1,
+              "scale": 0,
+              "angle": 0,
+              "center": [
+                0,
+                0
+              ]
+            },
+            {
+              "active": false,
+              "name": "leaf",
+              "alpha": 1,
+              "scale": 0,
+              "angle": 0,
+              "center": [
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      },
+      "domain": {
+        "className": "DefaultDomainBuilder",
+        "params": {
+          "showBaseGens": false
+        }
+      }
+    }
+  }
+}

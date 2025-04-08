@@ -94,6 +94,10 @@ const STYLES = {
 const PRE_FOLDER = 'presets/';
 const JSONpresets = [
     {
+        name: '23x',
+        path: PRE_FOLDER + '23x.json'
+    },
+    {
         name: '3333_b',
         path: PRE_FOLDER + '3333_b.json'
     }, {
@@ -129,7 +133,7 @@ const JSONpresets = [
 var grouphandler = new WallPaperGroup_General({
     symmetryUI:
     new SymmetryUIController({
-        domainShowingQ: true,
+        domainShowingQ: false,
         overlayCanvas: document.getElementById('overlay'),
         styles: STYLES
     })
@@ -137,21 +141,40 @@ var grouphandler = new WallPaperGroup_General({
 
 const MyTextures = Textures.t1.concat(Textures.t2);
 
+//************* SOON
 
-const fragComplex           = { obj: OF, id:'complex'};
-const fragFSMain            = { obj: OF, id:'fsMain'};
-const fragGeneralGroupMain  = { obj: OF, id:'generalGroupMain_v2'};
-const fragInversive         = { obj: OF, id:'inversive'};
-const fragPatternTextures   = { obj: OF, id:'patternTextures'};
-const fragVertexShader      = { obj: OF, id:'vertexShader'};
+//const MyOverlays = OverlayTextures.t1.concat(OverlayTextures.t2);
 
-const fragNewGeneralGroupMain = { obj: OF, id:'generalGroupMain_test'};
+
+// fragments to be used; OF is listed out in ./shaders/modules.js
+
+// the bulk of uniforms are all delivered to GroupRenderer.js; 
+// extra, unused uniforms just aren't passed into the shader.
+// It's helpful to see what's not used in a given shader:
+// Object.keys(program.uniforms)
+// 
+
+const fragComplex           = { obj: OF, id:'complex'};//unis:[]};
+const fragFSMain            = { obj: OF, id:'fsMain'}; // unis: ["u_cScale", "u_pixelSize"]};//set programatically in 
+//const fragGeneralGroupMain  = { obj: OF, id:'generalGroupMain_v2'}; //lots!
+const fragInversive         = { obj: OF, id:'inversive'}; // unis:[]};
+const fragPatternTextures   = { obj: OF, id:'patternTextures'};/*the buffers*/// unis: ["u_textures","u_texCount","u_texScales","u_texCenters","u_texAlphas"]}; // set in 
+const fragVertexShader      = { obj: OF, id:'vertexShader'};//unis:["u_aspect","u_scale","u_center"]};//
+
+
+const fragFDRenderer =    { obj: OF, id:'FDRenderer'};
+const fragPatternFromFDRenderer ={ obj: OF, id:'patternFromFDRenderer'};
+
+
+
+
 const vertexShader = {
     frags: [fragVertexShader],
 };
 
 
-const progSymRenderer = {
+
+/*const progSymRenderer = {
     name:   'SymRenderer', 
     vs:     vertexShader,
     fs: { 
@@ -161,11 +184,14 @@ const progSymRenderer = {
             fragComplex,
             fragPatternTextures,
             fragGeneralGroupMain,
-            ]},  
+            ]},
 };
+*/
 
-const progLayerRenderer = {
-    name:   'layerRenderer', 
+
+
+const progFDRenderer = {
+    name:   'FDRenderer', 
     vs:     vertexShader,
     fs: { 
         frags: [ 
@@ -173,17 +199,28 @@ const progLayerRenderer = {
             fragInversive,
             fragComplex,
             fragPatternTextures,
-            fragNewGeneralGroupMain,
+            fragFDRenderer,
+            ]},  
+};
+
+const progPatternFromFDRenderer = {
+    name:   'patternFromFDRenderer', 
+    vs:     vertexShader,
+    fs: { 
+        frags: [ 
+            fragFSMain,
+            fragInversive,
+            fragComplex,
+            fragPatternTextures,
+            fragPatternFromFDRenderer,
             ]},  
 };
 
 
-
-
-
 const orbPrograms = {
-    symRenderer: progSymRenderer,
-    layerRenderer:progLayerRenderer,
+   // symRenderer: progSymRenderer,
+    FDRenderer:progFDRenderer,
+    patternFromFDRenderer:progPatternFromFDRenderer,
 };
 
 const myDomainBuilder = new DomainBuilder({
