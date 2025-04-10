@@ -224,8 +224,8 @@ const orbPrograms = {
 };
 
 const myDomainBuilder = new DomainBuilder({
-        MAX_GEN_COUNT:       20,
-        MAX_TOTAL_REF_COUNT: 30,
+        MAX_GEN_COUNT:       40,
+        MAX_TOTAL_REF_COUNT: 100,
         USE_PACKING:        true
     });
     
