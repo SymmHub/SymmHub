@@ -134,7 +134,7 @@ vec4 getColor(vec2 p){
   float scale = 1.; // keep track of scaling changes
 
   // is our original point in the domain?
-	int indomainq = inDomainQ(porig, u_domainData, u_domainCount, u_genCount, u_domainColor,pixelSize);
+	int indomainq = inDomainQ(porig, u_domainData, u_domainCount, u_genCount, pixelSize);
 
 
 	//if we are making a symmetrical drawing, 
@@ -166,6 +166,8 @@ vec4 getColor(vec2 p){
 
   vec4 ccolor = u_lineColor;
 
+  	
+		// overlay color outside the 
   	if(indomainq>0){ccolor = vec4(.2,.7,.8,1.); }
 		overlay(color,iGetWalledFundDomainOutline(p3, u_domainData,u_domainCount, u_genCount, ccolor,
 			sscale,.2*sscale,
@@ -186,7 +188,7 @@ vec4 getColor(vec2 p){
 
   vec4 texture2 = getTextureValueWithBoundaries(pt2draw, u_FDdata,scale);
   texture2.w = .4;
-  overlay(color,texture2);
+ // overlay(color,texture2);
 
   return color;
     

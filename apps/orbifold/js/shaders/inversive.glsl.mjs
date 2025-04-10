@@ -806,7 +806,7 @@ void iToWalledFundamentalDomain(
 
 
 
-int inDomainQ(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int domainCount[MAX_GEN_COUNT], int count, vec4 color, float pixelSize){
+int inDomainQ(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int domainCount[MAX_GEN_COUNT], int count, float pixelSize){
 	float d = 1.;
 	int ind;
 	int ii;

@@ -23,6 +23,7 @@ import {
     resizeCanvas,
     getPixelRatio,
     createDoubleFBO,
+    createFBO
 }
 
 from './modules.js';
@@ -570,12 +571,18 @@ export class GroupRenderer {
 
         //make a buffer
         // FDbuffer
-        let format = this.mGLCtx.gl.RG, intFormat = this.mGLCtx.gl.RG32F, texType = this.mGLCtx.gl.FLOAT;
+        let format = this.mGLCtx.gl.RG;
+        let intFormat = this.mGLCtx.gl.RG32F;
+        let texType = this.mGLCtx.gl.FLOAT;
         let filtering = this.mGLCtx.gl.LINEAR;
-        this.gSimBuffer = createDoubleFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
       
+        this.gFDBuffer = createFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
+        
         this.mGLCtx.gl.disable(this.mGLCtx.gl.BLEND);        
-        this.mGLCtx.gl.viewport(0, 0, this.gSimBuffer.width, this.gSimBuffer.height);      
+        //this.mGLCtx.gl.viewport(0, 0, this.gSimBuffer.width, this.gSimBuffer.height);      
+        this.mGLCtx.gl.viewport(0, 0, this.gFDBuffer.width, this.gFDBuffer.height);      
+       
+        // Rather than a new buffer being drawn, gFDBuffer is reading and overwriting itself.
         
 
         let pr = this.programs.FDRenderer.program;
@@ -589,10 +596,9 @@ export class GroupRenderer {
         
         un.u_center = [0.0,0.0]; 
         pr.setUniforms(un);
-        pr.blit(this.gSimBuffer.write);
-        this.gSimBuffer.swap();
+        pr.blit(this.gFDBuffer);
         
-        un['u_FDdata'] = this.gSimBuffer.read;
+        un['u_FDdata'] = this.gFDBuffer;
         un.u_center = center;
         pr = this.programs.patternFromFDRenderer.program;
         pr.bind();

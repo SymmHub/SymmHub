@@ -97,7 +97,7 @@ vec4 getColor(vec2 p){
 
 //float dist2domain = getDist2Domain(porig, u_domainData, u_domainCount, u_genCount, u_domainColor,pixelSize);
 
-if(0< inDomainQ(porig, u_domainData, u_domainCount, u_genCount, u_domainColor,pixelSize)
+if(0< inDomainQ(porig, u_domainData, u_domainCount, u_genCount, pixelSize)
 ){
 	overlay(color, u_texCrownFactor*getCrownTexturePacked(p3, u_groupTransformsData, u_groupCumRefCount, u_genCount, scale));						
   float ww = pixelSize*scale;

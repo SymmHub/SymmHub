@@ -68,6 +68,7 @@ export {
     CanvasTransform, // to use with InversiveNavigator_v1
     InversiveNavigator, 
     createDoubleFBO,
+    createFBO
 } from '../../../lib/symhublib/symhublib.js';
 
 export {
