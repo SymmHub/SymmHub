@@ -62,12 +62,14 @@ vec4 getTextureValue(vec3 pnt, sampler2D sampler,float scale)
 
 
 
-vec4 getTextureValueWithBoundaries(vec3 pnt, sampler2D sampler,float scale)
+vec4 getTextureValueWithBoundaries(vec3 pnt, sampler2D sampler, float scale, float zoom, float aspect)
 {	float inset = 0.;
-	vec2 p = pnt.xy; //in math coordinates, [-1,1]x[-1,1]
-	vec2 hf = vec2(0.5);
 
-  vec2 tp = hf+cMul(vec2(.5,0.),p);// in texture coordinates, [0,1]x[0,1]
+	vec2 p = pnt.xy; //in math coordinates, [-1,1]x[-1,1]  the buffer  
+	// stretches from  +/- (width,height)/2 in math coordinates.
+	vec2 hf = vec2(0.5);
+	vec2 st = vec2(p.x*zoom*.5, p.y*zoom/aspect*.5);
+  vec2 tp = hf+st;// in texture coordinates, [0,1]x[0,1]
   float lod = log2(512.*1.*scale);
   vec4 tcolor;
   if(tp.x>inset && tp.x<1.-inset&&tp.y>inset&&tp.y<1.-inset){
@@ -119,11 +121,12 @@ vec4 getColor(vec2 p){
 	float pixelSize = u_pixelSize;//is this broken? uPixelSize?
 
   
-  //if(p.x*p.x+p.y*p.y>1.){return u_backgroundColor;}
-  // we are outside the Poincare disk 
-  // otherwise
+
+  // don't bother drawing anything outside the unit disk: 
+  if(p.x*p.x+p.y*p.y>1.){return u_backgroundColor;}
 
   vec4 color=u_backgroundColor;
+  vec4 texture2;
   
   vec3 p3 = vec3(p, 0); //Splanes act on vec3's, so upgrade
 
@@ -134,7 +137,7 @@ vec4 getColor(vec2 p){
   float scale = 1.; // keep track of scaling changes
 
   // is our original point in the domain?
-	int indomainq = inDomainQ(porig, u_domainData, u_domainCount, u_genCount, pixelSize);
+	//int indomainq = inDomainQ(porig, u_domainData, u_domainCount, u_genCount, pixelSize);
 
 
 	//if we are making a symmetrical drawing, 
@@ -145,6 +148,9 @@ vec4 getColor(vec2 p){
   
 
   	//grab the pixel color at p3 
+		texture2 = getTextureValueWithBoundaries(p3, u_FDdata,scale, u_zoom, u_aspect);
+  	overlay(color,texture2);
+
 		//overlay(color, u_texCrownFactor*getCrownTexturePacked(p3, u_groupTransformsData, u_groupCumRefCount, u_genCount, scale));						
   	//instead we want to look this up inside of our new FDdata using
   	//
@@ -166,12 +172,13 @@ vec4 getColor(vec2 p){
 
   vec4 ccolor = u_lineColor;
 
-  	
+/*
 		// overlay color outside the 
   	if(indomainq>0){ccolor = vec4(.2,.7,.8,1.); }
 		overlay(color,iGetWalledFundDomainOutline(p3, u_domainData,u_domainCount, u_genCount, ccolor,
 			sscale,.2*sscale,
 			0.));
+	*/
 	
 	}
 
@@ -183,13 +190,16 @@ vec4 getColor(vec2 p){
   //color = textureLod(u_FDdata, porig.xy, 1.);
 
 	vec3 pt2draw=porig;
-	pt2draw.x=(pt2draw.x)*2.*u_zoom*u_zoom-.5;
-	pt2draw.y=(pt2draw.y)*2.*u_zoom*u_zoom/u_aspect-.5;
+	//pt2draw.x=(pt2draw.x)*2.*u_zoom*u_zoom-.5;
+	//pt2draw.y=(pt2draw.y)*2.*u_zoom*u_zoom/u_aspect-.5;
 
-  vec4 texture2 = getTextureValueWithBoundaries(pt2draw, u_FDdata,scale);
-  texture2.w = .4;
- // overlay(color,texture2);
-
+	
+	//trying to overlay the FD onto the buffer 
+	// there are still problems with blending: is it gl.blendFunc()?
+   texture2 = getTextureValueWithBoundaries(pt2draw, u_FDdata,scale, u_zoom, u_aspect);
+  texture2= .3*texture2;
+//	overlay(color,texture2);
+ 
   return color;
     
 }`

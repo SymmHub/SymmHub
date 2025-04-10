@@ -583,26 +583,26 @@ export class GroupRenderer {
         this.mGLCtx.gl.viewport(0, 0, this.gFDBuffer.width, this.gFDBuffer.height);      
        
         // Rather than a new buffer being drawn, gFDBuffer is reading and overwriting itself.
-        
+
 
         let pr = this.programs.FDRenderer.program;
         pr.bind();
         let center = un.u_center; 
-        // this is the center of clip coords in math coords.
-        // For the intermediate buffer, it's much easier to keep this centered for now;
-        // once the position of the FD is calculated, this should shift over.
-        // un.u_FDcenter = un.u_center;  // MATH COORDS
-        //  keep the same zoom, or maybe increase the resolution.
-        
         un.u_center = [0.0,0.0]; 
         pr.setUniforms(un);
+        //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ONE,this.mGLCtx.gl.ZERO);
+       
+        //var notdebugging = true;
+       /// if(!notdebugging){ 
         pr.blit(this.gFDBuffer);
+
+        //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ZERO,this.mGLCtx.gl.ONE);
         
         un['u_FDdata'] = this.gFDBuffer;
         un.u_center = center;
         pr = this.programs.patternFromFDRenderer.program;
         pr.bind();
-        pr.setUniforms(un);
+        pr.setUniforms(un);//}
         pr.blit();   
 
         

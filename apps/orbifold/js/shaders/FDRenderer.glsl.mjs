@@ -99,7 +99,8 @@ vec4 getColor(vec2 p){
 
 if(0< inDomainQ(porig, u_domainData, u_domainCount, u_genCount, pixelSize)
 ){
-	overlay(color, u_texCrownFactor*getCrownTexturePacked(p3, u_groupTransformsData, u_groupCumRefCount, u_genCount, scale));						
+	overlay(color, u_texCrownFactor*
+	getCrownTexturePacked(p3, u_groupTransformsData, u_groupCumRefCount, u_genCount, scale));						
   float ww = pixelSize*scale;
 	
 	if(u_drawLines==1){
@@ -107,10 +108,15 @@ if(0< inDomainQ(porig, u_domainData, u_domainCount, u_genCount, pixelSize)
 	}
 }
 	/*misc experiments*/
-	//color=vec4(clamp(2.*porig.x+1.,0.,.8),2.*porig.y+1.,-(porig.x+porig.y)/4.+.5,1.);
+	/*
+	// make a gradient
+	color=vec4(clamp(2.*porig.x+1.,0.,.8),2.*porig.y+1.,-(porig.x+porig.y)/4.+.5,1.);
+	
+	// draw an orange ring:
 	if(abs(porig.x*porig.x+porig.y*porig.y-1.)<.2){
 		overlay(color,vec4(1.,.4,.1,.8));
 	}
+	*/
   return color;
     
 }`
