@@ -118,8 +118,7 @@ vec4 getCrownTexturePacked(vec3 pnt,
 vec4 getColor(vec2 p){
 
 
-	float pixelSize = u_pixelSize;//is this broken? uPixelSize?
-
+//	float pixelSize = u_pixelSize;//this should now work, for ... ?
   
 
   // don't bother drawing anything outside the unit disk: 

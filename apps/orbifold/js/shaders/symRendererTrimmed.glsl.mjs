@@ -102,7 +102,7 @@ int indomain2 = inDomainQ(porig, u_domainData, u_domainCount, u_genCount, u_doma
 
 // now move p3 to the FD if we are going to read it.
  if(u_hasSymmetry==1){
-		iToWalledFundamentalDomain(p3, u_groupTransformsData, u_domainData, u_domainCount, u_groupCumRefCount, u_genCount, inDomain, refCount, scale, u_iterations);
+		iToWalledFundamentalDomain(p3, u_groupTransformsData, u_domainData, u_domainCount, u_groupCumRefCount, u_genCount, inDomain, refCount, scale, u_iterations,u_pixelSize);
   }
 
 	overlay(color, u_texCrownFactor*getCrownTexturePacked(p3, u_groupTransformsData, u_groupCumRefCount, u_genCount, scale));						

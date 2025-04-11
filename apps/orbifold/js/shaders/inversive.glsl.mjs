@@ -822,7 +822,7 @@ int inDomainQ(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int domainCount[MAX_GEN_C
 			float dd = iDistance(sp,pnt);
 			// are we on the inside of this wall?
 			// 
-			if(dd>0.*pixelSize){
+			if(dd>pixelSize){
 				// further check to see if this domain wall should even count:
 				// In other words, check against the bounds of the wall, if there are any
 				use = 1; // now presume that we do use this part of the fd
