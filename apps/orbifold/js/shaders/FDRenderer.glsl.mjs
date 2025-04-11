@@ -18,6 +18,7 @@ uniform float u_texCrownFactor;
 uniform vec4 u_backgroundColor; 
 uniform vec4 u_domainColor; 
 uniform vec4 u_errorColor; 
+uniform int u_useSymmetryBlending;
 
 uniform int u_genCount;  // count of group generators 
 
@@ -39,7 +40,6 @@ void init(void){
     
 }
 
-
 vec4 getCrownTexturePacked(vec3 pnt, 
                     //float cd[CROWN_DATA_SIZE], // transforms data 
                     float cd[TRANSFORMS_DATA_SIZE], // transforms data 
@@ -50,25 +50,58 @@ vec4 getCrownTexturePacked(vec3 pnt,
                     float scale  // scale to use 
                     ){
 	
-	vec4 color = vec4(0,0,0,0);
-	overlay(color, getTexture(pnt, scale));
-	for(int g = 0; g < count; g++){// webgl2 allows variable-length loops
-		int startCount = 0;
-		if(g > 0){
-      startCount=rc[g-1];
-    }
-		int rCount = rc[g]-startCount;
+	// we'll try applying the reflections in reverse order, to take the inverse transform
+	// and we'll stash the color values at each of the pts in an orbit in the crown 
+	// The alpha channel can be used in a variety of ways. 
 
-		vec3 v  = pnt;  
-		float ss = scale;
-		// apply transform g
-		for(int r = 0; r  < rCount; r++){
-			int RIND=(5*(startCount + r));
-			iSPlane splane = iGeneralSplane(vec4(cd[RIND], cd[RIND+1], cd[RIND+2], cd[RIND+3]), int(cd[RIND+4]));
-			iReflect(splane, v, ss);							
+	vec4 color = vec4(1.,.9,1.,1.);//u_backgroundColor;// this behaves mysteriously: compare to 1111, 1001, 1101, etc
+	vec4 colors[MAX_CROWN_COUNT+1];
+	
+	//we will populate an array of colors, and then work out which one we want.
+
+		
+	colors[0]=getTexture(pnt, scale);// the identity
+	if(u_useSymmetryBlending==0){overlay(color, colors[0]);}
+	for(int g = 0; g < count; g++)
+		{ //walk through the crown and generate an array of colors. 
+			// webgl2 allows variable-length loops
+			int startCount = 0;
+			if(g > 0){
+      			startCount=rc[g-1];}
+
+			int rCount = rc[g]-startCount;
+
+			vec3 v  = pnt;  
+			float ss = scale;
+			// apply transform g
+			for(int r = 0; r  < rCount; r++)
+				{ //step by step
+					int RIND=(5*(startCount + r));
+					iSPlane splane = iGeneralSplane(vec4(cd[RIND], cd[RIND+1], cd[RIND+2], cd[RIND+3]), int(cd[RIND+4]));
+					iReflect(splane, v, ss);							
+				}
+			colors[g+1]=getTexture(v, ss);
+			if(u_useSymmetryBlending==0){overlay(color,colors[g+1]);}
 		}
-		overlay(color, getTexture(v, ss));					
-	}
+	if(u_useSymmetryBlending==1)
+	{
+		color = vec4(1.,1.,0.,1.);
+		//using the alpha channel for height information.
+		float highestalpha = -1.;
+		for(int i = 0; i<=MAX_CROWN_COUNT;i++){
+			if(colors[i].w>highestalpha){
+				color = colors[i];
+				highestalpha = color.w;
+				}
+		//	color.x=color.w;
+				if(color.w>0.){	
+					color.x=clamp(color.x/color.w,0.,1.);
+					color.y=clamp(color.y/color.w,0.,1.);
+					color.z=clamp(color.z/color.w,0.,1.);
+					color.w = 1.;}
+		} //end looping through the stored colors
+
+	}// end if u_useSymmetryBlending
 	return color;
 }
 
@@ -93,35 +126,22 @@ vec4 getColor(vec2 p){
   
 	float pixelSize = u_PixelSize;
 
-  vec4 color=u_backgroundColor;
+  vec4 color=vec4(1.,1.,1.,1.);//u_backgroundColor;
   
-  int colorIndex = (refCount % 2);
+ 
+	if(0< inDomainQ(porig, u_domainData, u_domainCount, u_genCount, pixelSize)
+	){scale=2.;
+		vec4 newcolor = getCrownTexturePacked(p3, u_groupTransformsData, u_groupCumRefCount, u_genCount, scale);						
 
-  // point in untransformed coordinates 
+		overlay(color, newcolor);
+  	float ww = pixelSize*scale;
 	
+		if(u_drawLines==1){
+		overlay(color,iGetWalledFundDomainOutline(p3, u_domainData,u_domainCount, u_genCount, u_lineColor,u_lineWidth*.001*scale,.0002*scale,0.));
+		}
 
-//float dist2domain = getDist2Domain(porig, u_domainData, u_domainCount, u_genCount, u_domainColor,pixelSize);
-
-if(0< inDomainQ(porig, u_domainData, u_domainCount, u_genCount, pixelSize)
-){
-	overlay(color, u_texCrownFactor*
-	getCrownTexturePacked(p3, u_groupTransformsData, u_groupCumRefCount, u_genCount, scale));						
-  float ww = pixelSize*scale;
-	
-	if(u_drawLines==1){
-	overlay(color,iGetWalledFundDomainOutline(p3, u_domainData,u_domainCount, u_genCount, u_lineColor,u_lineWidth*.001*scale,.0002*scale,0.));
 	}
-}
-	/*misc experiments*/
-	/*
-	// make a gradient
-	color=vec4(clamp(2.*porig.x+1.,0.,.8),2.*porig.y+1.,-(porig.x+porig.y)/4.+.5,1.);
-	
-	// draw an orange ring:
-	if(abs(porig.x*porig.x+porig.y*porig.y-1.)<.2){
-		overlay(color,vec4(1.,.4,.1,.8));
-	}
-	*/
+
   return color;
     
 }`

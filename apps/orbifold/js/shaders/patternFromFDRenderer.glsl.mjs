@@ -74,7 +74,7 @@ vec4 getTextureValueWithBoundaries(vec3 pnt, sampler2D sampler, float scale, flo
   vec4 tcolor;
   if(tp.x>inset && tp.x<1.-inset&&tp.y>inset&&tp.y<1.-inset){
   	tcolor = textureLod(sampler, tp, lod);}
-  else{tcolor = vec4(.7,.1,.1,.5);}
+  else{tcolor = u_backgroundColor;}//was not in the sampler
   return tcolor;
 }
 
@@ -93,7 +93,7 @@ vec4 getCrownTexturePacked(vec3 pnt,
                     ){
 	
 	vec4 color = vec4(0,0,0,0);
-	//overlay(color, getTexture(pnt, scale));
+	
 	for(int g = 0; g < count; g++){// webgl2 allows variable-length loops
 		int startCount = 0;
 		if(g > 0){
@@ -109,7 +109,8 @@ vec4 getCrownTexturePacked(vec3 pnt,
 			iSPlane splane = iGeneralSplane(vec4(cd[RIND], cd[RIND+1], cd[RIND+2], cd[RIND+3]), int(cd[RIND+4]));
 			iReflect(splane, v, ss);							
 		}
-		overlay(color, getTexture(v, ss));					
+	//	overlay(color, getTexture(v, ss));	
+	color = 				getTexture(v, ss);
 	}
 	return color;
 }
@@ -150,15 +151,9 @@ vec4 getColor(vec2 p){
 		texture2 = getTextureValueWithBoundaries(p3, u_FDdata,scale, u_zoom, u_aspect);
   	overlay(color,texture2);
 
-		//overlay(color, u_texCrownFactor*getCrownTexturePacked(p3, u_groupTransformsData, u_groupCumRefCount, u_genCount, scale));						
-  	//instead we want to look this up inside of our new FDdata using
-  	//
-  	//vec4 texture = getTextureValuefromMathCoords(p3, u_FDdata,scale);
-  //	vec4 texture = getTextureValue(p3, u_textures[0],1.);
-  //	texture.w=.2;
-  	//overlay(color,texture);
+		
   }
-
+/*
  	// shall we draw some boundaries?
   if(u_drawLines>0){
 		float rescale =(1.-p3.x*p3.x-p3.y*p3.y);
@@ -167,37 +162,22 @@ vec4 getColor(vec2 p){
   float sscale = u_maxlineWidth*rescale;
   //float ssscale = scale * u_lineWidth;
   //if(sscale<ssscale){sscale = ssscale;}
-  sscale = sscale *.004;// proxy for pixelSize, until straightened out.
+  sscale = sscale *pixelSize;// proxy for pixelSize, until straightened out.
 
   vec4 ccolor = u_lineColor;
+  }
+*/
 
-/*
-		// overlay color outside the 
-  	if(indomainq>0){ccolor = vec4(.2,.7,.8,1.); }
-		overlay(color,iGetWalledFundDomainOutline(p3, u_domainData,u_domainCount, u_genCount, ccolor,
-			sscale,.2*sscale,
-			0.));
-	*/
 	
-	}
 
 	/* misc experiments*/
-	//color=vec4(vec3(1.-porig.x*porig.x-porig.y*porig.y),1.);
-	//color=vec4(2.*porig.x+1.,2.*porig.y+1.,-(porig.x+porig.y)/4.+.5,1.);
-  //color = getTextureValue(porig, u_FDdata,scale);
-  
-  //color = textureLod(u_FDdata, porig.xy, 1.);
-
-	vec3 pt2draw=porig;
-	//pt2draw.x=(pt2draw.x)*2.*u_zoom*u_zoom-.5;
-	//pt2draw.y=(pt2draw.y)*2.*u_zoom*u_zoom/u_aspect-.5;
-
 	
 	//trying to overlay the FD onto the buffer 
 	// there are still problems with blending: is it gl.blendFunc()?
-   texture2 = getTextureValueWithBoundaries(pt2draw, u_FDdata,scale, u_zoom, u_aspect);
-  texture2= .3*texture2;
-//	overlay(color,texture2);
+  
+  //texture2 = getTextureValueWithBoundaries(pt2draw, u_FDdata,scale, u_zoom, u_aspect);
+  // texture2= .3*texture2;
+  //	overlay(color,texture2);
  
   return color;
     

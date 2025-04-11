@@ -592,17 +592,17 @@ export class GroupRenderer {
         pr.setUniforms(un);
         //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ONE,this.mGLCtx.gl.ZERO);
        
-        //var notdebugging = true;
-       /// if(!notdebugging){ 
-        pr.blit(this.gFDBuffer);
+        var notdebugging = true;
+        if(notdebugging){ 
+            pr.blit(this.gFDBuffer);
 
-        //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ZERO,this.mGLCtx.gl.ONE);
-        
-        un['u_FDdata'] = this.gFDBuffer;
-        un.u_center = center;
-        pr = this.programs.patternFromFDRenderer.program;
-        pr.bind();
-        pr.setUniforms(un);//}
+            //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ZERO,this.mGLCtx.gl.ONE);
+            
+            un['u_FDdata'] = this.gFDBuffer;
+            un.u_center = center;
+            pr = this.programs.patternFromFDRenderer.program;
+            pr.bind();
+            pr.setUniforms(un);}
         pr.blit();   
 
         
