@@ -592,7 +592,7 @@ export class GroupRenderer {
         pr.setUniforms(un);
         //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ONE,this.mGLCtx.gl.ZERO);
        
-        var notdebugging = true;
+        var notdebugging = !(this.domainBuilder.params.debug);
         if(notdebugging){ 
             pr.blit(this.gFDBuffer);
 

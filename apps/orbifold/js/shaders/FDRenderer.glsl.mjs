@@ -25,7 +25,6 @@ uniform int u_genCount;  // count of group generators
 
 uniform float u_domainData[DOMAIN_DATA_SIZE];
 
-
 uniform int u_domainCount[MAX_GEN_COUNT];
 uniform int u_groupCumRefCount[MAX_GEN_COUNT];
 
@@ -54,7 +53,7 @@ vec4 getCrownTexturePacked(vec3 pnt,
 	// and we'll stash the color values at each of the pts in an orbit in the crown 
 	// The alpha channel can be used in a variety of ways. 
 
-	vec4 color = vec4(1.,.9,1.,1.);//u_backgroundColor;// this behaves mysteriously: compare to 1111, 1001, 1101, etc
+	vec4 color = u_backgroundColor;// this behaves mysteriously: compare to 1111, 1001, 1101, etc
 	vec4 colors[MAX_CROWN_COUNT+1];
 	
 	//we will populate an array of colors, and then work out which one we want.
@@ -85,7 +84,6 @@ vec4 getCrownTexturePacked(vec3 pnt,
 		}
 	if(u_useSymmetryBlending==1)
 	{
-		color = vec4(1.,1.,0.,1.);
 		//using the alpha channel for height information.
 		float highestalpha = -1.;
 		for(int i = 0; i<=MAX_CROWN_COUNT;i++){
@@ -126,18 +124,20 @@ vec4 getColor(vec2 p){
   
 	float pixelSize = u_PixelSize;
 
-  vec4 color=vec4(1.,1.,1.,1.);//u_backgroundColor;
+  vec4 color=  u_backgroundColor;//vec4(1.,.8,.9,1.); is good for debugging
   
  
 	if(0< inDomainQ(porig, u_domainData, u_domainCount, u_genCount, pixelSize)
-	){scale=2.;
+	){
+
 		vec4 newcolor = getCrownTexturePacked(p3, u_groupTransformsData, u_groupCumRefCount, u_genCount, scale);						
 
-		overlay(color, newcolor);
-  	float ww = pixelSize*scale;
+	 	overlay(color, newcolor);
+		// scale is  worked out in getCrownTexturePacked
+  	float ww = 0.008;
 	
 		if(u_drawLines==1){
-		overlay(color,iGetWalledFundDomainOutline(p3, u_domainData,u_domainCount, u_genCount, u_lineColor,u_lineWidth*.001*scale,.0002*scale,0.));
+		overlay(color,iGetWalledFundDomainOutline(p3, u_domainData,u_domainCount, u_genCount, u_lineColor,u_lineWidth*ww, ww,0.));
 		}
 
 	}

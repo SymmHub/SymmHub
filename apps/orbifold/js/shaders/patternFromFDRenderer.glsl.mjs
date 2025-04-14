@@ -34,11 +34,8 @@ uniform int u_domainCount[MAX_GEN_COUNT];
 uniform int u_groupCumRefCount[MAX_GEN_COUNT];
 
 
-uniform float u_groupTransformsData[TRANSFORMS_DATA_SIZE];  // transforms data
-uniform int u_texCrownCount;   // count of transforms in the crown 
-uniform float u_texCrownData[CROWN_DATA_SIZE];  // crown transforms data 
-uniform int u_texCrownRefCount[MAX_CROWN_COUNT];          // reflections count per transform
-
+uniform float u_groupTransformsData[TRANSFORMS_DATA_SIZE];  
+	// transforms data to bring a point into the fundamental domain
 
 void init(void){
     
@@ -119,7 +116,7 @@ vec4 getCrownTexturePacked(vec3 pnt,
 vec4 getColor(vec2 p){
 
 
-//	float pixelSize = u_pixelSize;//this should now work, for ... ?
+	float pixelSize = u_pixelSize;//this should now work, for ... ?
   
 
   // don't bother drawing anything outside the unit disk: 
@@ -136,10 +133,6 @@ vec4 getColor(vec2 p){
   int refCount = 0;
   float scale = 1.; // keep track of scaling changes
 
-  // is our original point in the domain?
-	//int indomainq = inDomainQ(porig, u_domainData, u_domainCount, u_genCount, pixelSize);
-
-
 	//if we are making a symmetrical drawing, 
 	// bring p3 to a representative point within the fundamental domain. 
  	if(u_hasSymmetry==1){
@@ -153,20 +146,21 @@ vec4 getColor(vec2 p){
 
 		
   }
-/*
- 	// shall we draw some boundaries?
-  if(u_drawLines>0){
-		float rescale =(1.-p3.x*p3.x-p3.y*p3.y);
-// * pixelSize does not seem to be populated, perhaps because 
-// the uniform u_pixelSize is defined in js but uPixelSize is used in frag.
-  float sscale = u_maxlineWidth*rescale;
-  //float ssscale = scale * u_lineWidth;
-  //if(sscale<ssscale){sscale = ssscale;}
-  sscale = sscale *pixelSize;// proxy for pixelSize, until straightened out.
 
-  vec4 ccolor = u_lineColor;
+ 	// shall we draw some boundaries? // this is where we draw lines of constant 
+ 	// screenwidth
+  if(u_drawLines>0){
+	
+  
+		float ww = .06*scale*u_pixelSize;
+	
+		if(u_drawLines==1){
+		overlay(color,iGetWalledFundDomainOutline(p3, u_domainData,u_domainCount, u_genCount, u_lineColor,10.*ww, ww,0.));
+		}
+
+
   }
-*/
+
 
 	
 
