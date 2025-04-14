@@ -155,7 +155,7 @@ vec4 getColor(vec2 p){
 		float ww = .06*scale*u_pixelSize;
 	
 		if(u_drawLines==1){
-		overlay(color,iGetWalledFundDomainOutline(p3, u_domainData,u_domainCount, u_genCount, u_lineColor,u_maxlineWidth*ww, ww,0.));
+		overlay(color,iGetWalledFundDomainOutline(p3, u_domainData,u_domainCount, u_genCount, u_lineColor,10.*ww, ww,0.));
 		}
 
 
