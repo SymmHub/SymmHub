@@ -98,7 +98,11 @@ float getAngle(float n){
 //  B over A    most common combination: 
 // (0, A, B, B) 
 void overlay(inout vec4 ca, vec4 cb){
-	ca = (1.-cb.w)*ca + cb;
+	ca = (1.-cb.w)*ca + cb;  //something goes wrong here if ca.w is close to 0
+	/*ca.x = clamp(ca.x,0.,1.);
+	ca.y = clamp(ca.y,0.,1.);
+	ca.z = clamp(ca.z,0.,1.);
+	ca.w = clamp(ca.w,0.,1.);*/
 }
 
 void layover(inout vec4 ca, vec4 cb){
@@ -964,8 +968,8 @@ vec4 iGetWalledFundDomainExterior(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int d
 //
 vec4 iGetWalledFundDomainOutline(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int domainCount[MAX_GEN_COUNT], int count, vec4 lineColor, float lineWidth, float pixelSize, float offset)
 {
-	
 	float dens = 0.;
+	vec4 color=vec4(0.,0.,0.,0.0);
   
 	int ind, ii,n;
 		
@@ -977,8 +981,10 @@ vec4 iGetWalledFundDomainOutline(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int do
 			n=domainCount[i]-ii;
 			iSPlane sp = iGeneralSplane(vec4(sides[ind], sides[ind+1], sides[ind+2], sides[ind+3]), int(sides[ind+4]));    
 			float d = abs(iDistance(sp, pnt)+offset);		
-			if(d < lineWidth){
-				// now check to make sure we aren't out of bounds
+			if(d < lineWidth) // we are within d of that splane in the boundary of the FD.
+			{
+				/*
+				// now check to make sure we aren't out of the bounds for that splane.
 				int ok =1;
 				
 				for(int j=1; j < n && ok > 0; j++)
@@ -988,13 +994,17 @@ vec4 iGetWalledFundDomainOutline(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int do
 						ok=-1;
 					}
 				}
-				if(ok > 0){
+				if(ok > 0) //we've made it through that splane ok
+				{
 					float a = clamp((lineWidth-d)/pixelSize,0.,1.);			
 					dens = max(dens, a);	
+					color = dens*lineColor;
 				}	
+			*/
+			color = lineColor;
 			}		
 		}
 	}
-	return dens*lineColor;
+	return color;
 }
 `;
