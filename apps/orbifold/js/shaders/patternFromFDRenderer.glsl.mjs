@@ -121,7 +121,7 @@ vec4 getColor(vec2 p){
 		float ww = .06*scale*u_pixelSize;
 	
 		if(u_drawLines==1){
-		overlay(color,iGetWalledFundDomainOutline(porig, u_domainData,u_domainCount, u_genCount, u_lineColor,10.*ww, ww,0.));
+		overlay(color,iGetWalledFundDomainOutline(p3, u_domainData,u_domainCount, u_genCount, u_lineColor,10.*ww, ww,0.));
 		}
 
 
@@ -138,9 +138,8 @@ vec4 getColor(vec2 p){
   //texture2 = getTextureValueWithBoundaries(pt2draw, u_FDdata,scale, u_zoom, u_aspect);
   // texture2= .3*texture2;
   //	overlay(color,texture2);
-
- 	color = getTextureValueWithBoundaries(porig, u_FDdata,scale, u_zoom, u_aspect);
-
+ 
+ 	
   return color;
     
 }`
