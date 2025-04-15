@@ -54,9 +54,10 @@ import {
     unfoldAtom,
     assembleFundamentalDomain,
     produceGenerators,
-    willOrbifoldFitQ
+    willOrbifoldFitQ,
+    getCrownTransforms
 }
-from '../../../lib/invlib/OrbifoldGeometrization.js';
+from './OrbifoldGeometrization.js';
 
 import {
     random,
@@ -336,14 +337,27 @@ export class WallPaperGroup_General {
         if (this.curvature < 0) {
 
             this.assembledFD = assembleFundamentalDomain(this.atomList, this);
+                // calling back to OrbifoldGeometrization.js
+            
             // assembledFD[0]=[vertList,edgeKeyList]
             // assembledFD[1] is a list of internal edges;
             // assembledFD[2] will be a list of cone points TO DO.
 
-            this.generators = produceGenerators(this.assembledFD[0], this)
-                var i,
-            ss;
-            var fdpts = this.assembledFD[0][0];
+            this.generators = produceGenerators(this.assembledFD[0], this);
+                // calling back to OrbifoldGeometrization.js
+
+
+            transforms = this.generators;
+
+            var pp = this.patternMaker;
+
+            this.crowntransforms = getCrownTransforms(this.assembledFD,this);//?
+            var crowntransforms = this.crowntransforms;
+
+            
+            var i,ss;
+            var fdpts = this.assembledFD[0][0]; //these are the vertices, which can be passed along if we wish to.
+
             for (i = 0; i < fdpts.length; i++) {
 
                 // sPlanes have endpoints included -- thus we can draw our FD as arcs on
@@ -370,8 +384,7 @@ export class WallPaperGroup_General {
                 bounds.push(bound)
             }
 
-            transforms = this.generators;
-
+           
             // the interior edges
             interiors = this.assembledFD[1].map(x => {
                 var abound = sPlaneThrough(x[0][0], x[0][1], x[0]);
@@ -392,12 +405,18 @@ export class WallPaperGroup_General {
         this.FD = {
             s: bounds,
             t: transforms,
-            i: interiors
-        };
+            i: interiors,
+            c: crowntransforms,
+        }; 
+        //this is passed along to getGroup, below, which in turn is called from
+        // calculateGroup in DefaultGroupRenderer.
+        // That is called in a number of places, particularly getUniforms
+        // ultimately, FD.s is u_domainData and FD.t is u_groupTransformsData
+        // which is assigned in DefaultDomainBuilder
     }
 
     getGroup() {
-        return this.FD
+        return this.FD // created in updateTheGroupGeometry(), right above
     }
 
     render(context, transform) {

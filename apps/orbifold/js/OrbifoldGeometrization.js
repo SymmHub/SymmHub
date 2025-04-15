@@ -2,9 +2,9 @@ import {sPlanesOfRotation,complexN,poincareTurtleMove,poincareMobiusEdgeToEdge,
   poincareMobiusTranslateFromToByD,sPlaneSwapping,poincareMobiusRotationAboutPoint,
   sPlaneReflectAcross,makeMobius,
   poincarePt,poincareMobiusTranslateToO,sPlanesMovingEdge1ToEdge2} 
-    from './ComplexArithmetic.js';
+    from '../../../lib/invlib/ComplexArithmetic.js';
 import {PI,HPI,TPI,abs,cos,cosh,sin,sinh,coth,asin,sqrt,cot,acosh,asinh,tanh} 
-  from './Utilities.js';
+  from '../../../lib/invlib/Utilities.js';
 //////////////////////////////////////////////////
 
 //////////////////////////////////////////////////
@@ -1549,7 +1549,32 @@ export function willOrbifoldFitQ(atomList,MAX_GEN_COUNT,MAX_REF_COUNT,MAX_DOMAIN
   
 }
 
+export function getCrownTransforms(){ 
+// given a complex center and rotation, together with a list of group generators
+// for each vertex in a relatively fine grid, pull back to the fundamental domain.
+// For the resulting transform, hash with the image of some generic point in the interior of the fundamental domain.
+// If it has not already appeared, add it to the list of transforms that we are keeping.
+// We are working in Splaneworld   
+// This is called from updateTheGroupGeometry in WallPaperGroup_General
+// in order to make this work, we need the center and a complex scaling (homethety) of a texture
 
+   // var pp = myPatternMaker;
+    let pt1 = new complexN(.1,0.);
+    let pt2 = new complexN(.15,0.);
+    let pt3 = new complexN(-.1,0.);
+    let pt4 = new complexN(-.15,.04);
+   
+    if(pt1.abs()>.8){pt1.times(.8/pt1.abs());}
+    if(pt2.abs()>.8){pt2.times(.8/pt2.abs());}
+    if(pt3.abs()>.8){pt3.times(.8/pt3.abs());}
+    if(pt4.abs()>.8){pt4.times(.8/pt4.abs());}
+   
+    let t = sPlaneSwapping(pt1,pt2);
+    let s = sPlaneSwapping(pt2,pt3);
+    let r = sPlaneSwapping(pt1,pt4);
+
+    return [[t,t],[t,s],[t,r]];
+}
 
 
 

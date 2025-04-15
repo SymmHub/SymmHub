@@ -738,22 +738,22 @@ void transformPoint(inout vec3 v, float td[TRANSFORM_DATA_SIZE], inout float ss)
 	
 */
 void iToWalledFundamentalDomain(
-
 	inout vec3 p,  
-	in float transData[TRANSFORMS_DATA_SIZE], // array of raw transform data 
-	in float domainData[DOMAIN_DATA_SIZE],  // array of raw domain data 
+	in float transData[TRANSFORMS_DATA_SIZE], // array of raw transform data, not nec generators
+	in float domainData[DOMAIN_DATA_SIZE],  // array of raw domain data; this includes the generators
 	in int domainCount[MAX_GEN_COUNT], // cumulative count of sides per fd
 	in int refCount[MAX_GEN_COUNT],  // cumulative count of reflections for each generator
-	in int genCount, // generators count       
+	in int genCount, // generators count  <-- ??     
 	out int inDomain, 
 	out int refcount, 
 	inout float scale, 
-	int iterations){
+	int iterations)
+{
         
 	refcount = 0;
 	inDomain = 0;
 	int check;
-	int sind,rind,startCount,rCount, eCount;
+	int sind,rind,startCount,rCount, endCount;
 //	int indMinus,indPlus;
 	iSPlane sp;
 	
@@ -761,18 +761,18 @@ void iToWalledFundamentalDomain(
 	for(int count = 0; count < iterations; count++){
 		int found = 0;
 		// we move the point into interior of fundamental domain, where all distance should be negative 
-		for(int g =0; g < genCount; g++){
+		for(int g =0; g < genCount; g++){  //genCount is coming from trans
 			
-			check=1;		
+			check=1;		//found when check<0
 			
 			if(g==0)
         startCount=0;
 			else 
         startCount = domainCount[g-1];
       
-			eCount = domainCount[g]-startCount;
+			endCount = domainCount[g]-startCount;
 			
-			for(int gg =0; gg < eCount && check > 0; gg++){
+			for(int gg =0; gg < endCount && check > 0; gg++){
 				sind=5*(startCount+gg);
 				sp	= iGeneralSplane(vec4(domainData[sind], domainData[sind+1], domainData[sind+2], domainData[sind+3]), int(domainData[sind+4]));
 				if(iDistance(sp, p) <= 0.)
@@ -983,7 +983,7 @@ vec4 iGetWalledFundDomainOutline(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int do
 			float d = abs(iDistance(sp, pnt)+offset);		
 			if(d < lineWidth) // we are within d of that splane in the boundary of the FD.
 			{
-				/*
+				
 				// now check to make sure we aren't out of the bounds for that splane.
 				int ok =1;
 				
@@ -1000,7 +1000,7 @@ vec4 iGetWalledFundDomainOutline(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int do
 					dens = max(dens, a);	
 					color = dens*lineColor;
 				}	
-			*/
+			
 			color = lineColor;
 			}		
 		}

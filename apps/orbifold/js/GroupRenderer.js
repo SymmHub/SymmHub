@@ -67,7 +67,7 @@ const GL_CANVAS_STYLES = [
 ];
 
 const MYNAME = 'GroupRenderer';
-const DEBUG = true;
+const DEBUG = false;
 const EXPORT_ANIMATION = 'Animation Export';
 const STOP_EXPORT_ANIMATION = 'Stop Animation Export';
 
@@ -107,13 +107,13 @@ export class GroupRenderer {
 
         this.config = (isDefined(options.config)) ? (options.config) : (new GroupRendererConfig());
 
-        this.domainBuilder = (isDefined(options.domainBuilder)) ? (options.domainBuilder) : (new DefaultDomainBuilder());
-
+        
         this.myNavigator = options.navigator;
         this.myNavigator.init({canvas: this.mCanvas.overlay, onChanged: this.onNavigationChanged.bind(this)});
 
         this.patternMaker = options.patternMaker;
 
+        this.domainBuilder = (isDefined(options.domainBuilder)) ? (options.domainBuilder) : (new DefaultDomainBuilder());
         this.fragShader = options.fragShader;
         this.vertShader = options.vertShader;
 
@@ -562,7 +562,7 @@ export class GroupRenderer {
         
         let un = {}
         this.getUniforms(un);
-        if(this.renderDebugCount && this.renderDebugCount-- > 0){
+        if(this.renderDebugCount && this.renderDebugCount-- > 0 && DEBUG){
             console.log('uniforms: ', un);   
             console.log('uniforms keys: ', Object.keys(un));           
             console.log('programs: ', this.programs);
@@ -592,7 +592,7 @@ export class GroupRenderer {
         pr.setUniforms(un);
         //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ONE,this.mGLCtx.gl.ZERO);
        
-        var notdebugging = !(this.domainBuilder.params.debug);
+        var notdebugging = (this.domainBuilder.params.debug);
         if(notdebugging){ 
             pr.blit(this.gFDBuffer);
 

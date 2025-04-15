@@ -16,7 +16,7 @@ import {
     lengthKeys,
     twistKeys
     
-} from '../../../lib/invlib/OrbifoldGeometrization.js';
+} from './OrbifoldGeometrization.js';
 
 import {
     objectToString,

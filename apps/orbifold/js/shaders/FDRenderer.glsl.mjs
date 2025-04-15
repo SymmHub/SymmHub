@@ -24,15 +24,19 @@ uniform int u_genCount;  // count of group generators
 
 
 uniform float u_domainData[DOMAIN_DATA_SIZE];
-
 uniform int u_domainCount[MAX_GEN_COUNT];
+
 uniform int u_groupCumRefCount[MAX_GEN_COUNT];
-
-
 uniform float u_groupTransformsData[TRANSFORMS_DATA_SIZE];  // transforms data
-uniform int u_texCrownCount;   // count of transforms in the crown 
-uniform float u_texCrownData[CROWN_DATA_SIZE];  // crown transforms data 
-uniform int u_texCrownRefCount[MAX_CROWN_COUNT];          // reflections count per transform
+
+uniform int u_cTransCumRefCount[MAX_GEN_COUNT];
+uniform float u_cTransformsData[TRANSFORMS_DATA_SIZE];  // transforms data
+
+
+
+//uniform int u_texCrownCount;   // count of transforms in the crown 
+//uniform float u_texCrownData[CROWN_DATA_SIZE];  // crown transforms data 
+//uniform int u_texCrownRefCount[MAX_CROWN_COUNT];          // reflections count per transform
 
 
 void init(void){
@@ -59,7 +63,11 @@ vec4 getCrownTexturePacked(vec3 pnt,
 	//we will populate an array of colors, and then work out which one we want.
 
 		
-	colors[0]=getTexture(pnt, scale);// the identity
+	colors[0]=u_backgroundColor; //getTexture(pnt, scale);// the identity
+	// we are going to pick this up in the full crown transforms list. 
+	//color = colors[0];
+	
+
 	if(u_useSymmetryBlending==0){overlay(color, colors[0]);}
 	for(int g = 0; g < count; g++)
 		{ //walk through the crown and generate an array of colors. 
@@ -130,7 +138,7 @@ vec4 getColor(vec2 p){
 	if(0< inDomainQ(porig, u_domainData, u_domainCount, u_genCount, pixelSize)
 	){
 
-		vec4 newcolor = getCrownTexturePacked(p3, u_groupTransformsData, u_groupCumRefCount, u_genCount, scale);						
+		vec4 newcolor = getCrownTexturePacked(p3, u_cTransformsData, u_cTransCumRefCount, u_genCount, scale);						
 
 	 	overlay(color, newcolor);
 		// scale is  worked out in getCrownTexturePacked

@@ -135,7 +135,8 @@ var grouphandler = new WallPaperGroup_General({
     new SymmetryUIController({
         domainShowingQ: false,
         overlayCanvas: document.getElementById('overlay'),
-        styles: STYLES
+        styles: STYLES,
+
     })
 })
 
@@ -223,14 +224,17 @@ const orbPrograms = {
     patternFromFDRenderer:progPatternFromFDRenderer,
 };
 
+    
+const myPatternMaker = new PatternTextures({textures: [MyTextures, MyTextures, MyTextures]})
+
 const myDomainBuilder = new DomainBuilder({
         MAX_GEN_COUNT:       20,
         MAX_TOTAL_REF_COUNT: 30,
-        USE_PACKING:        true
+        USE_PACKING:        true,
+        patternMaker:   myPatternMaker, //for access to the texture data, to pass into the group builder
     });
     
-    
-const myPatternMaker = new PatternTextures({textures: [MyTextures, MyTextures, MyTextures]})
+
 
 const myNavigator = new InversiveNavigator();
 

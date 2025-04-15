@@ -79,40 +79,6 @@ vec4 getTextureValueWithBoundaries(vec3 pnt, sampler2D sampler, float scale, flo
 
 
 
-vec4 getCrownTexturePacked(vec3 pnt, 
-                    //float cd[CROWN_DATA_SIZE], // transforms data 
-                    float cd[TRANSFORMS_DATA_SIZE], // transforms data 
-                    //int rc[MAX_CROWN_COUNT],  // reflection counts per transform 
-                    int rc[MAX_GEN_COUNT],  // reflection counts per transform 
-											// NOTE THAT THIS IS NOW CUMULATIVE
-                    int count, // count of transforms 
-                    float scale  // scale to use 
-                    ){
-	
-	vec4 color = vec4(0,0,0,0);
-	
-	for(int g = 0; g < count; g++){// webgl2 allows variable-length loops
-		int startCount = 0;
-		if(g > 0){
-      startCount=rc[g-1];
-    }
-		int rCount = rc[g]-startCount;
-
-		vec3 v  = pnt;  
-		float ss = scale;
-		// apply transform g
-		for(int r = 0; r  < rCount; r++){
-			int RIND=(5*(startCount + r));
-			iSPlane splane = iGeneralSplane(vec4(cd[RIND], cd[RIND+1], cd[RIND+2], cd[RIND+3]), int(cd[RIND+4]));
-			iReflect(splane, v, ss);							
-		}
-	//	overlay(color, getTexture(v, ss));	
-	color = 				getTexture(v, ss);
-	}
-	return color;
-}
-
-
 vec4 getColor(vec2 p){
 
 
@@ -155,7 +121,7 @@ vec4 getColor(vec2 p){
 		float ww = .06*scale*u_pixelSize;
 	
 		if(u_drawLines==1){
-		overlay(color,iGetWalledFundDomainOutline(p3, u_domainData,u_domainCount, u_genCount, u_lineColor,10.*ww, ww,0.));
+		overlay(color,iGetWalledFundDomainOutline(porig, u_domainData,u_domainCount, u_genCount, u_lineColor,10.*ww, ww,0.));
 		}
 
 
@@ -172,7 +138,9 @@ vec4 getColor(vec2 p){
   //texture2 = getTextureValueWithBoundaries(pt2draw, u_FDdata,scale, u_zoom, u_aspect);
   // texture2= .3*texture2;
   //	overlay(color,texture2);
- 
+
+ 	color = getTextureValueWithBoundaries(porig, u_FDdata,scale, u_zoom, u_aspect);
+
   return color;
     
 }`
