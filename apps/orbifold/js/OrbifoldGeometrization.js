@@ -1573,7 +1573,7 @@ export function getCrownTransforms(){
     let s = sPlaneSwapping(pt2,pt3);
     let r = sPlaneSwapping(pt1,pt4);
 
-    return [[t,t],[t,s],[t,r]];
+    return [[t,t],[t,s],[t,r,s,t]];
 }
 
 

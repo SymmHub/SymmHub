@@ -578,7 +578,7 @@ export class GroupRenderer {
       
         this.gFDBuffer = createFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
         
-        this.mGLCtx.gl.disable(this.mGLCtx.gl.BLEND);        
+       // this.mGLCtx.gl.disable(this.mGLCtx.gl.BLEND);        
         //this.mGLCtx.gl.viewport(0, 0, this.gSimBuffer.width, this.gSimBuffer.height);      
         this.mGLCtx.gl.viewport(0, 0, this.gFDBuffer.width, this.gFDBuffer.height);      
        
@@ -590,7 +590,7 @@ export class GroupRenderer {
         let center = un.u_center; 
         un.u_center = [0.0,0.0]; 
         pr.setUniforms(un);
-        //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ONE,this.mGLCtx.gl.ZERO);
+        this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ONE,this.mGLCtx.gl.ZERO);
        
         var notdebugging = (this.domainBuilder.params.debug);
         if(notdebugging){ 
