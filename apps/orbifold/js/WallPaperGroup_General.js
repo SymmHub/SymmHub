@@ -61,14 +61,15 @@ from './OrbifoldGeometrization.js';
 
 import {
     random,
-    isDefined
+    isDefined,TORADIANS,cos,sin,asin,log,
 }
 from '../../../lib/invlib/Utilities.js';
 
 import {
-    sPlaneThrough
+    sPlaneThrough,sPlaneSwapping,complexN
 }
 from '../../../lib/invlib/ComplexArithmetic.js';
+
 
 const DEFAULT_INCREMENT = 1.e-8;
 
@@ -107,6 +108,7 @@ export class WallPaperGroup_General {
         // If the fundamental domain is not being shown, it is empty.
         this.needsShiftQ = false;
         this.paramGuiFolder = null;
+        this.patternMaker=options.patternMaker;
 
     }
 
@@ -333,6 +335,7 @@ export class WallPaperGroup_General {
         var bounds = [];
         var transforms;
         var interiors = [];
+        var crowntransforms=[];
 
         if (this.curvature < 0) {
 
@@ -349,11 +352,7 @@ export class WallPaperGroup_General {
 
             transforms = this.generators;
 
-            var pp = this.patternMaker;
-
-            this.crowntransforms = getCrownTransforms(this.assembledFD,this);//?
-            var crowntransforms = this.crowntransforms;
-
+          
             
             var i,ss;
             var fdpts = this.assembledFD[0][0]; //these are the vertices, which can be passed along if we wish to.
@@ -391,6 +390,7 @@ export class WallPaperGroup_General {
                 abound["label"] = x[1];
                 return [abound];
             })
+
         } //endif curvature<0
         else if (this.curvature >= 0) {
             var igroup = getNonnegativeGroupData(this.standardName, this);
@@ -402,12 +402,69 @@ export class WallPaperGroup_General {
             transforms = igroup.t;
             interiors = [];
         }
+
+
+        var patMak = this.patternMaker;
+
+        var patMakpar = patMak.params;
+
+        // for the moment we are assuming that there is 
+        // only one active texture, the first one.
+        /*var centers=[], scales=[],  tcount = 0;
+
+        for(var i = 0; i < patMak.texCount; i++) {
+  
+            if(patMakpar['active' + i]){
+                tcount++;
+                var s = Math.exp(-patMakpar['scale' + i]);
+                var angle = patMakpar['angle' + i]*TORADIANS;
+                scales.push(s*cos(angle)); 
+                scales.push(s*sin(angle)); 
+                centers.push(patMakpar['cx' + i]);
+                centers.push(patMakpar['cy' + i]);
+            }
+        }*/
+
+        if(isDefined(patMakpar['cx0'])&&isDefined(patMakpar['cy0'])&&isDefined(patMakpar['scale0']))
+        {
+            var center = [patMakpar['cx0'],patMakpar['cy0']];
+
+            var s = Math.exp(-patMakpar['scale0']);
+            var angle = patMakpar['angle0']*TORADIANS;
+            var scale = [s*cos(angle),s*sin(angle)]; // a complex homothety
+        
+            var temp = [getCrownTransforms(bounds, transforms,center,scale)]; 
+            this.crowntransforms = temp;
+            // put together the crown transforms, as an array for each active texture
+            // store these as an array
+
+            crowntransforms = this.crowntransforms;
+        }
+        else
+        {   crowntransforms = [[sPlaneSwapping(new complexN(.1,0.), new complexN(-.1,.3))]];
+        }
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        // Create the fundamental domain:
+
         this.FD = {
             s: bounds,
             t: transforms,
             i: interiors,
             c: crowntransforms,
         }; 
+
         //this is passed along to getGroup, below, which in turn is called from
         // calculateGroup in DefaultGroupRenderer.
         // That is called in a number of places, particularly getUniforms

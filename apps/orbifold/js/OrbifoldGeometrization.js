@@ -5,6 +5,13 @@ import {sPlanesOfRotation,complexN,poincareTurtleMove,poincareMobiusEdgeToEdge,
     from '../../../lib/invlib/ComplexArithmetic.js';
 import {PI,HPI,TPI,abs,cos,cosh,sin,sinh,coth,asin,sqrt,cot,acosh,asinh,tanh} 
   from '../../../lib/invlib/Utilities.js';
+import {iToFundDomain} 
+  from '../../../lib/invlib/Inversive.js';
+import {iSplane,SPLANE_POINT} 
+  from '../../../lib/invlib/ISplane.js';
+
+
+  
 //////////////////////////////////////////////////
 
 //////////////////////////////////////////////////
@@ -1549,7 +1556,8 @@ export function willOrbifoldFitQ(atomList,MAX_GEN_COUNT,MAX_REF_COUNT,MAX_DOMAIN
   
 }
 
-export function getCrownTransforms(){ 
+export function getCrownTransforms(domain,transforms,center,scale){ 
+
 // given a complex center and rotation, together with a list of group generators
 // for each vertex in a relatively fine grid, pull back to the fundamental domain.
 // For the resulting transform, hash with the image of some generic point in the interior of the fundamental domain.
@@ -1557,8 +1565,39 @@ export function getCrownTransforms(){
 // We are working in Splaneworld   
 // This is called from updateTheGroupGeometry in WallPaperGroup_General
 // in order to make this work, we need the center and a complex scaling (homethety) of a texture
+    
+    // for the moment, we'll just make a simple grid of points. It would be smarter to make
+    // concentric rings of approx equidistant points (i.e. at radius r, e^r points around) 
+    // but for bounded r. 
 
-   // var pp = myPatternMaker;
+    // We may hapharzardly miss bits of the texture towards the boundary as 
+    // the FD is small; a simple solution is to bound r.
+
+    var steps = 10;
+    var delta = 1/(steps -1);
+    var ss=[1,2];
+    for(var i=0; i<steps;i++){
+        ss[0] = 
+        center[0]+
+        delta*(.5+i-
+            .5*scale[0]);
+        ss[1] = center[1]+delta*(i-scale[1]/2+1/2);
+        for(var j=0;j<steps;j++){
+            ss[0] = ss[0]+center[0]+delta*(i+scale[1]/2+1/2);
+            ss[1] = ss[1]+center[1]+delta*(i-scale[0]/2+1/2);
+            //tt is a point in the grid of the placed texture in math coordinates
+
+            //now we pull the point back to the FD:
+
+
+        }
+    }
+
+    var vv = new iSplane({v:[ss[0],ss[1],0,0], type:SPLANE_POINT});
+    var dd = iDistanceU4(domain[0], vv);
+
+    pp = iToFundDomain(domain, transforms, vv,20);
+
     let pt1 = new complexN(.1,0.);
     let pt2 = new complexN(.15,0.);
     let pt3 = new complexN(-.1,0.);

@@ -130,6 +130,11 @@ const JSONpresets = [
     },
 ];
 
+const MyTextures = Textures.t1.concat(Textures.t2);
+
+const myPatternMaker = new PatternTextures({textures: [MyTextures, MyTextures, MyTextures]})
+
+
 var grouphandler = new WallPaperGroup_General({
     symmetryUI:
     new SymmetryUIController({
@@ -137,14 +142,16 @@ var grouphandler = new WallPaperGroup_General({
         overlayCanvas: document.getElementById('overlay'),
         styles: STYLES,
 
-    })
+    }),
+    patternMaker:       myPatternMaker
 })
 
-const MyTextures = Textures.t1.concat(Textures.t2);
 
-//************* SOON
+//////////////////////////
+//
+// ************* SOON
 
-//const MyOverlays = OverlayTextures.t1.concat(OverlayTextures.t2);
+// const MyOverlays = OverlayTextures.t1.concat(OverlayTextures.t2);
 
 
 // fragments to be used; OF is listed out in ./shaders/modules.js
@@ -224,15 +231,11 @@ const orbPrograms = {
     patternFromFDRenderer:progPatternFromFDRenderer,
 };
 
-    
-const myPatternMaker = new PatternTextures({textures: [MyTextures, MyTextures, MyTextures]})
-
 const myDomainBuilder = new DomainBuilder({
         MAX_GEN_COUNT:       20,
         MAX_TOTAL_REF_COUNT: 30,
         USE_PACKING:        true,
-        patternMaker:   myPatternMaker, //for access to the texture data, to pass into the group builder
-    });
+      });
     
 
 
