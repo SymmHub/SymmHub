@@ -429,19 +429,22 @@ export class WallPaperGroup_General {
         {
             var center = [patMakpar['cx0'],patMakpar['cy0']];
 
-            var s = Math.exp(-patMakpar['scale0']);
-            var angle = patMakpar['angle0']*TORADIANS;
+            var s =  Math.exp(patMakpar['scale0']);
+            var angle = -patMakpar['angle0']*TORADIANS;
             var scale = [s*cos(angle),s*sin(angle)]; // a complex homothety
         
-            var temp = [getCrownTransforms(bounds, transforms,center,scale)]; 
-            this.crowntransforms = temp;
+            var gcT= getCrownTransforms(bounds, transforms,center,scale); 
+
+            this.crowntransforms =gcT;
+            
             // put together the crown transforms, as an array for each active texture
             // store these as an array
 
             crowntransforms = this.crowntransforms;
         }
         else
-        {   crowntransforms = [[sPlaneSwapping(new complexN(.1,0.), new complexN(-.1,.3))]];
+        {   
+            crowntransforms = [[sPlaneSwapping(new complexN(.1,0.), new complexN(-.1,.3))]];
         }
         
 

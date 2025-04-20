@@ -426,6 +426,7 @@ export class GroupRenderer {
     //
     //  create GUI for pattern maker
     //
+    // 
     initPatternGUI(pmaker, gui, folder, onChanged) {
 
         pmaker.initGUI({
@@ -593,7 +594,7 @@ export class GroupRenderer {
         this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ONE,this.mGLCtx.gl.ZERO);
        
         var notdebugging = (this.domainBuilder.params.debug);
-        if(notdebugging){ 
+        if(!notdebugging){ 
             pr.blit(this.gFDBuffer);
 
             //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ZERO,this.mGLCtx.gl.ONE);
@@ -652,6 +653,7 @@ export class GroupRenderer {
     //
     onGroupChanged() {
 
+        this.getGroup();
         if (this.params.debug)
             console.log("GroupRendederer.onGroupChanged()");
 
@@ -675,6 +677,10 @@ export class GroupRenderer {
     //   called when pattern params were changed
     //
     onPatternChanged() {
+
+        this.onGroupChanged(); 
+
+            // for now; we can trim this up if there's any timing issue.
 
         this.repaint();
 
@@ -975,8 +981,8 @@ export class GroupRenderer {
     } // onStartAnimationExport()
     
     getGroup(){
-        //let gm = this.groupMaker.get
-        return null;
+        this.groupMaker.updateTheGroupGeometry();
+        return this.groupMaker.getGroup();
     }
 
 } // class GroupRenderer

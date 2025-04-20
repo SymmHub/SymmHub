@@ -1,11 +1,11 @@
 import {sPlanesOfRotation,complexN,poincareTurtleMove,poincareMobiusEdgeToEdge,
   poincareMobiusTranslateFromToByD,sPlaneSwapping,poincareMobiusRotationAboutPoint,
-  sPlaneReflectAcross,makeMobius,
+  sPlaneReflectAcross,makeMobius,cMul,
   poincarePt,poincareMobiusTranslateToO,sPlanesMovingEdge1ToEdge2} 
     from '../../../lib/invlib/ComplexArithmetic.js';
 import {PI,HPI,TPI,abs,cos,cosh,sin,sinh,coth,asin,sqrt,cot,acosh,asinh,tanh} 
   from '../../../lib/invlib/Utilities.js';
-import {iToFundDomain} 
+import {iToFundDomainWBounds,iDistanceU4,iTransformU4,iGetInverseTransform,iGetFactorizationU4} 
   from '../../../lib/invlib/Inversive.js';
 import {iSplane,SPLANE_POINT} 
   from '../../../lib/invlib/ISplane.js';
@@ -1557,6 +1557,7 @@ export function willOrbifoldFitQ(atomList,MAX_GEN_COUNT,MAX_REF_COUNT,MAX_DOMAIN
 }
 
 export function getCrownTransforms(domain,transforms,center,scale){ 
+//center and scale are of the overlaid texture
 
 // given a complex center and rotation, together with a list of group generators
 // for each vertex in a relatively fine grid, pull back to the fundamental domain.
@@ -1573,46 +1574,105 @@ export function getCrownTransforms(domain,transforms,center,scale){
     // We may hapharzardly miss bits of the texture towards the boundary as 
     // the FD is small; a simple solution is to bound r.
 
-    var steps = 10;
+
+
+    var steps = 4;
     var delta = 1/(steps -1);
-    var ss=[1,2];
+
+    var pp,vv;
+    var pointregistry=[],registrypoint;
+    var trpointregistry;
+
+    // we begin by adding the identity into the transform registry
+    let tt = sPlaneSwapping(new complexN(.1,0.),new complexN(.15,.1));
+    var transformregistry=[[tt,tt]];
+
+
+    var foundaregistrypoint = false;
+    var safety=0;
+    var r,t,ss,cc;
+    var sptx,spty,ptx,pty;
+
+    var listofpointsfordebug=[];// this will go away.
+
+    while(!foundaregistrypoint && safety++<1000){// this is uniform? across a disk of radius .9 
+        // We just need one!
+        r = Math.sqrt(Math.random())* .9;
+        t = 6.2825 * Math.random();
+        cc=Math.round(1000*r*Math.cos(t));
+        ss=Math.round(1000*r*Math.sin(t));
+        registrypoint = new iSplane({v:[.001*cc,.001*ss,0,0], type:SPLANE_POINT});
+        var bb =(iToFundDomainWBounds(domain, transforms,registrypoint,20));
+        foundaregistrypoint = bb.inDomain;
+    }// actually, the only thing that matters is that the base point isn't on an edge
+    // so even if we've missed the safety check, we're probably still fine.
+    
+  
+
+
+//////////////  //clip this when done debugging
+    cc=0;ss=0;
+
+    registrypoint=new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
+//////////////
+
+
+    // the point registry records the copies of the registry point that we've 
+    // already seen, in order to keep track of the transforms that we've already seen.
+    pointregistry=[[cc,ss]]; //scaled up to integers 1000 x as big.
+
+    // to make a nice picture for debugging, we also include the transformed images of the registered points.
+    trpointregistry=[[registrypoint.v[0],registrypoint.v[1]]];
+
+
+    // now make a grid: 
     for(var i=0; i<steps;i++){
-        ss[0] = 
-        center[0]+
-        delta*(.5+i-
-            .5*scale[0]);
-        ss[1] = center[1]+delta*(i-scale[1]/2+1/2);
+
+        sptx = center[0]/*center*/  - scale[0]/2 + scale[1]/2 /*corner*/ +i*delta*scale[0];/*one direction*/
+        spty = center[1]            - scale[1]/2 - scale[0]/2         +i*delta*scale[1];
+        
         for(var j=0;j<steps;j++){
-            ss[0] = ss[0]+center[0]+delta*(i+scale[1]/2+1/2);
-            ss[1] = ss[1]+center[1]+delta*(i-scale[0]/2+1/2);
-            //tt is a point in the grid of the placed texture in math coordinates
 
+            ptx = sptx + j*delta*(-scale[1]);/*the other direction*/
+            pty = spty + j*delta*(scale[0]);
+
+            listofpointsfordebug.push([ptx,pty]);// to make a picture for debugging
+            
+
+            //vv is a point in the grid of the placed texture in math coordinates
+           
+            vv = new iSplane({v:[ptx,pty,0,0], type:SPLANE_POINT});
             //now we pull the point back to the FD:
+           
+            pp = iToFundDomainWBounds(domain, transforms, vv,20);
+            // returns from Inversive.js
+            //{inDomain: yes/no, transform: a list of splanes taking us back,pnt:the image of the point,word:the transform as a word in the generators,};
+            //Incidentally, domains are now lists of splanes, rather than simple splanes. For a point to be outside 
+            // of domain[i][0], it has to be inside the remaining bounds domain[i][1,2].
+            // For the moment, we ignore this and just are paying attention to domain[i][0]
 
-
+            // now, check to see if we have a new transform:
+            
+            pp.transform = iGetInverseTransform(iGetFactorizationU4(pp.transform));
+            var testpt = iTransformU4(pp.transform,registrypoint);
+            // now check to see if testpt is in the registry:
+            var foundq = false;
+            for (var ii = 0; ii<pointregistry.length && !foundq; ii++){
+                var ppx = Math.round(1000*testpt.v[0]);
+                var ppy = Math.round(1000*testpt.v[1]);
+                foundq=(ppx == pointregistry[ii][0] && ppy == pointregistry[ii][1]);
+            }
+            if(!foundq){
+                pointregistry.push([ppx,ppy]);
+                //transformregistry.push(iGetInverseTransform(iGetFactorizationU4(pp.transform)));
+               transformregistry.push(iGetFactorizationU4(pp.transform));
+                trpointregistry.push([testpt.v[0],testpt.v[1]]);
+            }
+           
         }
     }
 
-    var vv = new iSplane({v:[ss[0],ss[1],0,0], type:SPLANE_POINT});
-    var dd = iDistanceU4(domain[0], vv);
-
-    pp = iToFundDomain(domain, transforms, vv,20);
-
-    let pt1 = new complexN(.1,0.);
-    let pt2 = new complexN(.15,0.);
-    let pt3 = new complexN(-.1,0.);
-    let pt4 = new complexN(-.15,.04);
-   
-    if(pt1.abs()>.8){pt1.times(.8/pt1.abs());}
-    if(pt2.abs()>.8){pt2.times(.8/pt2.abs());}
-    if(pt3.abs()>.8){pt3.times(.8/pt3.abs());}
-    if(pt4.abs()>.8){pt4.times(.8/pt4.abs());}
-   
-    let t = sPlaneSwapping(pt1,pt2);
-    let s = sPlaneSwapping(pt2,pt3);
-    let r = sPlaneSwapping(pt1,pt4);
-
-    return [[t,t],[t,s],[t,r,s,t]];
+    return [transformregistry,listofpointsfordebug,trpointregistry];
 }
 
 

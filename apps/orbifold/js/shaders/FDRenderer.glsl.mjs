@@ -32,8 +32,6 @@ uniform float u_groupTransformsData[TRANSFORMS_DATA_SIZE];  // transforms data
 uniform int u_cTransCumRefCount[MAX_GEN_COUNT];
 uniform float u_cTransformsData[TRANSFORMS_DATA_SIZE];  // transforms data
 
-
-
 //uniform int u_texCrownCount;   // count of transforms in the crown 
 //uniform float u_texCrownData[CROWN_DATA_SIZE];  // crown transforms data 
 //uniform int u_texCrownRefCount[MAX_CROWN_COUNT];          // reflections count per transform

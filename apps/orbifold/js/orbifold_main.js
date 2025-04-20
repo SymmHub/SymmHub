@@ -11,6 +11,7 @@ import {
 }
 from './modules.js';
 
+
 //import {
     //InversiveNavigator
 //} from './InversiveNavigator_v1.js';
@@ -94,6 +95,10 @@ const STYLES = {
 const PRE_FOLDER = 'presets/';
 const JSONpresets = [
     {
+        name: '23xb',
+        path: PRE_FOLDER + '23xb.json'
+    },
+    {
         name: '23x',
         path: PRE_FOLDER + '23x.json'
     },
@@ -135,7 +140,7 @@ const MyTextures = Textures.t1.concat(Textures.t2);
 const myPatternMaker = new PatternTextures({textures: [MyTextures, MyTextures, MyTextures]})
 
 
-var grouphandler = new WallPaperGroup_General({
+var myGroupHandler = new WallPaperGroup_General({
     symmetryUI:
     new SymmetryUIController({
         domainShowingQ: false,
@@ -146,6 +151,9 @@ var grouphandler = new WallPaperGroup_General({
     patternMaker:       myPatternMaker
 })
 
+//pattern maker needs to know about myGroupHandler too:
+
+myPatternMaker[myGroupHandler]=myGroupHandler;
 
 //////////////////////////
 //
@@ -241,12 +249,12 @@ const myDomainBuilder = new DomainBuilder({
 
 const myNavigator = new InversiveNavigator();
 
-let render = new GroupRenderer({
+let myGroupRenderer = new GroupRenderer({
     // optional. use these to get custom canvas elements 
     //glCanvas:       document.getElementById('glCanvas'),
     //overlayCanvas:  document.getElementById('overlay'),
     //container:      document.getElementById('canvasContainer'),    
-    groupMaker:         grouphandler,
+    groupMaker:         myGroupHandler,
     patternMaker:       myPatternMaker,
     domainBuilder:      myDomainBuilder, 
     navigator:          myNavigator,
@@ -258,6 +266,6 @@ let render = new GroupRenderer({
     useInternalWindows: true,
 });
 
-render.init();
+myGroupRenderer.init();
 
 //  symmetryUI.init();
