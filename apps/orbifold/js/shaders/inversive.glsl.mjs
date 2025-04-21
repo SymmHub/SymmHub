@@ -1,5 +1,11 @@
 export const inversive = 
 `
+
+/////////////////////   
+/**  Inversive.glsl */
+
+
+
 #ifndef PI 
 #define PI 3.1415926535897932384626433832795
 #endif 
@@ -30,8 +36,6 @@ export const inversive =
 // size of single moebius transform data 
 #define TRANSFORM_DATA_SIZE (MAX_REF_COUNT*SPLANE_DATA_SIZE)
 
-// size of array to hold group transform data 
-#define TRANSFORMS_DATA_SIZE (MAX_GEN_COUNT*TRANSFORM_DATA_SIZE)
 
 // size of array to hold crown transform data 
 #define CROWN_DATA_SIZE (MAX_CROWN_COUNT*TRANSFORM_DATA_SIZE)

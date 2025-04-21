@@ -1551,7 +1551,9 @@ function generateGroup(normedGens,depth, t= globalMobTransform,margin=.03,safety
 
 
 export function willOrbifoldFitQ(atomList,MAX_GEN_COUNT,MAX_REF_COUNT,MAX_DOMAIN_SIZE){
+  // Just a stub for now
   // how big will the orbifold be?
+    // MAX_REF_COUNT should be the maximum number of reflections that will be packed into the transform list
   return false;
   
 }
@@ -1576,7 +1578,7 @@ export function getCrownTransforms(domain,transforms,center,scale){
 
 
 
-    var steps = 4;
+    var steps = 45;//2025 test points
     var delta = 1/(steps -1);
 
     var pp,vv;
@@ -1614,6 +1616,7 @@ export function getCrownTransforms(domain,transforms,center,scale){
     cc=0;ss=0;
 
     registrypoint=new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
+
 //////////////
 
 
@@ -1655,7 +1658,10 @@ export function getCrownTransforms(domain,transforms,center,scale){
             
             pp.transform = iGetInverseTransform(iGetFactorizationU4(pp.transform));
             var testpt = iTransformU4(pp.transform,registrypoint);
-            // now check to see if testpt is in the registry:
+            // if the testpt is too far out, let's not use it. 
+            // this is hard-coded as within .8 in Euclidean distance from the origin.
+
+            // now check to see if testpt is in the registry
             var foundq = false;
             for (var ii = 0; ii<pointregistry.length && !foundq; ii++){
                 var ppx = Math.round(1000*testpt.v[0]);
@@ -1665,7 +1671,7 @@ export function getCrownTransforms(domain,transforms,center,scale){
             if(!foundq){
                 pointregistry.push([ppx,ppy]);
                 //transformregistry.push(iGetInverseTransform(iGetFactorizationU4(pp.transform)));
-               transformregistry.push(iGetFactorizationU4(pp.transform));
+               transformregistry.push(pp.transform);
                 trpointregistry.push([testpt.v[0],testpt.v[1]]);
             }
            

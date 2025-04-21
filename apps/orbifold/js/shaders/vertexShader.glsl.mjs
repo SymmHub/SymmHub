@@ -1,5 +1,9 @@
 export const vertexShader = 
 `
+
+/////////////////////   
+/**  vertexShader.glsl */
+
 VS_IN vec3 position;
 VS_OUT vec2 vUV;
 

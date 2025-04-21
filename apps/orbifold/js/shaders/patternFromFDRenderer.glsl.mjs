@@ -2,6 +2,13 @@
 
 export const patternFromFDRenderer = 
 `
+
+//////////////////////////////////   
+/**  PatternFromFDRenderer.glsl */
+
+// This renders the hyp plane from a FD texture, overlaying uniform lines
+
+
 uniform sampler2D u_FDdata;
 
 //general reflection group params 

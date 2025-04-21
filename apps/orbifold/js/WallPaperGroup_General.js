@@ -275,7 +275,9 @@ export class WallPaperGroup_General {
             //console.log(arrayToString(this.atomList))
 
             // only use if webgl is being used.
-            // However, willOrbifoldFitQ is currently set to return false always. 
+            // HOWEVER willOrbifoldFitQ is currently set to return false always.
+            // For the time being, if too large a symbol is entered... nothing happens!
+            // TO DO: 
             if (this.renderer && willOrbifoldFitQ(this.atomList, this.renderer.MAX_GEN_COUNT,
                     this.MAX_REF_COUNT, this.MAX_DOMAIN_SIZE)) {
                 this.rebuildGui("Reduce the size of the orbifold symbol");

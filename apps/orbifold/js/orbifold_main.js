@@ -95,12 +95,12 @@ const STYLES = {
 const PRE_FOLDER = 'presets/';
 const JSONpresets = [
     {
-        name: '23xb',
-        path: PRE_FOLDER + '23xb.json'
-    },
-    {
         name: '23x',
         path: PRE_FOLDER + '23x.json'
+    },
+    {
+        name: '23xb',
+        path: PRE_FOLDER + '23xb.json'
     },
     {
         name: '3333_b',
@@ -240,8 +240,16 @@ const orbPrograms = {
 };
 
 const myDomainBuilder = new DomainBuilder({
-        MAX_GEN_COUNT:       20,
-        MAX_TOTAL_REF_COUNT: 30,
+
+       // REF_DATA_SIZE is imported from DataPacking.js, should we need it.
+        
+        MAX_GEN_COUNT:       20, //
+        MAX_TOTAL_REF_COUNT: 100, // the max size of the array passed into frag
+        
+            
+
+        MAX_CROWN_COUNT:     50,
+        MAX_TOTAL_CROWN_COUNT:250,
         USE_PACKING:        true,
       });
     

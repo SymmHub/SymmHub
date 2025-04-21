@@ -2,6 +2,9 @@
 
 export const FDRenderer = 
 `
+	
+/////////////////////	
+/**  FDRenderer.glsl */
 
 
 //general reflection group params 
@@ -29,12 +32,10 @@ uniform int u_domainCount[MAX_GEN_COUNT];
 uniform int u_groupCumRefCount[MAX_GEN_COUNT];
 uniform float u_groupTransformsData[TRANSFORMS_DATA_SIZE];  // transforms data
 
-uniform int u_cTransCumRefCount[MAX_GEN_COUNT];
-uniform float u_cTransformsData[TRANSFORMS_DATA_SIZE];  // transforms data
+uniform int u_cTransCumRefCount[MAX_CROWN_COUNT];
+uniform float u_cTransformsData[MAX_TOTAL_CROWN_COUNT];  // transforms data
+uniform int u_crownCount;   // count of transforms in the crown 
 
-//uniform int u_texCrownCount;   // count of transforms in the crown 
-//uniform float u_texCrownData[CROWN_DATA_SIZE];  // crown transforms data 
-//uniform int u_texCrownRefCount[MAX_CROWN_COUNT];          // reflections count per transform
 
 
 void init(void){
@@ -42,12 +43,9 @@ void init(void){
 }
 
 vec4 getCrownTexturePacked(vec3 pnt, 
-                    //float cd[CROWN_DATA_SIZE], // transforms data 
-                    float cd[TRANSFORMS_DATA_SIZE], // transforms data 
-                    //int rc[MAX_CROWN_COUNT],  // reflection counts per transform 
-                    int rc[MAX_GEN_COUNT],  // reflection counts per transform 
-											// NOTE THAT THIS IS NOW CUMULATIVE
-                    int count, // count of transforms 
+                    float cd[MAX_TOTAL_CROWN_COUNT], // transforms data 
+                    int rc[MAX_CROWN_COUNT],  // reflection counts per transform 
+										int count, // count of transforms 
                     float scale  // scale to use 
                     ){
 	
@@ -136,7 +134,7 @@ vec4 getColor(vec2 p){
 	if(0< inDomainQ(porig, u_domainData, u_domainCount, u_genCount, pixelSize)
 	){
 
-		vec4 newcolor = getCrownTexturePacked(p3, u_cTransformsData, u_cTransCumRefCount, u_genCount, scale);						
+		vec4 newcolor = getCrownTexturePacked(p3, u_cTransformsData, u_cTransCumRefCount, u_crownCount, scale);						
 
 	 	overlay(color, newcolor);
 		// scale is  worked out in getCrownTexturePacked

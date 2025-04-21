@@ -453,27 +453,34 @@ export class SymmetryUIController{
         if(DEBUG)console.log(`${MYNAME}.render()`,this.domainShowingQ);
 
      
-/*
+
       // for the moment, for some debugging:
       var aa = (this.groupMaker.getGroup()).c,a,b;
       if(aa.length>1){
         a = aa[1];
         b = aa[2];
-        for(var i = 0; i<a.length;i++){
+     /*   // a grid of points showing the sampling; can delete FD.c[1]
+     for(var i = 0; i<a.length;i++){
         //var aa = iPoint(a[i][0],a[i][1],0,0);
           iDrawPoint(a[i],context,transform,{
                     style: "#FF0000",
-                    radius: 6
+                    radius: 4
                 });}
 
-        for(var i = 0; i<b.length;i++){
+*/
+  /*      for(var i = 0; i<b.length;i++){
           iDrawPoint(b[i],context,transform,{
-                    style: "#00F0FF",
+                    style: "#CCCC0099",
+                    radius: 14
+                });
+          iDrawPoint(b[i],context,transform,{
+                    style: "#0070FF",
                     radius: 12
                 });
-      }}
+      }*/
+      }
 
-*/
+
 
         if(!this.domainShowingQ) {
             this.FDPoints=[];

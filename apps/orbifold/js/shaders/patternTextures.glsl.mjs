@@ -1,5 +1,11 @@
 export const patternTextures = `
 
+
+/////////////////////   
+/**  PatternTextures.glsl */
+
+
+
 #ifndef MAX_TEX_COUNT
 #define MAX_TEX_COUNT 4
 #endif 
