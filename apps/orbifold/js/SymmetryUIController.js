@@ -16,7 +16,7 @@ import {
     lengthKeys,
     twistKeys
     
-} from '../../../lib/invlib/OrbifoldGeometrization.js';
+} from './OrbifoldGeometrization.js';
 
 import {
     objectToString,
@@ -37,8 +37,13 @@ import {
 } from '../../../lib/invlib/Inversive.js';
 
 import {
-    iDrawSplane
+    iDrawSplane,iDrawLargeCircle,iDrawPoint
 } from '../../../lib/invlib/IDrawing.js';
+
+import {
+    iPoint
+} from '../../../lib/invlib/ISplane.js';
+
 
 import {
     getCopy
@@ -446,6 +451,37 @@ export class SymmetryUIController{
   
     render(context,transform){
         if(DEBUG)console.log(`${MYNAME}.render()`,this.domainShowingQ);
+
+     
+
+      // for the moment, for some debugging:
+      var aa = (this.groupMaker.getGroup()).c,a,b;
+      if(aa.length>1){
+        a = aa[1];
+        b = aa[2];
+     /*   // a grid of points showing the sampling; can delete FD.c[1]
+     for(var i = 0; i<a.length;i++){
+        //var aa = iPoint(a[i][0],a[i][1],0,0);
+          iDrawPoint(a[i],context,transform,{
+                    style: "#FF0000",
+                    radius: 4
+                });}
+
+*/
+  /*      for(var i = 0; i<b.length;i++){
+          iDrawPoint(b[i],context,transform,{
+                    style: "#CCCC0099",
+                    radius: 14
+                });
+          iDrawPoint(b[i],context,transform,{
+                    style: "#0070FF",
+                    radius: 12
+                });
+      }*/
+      }
+
+
+
         if(!this.domainShowingQ) {
             this.FDPoints=[];
             return;

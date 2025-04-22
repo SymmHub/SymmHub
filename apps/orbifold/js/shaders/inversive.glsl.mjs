@@ -1,5 +1,11 @@
 export const inversive = 
 `
+
+/////////////////////   
+/**  Inversive.glsl */
+
+
+
 #ifndef PI 
 #define PI 3.1415926535897932384626433832795
 #endif 
@@ -30,8 +36,6 @@ export const inversive =
 // size of single moebius transform data 
 #define TRANSFORM_DATA_SIZE (MAX_REF_COUNT*SPLANE_DATA_SIZE)
 
-// size of array to hold group transform data 
-#define TRANSFORMS_DATA_SIZE (MAX_GEN_COUNT*TRANSFORM_DATA_SIZE)
 
 // size of array to hold crown transform data 
 #define CROWN_DATA_SIZE (MAX_CROWN_COUNT*TRANSFORM_DATA_SIZE)
@@ -98,7 +102,15 @@ float getAngle(float n){
 //  B over A    most common combination: 
 // (0, A, B, B) 
 void overlay(inout vec4 ca, vec4 cb){
-	ca = (1.-cb.w)*ca + cb;
+	ca = (1.-cb.w)*ca + cb;  //something goes wrong here if ca.w is close to 0
+	/*ca.x = clamp(ca.x,0.,1.);
+	ca.y = clamp(ca.y,0.,1.);
+	ca.z = clamp(ca.z,0.,1.);
+	ca.w = clamp(ca.w,0.,1.);*/
+}
+
+void layover(inout vec4 ca, vec4 cb){
+	ca = (1.-ca.w)*cb+ca;
 }
 
 void iCombineBoverA(inout vec4 ca, vec4 cb){
@@ -330,6 +342,9 @@ float iToFundamentalDomain(iFundamentalDomain fd, inout vec3 p, inout int inDoma
 	return dist;
 	
 }
+
+
+
 
 //
 //  transforms point into fundamental domain of inversive group 
@@ -709,7 +724,7 @@ void initCrown(in float transData[CROWN_DATA_SIZE], // array of raw transform da
 
 
 //
-//  apply moebius transform to the point 
+//  apply series of inversions to the point 
 //
 void transformPoint(inout vec3 v, float td[TRANSFORM_DATA_SIZE], inout float ss){
 
@@ -727,22 +742,22 @@ void transformPoint(inout vec3 v, float td[TRANSFORM_DATA_SIZE], inout float ss)
 	
 */
 void iToWalledFundamentalDomain(
-
 	inout vec3 p,  
-	in float transData[TRANSFORMS_DATA_SIZE], // array of raw transform data 
-	in float domainData[DOMAIN_DATA_SIZE],  // array of raw domain data 
+	in float transData[TRANSFORMS_DATA_SIZE], // array of raw transform data, not nec generators
+	in float domainData[DOMAIN_DATA_SIZE],  // array of raw domain data; this includes the generators
 	in int domainCount[MAX_GEN_COUNT], // cumulative count of sides per fd
 	in int refCount[MAX_GEN_COUNT],  // cumulative count of reflections for each generator
-	in int genCount, // generators count       
+	in int genCount, // generators count  <-- ??     
 	out int inDomain, 
 	out int refcount, 
 	inout float scale, 
-	int iterations){
+	int iterations)
+{
         
 	refcount = 0;
 	inDomain = 0;
 	int check;
-	int sind,rind,startCount,rCount, eCount;
+	int sind,rind,startCount,rCount, endCount;
 //	int indMinus,indPlus;
 	iSPlane sp;
 	
@@ -750,18 +765,18 @@ void iToWalledFundamentalDomain(
 	for(int count = 0; count < iterations; count++){
 		int found = 0;
 		// we move the point into interior of fundamental domain, where all distance should be negative 
-		for(int g =0; g < genCount; g++){
+		for(int g =0; g < genCount; g++){  //genCount is coming from trans
 			
-			check=1;		
+			check=1;		//found when check<0
 			
 			if(g==0)
         startCount=0;
 			else 
         startCount = domainCount[g-1];
       
-			eCount = domainCount[g]-startCount;
+			endCount = domainCount[g]-startCount;
 			
-			for(int gg =0; gg < eCount && check > 0; gg++){
+			for(int gg =0; gg < endCount && check > 0; gg++){
 				sind=5*(startCount+gg);
 				sp	= iGeneralSplane(vec4(domainData[sind], domainData[sind+1], domainData[sind+2], domainData[sind+3]), int(domainData[sind+4]));
 				if(iDistance(sp, p) <= 0.)
@@ -798,6 +813,83 @@ void iToWalledFundamentalDomain(
 }
 
 
+
+int inDomainQ(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int domainCount[MAX_GEN_COUNT], int count, float pixelSize){
+	float d = 1.;
+	int ind;
+	int ii;
+	int insideQ = 1;
+	
+	for(int i =0; i < count && insideQ>0; i++){
+			int use = 0;//a priori, doesn't count against being inside
+
+			if(i==0){ii=0;}
+			else{ii=domainCount[i-1];}
+			ind = 5*ii;			
+			iSPlane sp = iGeneralSplane(vec4(sides[ind], sides[ind+1], sides[ind+2], sides[ind+3]), int(sides[ind+4]));      
+			float dd = iDistance(sp,pnt);
+			// are we on the inside of this wall?
+			// 
+			if(dd>pixelSize){
+				// further check to see if this domain wall should even count:
+				// In other words, check against the bounds of the wall, if there are any
+				use = 1; // now presume that we do use this part of the fd
+				int n = domainCount[i]-ii;
+				for(int j=1; j<n && use>0; j++){
+					ind = 5*(ii+j);
+					sp = iGeneralSplane(vec4(sides[ind], sides[ind+1], sides[ind+2], sides[ind+3]), int(sides[ind+4]));      
+					if(iDistance(sp,pnt)<0.){
+						use = 0;// but if we ever fall outside, then we do not use this part.	
+						}
+				}
+				if(use>0){insideQ=0;}
+			}
+	}
+							
+	return insideQ;	
+}
+
+float getDist2Domain(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int domainCount[MAX_GEN_COUNT], int count, vec4 color, float pixelSize){
+	// if we are inside the domain (if all distances are negative), we want the greatest (negative) distance
+	// if we are on the outside (if any distance is positive), we want the smallest (positive) one.
+
+	int ind;
+	int ii;
+	float closestToWall = -1000.;
+	
+	for(int i =0; i < count ; i++){//note: a variable length loop!
+			if(i==0){ii=0;}
+			else{ii=domainCount[i-1];}
+			ind = 5*ii;			
+			iSPlane sp0 = iGeneralSplane(vec4(sides[ind], sides[ind+1], sides[ind+2], sides[ind+3]), int(sides[ind+4]));      
+			//let's check to see if we want to bother 
+			int use = 1;
+			for(int j=1; j<domainCount[i]-ii && use>0; j++){
+					ind = 5*(ii+j);
+					iSPlane sp = iGeneralSplane(vec4(sides[ind], sides[ind+1], sides[ind+2], sides[ind+3]), int(sides[ind+4]));      
+					if(iDistance(sp,pnt)<0.){
+						use = 0;// If we ever fall outside a bound, then we do not use this part.	
+					}
+				}//Coming out of this, we care iff use>0.
+
+				//If all previous dd's have been negative, we remain inside
+				// and we seek the smallest (in absolute value) negative closestToWall. Once a single dd is positive, we
+				// take the smallest positive closestToWall.
+			
+			if(use>0)
+			{
+				float dd = iDistance(sp0,pnt);
+				if(closestToWall<=0. && dd>closestToWall)
+				{
+					closestToWall = dd;
+				}
+				if(closestToWall>0. && dd>closestToWall && dd>=0.){
+					closestToWall = dd;
+				}
+			}	
+		}
+		return closestToWall;
+}
 
 //
 //
@@ -880,8 +972,8 @@ vec4 iGetWalledFundDomainExterior(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int d
 //
 vec4 iGetWalledFundDomainOutline(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int domainCount[MAX_GEN_COUNT], int count, vec4 lineColor, float lineWidth, float pixelSize, float offset)
 {
-	
 	float dens = 0.;
+	vec4 color=vec4(0.,0.,0.,0.0);
   
 	int ind, ii,n;
 		
@@ -893,8 +985,10 @@ vec4 iGetWalledFundDomainOutline(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int do
 			n=domainCount[i]-ii;
 			iSPlane sp = iGeneralSplane(vec4(sides[ind], sides[ind+1], sides[ind+2], sides[ind+3]), int(sides[ind+4]));    
 			float d = abs(iDistance(sp, pnt)+offset);		
-			if(d < lineWidth){
-				// now check to make sure we aren't out of bounds
+			if(d < lineWidth) // we are within d of that splane in the boundary of the FD.
+			{
+				
+				// now check to make sure we aren't out of the bounds for that splane.
 				int ok =1;
 				
 				for(int j=1; j < n && ok > 0; j++)
@@ -904,13 +998,17 @@ vec4 iGetWalledFundDomainOutline(vec3 pnt, float sides[DOMAIN_DATA_SIZE], int do
 						ok=-1;
 					}
 				}
-				if(ok > 0){
+				if(ok > 0) //we've made it through that splane ok
+				{
 					float a = clamp((lineWidth-d)/pixelSize,0.,1.);			
 					dens = max(dens, a);	
+					color = dens*lineColor;
 				}	
+			
+			color = lineColor;
 			}		
 		}
 	}
-	return dens*lineColor;
+	return color;
 }
 `;

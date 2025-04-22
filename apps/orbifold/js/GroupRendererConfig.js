@@ -68,8 +68,9 @@ export class GroupRendererConfig {
         background:DEFAULT_BACKGROUND_COLOR,
         glBackground:DEFAULT_GLBACKGROUND_COLOR,
         symmetry:true,
+        symmetryblending:true,
         texture: true,
-        texCrown: false,
+        texCrown: true,
         texCrownFactor:1.,
         fill: getParam(options.fill, true),
         domain:false,
@@ -81,7 +82,8 @@ export class GroupRendererConfig {
         lineColor:  DEFAULT_LINE_COLOR,
         errorColor:  DEFAULT_ERROR_COLOR,
         domainColor:DEFAULT_DOMAIN_COLOR,
-        lineWidth: 1,
+        lineWidth: .3,
+        maxlineWidth: 2,
         
       };
   }
@@ -100,8 +102,10 @@ export class GroupRendererConfig {
       errorColor: p.errorColor,
       domainColor: p.domainColor,
       lineWidth: p.lineWidth,
+      maxlineWidth: p.maxlineWidth,
       tileColors: p.tileColors,
       symmetry:p.symmetry,
+      symmetryblending:p.symmetryblending,
 		  fill:p.fill,
       texture:p.texture,
       texCrown:p.texCrown,
@@ -137,9 +141,11 @@ export class GroupRendererConfig {
     ctrl.errorColor.setValue(getParam(pm.errorColor,DEFAULT_ERROR_COLOR));
     ctrl.domainColor.setValue(getParam(pm.domainColor,DEFAULT_DOMAIN_COLOR));
     
-    ctrl.lineWidth.setValue(getParam(pm.lineWidth,1.));
+    ctrl.lineWidth.setValue(getParam(pm.lineWidth,.3));
+    ctrl.maxlineWidth.setValue(getParam(pm.maxlineWidth,2.));
     
     ctrl.symmetry.setValue(getParam(pm.symmetry,true));
+    ctrl.symmetryblending.setValue(getParam(pm.symmetryblending,true));
 		ctrl.fill.setValue(getParam(pm.fill, true));
     ctrl.texture.setValue(getParam(pm.texture, true));
     ctrl.texCrown.setValue(getParam(pm.texCrown,false));
@@ -176,13 +182,16 @@ export class GroupRendererConfig {
     
     
 		ctrl.symmetry = folder.add(par, 'symmetry').name('Symmetry').onChange(onc);
-		ctrl.fill = folder.add(par, 'fill').name('Fill').onChange(onc);
+		ctrl.symmetryblending = folder.add(par,'symmetryblending').name('SymmetryBlending').onChange(onc);
+
+    ctrl.fill = folder.add(par, 'fill').name('Fill').onChange(onc);
 		ctrl.texture = folder.add(par, 'texture').name('Texture').onChange(onc);
 		ctrl.texCrown = folder.add(par, 'texCrown').name('Tex Crown').onChange(onc);
 		ctrl.texCrownFactor = folder.add(par, 'texCrownFactor', 0,1,minIncrement).name('Crown Factor').onChange(onc);
-
+    
 		ctrl.lines = folder.add(par, 'lines').name('Lines').onChange(onc);
 		ctrl.lineWidth = folder.add(par, 'lineWidth', 0,100,minIncrement).name('Line Width').onChange(onc);
+    ctrl.maxlineWidth = folder.add(par, 'maxlineWidth', 0,100,minIncrement).name('Max Line Width').onChange(onc);
     
 		ctrl.domain = folder.add(par, 'domain').name('Domain').onChange(onc);
 
@@ -229,6 +238,7 @@ export class GroupRendererConfig {
     var p = this.params;
     // uniforms to go to Config 
 		un.u_hasSymmetry = p.symmetry;
+    un.u_useSymmetryBlending = p.symmetryblending;
 		un.u_drawTexture = p.texture;
     un.u_drawTexCrown = p.texCrown;
     un.u_texCrownFactor = p.texCrownFactor;    
@@ -238,6 +248,7 @@ export class GroupRendererConfig {
 		un.u_iterations = p.iterations;
 		//un.u_antialias = p.antialias;    
 		un.u_lineWidth = p.lineWidth; 
+    un.u_maxlineWidth = p.maxlineWidth;
 		un.u_backgroundColor = premultColor(hexToRGBA(p.glBackground));
     un.u_tileColors = packColors(p.tileColors);
     un.u_lineColor = premultColor(hexToRGBA(p.lineColor));
