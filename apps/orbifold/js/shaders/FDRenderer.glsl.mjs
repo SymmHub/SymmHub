@@ -126,7 +126,7 @@ vec4 getColor(vec2 p){
   float scale = 1.;
   
   
-	float pixelSize = u_PixelSize;
+	float pixelSize = u_pixelSize;
 
   vec4 color=  u_backgroundColor;//vec4(1.,.8,.9,1.); is good for debugging
   

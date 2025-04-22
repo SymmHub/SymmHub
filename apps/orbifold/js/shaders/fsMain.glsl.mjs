@@ -19,7 +19,6 @@ out vec4 FRAG_COLOR;
 #endif 
 
 uniform float u_time;
-uniform float u_PixelSize;
 uniform float u_pixelSize;    
 
 vec4 getColor(vec2 z);
