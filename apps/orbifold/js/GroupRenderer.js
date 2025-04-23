@@ -22,7 +22,8 @@ import {
     getWebGLContext,
     resizeCanvas,
     getPixelRatio,
-    
+    createDoubleFBO,
+    createFBO
 }
 
 from './modules.js';
@@ -66,7 +67,7 @@ const GL_CANVAS_STYLES = [
 ];
 
 const MYNAME = 'GroupRenderer';
-const DEBUG = true;
+const DEBUG = false;
 const EXPORT_ANIMATION = 'Animation Export';
 const STOP_EXPORT_ANIMATION = 'Stop Animation Export';
 
@@ -106,18 +107,19 @@ export class GroupRenderer {
 
         this.config = (isDefined(options.config)) ? (options.config) : (new GroupRendererConfig());
 
-        this.domainBuilder = (isDefined(options.domainBuilder)) ? (options.domainBuilder) : (new DefaultDomainBuilder());
-
+        
         this.myNavigator = options.navigator;
         this.myNavigator.init({canvas: this.mCanvas.overlay, onChanged: this.onNavigationChanged.bind(this)});
 
         this.patternMaker = options.patternMaker;
 
+        this.domainBuilder = (isDefined(options.domainBuilder)) ? (options.domainBuilder) : (new DefaultDomainBuilder());
         this.fragShader = options.fragShader;
         this.vertShader = options.vertShader;
 
         this.programs = options.programs;
 
+        this.gSimBuffer = null;
         this.params = {
 
             groupParamChanged: true,
@@ -265,13 +267,17 @@ export class GroupRenderer {
     };
 
     //
-    //  return all uniforms needed for the rendering
+    //  return all uniforms needed for all of the rendering
     //
+    //  specific shaders select out the uniforms they need: these 
+    // are in orbifold_main.js
+
     getUniforms(un) {
 
         if (!isDefined(un))
             un = {};
         this.getExtUniforms(this.domainBuilder, un, this.timeStamp);
+            //domainBuilder delivers the fundamental domain, the group, etc.
         this.getExtUniforms(this.config, un, this.timeStamp);
         this.getExtUniforms(this.patternMaker, un, this.timeStamp);
         this.getExtUniforms(this.myNavigator, un, this.timeStamp);
@@ -420,6 +426,7 @@ export class GroupRenderer {
     //
     //  create GUI for pattern maker
     //
+    // 
     initPatternGUI(pmaker, gui, folder, onChanged) {
 
         pmaker.initGUI({
@@ -556,18 +563,55 @@ export class GroupRenderer {
         
         let un = {}
         this.getUniforms(un);
-        if(this.renderDebugCount && this.renderDebugCount-- > 0){
-            console.log('uniforms: ', un);            
+        if(this.renderDebugCount && this.renderDebugCount-- > 0 && DEBUG){
+            console.log('uniforms: ', un);   
+            console.log('uniforms keys: ', Object.keys(un));           
             console.log('programs: ', this.programs);
         }
 
-        let pr = this.programs.symRenderer.program;
+
+        //make a buffer
+        // FDbuffer
+        let format = this.mGLCtx.gl.RG;
+        let intFormat = this.mGLCtx.gl.RG32F;
+        let texType = this.mGLCtx.gl.FLOAT;
+        let filtering = this.mGLCtx.gl.LINEAR;
+      
+        this.gFDBuffer = createFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
         
+       // this.mGLCtx.gl.disable(this.mGLCtx.gl.BLEND);        
+        //this.mGLCtx.gl.viewport(0, 0, this.gSimBuffer.width, this.gSimBuffer.height);      
+        this.mGLCtx.gl.viewport(0, 0, this.gFDBuffer.width, this.gFDBuffer.height);      
+       
+        // Rather than a new buffer being drawn, gFDBuffer is reading and overwriting itself.
+
+
+        let pr = this.programs.FDRenderer.program;
         pr.bind();
+        let center = un.u_center; 
+        un.u_center = [0.0,0.0]; 
         pr.setUniforms(un);
-        pr.blit(null);   // render program on canvas 
+        this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ONE,this.mGLCtx.gl.ZERO);
+       
+        var notdebugging = (this.domainBuilder.params.debug);
+        if(!notdebugging){ 
+            pr.blit(this.gFDBuffer);
+
+            //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ZERO,this.mGLCtx.gl.ONE);
+            
+            un['u_FDdata'] = this.gFDBuffer;
+            un.u_center = center;
+            pr = this.programs.patternFromFDRenderer.program;
+            pr.bind();
+            pr.setUniforms(un);}
+        pr.blit();   
+
         
-        
+
+
+
+
+
         // render overlay
         
         var canvas = this.mCanvas.overlay;
@@ -609,6 +653,7 @@ export class GroupRenderer {
     //
     onGroupChanged() {
 
+        this.getGroup();
         if (this.params.debug)
             console.log("GroupRendederer.onGroupChanged()");
 
@@ -632,6 +677,10 @@ export class GroupRenderer {
     //   called when pattern params were changed
     //
     onPatternChanged() {
+
+        this.onGroupChanged(); 
+
+            // for now; we can trim this up if there's any timing issue.
 
         this.repaint();
 
@@ -932,8 +981,8 @@ export class GroupRenderer {
     } // onStartAnimationExport()
     
     getGroup(){
-        //let gm = this.groupMaker.get
-        return null;
+        this.groupMaker.updateTheGroupGeometry();
+        return this.groupMaker.getGroup();
     }
 
 } // class GroupRenderer

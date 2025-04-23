@@ -10,6 +10,8 @@ export const Textures = {
     // name is optional, if missing it will be constructed from path 
     //
     t1:[
+      {name:'blackflash_htInfo',         path:IMG_FOLDER + 'blackflash_htInfo2.png'},
+      {name:'grid',         path:IMG_FOLDER + 'grid.png'},
       {name:'leaf',         path:IMG_FOLDER + 'leaf.png'},
       {name:'leafswirl',    path:IMG_FOLDER + 'leafwhirl.png'},
       {name:'flashlight',   path:IMG_FOLDER + 'blackflash.png'},

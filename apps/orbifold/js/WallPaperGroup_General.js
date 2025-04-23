@@ -54,20 +54,22 @@ import {
     unfoldAtom,
     assembleFundamentalDomain,
     produceGenerators,
-    willOrbifoldFitQ
+    willOrbifoldFitQ,
+    getCrownTransforms
 }
-from '../../../lib/invlib/OrbifoldGeometrization.js';
+from './OrbifoldGeometrization.js';
 
 import {
     random,
-    isDefined
+    isDefined,TORADIANS,cos,sin,asin,log,
 }
 from '../../../lib/invlib/Utilities.js';
 
 import {
-    sPlaneThrough
+    sPlaneThrough,sPlaneSwapping,complexN
 }
 from '../../../lib/invlib/ComplexArithmetic.js';
+
 
 const DEFAULT_INCREMENT = 1.e-8;
 
@@ -106,6 +108,7 @@ export class WallPaperGroup_General {
         // If the fundamental domain is not being shown, it is empty.
         this.needsShiftQ = false;
         this.paramGuiFolder = null;
+        this.patternMaker=options.patternMaker;
 
     }
 
@@ -272,10 +275,14 @@ export class WallPaperGroup_General {
             //console.log(arrayToString(this.atomList))
 
             // only use if webgl is being used.
+            // HOWEVER willOrbifoldFitQ is currently set to return false always.
+            // For the time being, if too large a symbol is entered... nothing happens!
+            // TO DO: 
             if (this.renderer && willOrbifoldFitQ(this.atomList, this.renderer.MAX_GEN_COUNT,
                     this.MAX_REF_COUNT, this.MAX_DOMAIN_SIZE)) {
                 this.rebuildGui("Reduce the size of the orbifold symbol");
                 return false;
+            // so for the time being we are just doing this:
             } else {
                 this.rebuildGui();
             }
@@ -330,18 +337,28 @@ export class WallPaperGroup_General {
         var bounds = [];
         var transforms;
         var interiors = [];
+        var crowntransforms=[];
 
         if (this.curvature < 0) {
 
             this.assembledFD = assembleFundamentalDomain(this.atomList, this);
+                // calling back to OrbifoldGeometrization.js
+            
             // assembledFD[0]=[vertList,edgeKeyList]
             // assembledFD[1] is a list of internal edges;
             // assembledFD[2] will be a list of cone points TO DO.
 
-            this.generators = produceGenerators(this.assembledFD[0], this)
-                var i,
-            ss;
-            var fdpts = this.assembledFD[0][0];
+            this.generators = produceGenerators(this.assembledFD[0], this);
+                // calling back to OrbifoldGeometrization.js
+
+
+            transforms = this.generators;
+
+          
+            
+            var i,ss;
+            var fdpts = this.assembledFD[0][0]; //these are the vertices, which can be passed along if we wish to.
+
             for (i = 0; i < fdpts.length; i++) {
 
                 // sPlanes have endpoints included -- thus we can draw our FD as arcs on
@@ -359,6 +376,7 @@ export class WallPaperGroup_General {
                 // the third vertex should also be supplemented with a "wall".
                 // Coming out of assembleFundamentalDomain, this information is stashed as an
                 // additional pair of points at the end of the edge key;
+                // so, uhm, which way is positive?
                 for (var j = 2; j < this.assembledFD[0][1][i].length; j += 2) {
                     bound.push(sPlaneThrough(
                             this.assembledFD[0][1][i][j], this.assembledFD[0][1][i][j + 1]))
@@ -367,14 +385,14 @@ export class WallPaperGroup_General {
                 bounds.push(bound)
             }
 
-            transforms = this.generators;
-
+           
             // the interior edges
             interiors = this.assembledFD[1].map(x => {
                 var abound = sPlaneThrough(x[0][0], x[0][1], x[0]);
                 abound["label"] = x[1];
                 return [abound];
             })
+
         } //endif curvature<0
         else if (this.curvature >= 0) {
             var igroup = getNonnegativeGroupData(this.standardName, this);
@@ -386,15 +404,81 @@ export class WallPaperGroup_General {
             transforms = igroup.t;
             interiors = [];
         }
+
+
+        var patMak = this.patternMaker;
+
+        var patMakpar = patMak.params;
+
+        // for the moment we are assuming that there is 
+        // only one active texture, the first one.
+        /*var centers=[], scales=[],  tcount = 0;
+
+        for(var i = 0; i < patMak.texCount; i++) {
+  
+            if(patMakpar['active' + i]){
+                tcount++;
+                var s = Math.exp(-patMakpar['scale' + i]);
+                var angle = patMakpar['angle' + i]*TORADIANS;
+                scales.push(s*cos(angle)); 
+                scales.push(s*sin(angle)); 
+                centers.push(patMakpar['cx' + i]);
+                centers.push(patMakpar['cy' + i]);
+            }
+        }*/
+
+        if(isDefined(patMakpar['cx0'])&&isDefined(patMakpar['cy0'])&&isDefined(patMakpar['scale0']))
+        {
+            var center = [patMakpar['cx0'],patMakpar['cy0']];
+
+            var s =  Math.exp(patMakpar['scale0']);
+            var angle = -patMakpar['angle0']*TORADIANS;
+            var scale = [s*cos(angle),s*sin(angle)]; // a complex homothety
+        
+            var gcT= getCrownTransforms(bounds, transforms,center,scale); 
+
+            this.crowntransforms =gcT;
+            
+            // put together the crown transforms, as an array for each active texture
+            // store these as an array
+
+            crowntransforms = this.crowntransforms;
+        }
+        else
+        {   
+            crowntransforms = [[sPlaneSwapping(new complexN(.1,0.), new complexN(-.1,.3))]];
+        }
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        // Create the fundamental domain:
+
         this.FD = {
             s: bounds,
             t: transforms,
-            i: interiors
-        };
+            i: interiors,
+            c: crowntransforms,
+        }; 
+
+        //this is passed along to getGroup, below, which in turn is called from
+        // calculateGroup in DefaultGroupRenderer.
+        // That is called in a number of places, particularly getUniforms
+        // ultimately, FD.s is u_domainData and FD.t is u_groupTransformsData
+        // which is assigned in DefaultDomainBuilder
     }
 
     getGroup() {
-        return this.FD
+        return this.FD // created in updateTheGroupGeometry(), right above
     }
 
     render(context, transform) {

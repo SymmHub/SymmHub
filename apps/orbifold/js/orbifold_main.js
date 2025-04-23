@@ -11,6 +11,7 @@ import {
 }
 from './modules.js';
 
+
 //import {
     //InversiveNavigator
 //} from './InversiveNavigator_v1.js';
@@ -94,6 +95,14 @@ const STYLES = {
 const PRE_FOLDER = 'presets/';
 const JSONpresets = [
     {
+        name: '23x',
+        path: PRE_FOLDER + '23x.json'
+    },
+    {
+        name: '23xb',
+        path: PRE_FOLDER + '23xb.json'
+    },
+    {
         name: '3333_b',
         path: PRE_FOLDER + '3333_b.json'
     }, {
@@ -126,31 +135,62 @@ const JSONpresets = [
     },
 ];
 
-var grouphandler = new WallPaperGroup_General({
-    symmetryUI:
-    new SymmetryUIController({
-        domainShowingQ: true,
-        overlayCanvas: document.getElementById('overlay'),
-        styles: STYLES
-    })
-})
-
 const MyTextures = Textures.t1.concat(Textures.t2);
 
+const myPatternMaker = new PatternTextures({textures: [MyTextures, MyTextures, MyTextures]})
 
-const fragComplex           = { obj: OF, id:'complex'};
-const fragFSMain            = { obj: OF, id:'fsMain'};
-const fragGeneralGroupMain  = { obj: OF, id:'generalGroupMain_v2'};
-const fragInversive         = { obj: OF, id:'inversive'};
-const fragPatternTextures   = { obj: OF, id:'patternTextures'};
-const fragVertexShader      = { obj: OF, id:'vertexShader'};
+
+var myGroupHandler = new WallPaperGroup_General({
+    symmetryUI:
+    new SymmetryUIController({
+        domainShowingQ: false,
+        overlayCanvas: document.getElementById('overlay'),
+        styles: STYLES,
+
+    }),
+    patternMaker:       myPatternMaker
+})
+
+//pattern maker needs to know about myGroupHandler too:
+
+myPatternMaker[myGroupHandler]=myGroupHandler;
+
+//////////////////////////
+//
+// ************* SOON
+
+// const MyOverlays = OverlayTextures.t1.concat(OverlayTextures.t2);
+
+
+// fragments to be used; OF is listed out in ./shaders/modules.js
+
+// the bulk of uniforms are all delivered to GroupRenderer.js; 
+// extra, unused uniforms just aren't passed into the shader.
+// It's helpful to see what's not used in a given shader:
+// Object.keys(program.uniforms)
+// 
+
+const fragComplex           = { obj: OF, id:'complex'};//unis:[]};
+const fragFSMain            = { obj: OF, id:'fsMain'}; // unis: ["u_cScale", "u_pixelSize"]};//set programatically in 
+//const fragGeneralGroupMain  = { obj: OF, id:'generalGroupMain_v2'}; //lots!
+const fragInversive         = { obj: OF, id:'inversive'}; // unis:[]};
+const fragPatternTextures   = { obj: OF, id:'patternTextures'};/*the buffers*/// unis: ["u_textures","u_texCount","u_texScales","u_texCenters","u_texAlphas"]}; // set in 
+const fragVertexShader      = { obj: OF, id:'vertexShader'};//unis:["u_aspect","u_scale","u_center"]};//
+
+
+const fragFDRenderer =    { obj: OF, id:'FDRenderer'};
+const fragPatternFromFDRenderer ={ obj: OF, id:'patternFromFDRenderer'};
+
+
+
 
 const vertexShader = {
     frags: [fragVertexShader],
 };
 
 
-const progSymRenderer = {
+
+/*const progSymRenderer = {
     name:   'SymRenderer', 
     vs:     vertexShader,
     fs: { 
@@ -160,30 +200,69 @@ const progSymRenderer = {
             fragComplex,
             fragPatternTextures,
             fragGeneralGroupMain,
+            ]},
+};
+*/
+
+
+
+const progFDRenderer = {
+    name:   'FDRenderer', 
+    vs:     vertexShader,
+    fs: { 
+        frags: [ 
+            fragFSMain,
+            fragInversive,
+            fragComplex,
+            fragPatternTextures,
+            fragFDRenderer,
             ]},  
 };
 
+const progPatternFromFDRenderer = {
+    name:   'patternFromFDRenderer', 
+    vs:     vertexShader,
+    fs: { 
+        frags: [ 
+            fragFSMain,
+            fragInversive,
+            fragComplex,
+            fragPatternTextures,
+            fragPatternFromFDRenderer,
+            ]},  
+};
+
+
 const orbPrograms = {
-    symRenderer: progSymRenderer,
+   // symRenderer: progSymRenderer,
+    FDRenderer:progFDRenderer,
+    patternFromFDRenderer:progPatternFromFDRenderer,
 };
 
 const myDomainBuilder = new DomainBuilder({
-        MAX_GEN_COUNT:       40,
-        MAX_TOTAL_REF_COUNT: 100,
-        USE_PACKING:        true
-    });
+
+       // REF_DATA_SIZE is imported from DataPacking.js, should we need it.
+        
+        MAX_GEN_COUNT:       20, //
+        MAX_TOTAL_REF_COUNT: 100, // the max size of the array passed into frag
+        
+            
+
+        MAX_CROWN_COUNT:     50,
+        MAX_TOTAL_CROWN_COUNT:250,
+        USE_PACKING:        true,
+      });
     
-    
-const myPatternMaker = new PatternTextures({textures: [MyTextures, MyTextures, MyTextures]})
+
 
 const myNavigator = new InversiveNavigator();
 
-let render = new GroupRenderer({
+let myGroupRenderer = new GroupRenderer({
     // optional. use these to get custom canvas elements 
     //glCanvas:       document.getElementById('glCanvas'),
     //overlayCanvas:  document.getElementById('overlay'),
     //container:      document.getElementById('canvasContainer'),    
-    groupMaker:         grouphandler,
+    groupMaker:         myGroupHandler,
     patternMaker:       myPatternMaker,
     domainBuilder:      myDomainBuilder, 
     navigator:          myNavigator,
@@ -195,6 +274,6 @@ let render = new GroupRenderer({
     useInternalWindows: true,
 });
 
-render.init();
+myGroupRenderer.init();
 
 //  symmetryUI.init();

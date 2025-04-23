@@ -1,0 +1,12 @@
+/*// WHAT IS DIFFERENT ABOUT THESE  VEC4s?
+		// They composite differently
+		vec4 newcolor;
+
+		newcolor = u_domainColor;
+		//newcolor = vec4(vec3(.1,.3,.4),u_domainColor.w);
+		//newcolor = vec4(.1,.3,.4,u_domainColor.w);
+		
+		overlay(color,newcolor);	
+		 */  
+
+		 /* similarly vecs close to 1,1,1,0 composite weirdly

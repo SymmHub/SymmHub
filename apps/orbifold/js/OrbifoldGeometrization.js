@@ -1,10 +1,17 @@
 import {sPlanesOfRotation,complexN,poincareTurtleMove,poincareMobiusEdgeToEdge,
   poincareMobiusTranslateFromToByD,sPlaneSwapping,poincareMobiusRotationAboutPoint,
-  sPlaneReflectAcross,makeMobius,
+  sPlaneReflectAcross,makeMobius,cMul,
   poincarePt,poincareMobiusTranslateToO,sPlanesMovingEdge1ToEdge2} 
-    from './ComplexArithmetic.js';
+    from '../../../lib/invlib/ComplexArithmetic.js';
 import {PI,HPI,TPI,abs,cos,cosh,sin,sinh,coth,asin,sqrt,cot,acosh,asinh,tanh} 
-  from './Utilities.js';
+  from '../../../lib/invlib/Utilities.js';
+import {iToFundDomainWBounds,iDistanceU4,iTransformU4,iGetInverseTransform,iGetFactorizationU4} 
+  from '../../../lib/invlib/Inversive.js';
+import {iSplane,SPLANE_POINT} 
+  from '../../../lib/invlib/ISplane.js';
+
+
+  
 //////////////////////////////////////////////////
 
 //////////////////////////////////////////////////
@@ -1544,12 +1551,135 @@ function generateGroup(normedGens,depth, t= globalMobTransform,margin=.03,safety
 
 
 export function willOrbifoldFitQ(atomList,MAX_GEN_COUNT,MAX_REF_COUNT,MAX_DOMAIN_SIZE){
+  // Just a stub for now
   // how big will the orbifold be?
+    // MAX_REF_COUNT should be the maximum number of reflections that will be packed into the transform list
   return false;
   
 }
 
+export function getCrownTransforms(domain,transforms,center,scale){ 
+//center and scale are of the overlaid texture
 
+// given a complex center and rotation, together with a list of group generators
+// for each vertex in a relatively fine grid, pull back to the fundamental domain.
+// For the resulting transform, hash with the image of some generic point in the interior of the fundamental domain.
+// If it has not already appeared, add it to the list of transforms that we are keeping.
+// We are working in Splaneworld   
+// This is called from updateTheGroupGeometry in WallPaperGroup_General
+// in order to make this work, we need the center and a complex scaling (homethety) of a texture
+    
+    // for the moment, we'll just make a simple grid of points. It would be smarter to make
+    // concentric rings of approx equidistant points (i.e. at radius r, e^r points around) 
+    // but for bounded r. 
+
+    // We may hapharzardly miss bits of the texture towards the boundary as 
+    // the FD is small; a simple solution is to bound r.
+
+
+
+    var steps = 45;//2025 test points
+    var delta = 1/(steps -1);
+
+    var pp,vv;
+    var pointregistry=[],registrypoint;
+    var trpointregistry;
+
+    // we begin by adding the identity into the transform registry
+    let tt = sPlaneSwapping(new complexN(.1,0.),new complexN(.15,.1));
+    var transformregistry=[[tt,tt]];
+
+
+    var foundaregistrypoint = false;
+    var safety=0;
+    var r,t,ss,cc;
+    var sptx,spty,ptx,pty;
+
+    var listofpointsfordebug=[];// this will go away.
+
+    while(!foundaregistrypoint && safety++<1000){// this is uniform? across a disk of radius .9 
+        // We just need one!
+        r = Math.sqrt(Math.random())* .9;
+        t = 6.2825 * Math.random();
+        cc=Math.round(1000*r*Math.cos(t));
+        ss=Math.round(1000*r*Math.sin(t));
+        registrypoint = new iSplane({v:[.001*cc,.001*ss,0,0], type:SPLANE_POINT});
+        var bb =(iToFundDomainWBounds(domain, transforms,registrypoint,20));
+        foundaregistrypoint = bb.inDomain;
+    }// actually, the only thing that matters is that the base point isn't on an edge
+    // so even if we've missed the safety check, we're probably still fine.
+    
+  
+
+
+//////////////  //clip this when done debugging
+    cc=0;ss=0;
+
+    registrypoint=new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
+
+//////////////
+
+
+    // the point registry records the copies of the registry point that we've 
+    // already seen, in order to keep track of the transforms that we've already seen.
+    pointregistry=[[cc,ss]]; //scaled up to integers 1000 x as big.
+
+    // to make a nice picture for debugging, we also include the transformed images of the registered points.
+    trpointregistry=[[registrypoint.v[0],registrypoint.v[1]]];
+
+
+    // now make a grid: 
+    for(var i=0; i<steps;i++){
+
+        sptx = center[0]/*center*/  - scale[0]/2 + scale[1]/2 /*corner*/ +i*delta*scale[0];/*one direction*/
+        spty = center[1]            - scale[1]/2 - scale[0]/2         +i*delta*scale[1];
+        
+        for(var j=0;j<steps;j++){
+
+            ptx = sptx + j*delta*(-scale[1]);/*the other direction*/
+            pty = spty + j*delta*(scale[0]);
+
+            listofpointsfordebug.push([ptx,pty]);// to make a picture for debugging
+            
+
+            //vv is a point in the grid of the placed texture in math coordinates
+           
+            vv = new iSplane({v:[ptx,pty,0,0], type:SPLANE_POINT});
+            //now we pull the point back to the FD:
+           
+            pp = iToFundDomainWBounds(domain, transforms, vv,20);
+            // returns from Inversive.js
+            //{inDomain: yes/no, transform: a list of splanes taking us back,pnt:the image of the point,word:the transform as a word in the generators,};
+            //Incidentally, domains are now lists of splanes, rather than simple splanes. For a point to be outside 
+            // of domain[i][0], it has to be inside the remaining bounds domain[i][1,2].
+            // For the moment, we ignore this and just are paying attention to domain[i][0]
+
+            // now, check to see if we have a new transform:
+            
+            pp.transform = iGetInverseTransform(iGetFactorizationU4(pp.transform));
+            var testpt = iTransformU4(pp.transform,registrypoint);
+            // if the testpt is too far out, let's not use it. 
+            // this is hard-coded as within .8 in Euclidean distance from the origin.
+
+            // now check to see if testpt is in the registry
+            var foundq = false;
+            for (var ii = 0; ii<pointregistry.length && !foundq; ii++){
+                var ppx = Math.round(1000*testpt.v[0]);
+                var ppy = Math.round(1000*testpt.v[1]);
+                foundq=(ppx == pointregistry[ii][0] && ppy == pointregistry[ii][1]);
+            }
+            if(!foundq){
+                pointregistry.push([ppx,ppy]);
+                //transformregistry.push(iGetInverseTransform(iGetFactorizationU4(pp.transform)));
+               transformregistry.push(pp.transform);
+                trpointregistry.push([testpt.v[0],testpt.v[1]]);
+            }
+           
+        }
+    }
+
+    return [transformregistry,listofpointsfordebug,trpointregistry];
+}
 
 
 
