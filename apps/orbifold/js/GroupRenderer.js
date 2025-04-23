@@ -23,7 +23,8 @@ import {
     resizeCanvas,
     getPixelRatio,
     createDoubleFBO,
-    createFBO
+    createFBO,
+    CanvasTransform,
 }
 
 from './modules.js';
@@ -81,7 +82,7 @@ export class GroupRenderer {
     //
     constructor(options) {
 
-        this.renderDebugCount = 2;
+        this.renderDebugCount = 20;
         this.constructorParams = options;
         if (options.useInternalWindows) {
 
@@ -103,13 +104,25 @@ export class GroupRenderer {
             this.drawContext = this.mCanvas.overlay.getContext("2d");
         }
 
+        // maps world onto canvas pixels
+        this.mCanvasTransform = CanvasTransform({
+            canvas: this.mCanvas.overlay
+        });
+
         this.groupMaker = options.groupMaker;
 
         this.config = (isDefined(options.config)) ? (options.config) : (new GroupRendererConfig());
 
         
         this.myNavigator = options.navigator;
-        this.myNavigator.init({canvas: this.mCanvas.overlay, onChanged: this.onNavigationChanged.bind(this)});
+        this.myNavigator.init({
+                                canvas: this.mCanvas.overlay, 
+                                onChanged: this.onNavigationChanged.bind(this),
+                                canvasTransform: this.mCanvasTransform,
+                                groupMaker: this, // to let navigator get the group 
+                                useAnimatedPointer: false,
+                                });
+
 
         this.patternMaker = options.patternMaker;
 
@@ -697,7 +710,12 @@ export class GroupRenderer {
     }
 
     onCanvasResize(evt) {
-        //console.log(`${MYNAME}.onCanvasResize()`, evt);
+        if(DEBUG)console.log(`${MYNAME}.onCanvasResize()`, evt);
+        this.mCanvasTransform.onCanvasResize();
+        if(DEBUG) {
+            let un = this.mCanvasTransform.getUniforms({});
+            console.log(`${MYNAME}.onCanvasResize() un:`, un);
+        }
         this.repaint();
     }
 
