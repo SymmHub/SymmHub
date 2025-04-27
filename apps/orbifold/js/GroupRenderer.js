@@ -608,6 +608,7 @@ export class GroupRenderer {
        
         var notdebugging = (this.domainBuilder.params.debug);
         if(!notdebugging){ 
+        
             pr.blit(this.gFDBuffer);
 
             //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ZERO,this.mGLCtx.gl.ONE);
@@ -616,7 +617,8 @@ export class GroupRenderer {
             un.u_center = center;
             pr = this.programs.patternFromFDRenderer.program;
             pr.bind();
-            pr.setUniforms(un);}
+            pr.setUniforms(un);
+        }
         pr.blit();   
 
         
