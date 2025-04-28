@@ -455,11 +455,12 @@ export class SymmetryUIController{
      
 
       // for the moment, for some debugging:
-      var aa = (this.groupMaker.getGroup()).c,a,b;
+      var aa = (this.groupMaker.getGroup()).c;
+      var a,b;
       if(aa.length>1){
-        a = aa[1];
-        b = aa[2];
-     /*   // a grid of points showing the sampling; can delete FD.c[1]
+        a = aa[1]; // this should be the grid of points
+        b = aa[2]; // this should be the images of the reference point
+        // a grid of points showing the sampling; can delete FD.c[1]
      for(var i = 0; i<a.length;i++){
         //var aa = iPoint(a[i][0],a[i][1],0,0);
           iDrawPoint(a[i],context,transform,{
@@ -467,8 +468,8 @@ export class SymmetryUIController{
                     radius: 4
                 });}
 
-*/
-  /*      for(var i = 0; i<b.length;i++){
+
+        for(var i = 1; i<b.length;i++){
           iDrawPoint(b[i],context,transform,{
                     style: "#CCCC0099",
                     radius: 14
@@ -477,7 +478,7 @@ export class SymmetryUIController{
                     style: "#0070FF",
                     radius: 12
                 });
-      }*/
+      }
       }
 
 
@@ -540,6 +541,8 @@ export class SymmetryUIController{
     getUniforms(uniforms){
         // just for extra UI control
         uniforms.u_fillOutDomain=0; //temp
+
+        // PUT UI FRAG RENDERING STUFF HERE
     }
 }
 

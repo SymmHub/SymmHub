@@ -12,7 +12,6 @@ export {
 
 
 export {
-    DefaultDomainBuilder,
     iPlane, 
     iSphere,
     iPoint,
@@ -61,6 +60,13 @@ export {
 
     //CanvasTransform,    // to use with InversiveNavigator_v0
 } from '../../../lib/invlib/invlib.js';
+
+
+export {
+    DefaultDomainBuilder
+}
+from './DefaultDomainBuilder.js';
+
 
 export {
     buildProgramsCached,

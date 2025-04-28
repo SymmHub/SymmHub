@@ -8,14 +8,14 @@ import {
   iMakeDefaultTransforms,
   iPackRefCumulativeCount
   
-} from './Inversive.js';
+} from '../../../lib/invlib/Inversive.js';
   
 import {
   iDrawSplane, 
-} from './IDrawing.js';
+} from '../../../lib/invlib/IDrawing.js';
   
 //import {
-//} from './Utilities.js';
+//} from '../../../lib/invlib/Utilities.js';
 
 import {
   isDefined, 
@@ -23,7 +23,7 @@ import {
   splaneToString,
   transformToString,
   objectToString,
-} from './modules.js';
+} from '../../../lib/invlib/modules.js';
 
 
 //

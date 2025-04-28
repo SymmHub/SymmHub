@@ -295,6 +295,7 @@ export class GroupRenderer {
         this.getExtUniforms(this.patternMaker, un, this.timeStamp);
         this.getExtUniforms(this.myNavigator, un, this.timeStamp);
         this.getExtUniforms(this.groupMaker, un, this.timeStamp);
+        // groupMaker will handle 
 
         return un;
     }

@@ -1,7 +1,9 @@
 import {sPlanesOfRotation,complexN,poincareTurtleMove,poincareMobiusEdgeToEdge,
   poincareMobiusTranslateFromToByD,sPlaneSwapping,poincareMobiusRotationAboutPoint,
   sPlaneReflectAcross,makeMobius,cMul,
-  poincarePt,poincareMobiusTranslateToO,sPlanesMovingEdge1ToEdge2} 
+  poincarePt,poincareMobiusTranslateToO,
+  sPlanesMovingEdge1ToEdge2,splaneIt //splanesForCenterAndScale,
+} 
     from '../../../lib/invlib/ComplexArithmetic.js';
 import {PI,HPI,TPI,abs,cos,cosh,sin,sinh,coth,asin,sqrt,cot,acosh,asinh,tanh} 
   from '../../../lib/invlib/Utilities.js';
@@ -1558,45 +1560,61 @@ export function willOrbifoldFitQ(atomList,MAX_GEN_COUNT,MAX_REF_COUNT,MAX_DOMAIN
   
 }
 
-export function getCrownTransforms(domain,transforms,center,scale){ 
-//center and scale are of the overlaid texture
+export function getTransformsForTexture(domain,transforms,center,scale){ 
 
-// given a complex center and rotation, together with a list of group generators
-// for each vertex in a relatively fine grid, pull back to the fundamental domain.
-// For the resulting transform, hash with the image of some generic point in the interior of the fundamental domain.
-// If it has not already appeared, add it to the list of transforms that we are keeping.
-// We are working in Splaneworld   
+// We are working in Splaneworld, using vectors and points as [x,y] when we can. 
+// (But we declare splanes as iSplane(new complexN([x,y]),0) 
 // This is called from updateTheGroupGeometry in WallPaperGroup_General
-// in order to make this work, we need the center and a complex scaling (homethety) of a texture
+//center and scale are of the overlaid texture
+// domain is a list of "bounded splanes" themselves a list of 1-3 splanes.
+// transforms is a list of iTransforms that generate the group.
+
+// We'll calculate several useful things: 
+// * imagetransform is a list of splanes transforming the origin to center, 
+//      rotating by the angle of the vector [a,b] of scale
+// * transformregistry, a list of lists of splanes, all possible transforms that take 
+//      some point of the FD to some point in the texture. Errors can ensue if we don't sample
+//      sufficiently, to be investigated; 
+// * listoftexturesamplingpoints, the points in the texture that are being sampled; these
+//      can be drawn inside of SymmetryUIController.js
+// * trpointregistry, similarly is a list of the images of a reference point back across the pattern.
+
+
+    //////////////
+    //
+    // First calculate imagetransform from the origin TO the center.
+    //
+
+    var cc,ss,dd;
+    cc = scale[0]; 
+    ss = scale[1];
+    dd= Math.sqrt(cc*cc+ss*ss)
+
+    //The order below might be backwards.
+    var imagetransform = [splaneIt([[cc,ss],0]),
+        sPlaneSwapping(new complexN(0,0),new complexN(center[0],center[1]))
+        ];
+
+
+
+
+    //////////////
+    //
+    // Next we grab a reference point in the FD to move around. 
+    //
+    // Typically the origin should do-- separate code should always move the FD to include the origin
+    // Just in case, there is a backup, finding some random point:
+
+    cc=0;ss=0;
+
+    registrypoint=new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
+
+    var foundaregistrypoint=iToFundDomainWBounds(domain, transforms,registrypoint,20).inDomain
     
-    // for the moment, we'll just make a simple grid of points. It would be smarter to make
-    // concentric rings of approx equidistant points (i.e. at radius r, e^r points around) 
-    // but for bounded r. 
-
-    // We may hapharzardly miss bits of the texture towards the boundary as 
-    // the FD is small; a simple solution is to bound r.
-
-
-
-    var steps = 45;//2025 test points
-    var delta = 1/(steps -1);
-
-    var pp,vv;
-    var pointregistry=[],registrypoint;
-    var trpointregistry;
-
-    // we begin by adding the identity into the transform registry
-    let tt = sPlaneSwapping(new complexN(.1,0.),new complexN(.15,.1));
-    var transformregistry=[[tt,tt]];
-
-
-    var foundaregistrypoint = false;
     var safety=0;
-    var r,t,ss,cc;
-    var sptx,spty,ptx,pty;
+    var r,t;
 
-    var listofpointsfordebug=[];// this will go away.
-
+    
     while(!foundaregistrypoint && safety++<1000){// this is uniform? across a disk of radius .9 
         // We just need one!
         r = Math.sqrt(Math.random())* .9;
@@ -1606,19 +1624,45 @@ export function getCrownTransforms(domain,transforms,center,scale){
         registrypoint = new iSplane({v:[.001*cc,.001*ss,0,0], type:SPLANE_POINT});
         var bb =(iToFundDomainWBounds(domain, transforms,registrypoint,20));
         foundaregistrypoint = bb.inDomain;
-    }// actually, the only thing that matters is that the base point isn't on an edge
-    // so even if we've missed the safety check, we're probably still fine.
+    }
+
+    // the only thing that matters is that the base point isn't on an edge
+    // so even we've missed the safety check (so cc,ss = 0,0, but this isn't in the FD) 
+    // we're probably still fine.
     
   
+    
+
+    //////////////
+    //
+    // Next create a point and transform registry
+    //
 
 
-//////////////  //clip this when done debugging
-    cc=0;ss=0;
+    // for each vertex in a relatively fine grid, pull back to the fundamental domain.
+    // For the resulting transform, hash with the image of some generic point in the interior of the fundamental domain.
+    // If it has not already appeared, add it to the list of transforms that we are keeping.
 
-    registrypoint=new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
+    // for the moment, we'll just make a simple grid of points in texture coordinates.
 
-//////////////
+    var listoftexturesamplingpoints=[];
 
+    var steps = 45;//2025 test points. For some long skinny FDs this may not be enough.
+    var delta = 1/(steps -1);
+
+    var pp;
+
+    var pointregistry=[],registrypoint;
+    var trpointregistry;
+
+    // We add adding the identity into the transform registry
+//    let tt = sPlaneSwapping(new complexN(.1,0.),new complexN(.15,.1));
+
+
+
+    var transformregistry=[iGetInverseTransform(imagetransform)];
+
+    var spt,sptx, spty, ptx,pty;
 
     // the point registry records the copies of the registry point that we've 
     // already seen, in order to keep track of the transforms that we've already seen.
@@ -1631,31 +1675,36 @@ export function getCrownTransforms(domain,transforms,center,scale){
     // now make a grid: 
     for(var i=0; i<steps;i++){
 
-        sptx = center[0]/*center*/  - scale[0]/2 + scale[1]/2 /*corner*/ +i*delta*scale[0];/*one direction*/
-        spty = center[1]            - scale[1]/2 - scale[0]/2         +i*delta*scale[1];
-        
         for(var j=0;j<steps;j++){
 
-            ptx = sptx + j*delta*(-scale[1]);/*the other direction*/
-            pty = spty + j*delta*(scale[0]);
+            ptx =      - scale[0]/2 + scale[1]/2 /*corner*/ 
+                        +i*delta*scale[0]/*one direction*/
+                        +j*delta*(-scale[1])/*the other direction*/
+            pty =      - scale[1]/2 - scale[0]/2
+                         +i*delta*scale[1]
+                         + j*delta*(scale[0]);
 
-            listofpointsfordebug.push([ptx,pty]);// to make a picture for debugging
+            spt = new iSplane({v:[ptx,pty,0,0], type:SPLANE_POINT});
+
+            spt = iTransformU4(imagetransform,spt);
+
+            ptx = spt.v[0]
+            pty = spt.v[1]
+
+
+
+            // next transform the sampling by imagetransform 
+
+            listoftexturesamplingpoints.push([ptx,pty]);// to make a picture for debugging
             
 
-            //vv is a point in the grid of the placed texture in math coordinates
-           
-            vv = new iSplane({v:[ptx,pty,0,0], type:SPLANE_POINT});
-            //now we pull the point back to the FD:
-           
-            pp = iToFundDomainWBounds(domain, transforms, vv,20);
+            pp = iToFundDomainWBounds(domain, transforms, spt,20);
             // returns from Inversive.js
             //{inDomain: yes/no, transform: a list of splanes taking us back,pnt:the image of the point,word:the transform as a word in the generators,};
             //Incidentally, domains are now lists of splanes, rather than simple splanes. For a point to be outside 
             // of domain[i][0], it has to be inside the remaining bounds domain[i][1,2].
             // For the moment, we ignore this and just are paying attention to domain[i][0]
 
-            // now, check to see if we have a new transform:
-            
             pp.transform = iGetInverseTransform(iGetFactorizationU4(pp.transform));
             var testpt = iTransformU4(pp.transform,registrypoint);
             // if the testpt is too far out, let's not use it. 
@@ -1669,16 +1718,20 @@ export function getCrownTransforms(domain,transforms,center,scale){
                 foundq=(ppx == pointregistry[ii][0] && ppy == pointregistry[ii][1]);
             }
             if(!foundq){
-                pointregistry.push([ppx,ppy]);
+                // then we have a new point:
+                pointregistry.push([ppx,ppy]); // we keep a copy of the transformed registry point
+                // we adjust pp to include the image transform from the 
+                pp = iGetFactorizationU4((pp.transform).concat([imagetransform[1],imagetransform[0]]));
+
                 //transformregistry.push(iGetInverseTransform(iGetFactorizationU4(pp.transform)));
-               transformregistry.push(pp.transform);
+               transformregistry.push(pp);
                 trpointregistry.push([testpt.v[0],testpt.v[1]]);
             }
            
         }
     }
 
-    return [transformregistry,listofpointsfordebug,trpointregistry];
+    return [transformregistry,listoftexturesamplingpoints,trpointregistry,imagetransform];
 }
 
 

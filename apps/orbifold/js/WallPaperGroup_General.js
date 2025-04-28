@@ -55,7 +55,7 @@ import {
     assembleFundamentalDomain,
     produceGenerators,
     willOrbifoldFitQ,
-    getCrownTransforms
+    getTransformsForTexture
 }
 from './OrbifoldGeometrization.js';
 
@@ -435,7 +435,7 @@ export class WallPaperGroup_General {
             var angle = -patMakpar['angle0']*TORADIANS;
             var scale = [s*cos(angle),s*sin(angle)]; // a complex homothety
         
-            var gcT= getCrownTransforms(bounds, transforms,center,scale); 
+            var gcT= getTransformsForTexture(bounds, transforms,center,scale); 
 
             this.crowntransforms =gcT;
             
@@ -483,11 +483,13 @@ export class WallPaperGroup_General {
 
     render(context, transform) {
         this.fundamentalDomainPoints = this.symmetryUIController.render(context, transform)
-
+        // nothing really going on here. 
     }
 
     getUniforms(uniforms) {
         this.symmetryUIController.getUniforms(uniforms)
+        // but this is just passing the buck.
+
     }
 
 } // class Group_GeneralHyperbolic
