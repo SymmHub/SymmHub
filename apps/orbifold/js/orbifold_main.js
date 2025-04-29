@@ -153,7 +153,7 @@ var myGroupHandler = new WallPaperGroup_General({
 
 //pattern maker needs to know about myGroupHandler too:
 
-myPatternMaker[myGroupHandler]=myGroupHandler;
+myPatternMaker['groupHandler']=myGroupHandler;
 
 //////////////////////////
 //
@@ -246,10 +246,8 @@ const myDomainBuilder = new DomainBuilder({
         MAX_GEN_COUNT:       20, //
         MAX_TOTAL_REF_COUNT: 100, // the max size of the array passed into frag
         
-            
-
-        MAX_CROWN_COUNT:     50,
-        MAX_TOTAL_CROWN_COUNT:250,
+        MAX_CROWN_COUNT:     30,
+        MAX_TOTAL_CROWN_COUNT:90,
         USE_PACKING:        true,
       });
     
@@ -273,6 +271,7 @@ let myGroupRenderer = new GroupRenderer({
     useParamGui:        false,
     useInternalWindows: true,
 });
+
 
 myGroupRenderer.init();
 

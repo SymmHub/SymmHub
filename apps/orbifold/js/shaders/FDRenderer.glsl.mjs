@@ -46,7 +46,7 @@ vec4 getCrownTexturePacked(vec3 pnt,
                     float cd[MAX_TOTAL_CROWN_COUNT], // transforms data 
                     int rc[MAX_CROWN_COUNT],  // reflection counts per transform 
 										int count, // count of transforms 
-                    float scale  // scale to use 
+                    float scale  // scale to use for sampling
                     ){
 	
 	// we'll try applying the reflections in reverse order, to take the inverse transform

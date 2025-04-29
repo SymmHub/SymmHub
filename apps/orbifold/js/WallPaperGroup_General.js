@@ -492,5 +492,13 @@ export class WallPaperGroup_General {
 
     }
 
+
+    resetCenter(point){
+        // put a point back into the center
+
+
+
+    }
+
 } // class Group_GeneralHyperbolic
 

@@ -2,14 +2,15 @@ import {sPlanesOfRotation,complexN,poincareTurtleMove,poincareMobiusEdgeToEdge,
   poincareMobiusTranslateFromToByD,sPlaneSwapping,poincareMobiusRotationAboutPoint,
   sPlaneReflectAcross,makeMobius,cMul,
   poincarePt,poincareMobiusTranslateToO,
-  sPlanesMovingEdge1ToEdge2,splaneIt //splanesForCenterAndScale,
-} 
+  sPlanesMovingEdge1ToEdge2,splaneIt,sPlaneThroughPerp, //splanesForCenterAndScale,
+  poincareMobiusFromSPlanesList, 
+    } 
     from '../../../lib/invlib/ComplexArithmetic.js';
-import {PI,HPI,TPI,abs,cos,cosh,sin,sinh,coth,asin,sqrt,cot,acosh,asinh,tanh} 
+import {PI,HPI,TPI,abs,cos,cosh,sin,sinh,coth,asin,sqrt,cot,acosh,asinh,tanh,objectToString} 
   from '../../../lib/invlib/Utilities.js';
-import {iToFundDomainWBounds,iDistanceU4,iTransformU4,iGetInverseTransform,iGetFactorizationU4} 
+import {iToFundDomainWBounds,iDistanceU4,iTransformU4,iGetInverseTransform,iGetFactorizationU4,iGetFactorizationOfSplanes} 
   from '../../../lib/invlib/Inversive.js';
-import {iSplane,SPLANE_POINT} 
+import {iSplane,SPLANE_POINT, SPLANE_PLANE} 
   from '../../../lib/invlib/ISplane.js';
 
 
@@ -1585,18 +1586,32 @@ export function getTransformsForTexture(domain,transforms,center,scale){
     // First calculate imagetransform from the origin TO the center.
     //
 
-    var cc,ss,dd;
+    var cc,ss,texturewidth;
     cc = scale[0]; 
     ss = scale[1];
-    dd= Math.sqrt(cc*cc+ss*ss)
+    texturewidth= Math.sqrt(cc*cc+ss*ss);
+    cc = cc/texturewidth;
+    ss = ss/texturewidth;
+    if(ss>0){ss = Math.sqrt(.5*(1-cc));}
+    else{ss = -Math.sqrt(.5*(1-cc));}
 
-    //The order below might be backwards.
-    var imagetransform = [splaneIt([[cc,ss],0]),
-        sPlaneSwapping(new complexN(0,0),new complexN(center[0],center[1]))
-        ];
+    cc = Math.sqrt(.5*(1+cc)); //half the angle 
 
+    var v1a = new iSplane({v:[1,0,0,0],type:SPLANE_PLANE});
+    var v1b = new iSplane({v:[cc,ss,0,0],type:SPLANE_PLANE});
 
+    var imagetransform, extrasplanes=[v1a,v1b];
+    if(center[0]!=0 || center[1]!=0){
 
+        var ccenter = new complexN(center[0],center[1]);
+        var origin = new complexN(0,0);
+        var v2a = sPlaneSwapping(origin,ccenter);
+        var v2b = new iSplane({v:[-center[1],center[0],0,0],type:SPLANE_PLANE});
+        imagetransform = (iGetFactorizationU4([v1a,v1b,v2b,v2a]));
+        extrasplanes = extrasplanes.concat([v2a,v2b]);}
+    else{imagetransform=[v1a,v1b]}
+
+    var inverseimagetransform = iGetInverseTransform(imagetransform);
 
     //////////////
     //
@@ -1614,13 +1629,14 @@ export function getTransformsForTexture(domain,transforms,center,scale){
     var safety=0;
     var r,t;
 
+    var registryscalingsize=100000;//Number.MAX_SAFE_INTEGER/2;
     
     while(!foundaregistrypoint && safety++<1000){// this is uniform? across a disk of radius .9 
         // We just need one!
         r = Math.sqrt(Math.random())* .9;
         t = 6.2825 * Math.random();
-        cc=Math.round(1000*r*Math.cos(t));
-        ss=Math.round(1000*r*Math.sin(t));
+        cc=Math.round(registryscalingsize*r*Math.cos(t));
+        ss=Math.round(registryscalingsize*r*Math.sin(t));
         registrypoint = new iSplane({v:[.001*cc,.001*ss,0,0], type:SPLANE_POINT});
         var bb =(iToFundDomainWBounds(domain, transforms,registrypoint,20));
         foundaregistrypoint = bb.inDomain;
@@ -1643,55 +1659,53 @@ export function getTransformsForTexture(domain,transforms,center,scale){
     // For the resulting transform, hash with the image of some generic point in the interior of the fundamental domain.
     // If it has not already appeared, add it to the list of transforms that we are keeping.
 
-    // for the moment, we'll just make a simple grid of points in texture coordinates.
+    // for the moment, we'll just make a simple grid of points in texture coordinates. 
+    // We can improve upon this.
 
     var listoftexturesamplingpoints=[];
 
-    var steps = 45;//2025 test points. For some long skinny FDs this may not be enough.
-    var delta = 1/(steps -1);
+    var steps = 15; //45;// gives 2025 test points. For some long skinny FDs this may not be enough.
+    var delta = 1/(steps -1)*texturewidth;
 
     var pp;
 
     var pointregistry=[],registrypoint;
     var trpointregistry;
 
-    // We add adding the identity into the transform registry
-//    let tt = sPlaneSwapping(new complexN(.1,0.),new complexN(.15,.1));
+    // We add the identity into the transform registry
+    
+    // or not.
 
+    var transformregistry=[]//iGetInverseTransform(imagetransform)];
 
+    
+    // the point registry records the copies of the registry point that we've 
+    // already seen, in order to keep track of the transforms that we've already seen.
+    // We keep these as integers up to Number.MAX_SAFE_INTEGER/2 big.
+    pointregistry=[]//[cc,ss]]; //scaled up to integers 1000 x as big.
 
-    var transformregistry=[iGetInverseTransform(imagetransform)];
+    // to make a nice picture for debugging, we also include the transformed images of the registered points.
+    trpointregistry=[]//[registrypoint.v[0],registrypoint.v[1]]];
+
 
     var spt,sptx, spty, ptx,pty;
 
-    // the point registry records the copies of the registry point that we've 
-    // already seen, in order to keep track of the transforms that we've already seen.
-    pointregistry=[[cc,ss]]; //scaled up to integers 1000 x as big.
-
-    // to make a nice picture for debugging, we also include the transformed images of the registered points.
-    trpointregistry=[[registrypoint.v[0],registrypoint.v[1]]];
-
+    var tttemp=[];
 
     // now make a grid: 
     for(var i=0; i<steps;i++){
 
         for(var j=0;j<steps;j++){
 
-            ptx =      - scale[0]/2 + scale[1]/2 /*corner*/ 
-                        +i*delta*scale[0]/*one direction*/
-                        +j*delta*(-scale[1])/*the other direction*/
-            pty =      - scale[1]/2 - scale[0]/2
-                         +i*delta*scale[1]
-                         + j*delta*(scale[0]);
+            ptx =      -texturewidth/2 +i*delta;
+             pty =     -texturewidth/2 +j*delta;
 
             spt = new iSplane({v:[ptx,pty,0,0], type:SPLANE_POINT});
 
             spt = iTransformU4(imagetransform,spt);
-
+           
             ptx = spt.v[0]
             pty = spt.v[1]
-
-
 
             // next transform the sampling by imagetransform 
 
@@ -1706,34 +1720,49 @@ export function getTransformsForTexture(domain,transforms,center,scale){
             // For the moment, we ignore this and just are paying attention to domain[i][0]
 
             pp.transform = iGetInverseTransform(iGetFactorizationU4(pp.transform));
+            
             var testpt = iTransformU4(pp.transform,registrypoint);
+            var ppx = Math.round(registryscalingsize*testpt.v[0]);
+            var ppy = Math.round(registryscalingsize*testpt.v[1]);
+                
             // if the testpt is too far out, let's not use it. 
-            // this is hard-coded as within .8 in Euclidean distance from the origin.
+            // TBD hard-code as within .8 in Euclidean distance from the origin.
 
             // now check to see if testpt is in the registry
             var foundq = false;
             for (var ii = 0; ii<pointregistry.length && !foundq; ii++){
-                var ppx = Math.round(1000*testpt.v[0]);
-                var ppy = Math.round(1000*testpt.v[1]);
                 foundq=(ppx == pointregistry[ii][0] && ppy == pointregistry[ii][1]);
             }
             if(!foundq){
-                // then we have a new point:
-                pointregistry.push([ppx,ppy]); // we keep a copy of the transformed registry point
+                // then we have a new copy of the reference point,
+                // which we keep in our pointregistry:
+                pointregistry.push([ppx,ppy]); 
                 // we adjust pp to include the image transform from the 
-                pp = iGetFactorizationU4((pp.transform).concat([imagetransform[1],imagetransform[0]]));
-
-                //transformregistry.push(iGetInverseTransform(iGetFactorizationU4(pp.transform)));
-               transformregistry.push(pp);
+                tttemp.push(pp.transform);
+                pp = pp.transform;//iGetFactorizationU4((pp.transform).concat(iGetInverseTransform(imagetransform)));
+                pp = pp.concat(inverseimagetransform);
+                pp = iGetFactorizationU4(pp);
+                transformregistry.push(pp);
                 trpointregistry.push([testpt.v[0],testpt.v[1]]);
             }
            
-        }
-    }
+        }//end of grid
+    } 
+    
+    console.log("pps={"+
+            poincareMobiusFromSPlanesList(imagetransform).toString(true)+","+
+            objectToString(tttemp.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true)+
+                ","+
+            objectToString(transformregistry.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true)+
+                ","+objectToString(trpointregistry,true)+"};");
+    
 
-    return [transformregistry,listoftexturesamplingpoints,trpointregistry,imagetransform];
+    return [transformregistry,listoftexturesamplingpoints,trpointregistry,imagetransform,extrasplanes];
 }
 
 
 
+export function resetPointToFundamentalDomain(domain,transforms,point){ 
+    return {resentpoint:1 , resettingtransform: 1, anglechange:1}
 
+}

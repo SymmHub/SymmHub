@@ -471,17 +471,26 @@ export class SymmetryUIController{
 
         for(var i = 1; i<b.length;i++){
           iDrawPoint(b[i],context,transform,{
-                    style: "#CCCC0099",
+                    style: "#CCCC00FF",
                     radius: 14
                 });
           iDrawPoint(b[i],context,transform,{
-                    style: "#0070FF",
+                    style: "#0070FFFF",
                     radius: 12
                 });
-      }
-      }
+      } // end of drawing the blue points
 
 
+
+      } // end if aa (= the crown stuff) has something in it.
+
+
+       iDrawPoint([0,0],context,transform,{
+                    style: "#FFFFFF99",
+                    radius: 14
+                });
+
+      
 
         if(!this.domainShowingQ) {
             this.FDPoints=[];
