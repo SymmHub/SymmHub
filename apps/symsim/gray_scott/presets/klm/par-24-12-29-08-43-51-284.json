@@ -1,9 +1,13 @@
 {
-    "name": "par-24-12-29-08-43-51-284",
+    "name": "unnamed",
+    "appInfo": {
+        "appName": "SymRenderer.Group_KLM.Gray-Scott.InversiveNavigator_v1",
+        "fileFormatRelease": 1
+    },
     "params": {
         "files": {},
         "display": {
-            "frameTime": 16.3,
+            "frameTime": 16.9,
             "customWidth": 1000,
             "customHeight": 1000,
             "sizeMultiplier": 1,
@@ -93,7 +97,8 @@
                 "minValue": 0,
                 "maxValue": 1,
                 "cmBanding": 0.5,
-                "cmWrap": "clamp"
+                "cmWrap": "clamp",
+                "mipmapLevel": 0
             },
             "bump": {
                 "bumpHeight": 0.01,
@@ -122,46 +127,11 @@
             },
             "options": {
                 "visualComponent": 0,
-                "projection": "disc",
                 "interpolation": "biquadratic",
                 "showChecker": false,
                 "showGrid": true,
                 "showRuler": true,
-                "expScale": {
-                    "enabled": false,
-                    "a1x": 1,
-                    "a1y": 0,
-                    "a2x": 0,
-                    "a2y": 1,
-                    "n1": 10,
-                    "n2": 0,
-                    "x0": 0,
-                    "y0": 0
-                },
-                "rational": {
-                    "enabled": false,
-                    "x1": 1,
-                    "y1": 0,
-                    "n1": 1,
-                    "x2": 0,
-                    "y2": 1,
-                    "n2": -1,
-                    "x3": -1,
-                    "y3": 0,
-                    "n3": 1,
-                    "x4": 0,
-                    "y4": -1,
-                    "n4": -1
-                },
-                "periodic": {
-                    "enabled": false,
-                    "a1x": 1,
-                    "a1y": 0,
-                    "a2x": 0,
-                    "a2y": 1,
-                    "cx": 0,
-                    "cy": 0
-                }
+                "useMipmap": true
             },
             "dataPlot": {
                 "className": "plot",
@@ -187,7 +157,7 @@
         },
         "symmetry": {
             "group": {
-                "className": "group",
+                "className": "Group_KLM",
                 "params": {
                     "K": 5,
                     "L": 4,
@@ -210,15 +180,105 @@
         "tools": {
             "tool": "move",
             "transform": {
-                "className": "transform",
+                "className": "InversiveNavigator_v1",
                 "params": {
-                    "centerX": 0.020866819581915164,
-                    "centerY": 0.11103777400300589,
-                    "zoom": 0.7497615922390409
+                    "projection": {
+                        "className": "ProjectionTransform",
+                        "params": {
+                            "enabled": true,
+                            "fpdMap": {
+                                "className": "FixedPointTransform",
+                                "params": {
+                                    "enabled": false,
+                                    "showUI": false,
+                                    "animate": false,
+                                    "word": "ac",
+                                    "orientation": "none",
+                                    "fp0x": -1,
+                                    "fp0y": 0,
+                                    "fp1x": 1,
+                                    "fp1y": 0,
+                                    "basex": 0,
+                                    "basey": 0,
+                                    "translation": 1,
+                                    "rotation": 0,
+                                    "fraction": 0,
+                                    "loopTime": 5
+                                }
+                            },
+                            "bandMap": {
+                                "enabled": false
+                            },
+                            "logMap": {
+                                "enabled": false
+                            },
+                            "periodicMap": {
+                                "enabled": false,
+                                "a1x": 1,
+                                "a1y": 0,
+                                "a2x": 0,
+                                "a2y": 1,
+                                "cx": 0,
+                                "cy": 0
+                            },
+                            "expMap": {
+                                "enabled": false
+                            },
+                            "loxMap": {
+                                "enabled": false
+                            },
+                            "scaleMap": {
+                                "enabled": false,
+                                "a1x": 1,
+                                "a1y": 0,
+                                "a2x": 0,
+                                "a2y": 1,
+                                "n1": 10,
+                                "n2": 0,
+                                "x0": 0,
+                                "y0": 0
+                            },
+                            "uhpMap": {
+                                "enabled": false
+                            },
+                            "rationalMap": {
+                                "enabled": false,
+                                "x1": 1,
+                                "y1": 0,
+                                "n1": 1,
+                                "x2": 0,
+                                "y2": 1,
+                                "n2": -1,
+                                "x3": -1,
+                                "y3": 0,
+                                "n3": 1,
+                                "x4": 0,
+                                "y4": -1,
+                                "n4": -1
+                            }
+                        }
+                    },
+                    "inversive": {
+                        "enabled": true,
+                        "itrans": []
+                    },
+                    "spherical": {
+                        "enabled": false
+                    },
+                    "euclidean": {
+                        "centerX": 0.020866819581915164,
+                        "centerY": 0.11103777400300589,
+                        "zoom": [
+                            0.7497615922390409
+                        ]
+                    },
+                    "options": {
+                        "animation": true
+                    }
                 }
             },
             "drawing": {
-                "className": "drawing",
+                "className": "draw",
                 "params": {
                     "symmetry": true,
                     "brushR": 0.42012226581573486,
