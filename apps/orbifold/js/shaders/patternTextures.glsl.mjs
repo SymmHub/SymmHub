@@ -29,6 +29,11 @@ vec4 getPattern(vec3 pnt, float scale){
 */
 vec4 getTextureInd(vec3 pnt, int index, float scale){
 	
+  if(pnt.x<0.){pnt.x=0.;}
+  if(pnt.y<0.){pnt.y=0.;}
+  if(pnt.x>1.){pnt.x=1.;}
+  if(pnt.y>1.){pnt.y=1.;}
+  
 	vec2 p = pnt.xy;
 	vec2 hf = vec2(0.5);
 

@@ -469,7 +469,7 @@ export class SymmetryUIController{
                 });}
 
 
-        for(var i = 1; i<b.length;i++){
+        for(var i = 0; i<b.length;i++){
           iDrawPoint(b[i],context,transform,{
                     style: "#CCCC00FF",
                     radius: 14

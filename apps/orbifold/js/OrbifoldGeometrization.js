@@ -1749,12 +1749,19 @@ export function getTransformsForTexture(domain,transforms,center,scale){
         }//end of grid
     } 
     
-    console.log("pps={"+
-            poincareMobiusFromSPlanesList(imagetransform).toString(true)+","+
+    console.log("pps={"
+           /* poincareMobiusFromSPlanesList(imagetransform).toString(true)+","+
             objectToString(tttemp.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true)+
-                ","+
-            objectToString(transformregistry.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true)+
-                ","+objectToString(trpointregistry,true)+"};");
+                ","+*/
+            +objectToString(transformregistry.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true)
+           /* +","+objectToString(trpointregistry,true)
+            +","+objectToString(transformregistry.map(x=>x.length,true))+","+
+            */
+            +","+objectToString(transformregistry.map(x=>x.length,true))
+            
+
+           //+","+objectToString(pointregistry,true)
+                +"};");
     
 
     return [transformregistry,listoftexturesamplingpoints,trpointregistry,imagetransform,extrasplanes];
