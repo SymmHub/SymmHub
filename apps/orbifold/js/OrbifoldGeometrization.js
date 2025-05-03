@@ -1598,7 +1598,7 @@ export function getTransformsForTexture(domain,transforms,center,scale){
     cc = Math.sqrt(.5*(1+cc)); //half the angle 
 
     var v1a = new iSplane({v:[1,0,0,0],type:SPLANE_PLANE});
-    var v1b = new iSplane({v:[cc,ss,0,0],type:SPLANE_PLANE});
+    var v1b = new iSplane({v:[-ss,cc,0,0],type:SPLANE_PLANE});
 
     var imagetransform, extrasplanes=[v1a,v1b];
     if(center[0]!=0 || center[1]!=0){
@@ -1611,7 +1611,7 @@ export function getTransformsForTexture(domain,transforms,center,scale){
         extrasplanes = extrasplanes.concat([v2a,v2b]);}
     else{imagetransform=[v1a,v1b]}
 
-    var inverseimagetransform = iGetInverseTransform(imagetransform);
+   // var inverseimagetransform = iGetInverseTransform(imagetransform);
 
     //////////////
     //
@@ -1742,15 +1742,32 @@ export function getTransformsForTexture(domain,transforms,center,scale){
                 // then we have a new copy of the reference point,
                 // which we keep in our pointregistry:
                 pointregistry.push([ppx,ppy]); 
+
+
+var qq= pp;
+
+
                 // we adjust pp to include the image transform from the 
-                tttemp.push(pp.transform);
-                pp = pp.transform;//iGetFactorizationU4((pp.transform).concat(iGetInverseTransform(imagetransform)));
-                pp = pp.concat(inverseimagetransform);
+                
+
+                tttemp.push(pp.transform); // for printing only 
+
+                pp = pp.transform;
+              //  iGetFactorizationU4((pp.transform).concat(iGetInverseTransform(imagetransform)));
+                pp = pp.concat(iGetInverseTransform(imagetransform))//inverseimagetransform);
+              //  pp = iGetInverseTransform(pp).concat(iGetInverseTransform(imagetransform))//inverseimagetransform);
+
+                pp =// iGetInverseTransform(imagetransform).concat(iGetInverseTransform(pp))
+                //qq = inverseimagetransform.concat(pp); //tracks the images of correctly
+
                 pp = iGetFactorizationU4(pp);
                 transformregistry.push(pp);
+                
+
+                // for our debugging 
                 trpointregistry.push([imregpt.v[0],imregpt.v[1]]);
 
-                   // for debugging; we draw these in purple?
+                // for debugging
                 var sdkw = iTransformU4(pp,origin);
                 transformedpts.push([sdkw.v[0],sdkw.v[1]]);
             }
@@ -1758,7 +1775,7 @@ export function getTransformsForTexture(domain,transforms,center,scale){
         }//end of grid
     } 
     
-    console.log("pps={"
+    console.log("{crowntransforms,lens}={"
            /* poincareMobiusFromSPlanesList(imagetransform).toString(true)+","+
             objectToString(tttemp.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true)+
                 ","+*/
@@ -1766,7 +1783,7 @@ export function getTransformsForTexture(domain,transforms,center,scale){
            /* +","+objectToString(trpointregistry,true)
             +","+objectToString(transformregistry.map(x=>x.length,true))+","+
             */
-            +","+objectToString(transformregistry.map(x=>x.length,true))
+            +",{"+(transformregistry.map(x=>x.length,true)).toString()+"}"
             
 
            //+","+objectToString(pointregistry,true)
