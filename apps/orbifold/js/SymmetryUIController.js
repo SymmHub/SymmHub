@@ -476,7 +476,7 @@ export class SymmetryUIController{
                     radius: 14
                 });
           iDrawPoint(b[i],context,transform,{
-                    style: "#0070FFFF",
+                    style: "#FF70A0FF",
                     radius: 12
                 });
       } // end of drawing the blue points
@@ -489,7 +489,7 @@ export class SymmetryUIController{
                     radius: 14
                 });
           iDrawPoint(c[i],context,transform,{
-                    style: "#FF70F0FF",
+                    style: "#A7FF0FFF",
                     radius: 12
                 });
       } // end of drawing the purple points
@@ -500,11 +500,19 @@ export class SymmetryUIController{
 
 
        iDrawPoint([0,0],context,transform,{
-                    style: "#FFFFFF99",
-                    radius: 14
+                    style: "#FFFFFFFF",
+                    radius: 5
                 });
 
-      
+        
+       for(var i = 0; i< aa[4].length; i++)
+          {/*iDrawSplane(aa[4][i], context, transform, {
+                        lineStyle: color,
+                        shadowStyle: "#00007733",
+                        lineWidth: width,
+                        shadowWidth: shadowwidth
+                    })*/};
+
 
         if(!this.domainShowingQ) {
             this.FDPoints=[];

@@ -95,6 +95,10 @@ const STYLES = {
 const PRE_FOLDER = 'presets/';
 const JSONpresets = [
     {
+        name: '2223',
+        path: PRE_FOLDER + '2223.json'
+    },
+    {
         name: '23x',
         path: PRE_FOLDER + '23x.json'
     },

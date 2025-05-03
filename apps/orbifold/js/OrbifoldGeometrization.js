@@ -1573,7 +1573,7 @@ export function getTransformsForTexture(domain,transforms,center,scale){
 // We'll calculate several useful things: 
 // * imagetransform is a list of splanes transforming the origin to center, 
 //      rotating by the angle of the vector [a,b] of scale
-// * transformregistry, a list of lists of splanes, all possible transforms that take 
+// * crowntransformregistry, a list of lists of splanes, all possible transforms that take 
 //      some point of the FD to some point in the texture. Errors can ensue if we don't sample
 //      sufficiently, to be investigated; 
 // * listoftexturesamplingpoints, the points in the texture that are being sampled; these
@@ -1598,18 +1598,19 @@ export function getTransformsForTexture(domain,transforms,center,scale){
     cc = Math.sqrt(.5*(1+cc)); //half the angle 
 
     var v1a = new iSplane({v:[1,0,0,0],type:SPLANE_PLANE});
-    var v1b = new iSplane({v:[-ss,cc,0,0],type:SPLANE_PLANE});
+    var v1b = new iSplane({v:[cc,-ss,0,0],type:SPLANE_PLANE});
+    var vd = new iSplane({v:[0,1,0,0],type:2})
 
     var imagetransform, extrasplanes=[v1a,v1b];
     if(center[0]!=0 || center[1]!=0){
 
         var ccenter = new complexN(center[0],center[1]);
         var origin = new complexN(0,0);
-        var v2a = sPlaneSwapping(origin,ccenter);
-        var v2b = new iSplane({v:[-center[1],center[0],0,0],type:SPLANE_PLANE});
-        imagetransform = (iGetFactorizationU4([v1a,v1b,v2b,v2a]));
+        var v2a = new iSplane({v:[-center[1],center[0],0,0],type:SPLANE_PLANE});
+        var v2b = sPlaneSwapping(origin,ccenter);
+        imagetransform = (iGetFactorizationU4([v1b,vd,v2a,v2b]));
         extrasplanes = extrasplanes.concat([v2a,v2b]);}
-    else{imagetransform=[v1a,v1b]}
+    else{imagetransform=[v1b,vd]}
 
    // var inverseimagetransform = iGetInverseTransform(imagetransform);
 
@@ -1678,7 +1679,7 @@ export function getTransformsForTexture(domain,transforms,center,scale){
     
     // or not.
 
-    var transformregistry=[]//iGetInverseTransform(imagetransform)];
+    var crowntransformregistry=[]//iGetInverseTransform(imagetransform)];
 
     
     // the point registry records the copies of the registry point that we've 
@@ -1714,83 +1715,93 @@ export function getTransformsForTexture(domain,transforms,center,scale){
 
             // next transform the sampling by imagetransform 
 
+            // these are just to draw a cool grid
             listoftexturesamplingpoints.push([ptx,pty]);// to make a picture for debugging
             
 
+            // walk the point back into the domain
             pp = iToFundDomainWBounds(domain, transforms, spt,20);
+            
             // returns from Inversive.js
+
             //{inDomain: yes/no, transform: a list of splanes taking us back,pnt:the image of the point,word:the transform as a word in the generators,};
             //Incidentally, domains are now lists of splanes, rather than simple splanes. For a point to be outside 
             // of domain[i][0], it has to be inside the remaining bounds domain[i][1,2].
             // For the moment, we ignore this and just are paying attention to domain[i][0]
 
-            pp.transform = iGetInverseTransform(iGetFactorizationU4(pp.transform));
+            // and then let pp take the FD to a FD intersecting the texture bounds.
+
+            pp = iGetInverseTransform(iGetFactorizationU4(pp.transform));
             
-            var imregpt = iTransformU4(pp.transform,registrypoint);//for debugging
+            // create a copy of the registry point, and scale it for comparison
+            // to the stored points in registry. 
+            var imregpt = iTransformU4(pp,registrypoint);//for debugging
             var ppx = Math.round(registryscalingsize*imregpt.v[0]);
             var ppy = Math.round(registryscalingsize*imregpt.v[1]);
                 
-            // if the testpt is too far out, let's not use it. 
+            // TBD if the testpt is too far out, let's not use it. 
             // TBD hard-code as within .8 in Euclidean distance from the origin.
 
             // now check to see if testpt is in the registry
-            var foundq = false;
-            for (var ii = 0; ii<pointregistry.length && !foundq; ii++){
-                foundq=(ppx == pointregistry[ii][0] && ppy == pointregistry[ii][1]);
+
+
+            var foundamatchq = false;
+
+            for (var ii = 0; ii<pointregistry.length && !foundamatchq; ii++){
+                foundamatchq=(ppx == pointregistry[ii][0] && ppy == pointregistry[ii][1]);
             }
-            if(!foundq){
+            if(!foundamatchq){
+
                 // then we have a new copy of the reference point,
                 // which we keep in our pointregistry:
                 pointregistry.push([ppx,ppy]); 
+                // these are colored red in the debugging graphics.
 
 
-var qq= pp;
 
-
-                // we adjust pp to include the image transform from the 
+                // we adjust pp to include the transform on the texture
                 
 
-                tttemp.push(pp.transform); // for printing only 
-
-                pp = pp.transform;
-              //  iGetFactorizationU4((pp.transform).concat(iGetInverseTransform(imagetransform)));
+               
                 pp = pp.concat(iGetInverseTransform(imagetransform))//inverseimagetransform);
-              //  pp = iGetInverseTransform(pp).concat(iGetInverseTransform(imagetransform))//inverseimagetransform);
-
-                pp =// iGetInverseTransform(imagetransform).concat(iGetInverseTransform(pp))
-                //qq = inverseimagetransform.concat(pp); //tracks the images of correctly
-
                 pp = iGetFactorizationU4(pp);
-                transformregistry.push(pp);
+                crowntransformregistry.push(pp);
                 
-
-                // for our debugging 
-                trpointregistry.push([imregpt.v[0],imregpt.v[1]]);
-
                 // for debugging
                 var sdkw = iTransformU4(pp,origin);
+               // sdkw = iTransformU4(iGetInverseTransform(imagetransform),imregpt);
                 transformedpts.push([sdkw.v[0],sdkw.v[1]]);
+
+
+                // for our debugging ; this is the new registry point, 
+                // the image of the origin in a FD that meets the transformed texture.
+                trpointregistry.push([imregpt.v[0],imregpt.v[1]]);
+
+
+
             }
            
         }//end of grid
     } 
     
-    console.log("{crowntransforms,lens}={"
-           /* poincareMobiusFromSPlanesList(imagetransform).toString(true)+","+
-            objectToString(tttemp.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true)+
-                ","+*/
-            +objectToString(transformregistry.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true)
+    console.log("{crowntransforms,lens,splanes,totextrans}={"
+             +objectToString(crowntransformregistry.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true)
            /* +","+objectToString(trpointregistry,true)
-            +","+objectToString(transformregistry.map(x=>x.length,true))+","+
-            */
-            +",{"+(transformregistry.map(x=>x.length,true)).toString()+"}"
-            
-
+           */ 
+            +",{"+(crowntransformregistry.map(x=>x.length,true)).toString()+"}"
+            +",{"+(
+                crowntransformregistry.map(t=>(
+                    "{"+(t.map(
+                        s=>("{{"+(s.v.map(x=>x.toFixed(4))).toString()+"},"+s.type+"}")
+                     )).toString()+"}"
+                    ))
+                  )+"}"
+            +","+poincareMobiusFromSPlanesList(imagetransform).toString(true)
            //+","+objectToString(pointregistry,true)
                 +"};");
     
 
-    return [transformregistry,listoftexturesamplingpoints,trpointregistry,transformedpts]
+    return [crowntransformregistry,listoftexturesamplingpoints,trpointregistry,transformedpts,extrasplanes]
         //imagetransform,extrasplanes];
 }
 
