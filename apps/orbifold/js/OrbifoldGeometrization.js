@@ -1622,7 +1622,9 @@ export function getTransformsForTexture(domain,transforms,center,scale){
 
     cc=0;ss=0;
 
-    registrypoint=new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
+    var origin = new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
+
+    registrypoint=origin;
 
     var foundaregistrypoint=iToFundDomainWBounds(domain, transforms,registrypoint,20).inDomain
     
@@ -1688,6 +1690,9 @@ export function getTransformsForTexture(domain,transforms,center,scale){
     trpointregistry=[]//[registrypoint.v[0],registrypoint.v[1]]];
 
 
+//soley for debugging:
+    var transformedpts=[];
+
     var spt,sptx, spty, ptx,pty;
 
     var tttemp=[];
@@ -1721,9 +1726,9 @@ export function getTransformsForTexture(domain,transforms,center,scale){
 
             pp.transform = iGetInverseTransform(iGetFactorizationU4(pp.transform));
             
-            var testpt = iTransformU4(pp.transform,registrypoint);
-            var ppx = Math.round(registryscalingsize*testpt.v[0]);
-            var ppy = Math.round(registryscalingsize*testpt.v[1]);
+            var imregpt = iTransformU4(pp.transform,registrypoint);//for debugging
+            var ppx = Math.round(registryscalingsize*imregpt.v[0]);
+            var ppy = Math.round(registryscalingsize*imregpt.v[1]);
                 
             // if the testpt is too far out, let's not use it. 
             // TBD hard-code as within .8 in Euclidean distance from the origin.
@@ -1743,7 +1748,11 @@ export function getTransformsForTexture(domain,transforms,center,scale){
                 pp = pp.concat(inverseimagetransform);
                 pp = iGetFactorizationU4(pp);
                 transformregistry.push(pp);
-                trpointregistry.push([testpt.v[0],testpt.v[1]]);
+                trpointregistry.push([imregpt.v[0],imregpt.v[1]]);
+
+                   // for debugging; we draw these in purple?
+                var sdkw = iTransformU4(pp,origin);
+                transformedpts.push([sdkw.v[0],sdkw.v[1]]);
             }
            
         }//end of grid
@@ -1764,7 +1773,8 @@ export function getTransformsForTexture(domain,transforms,center,scale){
                 +"};");
     
 
-    return [transformregistry,listoftexturesamplingpoints,trpointregistry,imagetransform,extrasplanes];
+    return [transformregistry,listoftexturesamplingpoints,trpointregistry,transformedpts]
+        //imagetransform,extrasplanes];
 }
 
 

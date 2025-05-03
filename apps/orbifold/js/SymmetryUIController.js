@@ -456,10 +456,11 @@ export class SymmetryUIController{
 
       // for the moment, for some debugging:
       var aa = (this.groupMaker.getGroup()).c;
-      var a,b;
+      var a,b,c;
       if(aa.length>1){
         a = aa[1]; // this should be the grid of points
         b = aa[2]; // this should be the images of the reference point
+        c = aa[3];
         // a grid of points showing the sampling; can delete FD.c[1]
      for(var i = 0; i<a.length;i++){
         //var aa = iPoint(a[i][0],a[i][1],0,0);
@@ -479,6 +480,19 @@ export class SymmetryUIController{
                     radius: 12
                 });
       } // end of drawing the blue points
+
+
+
+        for(var i = 0; i<c.length;i++){
+          iDrawPoint(c[i],context,transform,{
+                    style: "#CCCC00FF",
+                    radius: 14
+                });
+          iDrawPoint(c[i],context,transform,{
+                    style: "#FF70F0FF",
+                    radius: 12
+                });
+      } // end of drawing the purple points
 
 
 
