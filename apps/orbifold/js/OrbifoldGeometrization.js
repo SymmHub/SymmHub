@@ -1667,7 +1667,7 @@ export function getTransformsForTexture(domain,transforms,center,scale){
 
     var listoftexturesamplingpoints=[];
 
-    var steps = 15; //45;// gives 2025 test points. For some long skinny FDs this may not be enough.
+    var steps = 45; //45;// gives 2025 test points. For some long skinny FDs this may not be enough.
     var delta = 1/(steps -1)*texturewidth;
 
     var pp;
@@ -1784,10 +1784,8 @@ export function getTransformsForTexture(domain,transforms,center,scale){
         }//end of grid
     } 
     
-    console.log("{crowntransforms,lens,splanes,totextrans}={"
-             +objectToString(crowntransformregistry.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true)
-           /* +","+objectToString(trpointregistry,true)
-           */ 
+  /*  console.log("{crowntransforms,lens,splanes,totextrans}={"
+             +objectToString(crowntransformregistry.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true) 
             +",{"+(crowntransformregistry.map(x=>x.length,true)).toString()+"}"
             +",{"+(
                 crowntransformregistry.map(t=>(
@@ -1800,9 +1798,16 @@ export function getTransformsForTexture(domain,transforms,center,scale){
            //+","+objectToString(pointregistry,true)
                 +"};");
     
-
+*/
     return [crowntransformregistry,listoftexturesamplingpoints,trpointregistry,transformedpts,extrasplanes]
-        //imagetransform,extrasplanes];
+       var i = 9;
+       return [
+        [crowntransformregistry[i]],
+        listoftexturesamplingpoints,
+        [trpointregistry[i]],
+        [transformedpts[i]],
+        extrasplanes]
+      
 }
 
 

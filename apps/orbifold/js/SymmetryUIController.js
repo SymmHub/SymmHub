@@ -453,7 +453,7 @@ export class SymmetryUIController{
         if(DEBUG)console.log(`${MYNAME}.render()`,this.domainShowingQ);
 
      
-
+/*
       // for the moment, for some debugging:
       var aa = (this.groupMaker.getGroup()).c;
       var a,b,c;
@@ -505,13 +505,7 @@ export class SymmetryUIController{
                 });
 
         
-       for(var i = 0; i< aa[4].length; i++)
-          {/*iDrawSplane(aa[4][i], context, transform, {
-                        lineStyle: color,
-                        shadowStyle: "#00007733",
-                        lineWidth: width,
-                        shadowWidth: shadowwidth
-                    })*/};
+  */
 
 
         if(!this.domainShowingQ) {

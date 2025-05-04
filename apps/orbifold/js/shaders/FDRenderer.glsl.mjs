@@ -32,8 +32,10 @@ uniform int u_domainCount[MAX_GEN_COUNT];
 uniform int u_groupCumRefCount[MAX_GEN_COUNT];
 uniform float u_groupTransformsData[TRANSFORMS_DATA_SIZE];  // transforms data
 
+
+
 uniform int u_cTransCumRefCount[MAX_CROWN_COUNT];
-uniform float u_cTransformsData[MAX_TOTAL_CROWN_COUNT];  // transforms data
+uniform float u_cTransformsData[CROWN_DATA_SIZE];  // transforms data
 uniform int u_crownCount;   // count of transforms in the crown 
 
 
@@ -43,7 +45,7 @@ void init(void){
 }
 
 vec4 getCrownTexturePacked(vec3 pnt, 
-                    float cd[MAX_TOTAL_CROWN_COUNT], // transforms data 
+                    float cd[CROWN_DATA_SIZE], // transforms data 
                     int rc[MAX_CROWN_COUNT],  // reflection counts per transform 
 										int count, // count of transforms 
                     float scale  // scale to use for sampling

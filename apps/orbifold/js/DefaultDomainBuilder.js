@@ -163,6 +163,14 @@ export class DefaultDomainBuilder {
       un.u_cTransformsData=iCumPackTransforms(ctrans,  this.MAX_TOTAL_CROWN_COUNT);
       un.u_crownCount = ctrans.length;
 
+
+ /*console.log("{splanes,count} = {{"
++(un.u_cTransformsData.map(t=>t.toFixed(4)).toString()
++"},"
++"{"+un.u_cTransCumRefCount.toString()+"}"
++"};"
+  ));*/
+
       if(this.params.debug) {
          console.log("u_domainCount:", objectToString(un.u_domainCount));
          console.log("u_domainData:", objectToString(un.u_domainData));
