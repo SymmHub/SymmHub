@@ -250,8 +250,8 @@ const myDomainBuilder = new DomainBuilder({
         MAX_GEN_COUNT:       20, //
         MAX_TOTAL_REF_COUNT: 100, // the max size of the array passed into frag
         
-        MAX_CROWN_COUNT:     30,
-        MAX_TOTAL_CROWN_COUNT:90,
+        MAX_CROWN_COUNT:     20,
+        MAX_TOTAL_CROWN_COUNT:100,
         USE_PACKING:        true,
       });
     

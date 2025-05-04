@@ -10,21 +10,10 @@ export const inversive =
 #define PI 3.1415926535897932384626433832795
 #endif 
 
-#ifndef MAX_GEN_COUNT
-#define MAX_GEN_COUNT 4
-#endif 
+// THIS SHOULD BE PASSED IN
 
 #ifndef MAX_ITERATIONS
 #define MAX_ITERATIONS 100
-#endif 
-
-#ifndef MAX_REF_COUNT
-#define MAX_REF_COUNT 4 
-#endif 
-
-// size of array to hold transforms to tiles around fundamental domain (crown transform)
-#ifndef MAX_CROWN_COUNT
-#define MAX_CROWN_COUNT 20
 #endif 
 
 
