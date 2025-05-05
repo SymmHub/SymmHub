@@ -1561,8 +1561,11 @@ export function willOrbifoldFitQ(atomList,MAX_GEN_COUNT,MAX_REF_COUNT,MAX_DOMAIN
   
 }
 
+// we use this to hash the grid so that it is in order from 
+// the center out to the margin.
+import {distancetable} from './distancetable45.js'
 
-import {distancetable} from './distancetable'
+
 
 export function getTransformsForTexture(domain,transforms,center,scale){ 
 
@@ -1670,7 +1673,7 @@ export function getTransformsForTexture(domain,transforms,center,scale){
 
     var listoftexturesamplingpoints=[];
 
-    var steps = 45; //45;// gives 2025 test points. For some long skinny FDs this may not be enough.
+    var steps = Math.round(Math.sqrt(distancetable.length)); //45;// gives 2025 test points. For some long skinny FDs this may not be enough.
     var delta = 1/(steps -1)*texturewidth;
 
     var pp;
@@ -1699,17 +1702,18 @@ export function getTransformsForTexture(domain,transforms,center,scale){
 
     var spt,sptx, spty, ptx,pty;
 
-    var tttemp=[];
+    var tttemp=[],i,j;
 
     // now make a grid: 
-    for(var i=0; i<steps;i++){
+    for(var ij=0; ij<distancetable.length;ij++){
 
-        for(var j=0;j<steps;j++){
+            i= distancetable[ij][0];
+            j = distancetable[ij][1];
 
-            ptx =      -texturewidth/2 +i*delta;
-             pty =     -texturewidth/2 +j*delta;
+      //  for(var j=0;j<steps;j++){
 
-            spt = new iSplane({v:[ptx,pty,0,0], type:SPLANE_POINT});
+
+            spt = new iSplane({v:[i*delta,j*delta,0,0], type:SPLANE_POINT});
 
             spt = iTransformU4(imagetransform,spt);
            
@@ -1785,7 +1789,7 @@ export function getTransformsForTexture(domain,transforms,center,scale){
             }
            
         }//end of grid
-    } 
+     
     
     console.log("{crowntransforms,lens,splanes,totextrans}={"
              +objectToString(crowntransformregistry.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true) 
@@ -1803,8 +1807,9 @@ export function getTransformsForTexture(domain,transforms,center,scale){
     
 
     return [crowntransformregistry,listoftexturesamplingpoints,trpointregistry,transformedpts,extrasplanes]
-       var i = 9;
-       return [
+    
+    var i = 9;
+    return [
         [crowntransformregistry[i]],
         listoftexturesamplingpoints,
         [trpointregistry[i]],
