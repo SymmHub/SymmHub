@@ -182,8 +182,8 @@ const fragPatternTextures   = { obj: OF, id:'patternTextures'};/*the buffers*///
 const fragVertexShader      = { obj: OF, id:'vertexShader'};//unis:["u_aspect","u_scale","u_center"]};//
 
 
-const fragFDRenderer =    { obj: OF, id:'FDRenderer'};
-const fragPatternFromFDRenderer ={ obj: OF, id:'patternFromFDRenderer'};
+const fragFDRenderer =    { obj: OF, id:'FDRenderer_v1'};
+const fragPatternFromFDRenderer ={ obj: OF, id:'patternFromFDRenderer_v1'};
 
 
 
@@ -239,8 +239,8 @@ const progPatternFromFDRenderer = {
 
 const orbPrograms = {
    // symRenderer: progSymRenderer,
-    FDRenderer:progFDRenderer,
-    patternFromFDRenderer:progPatternFromFDRenderer,
+    FDRenderer:             progFDRenderer,
+    patternFromFDRenderer:  progPatternFromFDRenderer,
 };
 
 const myDomainBuilder = new DomainBuilder({
