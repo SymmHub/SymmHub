@@ -571,6 +571,21 @@ export class GroupRenderer {
     }
 
     //
+    //  return buffer for rendering fundamental domain into 
+    // 
+    createFDBuffer(){
+        
+        let glc = this.mCanvas.glCanvas;
+        let gl = this.mGLCtx.gl;
+        let format =    gl.RGBA;
+        let intFormat = gl.RGBA32F;
+        let texType =   gl.FLOAT;
+        let filtering = gl.LINEAR;
+        return createFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
+        
+    }
+
+    //
     //  draw everything
     //
     render(timestamp) {
@@ -588,6 +603,7 @@ export class GroupRenderer {
     } // render();
 
 
+
     //
     //  render GL canvas      
     // 
@@ -597,7 +613,8 @@ export class GroupRenderer {
         // render GL 
         // 
         let glc = this.mCanvas.glCanvas;
-        this.mGLCtx.gl.viewport(0, 0, glc.width, glc.height);
+        let gl = this.mGLCtx.gl;
+        gl.viewport(0, 0, glc.width, glc.height);
         
         let un = {}
         this.getUniforms(un);
@@ -606,43 +623,45 @@ export class GroupRenderer {
             console.log('uniforms keys: ', Object.keys(un));           
             console.log('programs: ', this.programs);
         }
-      
+        
         if(!this.gFDBuffer){
-            //make a buffer
-            // FDbuffer
-            let format = this.mGLCtx.gl.RGBA;
-            let intFormat = this.mGLCtx.gl.RGBA32F;
-            let texType = this.mGLCtx.gl.FLOAT;
-            let filtering = this.mGLCtx.gl.LINEAR;
-            this.gFDBuffer = createFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
+            this.gFDBuffer = this.createFDBuffer();
         }
         
-        this.mGLCtx.gl.disable(this.mGLCtx.gl.BLEND);        
-        this.mGLCtx.gl.viewport(0, 0, this.gFDBuffer.width, this.gFDBuffer.height);      
+        let fdbuff = this.gFDBuffer;
+        
+        gl.disable(gl.BLEND);        
+        gl.viewport(0, 0, fdbuff.width, fdbuff.height);      
+        //gl.blendFunc(gl.ONE,gl.ZERO);
        
         // Rather than a new buffer being drawn, gFDBuffer is reading and overwriting itself.
 
-        let pr = this.programs.FDRenderer.program;
-        pr.bind();
+        let progRenderFD = this.programs.FDRenderer.program;
+        progRenderFD.bind();
         let center = un.u_center; 
         un.u_center = [0.0,0.0]; 
-        pr.setUniforms(un);
-        this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ONE,this.mGLCtx.gl.ZERO);
-       
-        //var debugging = (this.domainBuilder.params.debug);
-        if(!this.config.params.debug){ 
+        progRenderFD.setUniforms(un);
         
-            pr.blit(this.gFDBuffer);
-
-            //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ZERO,this.mGLCtx.gl.ONE);
+        if(this.config.params.debug){
             
-            un['u_FDdata'] = this.gFDBuffer;
+            // draw FD image to screen 
+            progRenderFD.blit(null);            
+            
+        } else {
+            // draw FD image to buffer        
+            progRenderFD.blit(fdbuff);
+                        
+            let screenProg = this.programs.patternFromFDRenderer.program;            
+            screenProg.bind();
+            
+            un.u_FDdata = fdbuff;
             un.u_center = center;
-            pr = this.programs.patternFromFDRenderer.program;
-            pr.bind();
-            pr.setUniforms(un);
+            
+            screenProg.setUniforms(un);
+            screenProg.blit(null);   
         }
-        pr.blit();   
+        
+        
         
     }
 
