@@ -192,14 +192,29 @@ export class GroupRenderer {
         canvas.focus();
         this.initEventsHandler(canvas, this);
         this.initGL();
-        
-        window.addEventListener('resize', this.onWindowResize.bind(this), false);
+
+        //resizeCanvas(this.mCanvas.glCanvas);
+        //resizeCanvas(this.mCanvas.overlay);
+
+        //window.addEventListener('resize', this.onWindowResize.bind(this), false);
 
         this.initGUI();
+
+        
+        // FDbuffer
+        //let format = this.mGLCtx.gl.RG;
+        //let intFormat = this.mGLCtx.gl.RG32F;
+        //let texType = this.mGLCtx.gl.FLOAT;
+        //let filtering = this.mGLCtx.gl.LINEAR;     
+        //let glc = this.mCanvas.glCanvas;
+        //console.log(`${MYNAME} creating gFDBuffer`,glc.width, glc.height);
+        //this.gFDBuffer = createFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
 
         requestAnimationFrame(this.animationFrame.bind(this));
 
     }
+
+    
 
     //
     //
@@ -566,8 +581,17 @@ export class GroupRenderer {
         // TODO 
         resizeCanvas(this.mCanvas.glCanvas);
         resizeCanvas(this.mCanvas.overlay);
-        //twgl.resizeCanvasToDisplaySize(this.mCanvas.glCanvas);
-        //twgl.resizeCanvasToDisplaySize(this.mCanvas.overlay);
+
+        this.renderGL(timestamp);
+        this.renderOverlay(timestamp);
+
+    } // render();
+
+
+    //
+    //  render GL canvas      
+    // 
+    renderGL(timestamp){
 
         //
         // render GL 
@@ -582,23 +606,21 @@ export class GroupRenderer {
             console.log('uniforms keys: ', Object.keys(un));           
             console.log('programs: ', this.programs);
         }
-
-
-        //make a buffer
-        // FDbuffer
-        let format = this.mGLCtx.gl.RG;
-        let intFormat = this.mGLCtx.gl.RG32F;
-        let texType = this.mGLCtx.gl.FLOAT;
-        let filtering = this.mGLCtx.gl.LINEAR;
       
-        this.gFDBuffer = createFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
+        if(!this.gFDBuffer){
+            //make a buffer
+            // FDbuffer
+            let format = this.mGLCtx.gl.RGBA;
+            let intFormat = this.mGLCtx.gl.RGBA32F;
+            let texType = this.mGLCtx.gl.FLOAT;
+            let filtering = this.mGLCtx.gl.LINEAR;
+            this.gFDBuffer = createFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
+        }
         
-       // this.mGLCtx.gl.disable(this.mGLCtx.gl.BLEND);        
-        //this.mGLCtx.gl.viewport(0, 0, this.gSimBuffer.width, this.gSimBuffer.height);      
+        this.mGLCtx.gl.disable(this.mGLCtx.gl.BLEND);        
         this.mGLCtx.gl.viewport(0, 0, this.gFDBuffer.width, this.gFDBuffer.height);      
        
         // Rather than a new buffer being drawn, gFDBuffer is reading and overwriting itself.
-
 
         let pr = this.programs.FDRenderer.program;
         pr.bind();
@@ -607,8 +629,8 @@ export class GroupRenderer {
         pr.setUniforms(un);
         this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ONE,this.mGLCtx.gl.ZERO);
        
-        var notdebugging = (this.domainBuilder.params.debug);
-        if(!notdebugging){ 
+        //var debugging = (this.domainBuilder.params.debug);
+        if(!this.config.params.debug){ 
         
             pr.blit(this.gFDBuffer);
 
@@ -621,13 +643,14 @@ export class GroupRenderer {
             pr.setUniforms(un);
         }
         pr.blit();   
-
         
+    }
 
-
-
-
-
+    //
+    //  render overlay canvas 
+    //
+    renderOverlay(timestamp){
+        
         // render overlay
         
         var canvas = this.mCanvas.overlay;
@@ -651,9 +674,8 @@ export class GroupRenderer {
         if (isFunction(this.groupMaker.render)) {
             this.groupMaker.render(context, trans)
         } //give groupMaker the last word...
-
-    } // render();
-
+        
+    }
 
     //
     //  called form UI when config param changed by user

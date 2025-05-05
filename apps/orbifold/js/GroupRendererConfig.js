@@ -81,9 +81,10 @@ export class GroupRendererConfig {
         tileColors: makeDefaultColors(this.tileColorCount),
         lineColor:  DEFAULT_LINE_COLOR,
         errorColor:  DEFAULT_ERROR_COLOR,
-        domainColor:DEFAULT_DOMAIN_COLOR,
+        domainColor: DEFAULT_DOMAIN_COLOR,
         lineWidth: .3,
         maxlineWidth: 2,
+        debug:  false,
         
       };
   }
@@ -106,7 +107,7 @@ export class GroupRendererConfig {
       tileColors: p.tileColors,
       symmetry:p.symmetry,
       symmetryblending:p.symmetryblending,
-		  fill:p.fill,
+      fill:p.fill,
       texture:p.texture,
       texCrown:p.texCrown,
       texCrownFactor:p.texCrownFactor,
@@ -146,7 +147,7 @@ export class GroupRendererConfig {
     
     ctrl.symmetry.setValue(getParam(pm.symmetry,true));
     ctrl.symmetryblending.setValue(getParam(pm.symmetryblending,true));
-		ctrl.fill.setValue(getParam(pm.fill, true));
+	ctrl.fill.setValue(getParam(pm.fill, true));
     ctrl.texture.setValue(getParam(pm.texture, true));
     ctrl.texCrown.setValue(getParam(pm.texCrown,false));
     ctrl.texCrownFactor.setValue(getParam(pm.texCrownFactor, 1.));
@@ -181,31 +182,32 @@ export class GroupRendererConfig {
     
     
     
-		ctrl.symmetry = folder.add(par, 'symmetry').name('Symmetry').onChange(onc);
-		ctrl.symmetryblending = folder.add(par,'symmetryblending').name('SymmetryBlending').onChange(onc);
+    ctrl.symmetry = folder.add(par, 'symmetry').name('Symmetry').onChange(onc);
+    ctrl.symmetryblending = folder.add(par,'symmetryblending').name('SymmetryBlending').onChange(onc);
 
     ctrl.fill = folder.add(par, 'fill').name('Fill').onChange(onc);
-		ctrl.texture = folder.add(par, 'texture').name('Texture').onChange(onc);
-		ctrl.texCrown = folder.add(par, 'texCrown').name('Tex Crown').onChange(onc);
-		ctrl.texCrownFactor = folder.add(par, 'texCrownFactor', 0,1,minIncrement).name('Crown Factor').onChange(onc);
-    
-		ctrl.lines = folder.add(par, 'lines').name('Lines').onChange(onc);
-		ctrl.lineWidth = folder.add(par, 'lineWidth', 0,100,minIncrement).name('Line Width').onChange(onc);
-    ctrl.maxlineWidth = folder.add(par, 'maxlineWidth', 0,100,minIncrement).name('Max Line Width').onChange(onc);
-    
-		ctrl.domain = folder.add(par, 'domain').name('Domain').onChange(onc);
+    ctrl.texture = folder.add(par, 'texture').name('Texture').onChange(onc);
+    ctrl.texCrown = folder.add(par, 'texCrown').name('Tex Crown').onChange(onc);
+    ctrl.texCrownFactor = folder.add(par, 'texCrownFactor', 0,1,minIncrement).name('Crown Factor').onChange(onc);
 
-		ctrl.iterations = folder.add(par, 'iterations', 0,1000,1).name('Iterations').onChange(onc);
-		//ctrl.antialias = folder.add(par, 'antialias', 1,5,1).name('Antialising').onChange(onc);
+    ctrl.lines = folder.add(par, 'lines').name('Lines').onChange(onc);
+    ctrl.lineWidth = folder.add(par, 'lineWidth', 0,100,minIncrement).name('Line Width').onChange(onc);
+    ctrl.maxlineWidth = folder.add(par, 'maxlineWidth', 0,100,minIncrement).name('Max Line Width').onChange(onc);
+
+    ctrl.domain = folder.add(par, 'domain').name('Domain').onChange(onc);
+
+    ctrl.iterations = folder.add(par, 'iterations', 0,1000,1).name('Iterations').onChange(onc);
+    ctrl.debug      =  folder.add(par, 'debug').onChange(onc);
+    //ctrl.antialias = folder.add(par, 'antialias', 1,5,1).name('Antialising').onChange(onc);
 
     // colors folder 
     let cfolder = folder.addFolder('Colors');    
-		ctrl.background = cfolder.addColor(par, 'background').name('Page Bgrnd').onChange(obc);
-		ctrl.glBackground = cfolder.addColor(par, 'glBackground').name('Tiling Bgrnd').onChange(onc);
+    ctrl.background = cfolder.addColor(par, 'background').name('Page Bgrnd').onChange(obc);
+    ctrl.glBackground = cfolder.addColor(par, 'glBackground').name('Tiling Bgrnd').onChange(onc);
 
-		ctrl.lineColor = cfolder.addColor(par, 'lineColor').name('Line Color').onChange(onc);
-		ctrl.errorColor = cfolder.addColor(par, 'errorColor').name('Error Color').onChange(onc);
-		ctrl.domainColor = cfolder.addColor(par, 'domainColor').name('Domain Color').onChange(onc);
+    ctrl.lineColor = cfolder.addColor(par, 'lineColor').name('Line Color').onChange(onc);
+    ctrl.errorColor = cfolder.addColor(par, 'errorColor').name('Error Color').onChange(onc);
+    ctrl.domainColor = cfolder.addColor(par, 'domainColor').name('Domain Color').onChange(onc);
 
     // variable array of tile colors 
     ctrl.tileColors = [];
