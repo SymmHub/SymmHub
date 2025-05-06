@@ -56,18 +56,15 @@ const fragGL_hist_fp = {obj:GLF,id:'hist_fp'};
 
 const fragBaseVertex       = {obj:SF,id:'canvasVertexShader'};
 const fragColormap         = {obj:SF,id:'colormap'};
-const fragBufferVisualization = {obj:SF,id:'bufferVisualization'};
 const fragComplex          = {obj:SF,id:'complex'};
 const fragSimplexNoise     = {obj:SF,id:'simplexNoise'};
 const fragSdf2d            = {obj:SF,id:'sdf2d'};
 const fragUtils            = {obj:SF,id:'utils'};
 const fragDrawDot          = {obj:SF,id:'drawDotShader'};
-const fragDrawMultiDot     = {obj:SF,id:'drawMultiDotShader'};
 const fragDrawSegment      = {obj:SF,id:'drawSegmentShader'};
 const fragIsplane          = {obj:SF,id:'isplane'};
 const fragInversiveSampler = {obj:SF,id:'inversiveSampler'};
 const fragSymSampler       = {obj:SF,id:'symSamplerShader'};
-const fragDrawFdSampler    = {obj:SF,id:'fundDomainSamplerShader'};
 const fragAddNoise         = {obj:SF,id:'addNoiseShader'};
 
 
@@ -84,18 +81,14 @@ const gsFragments = [
 
     fragBaseVertex,
     fragColormap,
-    fragBufferVisualization,
     fragComplex,
     fragSimplexNoise,
     fragSdf2d,
     fragUtils,
     fragDrawDot,
-    fragDrawMultiDot,
-    fragDrawSegment,
     fragIsplane,
     fragInversiveSampler,
     fragSymSampler,
-    fragDrawFdSampler,
     fragAddNoise,
 ];
 
