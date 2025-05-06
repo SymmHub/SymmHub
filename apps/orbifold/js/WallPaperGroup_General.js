@@ -403,6 +403,7 @@ export class WallPaperGroup_General {
             // add the bounding info inside getEuclideanGroupData
             transforms = igroup.t;
             interiors = [];
+
         }
 
 
@@ -435,7 +436,7 @@ export class WallPaperGroup_General {
             var angle = -patMakpar['angle0']*TORADIANS;
             var scale = [s*cos(angle),s*sin(angle)]; // a complex homothety
         
-            var gcT= getTransformsForTexture(bounds, transforms,center,scale); 
+            var gcT= getTransformsForTexture(bounds, transforms,center,scale,this.curvature); 
 
             this.crowntransforms =gcT;
             
@@ -449,17 +450,6 @@ export class WallPaperGroup_General {
             crowntransforms = [[sPlaneSwapping(new complexN(.1,0.), new complexN(-.1,.3))]];
         }
         
-
-
-
-
-
-
-
-
-
-
-
 
         // Create the fundamental domain:
 
