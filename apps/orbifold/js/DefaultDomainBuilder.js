@@ -142,10 +142,13 @@ export class DefaultDomainBuilder {
       return un;
     
     this.calculateGroup();
+
+    un.u_curvature = Math.round(this.groupMaker.curvature);
+
     var group = this.group;//Maker.getGroup();
     var fd = group.s;
     var trans = group.t;
-    var ctrans = (group.c)[0];
+    var ctrans = (group.c)[0]; //fix this to be more transparent
         
     var p = this.params;
   

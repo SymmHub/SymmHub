@@ -10,7 +10,7 @@ import {PI,HPI,TPI,abs,cos,cosh,sin,sinh,coth,asin,sqrt,cot,acosh,asinh,tanh,obj
   from '../../../lib/invlib/Utilities.js';
 import {iToFundDomainWBounds,iDistanceU4,iTransformU4,iGetInverseTransform,iGetFactorizationU4,iGetFactorizationOfSplanes} 
   from '../../../lib/invlib/Inversive.js';
-import {iSplane,SPLANE_POINT, SPLANE_PLANE} 
+import {iSplane,SPLANE_POINT, SPLANE_PLANE,SPLANE_SPHERE} 
   from '../../../lib/invlib/ISplane.js';
 
 
@@ -1561,7 +1561,13 @@ export function willOrbifoldFitQ(atomList,MAX_GEN_COUNT,MAX_REF_COUNT,MAX_DOMAIN
   
 }
 
-export function getTransformsForTexture(domain,transforms,center,scale){ 
+// we use this to hash the grid so that it is in order from 
+// the center out to the margin.
+import {distancetable} from './distancetable45.js'
+
+
+
+export function getTransformsForTexture(domain,transforms,center,scale,curvature=-1){ 
 
 // We are working in Splaneworld, using vectors and points as [x,y] when we can. 
 // (But we declare splanes as iSplane(new complexN([x,y]),0) 
@@ -1607,10 +1613,23 @@ export function getTransformsForTexture(domain,transforms,center,scale){
         var ccenter = new complexN(center[0],center[1]);
         var origin = new complexN(0,0);
         var v2a = new iSplane({v:[-center[1],center[0],0,0],type:SPLANE_PLANE});
-        var v2b = sPlaneSwapping(origin,ccenter);
+        var v2b;
+        var dis = ccenter.abs()
+
+
+        //change this depending on curvature
+        if(curvature==0){
+            v2b = new iSplane({v:[center[0]/dis,center[1]/dis,0,.5* dis],type:SPLANE_PLANE});
+        }
+        else if(curvature<0){
+            v2b = sPlaneSwapping(origin,ccenter);}
+        else{
+            var dis2 = dis*dis
+            v2b = new iSplane({v:[-center[0]/dis2,-center[1]/dis2,0,Math.sqrt(1+dis2)/dis],type:SPLANE_SPHERE})
+        }
         imagetransform = (iGetFactorizationU4([v1b,vd,v2a,v2b]));
         extrasplanes = extrasplanes.concat([v2a,v2b]);}
-    else{imagetransform=[v1b,vd]}
+    else{imagetransform=[v1b,vd]}// just rotate 
 
    // var inverseimagetransform = iGetInverseTransform(imagetransform);
 
@@ -1621,11 +1640,15 @@ export function getTransformsForTexture(domain,transforms,center,scale){
     // Typically the origin should do-- separate code should always move the FD to include the origin
     // Just in case, there is a backup, finding some random point:
 
-    cc=0;ss=0;
+    cc=Math.random()*.01;ss=Math.random()*.01;
 
     var origin = new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
 
-    registrypoint=origin;
+    if(curvature<0){
+        registrypoint=origin;}
+    else{
+        registrypoint = new iSplane({v:[.1,.05,0,0],type:SPLANE_POINT})
+    }
 
     var foundaregistrypoint=iToFundDomainWBounds(domain, transforms,registrypoint,20).inDomain
     
@@ -1640,7 +1663,7 @@ export function getTransformsForTexture(domain,transforms,center,scale){
         t = 6.2825 * Math.random();
         cc=Math.round(registryscalingsize*r*Math.cos(t));
         ss=Math.round(registryscalingsize*r*Math.sin(t));
-        registrypoint = new iSplane({v:[.001*cc,.001*ss,0,0], type:SPLANE_POINT});
+        registrypoint = new iSplane({v:[cc/registryscalingsize,ss/registryscalingsize,0,0], type:SPLANE_POINT});
         var bb =(iToFundDomainWBounds(domain, transforms,registrypoint,20));
         foundaregistrypoint = bb.inDomain;
     }
@@ -1667,7 +1690,7 @@ export function getTransformsForTexture(domain,transforms,center,scale){
 
     var listoftexturesamplingpoints=[];
 
-    var steps = 45; //45;// gives 2025 test points. For some long skinny FDs this may not be enough.
+    var steps = Math.round(Math.sqrt(distancetable.length)); //45;// gives 2025 test points. For some long skinny FDs this may not be enough.
     var delta = 1/(steps -1)*texturewidth;
 
     var pp;
@@ -1696,17 +1719,18 @@ export function getTransformsForTexture(domain,transforms,center,scale){
 
     var spt,sptx, spty, ptx,pty;
 
-    var tttemp=[];
+    var tttemp=[],i,j;
 
     // now make a grid: 
-    for(var i=0; i<steps;i++){
+    for(var ij=0; ij<distancetable.length;ij++){
 
-        for(var j=0;j<steps;j++){
+            i= distancetable[ij][0];
+            j = distancetable[ij][1];
 
-            ptx =      -texturewidth/2 +i*delta;
-             pty =     -texturewidth/2 +j*delta;
+      //  for(var j=0;j<steps;j++){
 
-            spt = new iSplane({v:[ptx,pty,0,0], type:SPLANE_POINT});
+
+            spt = new iSplane({v:[i*delta,j*delta,0,0], type:SPLANE_POINT});
 
             spt = iTransformU4(imagetransform,spt);
            
@@ -1782,9 +1806,9 @@ export function getTransformsForTexture(domain,transforms,center,scale){
             }
            
         }//end of grid
-    } 
+     
     
-  /*  console.log("{crowntransforms,lens,splanes,totextrans}={"
+   /* console.log("{crowntransforms,lens,splanes,totextrans}={"
              +objectToString(crowntransformregistry.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true) 
             +",{"+(crowntransformregistry.map(x=>x.length,true)).toString()+"}"
             +",{"+(
@@ -1800,8 +1824,9 @@ export function getTransformsForTexture(domain,transforms,center,scale){
     
 */
     return [crowntransformregistry,listoftexturesamplingpoints,trpointregistry,transformedpts,extrasplanes]
-       var i = 9;
-       return [
+    
+    var i = 9;
+    return [
         [crowntransformregistry[i]],
         listoftexturesamplingpoints,
         [trpointregistry[i]],

@@ -8,6 +8,7 @@ export const patternFromFDRenderer =
 
 // This renders the hyp plane from a FD texture, overlaying uniform lines
 
+uniform int u_curvature;
 
 uniform sampler2D u_FDdata;
 
@@ -93,7 +94,10 @@ vec4 getColor(vec2 p){
   
 
   // don't bother drawing anything outside the unit disk: 
-  if(p.x*p.x+p.y*p.y>1.){return u_backgroundColor;}
+  if(u_curvature!=0 && p.x*p.x+p.y*p.y>1.){return u_backgroundColor;}
+
+	// TODO: DEPENDING ON CURVATURE AND PROJECTION, 
+	// Further adjust based on whatever projection we have
 
   vec4 color=u_backgroundColor;
   vec4 texture2;
