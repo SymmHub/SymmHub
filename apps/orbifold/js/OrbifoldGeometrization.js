@@ -3,7 +3,7 @@ import {sPlanesOfRotation,complexN,poincareTurtleMove,poincareMobiusEdgeToEdge,
   sPlaneReflectAcross,makeMobius,cMul,
   poincarePt,poincareMobiusTranslateToO,
   sPlanesMovingEdge1ToEdge2,splaneIt,sPlaneThroughPerp, //splanesForCenterAndScale,
-  poincareMobiusFromSPlanesList, 
+  poincareMobiusFromSPlanesList, poincareDerivativeAt,
     } 
     from '../../../lib/invlib/ComplexArithmetic.js';
 import {PI,HPI,TPI,abs,cos,cosh,sin,sinh,coth,asin,sqrt,cot,acosh,asinh,tanh,objectToString} 
@@ -1567,7 +1567,7 @@ import {distancetable} from './distancetable45.js'
 
 
 
-export function getTransformsForTexture(domain,transforms,center,scale,curvature=-1){ 
+export function getTransformsForTexture(domain,transforms,inputcenter,inputscale,curvature=-1){ 
 
 // We are working in Splaneworld, using vectors and points as [x,y] when we can. 
 // (But we declare splanes as iSplane(new complexN([x,y]),0) 
@@ -1585,6 +1585,36 @@ export function getTransformsForTexture(domain,transforms,center,scale,curvature
 // * listoftexturesamplingpoints, the points in the texture that are being sampled; these
 //      can be drawn inside of SymmetryUIController.js
 // * trpointregistry, similarly is a list of the images of a reference point back across the pattern.
+
+
+
+    // Reset the center:
+
+    var center; 
+    var returntocenter=iToFundDomainWBounds(domain, transforms,
+            new iSplane({v:[inputcenter[0],inputcenter[1],0,0],type:SPLANE_POINT}),20)
+
+    if(returntocenter.distance>-.03){
+        center = [returntocenter.pnt.v[0],returntocenter.pnt.v[1]];
+    }
+    else{center = inputcenter;}
+   
+    center = [returntocenter.pnt.v[0],returntocenter.pnt.v[1]];
+
+    var scale = inputscale;
+
+    // should be something like: 
+
+    var complexcenter = new complexN(inputcenter[0],inputcenter[1]);
+    var complexscale = new complexN(inputscale[0],inputscale[1]);
+
+   scale = poincareDerivativeAt( poincareMobiusFromSPlanesList(returntocenter.transform),  complexcenter).times(complexscale)
+    var sscale = Math.sqrt(scale.re*scale.re+scale.im*scale.im);
+
+    scale = [scale.re/sscale,scale.im/sscale]
+
+
+ //   var scale = inputscale;
 
 
     //////////////
@@ -1631,7 +1661,8 @@ export function getTransformsForTexture(domain,transforms,center,scale,curvature
         extrasplanes = extrasplanes.concat([v2a,v2b]);}
     else{imagetransform=[v1b,vd]}// just rotate 
 
-   // var inverseimagetransform = iGetInverseTransform(imagetransform);
+
+    // var inverseimagetransform = iGetInverseTransform(imagetransform);
 
     //////////////
     //
@@ -1823,17 +1854,22 @@ export function getTransformsForTexture(domain,transforms,center,scale,curvature
                 +"};");
     
 */
-    return [crowntransformregistry,listoftexturesamplingpoints,trpointregistry,transformedpts,extrasplanes]
+  //  return [crowntransformregistry,listoftexturesamplingpoints,trpointregistry,transformedpts,extrasplanes]
     
-    var i = 9;
-    return [
-        [crowntransformregistry[i]],
-        listoftexturesamplingpoints,
-        [trpointregistry[i]],
-        [transformedpts[i]],
-        extrasplanes]
-      
+    return {
+        crowntransformregistry:crowntransformregistry,
+        imagetransform:imagetransform,
+        imagetransformAsMobius:poincareMobiusFromSPlanesList(imagetransform),
+        resetcenter:center,
+        resetscale:scale,
+
+        listoftexturesamplingpoints:listoftexturesamplingpoints,
+        trpointregistry:trpointregistry,
+        transformedpts:transformedpts,
+        extrasplanes:extrasplanes}
+    
 }
+ 
 
 
 

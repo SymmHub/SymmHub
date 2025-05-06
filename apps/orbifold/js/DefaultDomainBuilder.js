@@ -148,7 +148,7 @@ export class DefaultDomainBuilder {
     var group = this.group;//Maker.getGroup();
     var fd = group.s;
     var trans = group.t;
-    var ctrans = (group.c)[0]; //fix this to be more transparent
+    var ctrans = group.c.crowntransformregistry; //fix this to be more transparent
         
     var p = this.params;
   

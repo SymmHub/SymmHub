@@ -428,6 +428,7 @@ export class WallPaperGroup_General {
             }
         }*/
 
+        var crowntransformsdata;
         if(isDefined(patMakpar['cx0'])&&isDefined(patMakpar['cy0'])&&isDefined(patMakpar['scale0']))
         {
             var center = [patMakpar['cx0'],patMakpar['cy0']];
@@ -438,16 +439,16 @@ export class WallPaperGroup_General {
         
             var gcT= getTransformsForTexture(bounds, transforms,center,scale,this.curvature); 
 
-            this.crowntransforms =gcT;
+            crowntransformsdata =gcT;
             
             // put together the crown transforms, as an array for each active texture
             // store these as an array
 
-            crowntransforms = this.crowntransforms;
+            //this.crowntransformsdata = this.crowntransformsdata;
         }
         else
         {   
-            crowntransforms = [[sPlaneSwapping(new complexN(.1,0.), new complexN(-.1,.3))]];
+            crowntransformsdata = {crowntransformregistry:[[sPlaneSwapping(new complexN(.1,0.), new complexN(-.1,.3))]]};
         }
         
 
@@ -457,7 +458,7 @@ export class WallPaperGroup_General {
             s: bounds,
             t: transforms,
             i: interiors,
-            c: crowntransforms,
+            c: crowntransformsdata,
         }; 
 
         //this is passed along to getGroup, below, which in turn is called from

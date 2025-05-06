@@ -454,13 +454,13 @@ export class SymmetryUIController{
 
      
 
-      // for the moment, for some debugging:
+     /* // for the moment, for some debugging:
       var aa = (this.groupMaker.getGroup()).c;
       var a,b,c;
-      if(aa.length>1){
-        a = aa[1]; // this should be the grid of points
-        b = aa[2]; // this should be the images of the reference point
-        c = aa[3];
+      
+      a = aa.listoftexturesamplingpoints; // this should be the grid of points
+      b = aa.trpointregistry; // this should be the images of the reference point
+      c = aa.transformedpts;
         // a grid of points showing the sampling; can delete FD.c[1]
      for(var i = 0; i<a.length;i++){
         //var aa = iPoint(a[i][0],a[i][1],0,0);
@@ -494,7 +494,7 @@ export class SymmetryUIController{
                 });
       } // end of drawing the purple points
 
-/*
+
       iDrawSplane(aa[4][3], context, transform, {
                         lineStyle: "#0000AAFF",
                         shadowStyle: "#00007777",
@@ -508,17 +508,12 @@ export class SymmetryUIController{
                         lineWidth: 5,
                         shadowWidth: 6
                     })
-      */
+      
+*/
 
-      } // end if aa (= the crown stuff) has something in it.
+  // iDrawPoint([0,0],context,transform,{       style: "#FFFFFFFF", radius: 5 });
 
-
-       iDrawPoint([0,0],context,transform,{
-                    style: "#FFFFFFFF",
-                    radius: 5
-                });
-
-        
+       // end of a bunch of debugging stuff  
   
 
 
