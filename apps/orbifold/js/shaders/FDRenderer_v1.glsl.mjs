@@ -111,14 +111,11 @@ vec4 getCrownTexturePacked(vec3 pnt,
 
 
 vec4 getColor(vec2 p){
-  
-  
+    
     // don't bother drawing anything outside the unit disk: 
     if(p.x*p.x+p.y*p.y>1.){return u_backgroundColor;}
 
     vec3 p3 = vec3(p, 0);
-
-
 
     int groupOffset = 0; // assume group packed at 0
 

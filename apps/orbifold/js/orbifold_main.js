@@ -259,7 +259,7 @@ const myDomainBuilder = new DomainBuilder({
     
 
 
-const myNavigator = new InversiveNavigator({useAnimatedPointer: false});
+const myNavigator = new InversiveNavigator({useAnimatedPointer: true});
 
 let myGroupRenderer = new GroupRenderer({
     // optional. use these to get custom canvas elements 

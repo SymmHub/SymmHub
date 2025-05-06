@@ -620,7 +620,7 @@ export class GroupRenderer {
         
         let ts = this.timeStamp;
 
-        let allUni = this.getUniforms({});        
+        //let allUni = this.getUniforms({});        
         let domainUni  = this.domainBuilder.getUniforms({},ts);        
         let configUni  = this.config.getUniforms({}, ts);
         let patternUni = this.patternMaker.getUniforms({}, ts);
@@ -628,7 +628,7 @@ export class GroupRenderer {
         let groupUni   = this.groupMaker.getUniforms({}, ts);
         
         if(this.renderDebugCount && this.renderDebugCount-- > 0 && DEBUG){
-            console.log('allUni: ', allUni);   
+            //console.log('allUni: ', allUni);   
             console.log('domainUni: ', domainUni);   
             console.log('configUni: ', configUni);   
             console.log('patternUni: ', patternUni);   
