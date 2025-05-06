@@ -142,10 +142,13 @@ export class DefaultDomainBuilder {
       return un;
     
     this.calculateGroup();
+
+    un.u_curvature = Math.round(this.groupMaker.curvature);
+
     var group = this.group;//Maker.getGroup();
     var fd = group.s;
     var trans = group.t;
-    var ctrans = (group.c)[0];
+    var ctrans = (group.c)[0]; //fix this to be more transparent
         
     var p = this.params;
   
@@ -164,12 +167,12 @@ export class DefaultDomainBuilder {
       un.u_crownCount = ctrans.length;
 
 
- console.log("{splanes,count} = {{"
+ /*console.log("{splanes,count} = {{"
 +(un.u_cTransformsData.map(t=>t.toFixed(4)).toString()
 +"},"
 +"{"+un.u_cTransCumRefCount.toString()+"}"
 +"};"
-  ));
+  ));*/
 
       if(this.params.debug) {
          console.log("u_domainCount:", objectToString(un.u_domainCount));

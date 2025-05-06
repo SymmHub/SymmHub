@@ -453,7 +453,7 @@ export class SymmetryUIController{
         if(DEBUG)console.log(`${MYNAME}.render()`,this.domainShowingQ);
 
      
-/*
+
       // for the moment, for some debugging:
       var aa = (this.groupMaker.getGroup()).c;
       var a,b,c;
@@ -465,8 +465,8 @@ export class SymmetryUIController{
      for(var i = 0; i<a.length;i++){
         //var aa = iPoint(a[i][0],a[i][1],0,0);
           iDrawPoint(a[i],context,transform,{
-                    style: "#FF0000",
-                    radius: 4
+                    style: "#FF000088",
+                    radius: 3
                 });}
 
 
@@ -494,7 +494,21 @@ export class SymmetryUIController{
                 });
       } // end of drawing the purple points
 
+/*
+      iDrawSplane(aa[4][3], context, transform, {
+                        lineStyle: "#0000AAFF",
+                        shadowStyle: "#00007777",
+                        lineWidth: 5,
+                        shadowWidth: 6
+                    })
 
+      iDrawSplane(aa[4][2], context, transform, {
+                        lineStyle: "#00AA00FF",
+                        shadowStyle: "#00007777",
+                        lineWidth: 5,
+                        shadowWidth: 6
+                    })
+      */
 
       } // end if aa (= the crown stuff) has something in it.
 
@@ -505,7 +519,7 @@ export class SymmetryUIController{
                 });
 
         
-  */
+  
 
 
         if(!this.domainShowingQ) {
