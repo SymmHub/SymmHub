@@ -494,7 +494,7 @@ export class SymmetryUIController{
                 });
       } // end of drawing the purple points
 
-/*
+
       iDrawSplane(aa[4][3], context, transform, {
                         lineStyle: "#0000AAFF",
                         shadowStyle: "#00007777",
@@ -508,15 +508,12 @@ export class SymmetryUIController{
                         lineWidth: 5,
                         shadowWidth: 6
                     })
-      */
+      
 
       } // end if aa (= the crown stuff) has something in it.
 
-
-       iDrawPoint([0,0],context,transform,{
-                    style: "#FFFFFFFF",
-                    radius: 5
-                });
+*/
+       iDrawPoint([0,0],context,transform,{style: "#FFFFFFFF", radius: 5});
 
         
   
