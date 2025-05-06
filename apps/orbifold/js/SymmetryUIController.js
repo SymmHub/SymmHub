@@ -577,8 +577,9 @@ export class SymmetryUIController{
     getUniforms(uniforms){
         // just for extra UI control
         uniforms.u_fillOutDomain=0; //temp
-
+        
         // PUT UI FRAG RENDERING STUFF HERE
+        return uniforms;
     }
 }
 

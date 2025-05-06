@@ -239,23 +239,23 @@ export class GroupRendererConfig {
     
     var p = this.params;
     // uniforms to go to Config 
-		un.u_hasSymmetry = p.symmetry;
+	un.u_hasSymmetry = p.symmetry;
     un.u_useSymmetryBlending = p.symmetryblending;
-		un.u_drawTexture = p.texture;
+	un.u_drawTexture = p.texture;
     un.u_drawTexCrown = p.texCrown;
     un.u_texCrownFactor = p.texCrownFactor;    
-		un.u_drawFill = p.fill;
-		un.u_drawLines  = p.lines;
-		un.u_fillDomain = p.domain;
-		un.u_iterations = p.iterations;
-		//un.u_antialias = p.antialias;    
-		un.u_lineWidth = p.lineWidth; 
+	un.u_drawFill = p.fill;
+	un.u_drawLines  = p.lines;
+	un.u_fillDomain = p.domain;
+	un.u_iterations = p.iterations;
+	//un.u_antialias = p.antialias;    
+	un.u_lineWidth = p.lineWidth; 
     un.u_maxlineWidth = p.maxlineWidth;
-		un.u_backgroundColor = premultColor(hexToRGBA(p.glBackground));
+	un.u_backgroundColor = premultColor(hexToRGBA(p.glBackground));
     un.u_tileColors = packColors(p.tileColors);
     un.u_lineColor = premultColor(hexToRGBA(p.lineColor));
     un.u_errorColor = premultColor(hexToRGBA(p.errorColor));
     un.u_domainColor = premultColor(hexToRGBA(p.domainColor));
+    return un;
   }
- 
 }

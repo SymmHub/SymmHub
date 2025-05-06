@@ -181,6 +181,7 @@ const fragInversive         = { obj: OF, id:'inversive'}; // unis:[]};
 const fragPatternTextures   = { obj: OF, id:'patternTextures'};/*the buffers*/// unis: ["u_textures","u_texCount","u_texScales","u_texCenters","u_texAlphas"]}; // set in 
 const fragVertexShader      = { obj: OF, id:'vertexShader'};//unis:["u_aspect","u_scale","u_center"]};//
 
+const fragProjection        = { obj: OF, id:'projection'};//unis:["u_aspect","u_scale","u_center"]};//
 
 const fragFDRenderer =    { obj: OF, id:'FDRenderer_v1'};
 const fragPatternFromFDRenderer ={ obj: OF, id:'patternFromFDRenderer_v1'};
@@ -232,6 +233,7 @@ const progPatternFromFDRenderer = {
             fragInversive,
             fragComplex,
             fragPatternTextures,
+            fragProjection, 
             fragPatternFromFDRenderer,
             ]},  
 };

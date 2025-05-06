@@ -66,7 +66,7 @@ vec4 getTextureValue(vec3 pnt, sampler2D sampler,float scale)
 
 
 
-vec4 getTextureValueWithBoundaries(vec3 pnt, sampler2D sampler, float scale, float zoom, float aspect) {    
+vec4 getTextureValueWithBoundaries(vec3 pnt, sampler2D sampler, float scale, float pixelSize, float zoom, float aspect) {    
 
     float inset = 0.;
 
@@ -75,7 +75,13 @@ vec4 getTextureValueWithBoundaries(vec3 pnt, sampler2D sampler, float scale, flo
     vec2 hf = vec2(0.5);
     vec2 st = vec2(p.x*zoom*.5, p.y*zoom/aspect*.5);
     vec2 tp = hf+st;// in texture coordinates, [0,1]x[0,1]
-    float lod = log2(512.*1.*scale);
+    
+    //float lod = log2(512.*1.*scale);
+    
+    #define TSIZE(tex) float(textureSize(tex,0).x) 
+    #define LOD(tex) (log2(TSIZE(tex)*pixelSize*scale*1.)) 
+    float lod = LOD(sampler);
+    
     vec4 tcolor;
     if((tp.x > inset) && (tp.x < 1.-inset) && (tp.y > inset) && (tp.y < 1.-inset)){
         tcolor = textureLod(sampler, tp, lod);
@@ -95,31 +101,48 @@ vec4 getColor(vec2 p){
 
     float pixelSize = u_pixelSize;//this should now work, for ... ?
   
-    // don't bother drawing anything outside the unit disk: 
-    if(p.x*p.x+p.y*p.y>1.)
-        return u_backgroundColor;
-
     vec4 color=u_backgroundColor;
     vec4 texture2;
   
-    vec3 p3 = vec3(p, 0); //Splanes act on vec3's, so upgrade
-
     int groupOffset = 0; // assume group packed at 0
 
+    float scale = 1.; // keep track of scaling changes
+    
+      #ifdef HAS_SPHERICAL_PROJECTION
+    if(u_sphericalProjectionEnabled){
+        float sdist = makeSphericalProjection(p, scale);
+        if(sdist > 0.) { // signed distance to sphere 
+            return vec4(0,0,0,0);
+        }
+    }        
+    #endif  //HAS_SPHERICAL_PROJECTION
+    
+    #ifdef HAS_PROJECTION        
+    makeProjection(p, scale);
+    #endif 
+
+    vec3 p3 = vec3(p, 0); //Splanes act on vec3's, so upgrade
     vec3 porig = p3; // the original point in math coordinates 
     int refCount = 0;
-    float scale = 1.; // keep track of scaling changes
-
+  
     //if we are making a symmetrical drawing, 
-    // bring p3 to a representative point within the fundamental domain. 
+    
+    // default rendering size of the fund domain (the whole unit circle) 
+    float fdZoom = 1.;
+    float fdAspect = 1.;
+
     if(u_hasSymmetry==1){
         int successq = 1;
+        // bring p3 to a representative point within the fundamental domain. 
         iToWalledFundamentalDomain(p3, u_groupTransformsData, u_domainData, u_domainCount, u_groupCumRefCount, u_genCount, successq, refCount, scale, u_iterations);  
+        // don't bother drawing anything outside the unit disk: 
+        if(length(p3.xy) > 1.)
+            return u_backgroundColor;
         //grab the pixel color at p3 
-        texture2 = getTextureValueWithBoundaries(p3, u_FDdata, scale, u_zoom, u_aspect);
+        texture2 = getTextureValueWithBoundaries(p3, u_FDdata, scale, pixelSize, fdZoom, fdAspect);
         overlay(color,texture2);        
     } else {
-        texture2 = getTextureValueWithBoundaries(p3, u_FDdata, scale, u_zoom, u_aspect);
+        texture2 = getTextureValueWithBoundaries(p3, u_FDdata, scale, pixelSize, fdZoom, fdAspect);
         overlay(color,texture2);            
     }
 

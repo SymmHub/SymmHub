@@ -68,7 +68,7 @@ const GL_CANVAS_STYLES = [
 ];
 
 const MYNAME = 'GroupRenderer';
-const DEBUG = false;
+const DEBUG = true;
 const EXPORT_ANIMATION = 'Animation Export';
 const STOP_EXPORT_ANIMATION = 'Stop Animation Export';
 
@@ -82,7 +82,7 @@ export class GroupRenderer {
     //
     constructor(options) {
 
-        this.renderDebugCount = 20;
+        this.renderDebugCount = 10;
         this.constructorParams = options;
         if (options.useInternalWindows) {
 
@@ -575,13 +575,15 @@ export class GroupRenderer {
     // 
     createFDBuffer(){
         
-        let glc = this.mCanvas.glCanvas;
+        let FD_BUF_SIZE = 2048; // 512
+        //let glc = this.mCanvas.glCanvas;
+        //let FD_BUF_SIZE = glc.width;
         let gl = this.mGLCtx.gl;
         let format =    gl.RGBA;
-        let intFormat = gl.RGBA32F;
-        let texType =   gl.FLOAT;
-        let filtering = gl.LINEAR;
-        return createFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
+        let intFormat = gl.RGBA;           // gl.RGBA32F;
+        let texType =   gl.UNSIGNED_BYTE;  // gl.FLOAT;
+        let filtering = gl.LINEAR;         //gl.LINEAR_MIPMAP_LINEAR; 
+        return createFBO(this.mGLCtx.gl, FD_BUF_SIZE,  FD_BUF_SIZE, intFormat, format, texType, filtering);
         
     }
 
@@ -616,12 +618,22 @@ export class GroupRenderer {
         let gl = this.mGLCtx.gl;
         gl.viewport(0, 0, glc.width, glc.height);
         
-        let un = {}
-        this.getUniforms(un);
+        let ts = this.timeStamp;
+
+        let allUni = this.getUniforms({});        
+        let domainUni  = this.domainBuilder.getUniforms({},ts);        
+        let configUni  = this.config.getUniforms({}, ts);
+        let patternUni = this.patternMaker.getUniforms({}, ts);
+        let navigUni   = this.myNavigator.getUniforms({}, ts);
+        let groupUni   = this.groupMaker.getUniforms({}, ts);
+        
         if(this.renderDebugCount && this.renderDebugCount-- > 0 && DEBUG){
-            console.log('uniforms: ', un);   
-            console.log('uniforms keys: ', Object.keys(un));           
-            console.log('programs: ', this.programs);
+            console.log('allUni: ', allUni);   
+            console.log('domainUni: ', domainUni);   
+            console.log('configUni: ', configUni);   
+            console.log('patternUni: ', patternUni);   
+            console.log('navigUni: ',  navigUni);   
+            console.log('groupUni: ',  groupUni);               
         }
         
         if(!this.gFDBuffer){
@@ -631,34 +643,50 @@ export class GroupRenderer {
         let fdbuff = this.gFDBuffer;
         
         gl.disable(gl.BLEND);        
-        gl.viewport(0, 0, fdbuff.width, fdbuff.height);      
         //gl.blendFunc(gl.ONE,gl.ZERO);
        
         // Rather than a new buffer being drawn, gFDBuffer is reading and overwriting itself.
 
-        let progRenderFD = this.programs.FDRenderer.program;
-        progRenderFD.bind();
-        let center = un.u_center; 
-        un.u_center = [0.0,0.0]; 
-        progRenderFD.setUniforms(un);
+        let progFD = this.programs.FDRenderer.program;
+        progFD.bind();
+        //let center = allUni.u_center; 
+        //allUni.u_center = [0.0,0.0]; 
+        //progFD.setUniforms(allUni);
         
+        progFD.setUniforms(domainUni);
+        progFD.setUniforms(configUni);
+        progFD.setUniforms(patternUni);
+        let canvasUni = {u_center: [0.,0.], u_scale:1, u_aspect: 1.}; // 
+        progFD.setUniforms(canvasUni);
+        progFD.setUniforms(groupUni);
+                
         if(this.config.params.debug){
             
             // draw FD image to screen 
-            progRenderFD.blit(null);            
+            gl.viewport(0, 0, glc.width, glc.height);      
+            progFD.blit(null);            
             
         } else {
             // draw FD image to buffer        
-            progRenderFD.blit(fdbuff);
+            gl.viewport(0, 0, fdbuff.width, fdbuff.height);      
+            progFD.blit(fdbuff);
                         
-            let screenProg = this.programs.patternFromFDRenderer.program;            
-            screenProg.bind();
+            let progScreen = this.programs.patternFromFDRenderer.program;            
+            progScreen.bind();
             
-            un.u_FDdata = fdbuff;
-            un.u_center = center;
+            //allUni.u_FDdata = fdbuff;
+            //allUni.u_center = center;
+            //progScreen.setUniforms(allUni);
             
-            screenProg.setUniforms(un);
-            screenProg.blit(null);   
+            let fdUni = {u_FDdata:fdbuff};//
+            progScreen.setUniforms(fdUni);
+            progScreen.setUniforms(domainUni);
+            progScreen.setUniforms(configUni);
+            progScreen.setUniforms(navigUni);
+            progScreen.setUniforms(groupUni);
+            
+            gl.viewport(0, 0, glc.width, glc.height);      
+            progScreen.blit(null);   
         }
         
         
