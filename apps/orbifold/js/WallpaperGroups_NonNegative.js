@@ -134,6 +134,7 @@ export var WallpaperGroupNames = [
   "*632",
   "632",
   "3*3",
+  "333",
   "*333",
   "333",
   "*2222",
@@ -332,10 +333,10 @@ export function iGroup_333(a) {
 	
 	var d = a*s3/4.;
 		
-	s0 = iPlane([s3,1,0,d]);
-	s1 = iPlane([-s3,1,0,d]);
-	s2 = iPlane([s3,-1,0,d]);
-	s3 = iPlane([-s3,-1,0,d]);
+	var s0 = iPlane([s3,1,0,d]);
+	var s1 = iPlane([-s3,1,0,d]);
+	var s2 = iPlane([s3,-1,0,d]);
+	var s3 = iPlane([-s3,-1,0,d]);
 	
 	var sy = iPlane([0,1,0,0]);
 	
@@ -369,6 +370,9 @@ export function iGroup_S2222(a, b) {
 //
 //  group 2222 (wrong, missing one parameter) 
 //
+
+// somehow this should take in the parameters given by the 
+// rest of the group generator.
 export function iGroup_2222_(a, b) {
 	
 	var a2 = 0.5*a;
