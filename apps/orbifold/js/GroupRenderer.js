@@ -120,7 +120,7 @@ export class GroupRenderer {
                                 onChanged: this.onNavigationChanged.bind(this),
                                 canvasTransform: this.mCanvasTransform,
                                 groupMaker: this, // to let navigator get the group 
-                                useAnimatedPointer: false,
+                                //useAnimatedPointer: false,
                                 });
 
 
@@ -225,7 +225,9 @@ export class GroupRenderer {
         const defines = this.getDefines();
         let result = buildProgramsCached(this.mGLCtx.gl, this.programs, defines);
         if(DEBUG)console.log('buildProgramsCached() result: ', result);
-                
+        
+        this.gFDBuffer = this.createFDBuffer();
+         
     } // initGL()
 
 
@@ -249,7 +251,7 @@ export class GroupRenderer {
         this.oldTimeStamp = this.timeStamp;
 
         if (this.params.showTiming) {
-            this.controls.timing.setValue((this.renderTime).toFixed(0) + ' ms');
+            this.controls.timing.setValue((this.renderTime).toFixed(1) + ' ms');
         }
 
         if (isDefined(this.animationControl)) {
@@ -529,8 +531,11 @@ export class GroupRenderer {
         // store event coordinates in canvas' pixels 
         evt.canvasX = evt.offsetX * scaling; 
         evt.canvasY = evt.offsetY * scaling;
-                
         try {
+            
+            let t0 = 0;
+            //if(DEBUG) t0 = Date.now();
+
             this.mCanvas.overlay.style.cursor = 'default';
 
             if (isFunction(this.groupMaker.handleEvent)) { //if the group maker can handle it...
@@ -540,14 +545,19 @@ export class GroupRenderer {
                 return;
 
             this.patternMaker.handleEvent(evt);
-            if (evt.grabInput)
+            if (evt.grabInput){
+                //if(DEBUG) console.log('patternMaker event handling time: ', (Date.now() - t0));
                 return;
+            }
 
             this.domainBuilder.handleEvent(evt);
             if (evt.grabInput)
                 return;
 
             this.myNavigator.handleEvent(evt);
+            //if(DEBUG) console.log('myNavigator event handling time: ', (Date.now() - t0));
+            
+            
         } catch (e) {
             console.error("error in eventHandling:", e.message);
             console.error("call stack:\n", e.stack);
@@ -576,14 +586,16 @@ export class GroupRenderer {
     // 
     createFDBuffer(){
         
-        let FD_BUF_SIZE = 2048; // 512
+        let FD_BUF_SIZE = 1024; // 512
         //let glc = this.mCanvas.glCanvas;
         //let FD_BUF_SIZE = glc.width;
         let gl = this.mGLCtx.gl;
         let format =    gl.RGBA;
         let intFormat = gl.RGBA;           // gl.RGBA32F;
         let texType =   gl.UNSIGNED_BYTE;  // gl.FLOAT;
-        let filtering = gl.LINEAR;         //gl.LINEAR_MIPMAP_LINEAR; 
+        //let filtering = gl.LINEAR;         
+        let filtering = gl.LINEAR_MIPMAP_LINEAR; // to use this filter we need to generate mipmap 
+        
         return createFBO(this.mGLCtx.gl, FD_BUF_SIZE,  FD_BUF_SIZE, intFormat, format, texType, filtering);
         
     }
@@ -600,8 +612,13 @@ export class GroupRenderer {
         resizeCanvas(this.mCanvas.glCanvas);
         resizeCanvas(this.mCanvas.overlay);
 
+        let starttime = 0;
+        //if(DEBUG) starttime = Date.now();
+
         this.renderGL(timestamp);
         this.renderOverlay(timestamp);
+
+        //if(DEBUG) console.log('redering time: ', (Date.now() - starttime)); 
 
     } // render();
 
@@ -611,7 +628,6 @@ export class GroupRenderer {
     //  render GL canvas      
     // 
     renderGL(timestamp){
-
         //
         // render GL 
         // 
@@ -636,11 +652,7 @@ export class GroupRenderer {
             console.log('navigUni: ',  navigUni);   
             console.log('groupUni: ',  groupUni);               
         }
-        
-        if(!this.gFDBuffer){
-            this.gFDBuffer = this.createFDBuffer();
-        }
-        
+                
         let fdbuff = this.gFDBuffer;
         
         gl.disable(gl.BLEND);        
@@ -671,6 +683,9 @@ export class GroupRenderer {
             // draw FD image to buffer        
             gl.viewport(0, 0, fdbuff.width, fdbuff.height);      
             progFD.blit(fdbuff);
+            
+            fdbuff.attach(0); // set as the current texture. Needed for  generateMipmap()            
+            gl.generateMipmap(gl.TEXTURE_2D); 
                         
             let progScreen = this.programs.patternFromFDRenderer.program;            
             progScreen.bind();
