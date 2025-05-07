@@ -175,10 +175,8 @@ export class GroupRenderer {
         //to order the folders in the GUI
         // if new components are added, change the default in initGUI
 
-        this.guiOrder = getParam(options.guiOrder, [])
+        this.guiOrder = getParam(options.guiOrder, []);
 
-            // start animation loop
-            requestAnimationFrame(this.animationFrame.bind(this));
 
     } // constructor
 
@@ -241,14 +239,17 @@ export class GroupRenderer {
             this.startTime = time;
             this.renderTime = 0;
             this.oldTimeStamp = time;
+            console.log('this.startTime: ', this.startTime);
         }
 
         this.timeStamp = time - this.startTime;
-        this.renderTime = lerp((this.timeStamp - this.oldTimeStamp), this.renderTime, 0.02);
+        //this.renderTime = lerp((this.timeStamp - this.oldTimeStamp), this.renderTime, 0.);
+        this.renderTime = (this.timeStamp - this.oldTimeStamp);
+        //console.log('time: ', this.timeStamp.toFixed(0), this.renderTime.toFixed(1));
         this.oldTimeStamp = this.timeStamp;
 
         if (this.params.showTiming) {
-            this.controls.timing.setValue(this.renderTime.toFixed(1) + ' ms');
+            this.controls.timing.setValue((this.renderTime).toFixed(0) + ' ms');
         }
 
         if (isDefined(this.animationControl)) {
