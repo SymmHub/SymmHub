@@ -40,17 +40,17 @@ uniform float u_fpTransformData[TRANSFORM_DATA_SIZE];  // fixed point transforms
 #endif 	
 
 //
-//  apply moebius transform to the point 
-//
-void transformPoint(inout vec3 v, float td[TRANSFORM_DATA_SIZE], inout float ss){
+//  apply moebius transform to the point  (dublication from Inversive
+// 
+//void transformPoint(inout vec3 v, float td[TRANSFORM_DATA_SIZE], inout float ss){
 
-		for(int r = 0; r  < MAX_REF_COUNT; r++){
-			#define RIND (5*(r))
-			iSPlane splane = iGeneralSplane(vec4(td[RIND+0],td[RIND+1],td[RIND+2], td[RIND+3]), int(td[RIND+4]));   
-			#undef RIND			
-			iReflect(splane, v, ss);					
-		}
-}
+//		for(int r = 0; r  < MAX_REF_COUNT; r++){
+//			#define RIND (5*(r))
+//			iSPlane splane = iGeneralSplane(vec4(td[RIND+0],td[RIND+1],td[RIND+2], td[RIND+3]), int(td[RIND+4]));   
+//			#undef RIND			
+//			iReflect(splane, v, ss);					
+//		}
+//}
 
 #ifndef USE_PERIODIC_WRAP
 #define USE_PERIODIC_WRAP

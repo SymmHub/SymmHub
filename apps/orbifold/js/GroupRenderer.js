@@ -68,7 +68,7 @@ const GL_CANVAS_STYLES = [
 ];
 
 const MYNAME = 'GroupRenderer';
-const DEBUG = false;
+const DEBUG = true;
 const EXPORT_ANIMATION = 'Animation Export';
 const STOP_EXPORT_ANIMATION = 'Stop Animation Export';
 
@@ -82,7 +82,7 @@ export class GroupRenderer {
     //
     constructor(options) {
 
-        this.renderDebugCount = 20;
+        this.renderDebugCount = 10;
         this.constructorParams = options;
         if (options.useInternalWindows) {
 
@@ -120,7 +120,7 @@ export class GroupRenderer {
                                 onChanged: this.onNavigationChanged.bind(this),
                                 canvasTransform: this.mCanvasTransform,
                                 groupMaker: this, // to let navigator get the group 
-                                useAnimatedPointer: false,
+                                //useAnimatedPointer: false,
                                 });
 
 
@@ -175,10 +175,8 @@ export class GroupRenderer {
         //to order the folders in the GUI
         // if new components are added, change the default in initGUI
 
-        this.guiOrder = getParam(options.guiOrder, [])
+        this.guiOrder = getParam(options.guiOrder, []);
 
-            // start animation loop
-            requestAnimationFrame(this.animationFrame.bind(this));
 
     } // constructor
 
@@ -192,14 +190,29 @@ export class GroupRenderer {
         canvas.focus();
         this.initEventsHandler(canvas, this);
         this.initGL();
-        
-        window.addEventListener('resize', this.onWindowResize.bind(this), false);
+
+        //resizeCanvas(this.mCanvas.glCanvas);
+        //resizeCanvas(this.mCanvas.overlay);
+
+        //window.addEventListener('resize', this.onWindowResize.bind(this), false);
 
         this.initGUI();
+
+        
+        // FDbuffer
+        //let format = this.mGLCtx.gl.RG;
+        //let intFormat = this.mGLCtx.gl.RG32F;
+        //let texType = this.mGLCtx.gl.FLOAT;
+        //let filtering = this.mGLCtx.gl.LINEAR;     
+        //let glc = this.mCanvas.glCanvas;
+        //console.log(`${MYNAME} creating gFDBuffer`,glc.width, glc.height);
+        //this.gFDBuffer = createFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
 
         requestAnimationFrame(this.animationFrame.bind(this));
 
     }
+
+    
 
     //
     //
@@ -212,7 +225,9 @@ export class GroupRenderer {
         const defines = this.getDefines();
         let result = buildProgramsCached(this.mGLCtx.gl, this.programs, defines);
         if(DEBUG)console.log('buildProgramsCached() result: ', result);
-                
+        
+        this.gFDBuffer = this.createFDBuffer();
+         
     } // initGL()
 
 
@@ -226,14 +241,17 @@ export class GroupRenderer {
             this.startTime = time;
             this.renderTime = 0;
             this.oldTimeStamp = time;
+            console.log('this.startTime: ', this.startTime);
         }
 
         this.timeStamp = time - this.startTime;
-        this.renderTime = lerp((this.timeStamp - this.oldTimeStamp), this.renderTime, 0.02);
+        //this.renderTime = lerp((this.timeStamp - this.oldTimeStamp), this.renderTime, 0.);
+        this.renderTime = (this.timeStamp - this.oldTimeStamp);
+        //console.log('time: ', this.timeStamp.toFixed(0), this.renderTime.toFixed(1));
         this.oldTimeStamp = this.timeStamp;
 
         if (this.params.showTiming) {
-            this.controls.timing.setValue(this.renderTime.toFixed(1) + ' ms');
+            this.controls.timing.setValue((this.renderTime).toFixed(1) + ' ms');
         }
 
         if (isDefined(this.animationControl)) {
@@ -513,8 +531,11 @@ export class GroupRenderer {
         // store event coordinates in canvas' pixels 
         evt.canvasX = evt.offsetX * scaling; 
         evt.canvasY = evt.offsetY * scaling;
-                
         try {
+            
+            let t0 = 0;
+            //if(DEBUG) t0 = Date.now();
+
             this.mCanvas.overlay.style.cursor = 'default';
 
             if (isFunction(this.groupMaker.handleEvent)) { //if the group maker can handle it...
@@ -524,14 +545,19 @@ export class GroupRenderer {
                 return;
 
             this.patternMaker.handleEvent(evt);
-            if (evt.grabInput)
+            if (evt.grabInput){
+                //if(DEBUG) console.log('patternMaker event handling time: ', (Date.now() - t0));
                 return;
+            }
 
             this.domainBuilder.handleEvent(evt);
             if (evt.grabInput)
                 return;
 
             this.myNavigator.handleEvent(evt);
+            //if(DEBUG) console.log('myNavigator event handling time: ', (Date.now() - t0));
+            
+            
         } catch (e) {
             console.error("error in eventHandling:", e.message);
             console.error("call stack:\n", e.stack);
@@ -556,6 +582,25 @@ export class GroupRenderer {
     }
 
     //
+    //  return buffer for rendering fundamental domain into 
+    // 
+    createFDBuffer(){
+        
+        let FD_BUF_SIZE = 1024; // 512
+        //let glc = this.mCanvas.glCanvas;
+        //let FD_BUF_SIZE = glc.width;
+        let gl = this.mGLCtx.gl;
+        let format =    gl.RGBA;
+        let intFormat = gl.RGBA;           // gl.RGBA32F;
+        let texType =   gl.UNSIGNED_BYTE;  // gl.FLOAT;
+        //let filtering = gl.LINEAR;         
+        let filtering = gl.LINEAR_MIPMAP_LINEAR; // to use this filter we need to generate mipmap 
+        
+        return createFBO(this.mGLCtx.gl, FD_BUF_SIZE,  FD_BUF_SIZE, intFormat, format, texType, filtering);
+        
+    }
+
+    //
     //  draw everything
     //
     render(timestamp) {
@@ -566,68 +611,109 @@ export class GroupRenderer {
         // TODO 
         resizeCanvas(this.mCanvas.glCanvas);
         resizeCanvas(this.mCanvas.overlay);
-        //twgl.resizeCanvasToDisplaySize(this.mCanvas.glCanvas);
-        //twgl.resizeCanvasToDisplaySize(this.mCanvas.overlay);
 
+        let starttime = 0;
+        //if(DEBUG) starttime = Date.now();
+
+        this.renderGL(timestamp);
+        this.renderOverlay(timestamp);
+
+        //if(DEBUG) console.log('redering time: ', (Date.now() - starttime)); 
+
+    } // render();
+
+
+
+    //
+    //  render GL canvas      
+    // 
+    renderGL(timestamp){
         //
         // render GL 
         // 
         let glc = this.mCanvas.glCanvas;
-        this.mGLCtx.gl.viewport(0, 0, glc.width, glc.height);
+        let gl = this.mGLCtx.gl;
+        gl.viewport(0, 0, glc.width, glc.height);
         
-        let un = {}
-        this.getUniforms(un);
+        let ts = this.timeStamp;
+
+        //let allUni = this.getUniforms({});        
+        let domainUni  = this.domainBuilder.getUniforms({},ts);        
+        let configUni  = this.config.getUniforms({}, ts);
+        let patternUni = this.patternMaker.getUniforms({}, ts);
+        let navigUni   = this.myNavigator.getUniforms({}, ts);
+        let groupUni   = this.groupMaker.getUniforms({}, ts);
+        
         if(this.renderDebugCount && this.renderDebugCount-- > 0 && DEBUG){
-            console.log('uniforms: ', un);   
-            console.log('uniforms keys: ', Object.keys(un));           
-            console.log('programs: ', this.programs);
+            //console.log('allUni: ', allUni);   
+            console.log('domainUni: ', domainUni);   
+            console.log('configUni: ', configUni);   
+            console.log('patternUni: ', patternUni);   
+            console.log('navigUni: ',  navigUni);   
+            console.log('groupUni: ',  groupUni);               
         }
-
-
-        //make a buffer
-        // FDbuffer
-        let format = this.mGLCtx.gl.RG;
-        let intFormat = this.mGLCtx.gl.RG32F;
-        let texType = this.mGLCtx.gl.FLOAT;
-        let filtering = this.mGLCtx.gl.LINEAR;
-      
-        this.gFDBuffer = createFBO(this.mGLCtx.gl, glc.width,  glc.height, intFormat, format, texType, filtering);
+                
+        let fdbuff = this.gFDBuffer;
         
-       // this.mGLCtx.gl.disable(this.mGLCtx.gl.BLEND);        
-        //this.mGLCtx.gl.viewport(0, 0, this.gSimBuffer.width, this.gSimBuffer.height);      
-        this.mGLCtx.gl.viewport(0, 0, this.gFDBuffer.width, this.gFDBuffer.height);      
+        gl.disable(gl.BLEND);        
+        //gl.blendFunc(gl.ONE,gl.ZERO);
        
         // Rather than a new buffer being drawn, gFDBuffer is reading and overwriting itself.
 
-
-        let pr = this.programs.FDRenderer.program;
-        pr.bind();
-        let center = un.u_center; 
-        un.u_center = [0.0,0.0]; 
-        pr.setUniforms(un);
-        this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ONE,this.mGLCtx.gl.ZERO);
-       
-        var notdebugging = (this.domainBuilder.params.debug);
-        if(!notdebugging){ 
+        let progFD = this.programs.FDRenderer.program;
+        progFD.bind();
+        //let center = allUni.u_center; 
+        //allUni.u_center = [0.0,0.0]; 
+        //progFD.setUniforms(allUni);
         
-            pr.blit(this.gFDBuffer);
-
-            //this.mGLCtx.gl.blendFunc(this.mGLCtx.gl.ZERO,this.mGLCtx.gl.ONE);
+        progFD.setUniforms(domainUni);
+        progFD.setUniforms(configUni);
+        progFD.setUniforms(patternUni);
+        let canvasUni = {u_center: [0.,0.], u_scale:1, u_aspect: 1.}; // 
+        progFD.setUniforms(canvasUni);
+        progFD.setUniforms(groupUni);
+                
+        if(this.config.params.debug){
             
-            un['u_FDdata'] = this.gFDBuffer;
-            un.u_center = center;
-            pr = this.programs.patternFromFDRenderer.program;
-            pr.bind();
-            pr.setUniforms(un);
+            // draw FD image to screen 
+            gl.viewport(0, 0, glc.width, glc.height);      
+            progFD.blit(null);            
+            
+        } else {
+            // draw FD image to buffer        
+            gl.viewport(0, 0, fdbuff.width, fdbuff.height);      
+            progFD.blit(fdbuff);
+            
+            fdbuff.attach(0); // set as the current texture. Needed for  generateMipmap()            
+            gl.generateMipmap(gl.TEXTURE_2D); 
+                        
+            let progScreen = this.programs.patternFromFDRenderer.program;            
+            progScreen.bind();
+            
+            //allUni.u_FDdata = fdbuff;
+            //allUni.u_center = center;
+            //progScreen.setUniforms(allUni);
+            
+            let fdUni = {u_FDdata:fdbuff};//
+            progScreen.setUniforms(fdUni);
+            progScreen.setUniforms(domainUni);
+            progScreen.setUniforms(configUni);
+            progScreen.setUniforms(navigUni);
+            progScreen.setUniforms(groupUni);
+            
+            gl.viewport(0, 0, glc.width, glc.height);      
+            progScreen.blit(null);   
         }
-        pr.blit();   
-
         
+        
+        
+    }
 
-
-
-
-
+    //
+    //  render overlay canvas 
+    //
+    renderOverlay(timestamp){
+        
         // render overlay
         
         var canvas = this.mCanvas.overlay;
@@ -651,9 +737,8 @@ export class GroupRenderer {
         if (isFunction(this.groupMaker.render)) {
             this.groupMaker.render(context, trans)
         } //give groupMaker the last word...
-
-    } // render();
-
+        
+    }
 
     //
     //  called form UI when config param changed by user

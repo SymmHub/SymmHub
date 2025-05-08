@@ -93,6 +93,8 @@ vec4 getColor(vec2 p){
 	float pixelSize = u_pixelSize;//this should now work, for ... ?
   
 
+  // don't bother drawing anything outside the unit disk: 
+  if(u_curvature!=0 && p.x*p.x+p.y*p.y>1.){return u_backgroundColor;}
   // don't bother drawing anything outside the unit disk
 
   if(u_curvature!=0 && p.x*p.x+p.y*p.y>1.){return u_backgroundColor;}

@@ -478,7 +478,7 @@ export class WallPaperGroup_General {
     }
 
     getUniforms(uniforms) {
-        this.symmetryUIController.getUniforms(uniforms)
+        return this.symmetryUIController.getUniforms(uniforms)
         // but this is just passing the buck.
 
     }
