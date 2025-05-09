@@ -1,5 +1,5 @@
 {
-  "name": "2223",
+  "name": "2223_c",
   "params": {
     "className": "GroupRenderer",
     "params": {
@@ -10,44 +10,63 @@
             "className": "ProjectionTransform",
             "params": {
               "enabled": true,
-              "fpdMap": {},
+              "fpdMap": {
+                "className": "FixedPointTransform",
+                "params": {
+                  "enabled": true,
+                  "showUI": false,
+                  "animate": false,
+                  "word": "abc",
+                  "orientation": "1,-1",
+                  "fp0x": 0.8096176868919287,
+                  "fp0y": 0.5869575803001109,
+                  "fp1x": -0.5227470023462911,
+                  "fp1y": -0.8524878717835039,
+                  "basex": 0,
+                  "basey": 0,
+                  "translation": 2.5548671125795988,
+                  "rotation": 0,
+                  "fraction": 0,
+                  "loopTime": 5
+                }
+              },
               "bandMap": {
-                "enabled": false
+                "enabled": true
               },
               "logMap": {
                 "enabled": false
               },
               "periodicMap": {
-                "enabled": false,
-                "a1x": 1,
+                "enabled": true,
+                "a1x": 1.6265,
                 "a1y": 0,
                 "a2x": 0,
-                "a2y": 1,
+                "a2y": 2,
                 "cx": 0,
                 "cy": 0
               },
+              "scaleMap": {
+                "enabled": true,
+                "a1x": 1.6265,
+                "a1y": 0,
+                "a2x": 0,
+                "a2y": 2,
+                "n1": 5,
+                "n2": 1,
+                "x0": 0,
+                "y0": 0
+              },
               "expMap": {
-                "enabled": false
+                "enabled": true
               },
               "loxMap": {
                 "enabled": false
-              },
-              "scaleMap": {
-                "enabled": false,
-                "a1x": 1,
-                "a1y": 0,
-                "a2x": 0,
-                "a2y": 1,
-                "n1": 10,
-                "n2": 0,
-                "x0": 0,
-                "y0": 0
               },
               "uhpMap": {
                 "enabled": false
               },
               "rationalMap": {
-                "enabled": false,
+                "enabled": true,
                 "x1": 1,
                 "y1": 0,
                 "n1": 1,
@@ -65,24 +84,39 @@
           },
           "inversive": {
             "enabled": true,
-            "itrans": []
+            "itrans": [
+              {
+                "v": [
+                  -0.9866432906553113,
+                  0.162895724329581,
+                  0,
+                  -8.5194303686793155e-16
+                ],
+                "type": 2
+              },
+              {
+                "v": [
+                  2.76285350424099,
+                  -2.094053047098068,
+                  0,
+                  3.608104440001926
+                ],
+                "type": 1
+              }
+            ]
           },
           "spherical": {
-            "enabled": false
+            "enabled": true
           },
           "euclidean": {
-            "centerX": 1.3461572020730426,
-            "centerY": -0.6680083029688906,
+            "centerX": -0.17898018310092642,
+            "centerY": -0.24533449685002032,
             "zoom": [
-              [
-                [
-                  0.4
-                ]
-              ]
+              0.7157154909084149
             ]
           },
           "options": {
-            "animation": false
+            "animation": true
           }
         }
       },
@@ -114,7 +148,7 @@
           "texture": true,
           "texCrown": true,
           "texCrownFactor": 1,
-          "lines": true,
+          "lines": false,
           "domain": false,
           "iterations": 50
         }
@@ -128,22 +162,22 @@
               "active": true,
               "name": "leaf_htinfo",
               "alpha": 1,
-              "scale": -0.5122855422574544,
-              "angle": 62.335110548066055,
+              "scale": -0.31301136237751565,
+              "angle": 8.530055840693702,
               "center": [
-                0.021214768113678728,
-                0.05242774828232344
+                0.12370294999747106,
+                0.1513101398647952
               ]
             },
             {
-              "active": true,
-              "name": "leafswirl",
+              "active": false,
+              "name": "leaf",
               "alpha": 1,
-              "scale": -0.5324616442252758,
-              "angle": -19.311134753931427,
+              "scale": 0,
+              "angle": 0,
               "center": [
-                -0.06313192926296063,
-                0.3711303482198627
+                0,
+                0
               ]
             },
             {
