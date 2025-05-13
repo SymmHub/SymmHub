@@ -1587,7 +1587,7 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
 // * trpointregistry, similarly is a list of the images of a reference point back across the pattern.
 
 
-
+/*
     // Reset the center:
 
     var center; 
@@ -1601,6 +1601,7 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
    
     center = [returntocenter.pnt.v[0],returntocenter.pnt.v[1]];
 
+
     var scale = inputscale;
 
     // should be something like: 
@@ -1613,8 +1614,11 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
 
     scale = [scale.re/sscale,scale.im/sscale]
 
+*/
 
- //   var scale = inputscale;
+    var center = inputcenter;
+    
+    var scale = inputscale;
 
 
     //////////////
