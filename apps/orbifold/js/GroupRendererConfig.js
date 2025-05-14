@@ -69,9 +69,19 @@ export class GroupRendererConfig {
       this.params = {
         background:DEFAULT_BACKGROUND_COLOR,
         glBackground:DEFAULT_GLBACKGROUND_COLOR,
+<<<<<<< HEAD
 
         SAMPLEPARAM:getParam(options.SAMPLEPARAM,sampleparamdefault),
 
+=======
+       // symmetry:true,
+       // symmetryblending:true,
+      //  texture: true,
+       // texCrown: true,
+       // texCrownFactor:1.,
+       // fill: getParam(options.fill, true),
+       // domain:false,
+>>>>>>> origin/workingcgs
         lines: true,
         debug:getParam(options.debug,false),
         iterations: 50,
@@ -101,7 +111,18 @@ export class GroupRendererConfig {
       lineWidth: p.lineWidth,
       maxlineWidth: p.maxlineWidth,
     //  tileColors: p.tileColors,
+<<<<<<< HEAD
       lines:p.lines,
+=======
+      //symmetry:p.symmetry,
+      //symmetryblending:p.symmetryblending,
+      //fill:p.fill,
+      //texture:p.texture,
+      //texCrown:p.texCrown,
+      //texCrownFactor:p.texCrownFactor,
+      lines:p.lines,
+      //domain:p.domain,
+>>>>>>> origin/workingcgs
       iterations:p.iterations,
 
       SAMPLEPARAM:p.SAMPLEPARAM,
@@ -135,7 +156,19 @@ export class GroupRendererConfig {
     
     ctrl.lineWidth.setValue(getParam(pm.lineWidth,.3));
     ctrl.maxlineWidth.setValue(getParam(pm.maxlineWidth,2.));
+<<<<<<< HEAD
     ctrl.lines.setValue(getParam(pm.lines, true));
+=======
+    
+  //  ctrl.symmetry.setValue(getParam(pm.symmetry,true));
+  //  ctrl.symmetryblending.setValue(getParam(pm.symmetryblending,true));
+	//ctrl.fill.setValue(getParam(pm.fill, true));
+  //  ctrl.texture.setValue(getParam(pm.texture, true));
+  //  ctrl.texCrown.setValue(getParam(pm.texCrown,false));
+   // ctrl.texCrownFactor.setValue(getParam(pm.texCrownFactor, 1.));
+    ctrl.lines.setValue(getParam(pm.lines, true));
+  //  ctrl.domain.setValue(getParam(pm.domain,true));
+>>>>>>> origin/workingcgs
     ctrl.iterations.setValue(getParam(pm.iterations, 50));
 
     ctrl.SAMPLEPARAM.setValue(getParam(pm.SAMPLEPARAM, sampleparamdefault));
@@ -168,10 +201,27 @@ export class GroupRendererConfig {
     
     ctrl.SAMPLEPARAM = folder.add(par,'SAMPLEPARAM').name('SAMPLE').onChange(onc);
     
+<<<<<<< HEAD
+=======
+    // these controllers are no longer useful:
+   // ctrl.symmetry = folder.add(par, 'symmetry').name('Symmetry').onChange(onc);
+   // ctrl.symmetryblending = folder.add(par,'symmetryblending').name('SymmetryBlending').onChange(onc);
+
+   // ctrl.fill = folder.add(par, 'fill').name('Fill').onChange(onc);
+   // ctrl.texture = folder.add(par, 'texture').name('Texture').onChange(onc);
+   // ctrl.texCrown = folder.add(par, 'texCrown').name('Tex Crown').onChange(onc);
+   // ctrl.texCrownFactor = folder.add(par, 'texCrownFactor', 0,1,minIncrement).name('Crown Factor').onChange(onc);
+
+>>>>>>> origin/workingcgs
     ctrl.lines = folder.add(par, 'lines').name('Lines').onChange(onc);
     ctrl.lineWidth = folder.add(par, 'lineWidth', 0,100,minIncrement).name('Line Width').onChange(onc);
     ctrl.maxlineWidth = folder.add(par, 'maxlineWidth', 0,100,minIncrement).name('Max Line Width').onChange(onc);
 
+<<<<<<< HEAD
+=======
+   // ctrl.domain = folder.add(par, 'domain').name('Domain').onChange(onc);
+
+>>>>>>> origin/workingcgs
     ctrl.iterations = folder.add(par, 'iterations', 0,1000,1).name('Iterations').onChange(onc);
     ctrl.debug      =  folder.add(par, 'debug').onChange(onc);
     
@@ -216,12 +266,23 @@ export class GroupRendererConfig {
     // uniforms to go to Config 
     var p = this.params;
     
+<<<<<<< HEAD
     un.u_drawLines  = p.lines;
     un.u_iterations = p.iterations;
     un.u_lineWidth = p.lineWidth; 
     un.u_maxlineWidth = p.maxlineWidth;
     un.u_backgroundColor = premultColor(hexToRGBA(p.glBackground));
     //  un.u_tileColors = packColors(p.tileColors);
+=======
+
+   un.u_useSymmetryBlending = true; //p.symmetryblending;
+	un.u_drawLines  = p.lines;
+	un.u_iterations = p.iterations;
+	un.u_lineWidth = p.lineWidth; 
+    un.u_maxlineWidth = p.maxlineWidth;
+	un.u_backgroundColor = premultColor(hexToRGBA(p.glBackground));
+  //  un.u_tileColors = packColors(p.tileColors);
+>>>>>>> origin/workingcgs
     un.u_lineColor = premultColor(hexToRGBA(p.lineColor));
     un.u_errorColor = premultColor(hexToRGBA(p.errorColor));
     un.u_domainColor = premultColor(hexToRGBA(p.domainColor));
