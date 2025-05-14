@@ -8,9 +8,10 @@ import { vertexShader }     from './vertexShader.glsl.mjs';
 // new stuff
 //import { FDPatternRenderer} from './FDRenderer.glsl.mjs';
 import { FDRenderer}        from './FDRenderer.glsl.mjs';
-import { FDRenderer_v1}     from './FDRenderer_v1.glsl.mjs';
+//import { FDRenderer_v1}     from './FDRenderer_v1.glsl.mjs';
+// v1 is now the FDRendered, etc.
 import { patternFromFDRenderer} from './patternFromFDRenderer.glsl.mjs';
-import { patternFromFDRenderer_v1} from './patternFromFDRenderer_v1.glsl.mjs';
+//import { patternFromFDRenderer_v1} from './patternFromFDRenderer_v1.glsl.mjs';
 import { projection} from './projection.glsl.mjs';
 
 // And then add the fragments to the list for export:
@@ -28,9 +29,9 @@ const OrbifoldFragments = {
     vertexShader,
 // new pieces -- only include working ones!
     FDRenderer,
-    FDRenderer_v1,
+  //  FDRenderer_v1,
     patternFromFDRenderer,
-    patternFromFDRenderer_v1, 
+ //   patternFromFDRenderer_v1, 
     projection, 
   //  generalGroupMain_tester
 };

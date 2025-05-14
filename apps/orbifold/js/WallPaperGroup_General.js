@@ -55,7 +55,8 @@ import {
     assembleFundamentalDomain,
     produceGenerators,
     willOrbifoldFitQ,
-    getTransformsForTexture
+    getTransformsForTexture,
+    resetCenterfromPt,
 }
 from './OrbifoldGeometrization.js';
 
@@ -483,12 +484,8 @@ export class WallPaperGroup_General {
 
     }
 
-
-    resetCenter(point){
-        // put a point back into the center
-
-
-
+    resetCenterfromPt(mousepoint, center, angle, scale){ 
+        return resetCenterfromPt(mousepoint, center, angle, scale,this.getGroup())
     }
 
 } // class Group_GeneralHyperbolic

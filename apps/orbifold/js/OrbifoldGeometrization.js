@@ -1566,32 +1566,10 @@ export function willOrbifoldFitQ(atomList,MAX_GEN_COUNT,MAX_REF_COUNT,MAX_DOMAIN
 import {distancetable} from './distancetable45.js'
 
 
+export function resetCenter(inputcenter,inputscale, domain, transforms){
 
-export function getTransformsForTexture(domain,transforms,inputcenter,inputscale,curvature=-1){ 
-
-// We are working in Splaneworld, using vectors and points as [x,y] when we can. 
-// (But we declare splanes as iSplane(new complexN([x,y]),0) 
-// This is called from updateTheGroupGeometry in WallPaperGroup_General
-//center and scale are of the overlaid texture
-// domain is a list of "bounded splanes" themselves a list of 1-3 splanes.
-// transforms is a list of iTransforms that generate the group.
-
-// We'll calculate several useful things: 
-// * imagetransform is a list of splanes transforming the origin to center, 
-//      rotating by the angle of the vector [a,b] of scale
-// * crowntransformregistry, a list of lists of splanes, all possible transforms that take 
-//      some point of the FD to some point in the texture. Errors can ensue if we don't sample
-//      sufficiently, to be investigated; 
-// * listoftexturesamplingpoints, the points in the texture that are being sampled; these
-//      can be drawn inside of SymmetryUIController.js
-// * trpointregistry, similarly is a list of the images of a reference point back across the pattern.
-
-
-/*
-    // Reset the center:
-
-    var center; 
-    var returntocenter=iToFundDomainWBounds(domain, transforms,
+var center;
+var returntocenter=iToFundDomainWBounds(domain, transforms,
             new iSplane({v:[inputcenter[0],inputcenter[1],0,0],type:SPLANE_POINT}),20)
 
     if(returntocenter.distance>-.03){
@@ -1614,7 +1592,28 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
 
     scale = [scale.re/sscale,scale.im/sscale]
 
-*/
+    return {center:center, scale:scale}
+}
+
+export function getTransformsForTexture(domain,transforms,inputcenter,inputscale,curvature=-1){ 
+
+// We are working in Splaneworld, using vectors and points as [x,y] when we can. 
+// (But we declare splanes as iSplane(new complexN([x,y]),0) 
+// This is called from updateTheGroupGeometry in WallPaperGroup_General
+//center and scale are of the overlaid texture
+// domain is a list of "bounded splanes" themselves a list of 1-3 splanes.
+// transforms is a list of iTransforms that generate the group.
+
+// We'll calculate several useful things: 
+// * imagetransform is a list of splanes transforming the origin to center, 
+//      rotating by the angle of the vector [a,b] of scale
+// * crowntransformregistry, a list of lists of splanes, all possible transforms that take 
+//      some point of the FD to some point in the texture. Errors can ensue if we don't sample
+//      sufficiently, to be investigated; 
+// * listoftexturesamplingpoints, the points in the texture that are being sampled; these
+//      can be drawn inside of SymmetryUIController.js
+// * trpointregistry, similarly is a list of the images of a reference point back across the pattern.
+
 
     var center = inputcenter;
     
@@ -1875,9 +1874,46 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
 }
  
 
+export function resetCenterfromPt(mousepoint, center, angle, scale,groupdata){ 
+        
+        var newcenter = center;
+        var newscale = scale;
+        var newangle = angle;
+
+        if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){return {center:newcenter, angle:newangle, scale:newscale};}
+        var domain = groupdata.s;
+        var transforms = groupdata.t;
+        var smousepoint= new iSplane({v:[mousepoint[0],mousepoint[1],0,0],type:SPLANE_POINT});
+
+        var FDmousepointdata = iToFundDomainWBounds(domain, transforms,smousepoint,200)
+        if(!FDmousepointdata.inDomain){return {center:newcenter, angle:newangle, scale:newscale};}
+        var FDmousepoint = FDmousepointdata.pnt;
+
+        // Now, which of the crown transform points is closest? 
+        var crowntransforms = groupdata.c.crowntransformregistry;
+
+        var theclosest;
+        var thedistance = 100000000, newdistance, tpt, index;
+        for(var i = 0; i<crowntransforms.length;i++){
+            tpt = iTransformU4(crowntransforms[i],FDmousepoint).v;
+            newdistance = Math.sqrt(
+            (FDmousepoint[0]-tpt[0])*(FDmousepoint[0]-tpt[0])+
+            (FDmousepoint[1]-tpt[1])*(FDmousepoint[1]-tpt[1]))
+            if(newdistance<thedistance){
+                thedistance=newdistance;
+                theclosest = [tpt[0],tpt[1]];
+                index = i;
+            }
+        }
+
+        // so now we should have the correct closest point
+
+        tpt = iTransformU4(crowntransforms[index],FDmousepoint).v;
+        
 
 
-export function resetPointToFundamentalDomain(domain,transforms,point){ 
-    return {resentpoint:1 , resettingtransform: 1, anglechange:1}
+        // return a transform put a point back into the center
+       // resetCenter(center,scale, this.FD.s, this.FD.t)
 
-}
+        return {center:newcenter, angle:newangle, scale:newscale}
+    }
