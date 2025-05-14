@@ -67,25 +67,23 @@ export class GroupRendererConfig {
       this.params = {
         background:DEFAULT_BACKGROUND_COLOR,
         glBackground:DEFAULT_GLBACKGROUND_COLOR,
-        symmetry:true,
-        symmetryblending:true,
-        texture: true,
-        texCrown: true,
-        texCrownFactor:1.,
-        fill: getParam(options.fill, true),
-        domain:false,
+       // symmetry:true,
+       // symmetryblending:true,
+      //  texture: true,
+       // texCrown: true,
+       // texCrownFactor:1.,
+       // fill: getParam(options.fill, true),
+       // domain:false,
         lines: true,
         debug:getParam(options.debug,false),
         iterations: 50,
         antialias: 1,
-        tileColors: makeDefaultColors(this.tileColorCount),
+        //tileColors: makeDefaultColors(this.tileColorCount),
         lineColor:  DEFAULT_LINE_COLOR,
         errorColor:  DEFAULT_ERROR_COLOR,
         domainColor: DEFAULT_DOMAIN_COLOR,
         lineWidth: .3,
-        maxlineWidth: 2,
-        debug:  false,
-        
+        maxlineWidth: 2,  
       };
   }
 
@@ -104,15 +102,15 @@ export class GroupRendererConfig {
       domainColor: p.domainColor,
       lineWidth: p.lineWidth,
       maxlineWidth: p.maxlineWidth,
-      tileColors: p.tileColors,
-      symmetry:p.symmetry,
-      symmetryblending:p.symmetryblending,
-      fill:p.fill,
-      texture:p.texture,
-      texCrown:p.texCrown,
-      texCrownFactor:p.texCrownFactor,
+    //  tileColors: p.tileColors,
+      //symmetry:p.symmetry,
+      //symmetryblending:p.symmetryblending,
+      //fill:p.fill,
+      //texture:p.texture,
+      //texCrown:p.texCrown,
+      //texCrownFactor:p.texCrownFactor,
       lines:p.lines,
-      domain:p.domain,
+      //domain:p.domain,
       iterations:p.iterations,
       //antialias:p.antialias,
     };
@@ -126,7 +124,7 @@ export class GroupRendererConfig {
     var ctrl = this.controllers;
     ctrl.background.setValue(getParam(pm.background,DEFAULT_BACKGROUND_COLOR));
     ctrl.glBackground.setValue(getParam(pm.glBackground,DEFAULT_GLBACKGROUND_COLOR));
-    if(isDefined(pm.tileColors)){
+   /* if(isDefined(pm.tileColors)){
       //console.log('setting tile colors');
       for(let i = 0; i < pm.tileColors.length; i++){
         var tcc = ctrl.tileColors[i]; 
@@ -137,7 +135,7 @@ export class GroupRendererConfig {
           ctrl.tileColors[i].setValue(tc);
         }
       }
-    }
+    }*/
     ctrl.lineColor.setValue(getParam(pm.lineColor,DEFAULT_LINE_COLOR));
     ctrl.errorColor.setValue(getParam(pm.errorColor,DEFAULT_ERROR_COLOR));
     ctrl.domainColor.setValue(getParam(pm.domainColor,DEFAULT_DOMAIN_COLOR));
@@ -145,14 +143,14 @@ export class GroupRendererConfig {
     ctrl.lineWidth.setValue(getParam(pm.lineWidth,.3));
     ctrl.maxlineWidth.setValue(getParam(pm.maxlineWidth,2.));
     
-    ctrl.symmetry.setValue(getParam(pm.symmetry,true));
-    ctrl.symmetryblending.setValue(getParam(pm.symmetryblending,true));
-	ctrl.fill.setValue(getParam(pm.fill, true));
-    ctrl.texture.setValue(getParam(pm.texture, true));
-    ctrl.texCrown.setValue(getParam(pm.texCrown,false));
-    ctrl.texCrownFactor.setValue(getParam(pm.texCrownFactor, 1.));
+  //  ctrl.symmetry.setValue(getParam(pm.symmetry,true));
+  //  ctrl.symmetryblending.setValue(getParam(pm.symmetryblending,true));
+	//ctrl.fill.setValue(getParam(pm.fill, true));
+  //  ctrl.texture.setValue(getParam(pm.texture, true));
+  //  ctrl.texCrown.setValue(getParam(pm.texCrown,false));
+   // ctrl.texCrownFactor.setValue(getParam(pm.texCrownFactor, 1.));
     ctrl.lines.setValue(getParam(pm.lines, true));
-    ctrl.domain.setValue(getParam(pm.domain,true));
+  //  ctrl.domain.setValue(getParam(pm.domain,true));
     ctrl.iterations.setValue(getParam(pm.iterations, 50));
     //ctrl.antialias.setValue(getParam(pm.antialias,1));    
     
@@ -181,20 +179,20 @@ export class GroupRendererConfig {
     var ctrl = this.controllers;
     
     
-    
-    ctrl.symmetry = folder.add(par, 'symmetry').name('Symmetry').onChange(onc);
-    ctrl.symmetryblending = folder.add(par,'symmetryblending').name('SymmetryBlending').onChange(onc);
+    // these controllers are no longer useful:
+   // ctrl.symmetry = folder.add(par, 'symmetry').name('Symmetry').onChange(onc);
+   // ctrl.symmetryblending = folder.add(par,'symmetryblending').name('SymmetryBlending').onChange(onc);
 
-    ctrl.fill = folder.add(par, 'fill').name('Fill').onChange(onc);
-    ctrl.texture = folder.add(par, 'texture').name('Texture').onChange(onc);
-    ctrl.texCrown = folder.add(par, 'texCrown').name('Tex Crown').onChange(onc);
-    ctrl.texCrownFactor = folder.add(par, 'texCrownFactor', 0,1,minIncrement).name('Crown Factor').onChange(onc);
+   // ctrl.fill = folder.add(par, 'fill').name('Fill').onChange(onc);
+   // ctrl.texture = folder.add(par, 'texture').name('Texture').onChange(onc);
+   // ctrl.texCrown = folder.add(par, 'texCrown').name('Tex Crown').onChange(onc);
+   // ctrl.texCrownFactor = folder.add(par, 'texCrownFactor', 0,1,minIncrement).name('Crown Factor').onChange(onc);
 
     ctrl.lines = folder.add(par, 'lines').name('Lines').onChange(onc);
     ctrl.lineWidth = folder.add(par, 'lineWidth', 0,100,minIncrement).name('Line Width').onChange(onc);
     ctrl.maxlineWidth = folder.add(par, 'maxlineWidth', 0,100,minIncrement).name('Max Line Width').onChange(onc);
 
-    ctrl.domain = folder.add(par, 'domain').name('Domain').onChange(onc);
+   // ctrl.domain = folder.add(par, 'domain').name('Domain').onChange(onc);
 
     ctrl.iterations = folder.add(par, 'iterations', 0,1000,1).name('Iterations').onChange(onc);
     ctrl.debug      =  folder.add(par, 'debug').onChange(onc);
@@ -210,13 +208,14 @@ export class GroupRendererConfig {
     ctrl.domainColor = cfolder.addColor(par, 'domainColor').name('Domain Color').onChange(onc);
 
     // variable array of tile colors 
-    ctrl.tileColors = [];
+    // Commented out for now, but useful later.
+   /* ctrl.tileColors = [];
     let tcs = par.tileColors;
     let tcf = cfolder.addFolder('Tile Colors');
     for(let i = 0; i < tcs.length; i++){
       ctrl.tileColors[i] = tcf.addColor(tcs, i).name('Color ' + i).onChange(onc);
     }
-
+*/
     
     gui.remember(par);
     
@@ -236,23 +235,17 @@ export class GroupRendererConfig {
   }
   
   getUniforms(un){
-    
-    var p = this.params;
     // uniforms to go to Config 
-	un.u_hasSymmetry = p.symmetry;
-    un.u_useSymmetryBlending = p.symmetryblending;
-	un.u_drawTexture = p.texture;
-    un.u_drawTexCrown = p.texCrown;
-    un.u_texCrownFactor = p.texCrownFactor;    
-	un.u_drawFill = p.fill;
+    var p = this.params;
+    
+
+   un.u_useSymmetryBlending = true; //p.symmetryblending;
 	un.u_drawLines  = p.lines;
-	un.u_fillDomain = p.domain;
 	un.u_iterations = p.iterations;
-	//un.u_antialias = p.antialias;    
 	un.u_lineWidth = p.lineWidth; 
     un.u_maxlineWidth = p.maxlineWidth;
 	un.u_backgroundColor = premultColor(hexToRGBA(p.glBackground));
-    un.u_tileColors = packColors(p.tileColors);
+  //  un.u_tileColors = packColors(p.tileColors);
     un.u_lineColor = premultColor(hexToRGBA(p.lineColor));
     un.u_errorColor = premultColor(hexToRGBA(p.errorColor));
     un.u_domainColor = premultColor(hexToRGBA(p.domainColor));
