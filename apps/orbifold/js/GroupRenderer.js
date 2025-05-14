@@ -521,9 +521,12 @@ export class GroupRenderer {
         return this.mCanvas.overlay;
     }
 
+
+    //////////////////////////////////////////
     //
     //  handles all UI events on canvas
     //
+    // This is the main dispatching function.
     handleEvent(evt) {
         
         let scaling = getPixelRatio(); // TODO add extra scaling 
@@ -543,6 +546,35 @@ export class GroupRenderer {
             }
             if (evt.grabInput)
                 return;
+
+            var tool = this.params.activetool
+            // As different tools and behaviors are developed, this is 
+            // where a switch can be put in. 
+
+
+            // For the moment, we experiment with turning off and on various
+            // responses, depending on what mode the program is in.
+
+            // These blocks seem to be basic and expandable. Each has an "option" mode;
+            // To each we can add more functionality via the right click and wheel.
+
+            // Navigate 
+            // (default) drag a point around natively within the model as drawn on the screen.
+            // (option) navigate applies mobius transform to the model
+            // (option)-wheel is of the disk model relative to the unit disk.
+            // 
+
+            // Draw 
+            // For now this just means drag around a single specially prepared texture.
+            // Lots more to come in this direction
+
+            // Flex
+            // Apply a transformation to the orbifold. This doesn't need to be 
+            // a separate state: when navigating, when certain features light up
+            // their response overrides the regular navigation tools, 
+            // if they have a response.
+            // For the forseeable future, this will just be to wheel over a lit-up edge. 
+            // In time however, this will become a whole other set of controls. 
 
             this.patternMaker.handleEvent(evt);
             if (evt.grabInput){
