@@ -7,10 +7,10 @@
 
 export const TEX_CAMERA = '[camera]';
 
-import {iDrawPoint, iDrawSegment} from './IDrawing.js';
-import {add,sub,distance1,eDistance} from './LinearAlgebra.js';
+import {iDrawPoint, iDrawSegment} from '../../../lib/invlib/IDrawing.js';
+import {add,sub,distance1,eDistance} from '../../../lib/invlib/LinearAlgebra.js';
 
-import {cMul,complexN} from './ComplexArithmetic.js';
+import {cMul,complexN} from '../../../lib/invlib/ComplexArithmetic.js';
 
 
 
@@ -21,18 +21,18 @@ import {
     isDefined, 
     isFunction,
     getCanvasPnt,
-} from './Utilities.js';
+} from '../../../lib/invlib/Utilities.js';
 
 import {
     TW as twgl 
-} from './modules.js';
+} from '../../../lib/invlib/modules.js';
 
 // We need this to reset the centers into the FD. 
 // TBD This kind of functionality will be lifted off into some sort
 // of texture/layer controller class.
 import {
     WallPaperGroup_General
-} from '../../apps/orbifold/js/WallPaperGroup_General.js'
+} from './WallPaperGroup_General.js'
 
 const DEFAULT_TEXTURE_SIZE = 1024;
 

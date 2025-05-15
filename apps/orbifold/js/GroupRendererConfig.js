@@ -55,7 +55,11 @@ function packColors(hexColors){
   
 }
 
-const sampleparamdefault = 1;
+//const sampleparamdefault = 1;
+// SAMPLEPARAM is a template for adding a controller. This could be 
+// turned into its own class 
+
+
 
 export class GroupRendererConfig {
 
@@ -70,7 +74,10 @@ export class GroupRendererConfig {
         background:DEFAULT_BACKGROUND_COLOR,
         glBackground:DEFAULT_GLBACKGROUND_COLOR,
 
-        SAMPLEPARAM:getParam(options.SAMPLEPARAM,sampleparamdefault),
+        //SAMPLEPARAM:getParam(options.SAMPLEPARAM,sampleparamdefault),
+
+        whichTool:getParam(options.whichTool,'drag'),
+
 
         lines: true,
         debug:getParam(options.debug,false),
@@ -104,7 +111,9 @@ export class GroupRendererConfig {
       lines:p.lines,
       iterations:p.iterations,
 
-      SAMPLEPARAM:p.SAMPLEPARAM,
+  //    SAMPLEPARAM:p.SAMPLEPARAM,
+
+      whichTool:p.whichTool,
       
     };
   }
@@ -138,7 +147,9 @@ export class GroupRendererConfig {
     ctrl.lines.setValue(getParam(pm.lines, true));
     ctrl.iterations.setValue(getParam(pm.iterations, 50));
 
-    ctrl.SAMPLEPARAM.setValue(getParam(pm.SAMPLEPARAM, sampleparamdefault));
+    //ctrl.SAMPLEPARAM.setValue(getParam(pm.SAMPLEPARAM, sampleparamdefault));
+    
+    ctrl.whichTool.setValue(getParam(pm.whichTool, 'draw'));
     
 
     
@@ -166,8 +177,11 @@ export class GroupRendererConfig {
     
     var ctrl = this.controllers;
     
-    ctrl.SAMPLEPARAM = folder.add(par,'SAMPLEPARAM').name('SAMPLE').onChange(onc);
+    //ctrl.SAMPLEPARAM = folder.add(par,'SAMPLEPARAM').name('SAMPLE').onChange(onc);
     
+    ctrl.whichTool = folder.add(par,'whichTool',['draw','drag','flex']).name('tool').onChange(onc);
+    
+
     ctrl.lines = folder.add(par, 'lines').name('Lines').onChange(onc);
     ctrl.lineWidth = folder.add(par, 'lineWidth', 0,100,minIncrement).name('Line Width').onChange(onc);
     ctrl.maxlineWidth = folder.add(par, 'maxlineWidth', 0,100,minIncrement).name('Max Line Width').onChange(onc);
