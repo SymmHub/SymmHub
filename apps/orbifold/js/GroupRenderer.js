@@ -547,7 +547,8 @@ export class GroupRenderer {
             if (evt.grabInput)
                 return;
 
-            var tool = this.params.activetool
+            var tool = this.config.params.whichTool;
+
             // As different tools and behaviors are developed, this is 
             // where a switch can be put in. 
 
@@ -576,18 +577,27 @@ export class GroupRenderer {
             // For the forseeable future, this will just be to wheel over a lit-up edge. 
             // In time however, this will become a whole other set of controls. 
 
-            this.patternMaker.handleEvent(evt);
-            if (evt.grabInput){
-                //if(DEBUG) console.log('patternMaker event handling time: ', (Date.now() - t0));
+            switch(tool){
+            case 'draw':
+                this.patternMaker.handleEvent(evt);
+                //if (evt.grabInput){return;}
                 return;
+
+            case 'drag':
+                this.myNavigator.handleEvent(evt);
+                return
+
+
+            case 'flex':
+                this.domainBuilder.handleEvent(evt);
+                //if (evt.grabInput)  return;
+                return;
+
             }
+            
 
-            this.domainBuilder.handleEvent(evt);
-            if (evt.grabInput)
-                return;
+            
 
-            this.myNavigator.handleEvent(evt);
-            //if(DEBUG) console.log('myNavigator event handling time: ', (Date.now() - t0));
             
             
         } catch (e) {

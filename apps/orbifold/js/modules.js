@@ -19,8 +19,6 @@ export {
     cos, 
     sqrt, 
     PI,
-    TEX_CAMERA,
-    PatternTextures, 
     FileLoader,   
     FilesLoader, 
     AnimationControl,
@@ -61,6 +59,10 @@ export {
     //CanvasTransform,    // to use with InversiveNavigator_v0
 } from '../../../lib/invlib/invlib.js';
 
+export{
+    TEX_CAMERA,
+   PatternTextures, 
+} from './PatternTextures.js';
 
 export {
     DefaultDomainBuilder
