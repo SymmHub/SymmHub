@@ -1,6 +1,3 @@
-import {
-    TEX_CAMERA
-} from './modules.js';
 
 const IMG_FOLDER = 'images/';
 export const Textures = {
