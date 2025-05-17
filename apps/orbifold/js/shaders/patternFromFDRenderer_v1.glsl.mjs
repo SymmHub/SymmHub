@@ -2,6 +2,11 @@
 
 export const patternFromFDRenderer_v1 = 
 `
+// input UV coordinates 
+in vec2 vUV;
+// output color
+layout(location = 0) out vec4 outColor;
+layout(location = 1) out vec2 outFDCoord;
 
 //////////////////////////////////   
 /**  PatternFromFDRenderer.glsl */
@@ -29,8 +34,6 @@ uniform vec4 u_backgroundColor;
 uniform vec4 u_domainColor; 
 uniform vec4 u_errorColor; 
 
-uniform float u_aspect;
-
 uniform int u_genCount;  // count of group generators 
 
 uniform float u_domainData[DOMAIN_DATA_SIZE];
@@ -42,11 +45,6 @@ uniform int u_groupCumRefCount[MAX_GEN_COUNT];
 
 uniform float u_groupTransformsData[TRANSFORMS_DATA_SIZE];  
     // transforms data to bring a point into the fundamental domain
-
-void init(void){
-    
-}
-
 
 //
 // returns a position in [-1x1]^2 coordinates within a sampler, in texture coords, 
@@ -94,11 +92,10 @@ vec4 getTextureValueWithBoundaries(vec3 pnt, sampler2D sampler, float scale, flo
 
 
 
+void main(){
 
-
-vec4 getColor(vec2 p){
-
-
+    vec2 p = vUV; // input math coordinates on screen 
+    
     float pixelSize = u_pixelSize;//this should now work, for ... ?
   
     vec4 color=u_backgroundColor;
@@ -112,7 +109,9 @@ vec4 getColor(vec2 p){
     if(u_sphericalProjectionEnabled){
         float sdist = makeSphericalProjection(p, scale);
         if(sdist > 0.) { // signed distance to sphere 
-            return vec4(0,0,0,0);
+            outColor = vec4(0,0,0,0);
+            outFDCoord = vec2(-10.,-10.);
+            return;
         }
     }        
     #endif  //HAS_SPHERICAL_PROJECTION
@@ -136,14 +135,17 @@ vec4 getColor(vec2 p){
         // bring p3 to a representative point within the fundamental domain. 
         iToWalledFundamentalDomain(p3, u_groupTransformsData, u_domainData, u_domainCount, u_groupCumRefCount, u_genCount, successq, refCount, scale, u_iterations);  
         // don't bother drawing anything outside the unit disk: 
-        if(length(p3.xy) > 1.)
-            return u_backgroundColor;
+        if(length(p3.xy) > 1.){
+            outColor = u_backgroundColor;
+            return;
+         }
         //grab the pixel color at p3 
         texture2 = getTextureValueWithBoundaries(p3, u_FDdata, scale, pixelSize, fdZoom, fdAspect);
         overlay(color,texture2);        
     } else {
         texture2 = getTextureValueWithBoundaries(p3, u_FDdata, scale, pixelSize, fdZoom, fdAspect);
-        overlay(color,texture2);            
+        overlay(color,texture2);
+            
     }
 
     // shall we draw some boundaries? // this is where we draw lines of constant 
@@ -157,7 +159,8 @@ vec4 getColor(vec2 p){
 
     }
       
-  return color;
+  outColor = color;
+  outFDCoord = p3.xy;
     
 }`
 ;

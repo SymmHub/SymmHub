@@ -256,8 +256,8 @@ float makeSphericalProjection(inout vec2 p, inout float scale){
     float factor = 1./(1. + sqrt(1.-pp));
     float factor2 = 1./sqrt(1.-pp);
     p *= factor;
-    //scale *= factor;
-    scale *= factor2;
+    //scale *= 0.25*factor2; 
+    scale *= factor;
     
     return sdist;
     

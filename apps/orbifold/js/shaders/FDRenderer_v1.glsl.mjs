@@ -5,6 +5,12 @@ export const FDRenderer_v1 =
 /////////////////////    
 /**  FDRenderer.glsl */
 
+// input UV coordinates 
+in vec2 vUV;
+// output data 
+layout(location = 0) out vec4 outColor;
+layout(location = 1) out ivec2 outTexInfo;
+
 
 //general reflection group params 
 uniform int u_iterations;
@@ -37,11 +43,6 @@ uniform int u_cTransCumRefCount[MAX_CROWN_COUNT];
 uniform float u_cTransformsData[CROWN_DATA_SIZE];  // transforms data
 uniform int u_crownCount;   // count of transforms in the crown 
 
-
-
-void init(void){
-    
-}
 
 vec4 getCrownTexturePacked(vec3 pnt, 
                     float cd[CROWN_DATA_SIZE], // transforms data 
@@ -92,17 +93,17 @@ vec4 getCrownTexturePacked(vec3 pnt,
     if(u_useSymmetryBlending==1){
         //using the alpha channel for height information.
         float highestalpha = -1.;
-        for(int i = 0; i <= MAX_CROWN_COUNT; i++){
+        for(int i = 0; i <= count; i++){
+        //for(int i = 0; i <= MAX_CROWN_COUNT; i++){
             if(colors[i].w > highestalpha){
                 color = colors[i];
                 highestalpha = color.w;
             }
         //    color.x=color.w;
-            if(color.w>0.){    
-                color.x=clamp(color.x/color.w,0.,1.);
-                color.y=clamp(color.y/color.w,0.,1.);
-                color.z=clamp(color.z/color.w,0.,1.);
-                color.w = 1.;
+            if(color.w > 0.){
+                color = vec4(clamp(color.xyz/color.w,0.,1.),1.);
+                // the most top color is stored in outTexInfo
+                outTexInfo = ivec2(0,i);
             }
         } //end looping through the stored colors
     }// end if u_useSymmetryBlending
@@ -110,10 +111,12 @@ vec4 getCrownTexturePacked(vec3 pnt,
 }
 
 
-vec4 getColor(vec2 p){
+void main(){
+
+    vec2 p = vUV;
     
     // don't bother drawing anything outside the unit disk: 
-    if(p.x*p.x+p.y*p.y>1.){return u_backgroundColor;}
+    //if(p.x*p.x+p.y*p.y>1.){   return u_backgroundColor; }
 
     vec3 p3 = vec3(p, 0);
 
@@ -145,7 +148,8 @@ vec4 getColor(vec2 p){
 
     }
 
-  return color;
-    
+  outColor = color;
+  outTexInfo = ivec2(1,5);
+  
 }`
 ;

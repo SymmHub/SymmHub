@@ -115,6 +115,10 @@ const JSONpresets = [
         path: PRE_FOLDER + '2223_d.json'
     },
     {
+        name: '2223_e',
+        path: PRE_FOLDER + '2223_e.json'
+    },
+    {
         name: '23x',
         path: PRE_FOLDER + '23x.json'
     },
