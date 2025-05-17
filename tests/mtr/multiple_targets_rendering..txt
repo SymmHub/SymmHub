@@ -1,0 +1,29 @@
+In WebGL2, you can render to multiple buffers of different internal formats, but there are important restrictions based on the framebuffer completeness rules defined by the WebGL2 and OpenGL ES 3.0 specifications.
+✅ Key Rules for Rendering to Multiple Buffers with Different Formats
+
+    All color attachments must have the same width and height ✅
+
+    All color attachments must have compatible formats:
+
+        WebGL2 follows OpenGL ES 3.0 rules:
+
+            "All attached images must have the same number of samples and must be the same size.
+            Color attachments must all have color-renderable formats."
+
+    You cannot mix integer and float attachments in a single framebuffer draw call.
+    
+webgl2 how to render on screen and in another buffer
+    
+In WebGL2, you can render to the screen (default framebuffer) and another framebuffer (offscreen), but not at the same time in a single draw call. Instead, you follow this two-pass rendering approach:
+✅ Step-by-Step: Render to Screen and Offscreen Buffer
+🔁 1. Render to offscreen framebuffer
+
+    Create a framebuffer with a texture attached.
+
+    Render your scene to it.
+
+🔁 2. Render that texture to the screen
+
+    Unbind the framebuffer (bind null).
+
+    Use a full-screen quad to display the texture on the canvas.    
