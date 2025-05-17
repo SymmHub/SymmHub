@@ -156,5 +156,17 @@ vec4 getColor(vec2 p){
       
   return color;
     
-}`
+}
+
+// input coord 
+in vec2 vUV;
+// output data 
+layout(location = 0) out vec4 outColor;
+
+void main(){
+   outColor = getColor(vUV);
+}
+
+
+`
 ;

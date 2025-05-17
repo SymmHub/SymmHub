@@ -4,6 +4,9 @@ export const FDRenderer =
     
 /////////////////////    
 /**  FDRenderer.glsl */
+in vec2 vUV;
+// output data 
+layout(location = 0) out vec4 outColor;
 
 
 //general reflection group params 
@@ -39,12 +42,6 @@ uniform float u_groupTransformsData[TRANSFORMS_DATA_SIZE];  // transforms data
 uniform int u_cTransCumRefCount[MAX_CROWN_COUNT];
 uniform float u_cTransformsData[CROWN_DATA_SIZE];  // transforms data
 uniform int u_crownCount;   // count of transforms in the crown 
-
-
-
-void init(void){
-    
-}
 
 vec4 getCrownTexturePacked(vec3 pnt, 
                     float cd[CROWN_DATA_SIZE], // transforms data 
@@ -150,5 +147,11 @@ vec4 getColor(vec2 p){
 
   return color;
     
-}`
+}
+
+void main(){
+   outColor = getColor(vUV);
+}
+
+`
 ;
