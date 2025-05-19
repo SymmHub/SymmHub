@@ -657,6 +657,10 @@ export class PatternTextures {
     var opt1a = {radius:7, style:"#FFFFAA"};
     var opt2a = {width:3, style:"#FFFFAA", segCount:100};
     
+
+    this.temppoint
+
+
     var editPoints = [];
     
     for(var i = 0; i < this.texCount; i++) {
@@ -782,6 +786,15 @@ export class PatternTextures {
     
     var pnt = [evt.canvasX,evt.canvasY];
     var wpnt = this.transform.transform2world(pnt); //mathpoint
+
+    this.temppoint = wpnt;
+
+    // if we're very close to the boundary of the poincaré disk, 
+    // don't do anything.
+
+    if(this.groupHandler.curvature<0)
+      { if(wpnt[0]*wpnt[0]+wpnt[1]*wpnt[1]>.9){return;}}
+
     var par = this.params;
     
     // first of all, let's figure out what the _additional_ transform
@@ -798,14 +811,19 @@ export class PatternTextures {
       // The center point is therefore c(f(w))
       
 
-      //for now just hardwiring in one texture 
+      // For now just hardwiring in one texture; later this same code will 
+      // be incorporated into some texture controller object that handles this
+      // for its own texture.
       
-      var temp = this.groupHandler.resetCenterfromPt(wpnt, [par['cx0'],par['cx1']], par['angle0'], par['scale0']);
+      var temp = this.groupHandler.resetCenterfromPt(wpnt);//, [par['cx0'],par['cx1']], par['angle0'], par['scale0']);
+      
+      this.temppoint2 = temp.center;
+
       par['cx0']=temp.center[0];
       par['cx0']=temp.center[1];
       par['angle0']=temp.angle;
       par['scale0']=temp.scale
-
+      this.onChanged();
     }
     else {
       var apnt = this.activePoint;

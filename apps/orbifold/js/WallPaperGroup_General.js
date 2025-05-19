@@ -484,8 +484,8 @@ export class WallPaperGroup_General {
 
     }
 
-    resetCenterfromPt(mousepoint, center, angle, scale){ 
-        return resetCenterfromPt(mousepoint, center, angle, scale,this.getGroup())
+    resetCenterfromPt(mousepoint/*, center, angle, scale*/){ 
+        return resetCenterfromPt(mousepoint,/* center, angle, scale,*/ this.getGroup())
     }
 
 } // class Group_GeneralHyperbolic

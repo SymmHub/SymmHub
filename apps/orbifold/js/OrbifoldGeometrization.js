@@ -1566,6 +1566,8 @@ export function willOrbifoldFitQ(atomList,MAX_GEN_COUNT,MAX_REF_COUNT,MAX_DOMAIN
 import {distancetable} from './distancetable45.js'
 
 
+// this function brings the center back to the origin?
+
 export function resetCenter(inputcenter,inputscale, domain, transforms){
 
 var center;
@@ -1592,7 +1594,7 @@ var returntocenter=iToFundDomainWBounds(domain, transforms,
 
     scale = [scale.re/sscale,scale.im/sscale]
 
-    return {center:center, scale:scale}
+    return {center:center, scale:scale, transform:returntocenter.transform}
 }
 
 export function getTransformsForTexture(domain,transforms,inputcenter,inputscale,curvature=-1){ 
@@ -1778,7 +1780,7 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
             
 
             // walk the point back into the domain
-            pp = iToFundDomainWBounds(domain, transforms, spt,20);
+            pp = iToFundDomainWBounds(domain, transforms, spt,200);
             
             // returns from Inversive.js
 
@@ -1874,11 +1876,11 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
 }
  
 
-export function resetCenterfromPt(mousepoint, center, angle, scale,groupdata){ 
+export function resetCenterfromPt(mousepoint,/* center, angle, scale,*/groupdata){ 
         
-        var newcenter = center;
-        var newscale = scale;
-        var newangle = angle;
+        var newcenter = [0,0];//center;
+        var newscale = [1,0];//scale;
+        var newangle = 0;//angle;
 
         if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){return {center:newcenter, angle:newangle, scale:newscale};}
         var domain = groupdata.s;
@@ -1887,7 +1889,34 @@ export function resetCenterfromPt(mousepoint, center, angle, scale,groupdata){
 
         var FDmousepointdata = iToFundDomainWBounds(domain, transforms,smousepoint,200)
         if(!FDmousepointdata.inDomain){return {center:newcenter, angle:newangle, scale:newscale};}
-        var FDmousepoint = FDmousepointdata.pnt;
+        
+
+    // should be something like: 
+
+        var zero = new complexN(0,0);
+        
+        var scale = poincareDerivativeAt( poincareMobiusFromSPlanesList(FDmousepointdata.transform),  zero)
+       // var scalarscale = Math.sqrt(scale.re*scale.re+scale.im*scale.im);
+
+      //  scale = [scale.re/sscale,scale.im/sscale]
+        var newtexturetransform=iGetFactorizationU4(iGetInverseTransform(FDmousepointdata.transform));
+        var center = iTransformU4(newtexturetransform,new iSplane({v:[0,0,0,0],type:SPLANE_POINT}))
+        
+
+
+        return {center:[center.v[0],center.v[1]], angle:Math.atan2(scale.im,scale.re),
+            scale:Math.sqrt(scale.re*scale.re+scale.im*scale.im), transform:newtexturetransform}
+
+
+
+
+
+        // the transform back to the point should now be applied to the
+        // original center (the origin); this will give the new centerpoint
+        // near the mouse. To work out the angle, we must use the 
+        // derivative of the transformation, (evaluated at the origin, so easy).
+
+        /*var FDmousepoint = FDmousepointdata.pnt;
 
         // Now, which of the crown transform points is closest? 
         var crowntransforms = groupdata.c.crowntransformregistry;
@@ -1909,7 +1938,7 @@ export function resetCenterfromPt(mousepoint, center, angle, scale,groupdata){
         // so now we should have the correct closest point
 
         tpt = iTransformU4(crowntransforms[index],FDmousepoint).v;
-        
+        */
 
 
         // return a transform put a point back into the center

@@ -204,7 +204,7 @@ const fragVertexShader      = { obj: OF, id:'vertexShader'};//unis:["u_aspect","
 const fragProjection        = { obj: OF, id:'projection'};//unis:["u_aspect","u_scale","u_center"]};//
 
 const fragFDRenderer =    { obj: OF, id:'FDRenderer'};
-const fragPatternFromFDRenderer ={ obj: OF, id:'patternFromFDRenderer'};
+const fragPatternFromFDRenderer = { obj: OF, id:'patternFromFDRenderer'};
 
 
 
