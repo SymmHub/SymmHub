@@ -435,10 +435,11 @@ export class WallPaperGroup_General {
             var center = [patMakpar['cx0'],patMakpar['cy0']];
 
             var s =  Math.exp(patMakpar['scale0']);
-            var angle = -patMakpar['angle0']*TORADIANS;
-            var scale = [s*cos(angle),s*sin(angle)]; // a complex homothety
+            var aa  = patMak.angleAdjustment[0];
+            var angle = -(patMakpar['angle0'])*TORADIANS-aa;
+            var complexscale = [s*cos(angle),s*sin(angle)]; // a complex homothety
         
-            var gcT= getTransformsForTexture(bounds, transforms,center,scale,this.curvature); 
+            var gcT= getTransformsForTexture(bounds, transforms,center,complexscale,this.curvature); 
 
             crowntransformsdata =gcT;
             
@@ -484,8 +485,8 @@ export class WallPaperGroup_General {
 
     }
 
-    resetCenterfromPt(mousepoint/*, center, angle, scale*/){ 
-        return resetCenterfromPt(mousepoint,/* center, angle, scale,*/ this.getGroup())
+    resetCenterfromPt(mousepoint,center){ 
+        return resetCenterfromPt(mousepoint,this.getGroup(),center)
     }
 
 } // class Group_GeneralHyperbolic

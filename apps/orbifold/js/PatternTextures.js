@@ -294,6 +294,10 @@ export class PatternTextures {
     this.editPoints = [];
     this.dragging = false;
     this.imageGluedToOriginQ = true; 
+    this.angleAdjustment = [0]; 
+      //a net change of angle relative to the local fundamental domain, 
+      // for each of the one textures we are using. 
+
       //this is actually going to be a separate transform for each layer, but for now this is fine.
     
 
@@ -483,21 +487,29 @@ export class PatternTextures {
         if(debug)console.log('active texture:%d %s', i, url);
         var tex = this.texManager.getTexture(url, this.onChanged);
         
-        //if(debug)console.log("sampler:",samplers[tcount]);
         
 				tcount++;
-				var s = Math.exp(-par['scale' + i]);
-				var angle = par['angle' + i]*TORADIANS;
-	// BIG CHANGE: THE TEXTURES ARE BEING GLUED TO THE ORIGIN
-        scales.push(s);//*cos(angle)); //angle = 0;
-				scales.push(0);//*sin(angle)); 
+        // In effect, textures are glued to the origin.
+        // All of the actual work is now inside of crowntransforms.
+        
+        //  Angles are accounted for there.
+
+
+				// Scale can be moved away as well, simply by adjusting crown transforms 
+        // to precompose a couple of scaling inversions. For the moment, 
+        // scalar scale is still being used. 
+
+        // For now, the rest of this remains here as a distraction. 
+        
+        var s = Math.exp(-par['scale' + i]);
+      
+        scales.push(s);
+				scales.push(0);
 				//centers.push(par['cx' + i]);
 				//centers.push(par['cy' + i]);
         centers.push(0); 
-          // BIG CHANGE: THE TEXTURES ARE BEING GLUED TO THE ORIGIN
         centers.push(0); 
-          // BIG CHANGE: THE TEXTURES ARE BEING GLUED TO THE ORIGIN
-				samplers.push(tex.texture);
+        samplers.push(tex.texture);
         if(tex.isAnimation){
           hasAnimation = true;
         }          
@@ -788,7 +800,7 @@ export class PatternTextures {
 
     this.temppoint = wpnt;
 
-    // if we're very close to the boundary of the poincaré disk, 
+    // if we're close to the boundary of the poincaré disk, 
     // don't do anything.
 
     if(this.groupHandler.curvature<0)
@@ -814,11 +826,17 @@ export class PatternTextures {
       // be incorporated into some texture controller object that handles this
       // for its own texture.
       
-      var temp = this.groupHandler.resetCenterfromPt(wpnt);
+      var temp = this.groupHandler.resetCenterfromPt(wpnt,[par['cx0'],par['cy0']]);
 
       par['cx0']=temp.center[0];
       par['cy0']=temp.center[1];
-      par['angle0']=temp.angle;
+
+      this.angleAdjustment[0]+=temp.angleAdjustment;
+      while(this.angleAdjustment[0]<0){
+        this.angleAdjustment[0]+=6.2831853071795864769;}
+      while(this.angleAdjustment[0]>6.2831853071795864769){
+        this.angleAdjustment[0]-=6.2831853071795864769;}
+
       this.onChanged();
     }
     else {
@@ -917,8 +935,9 @@ export class PatternTextures {
     return undefined;
   }
   
-  // calculates rotation and scale change when uses drad the corner point 
-  //  c - the center of rotation 
+
+  // calculates rotation and scale change when uses drag the corner point 
+  //  c - the center of rotation
   //  p0 - initial point 
   //  p1 new point 
   getCornerFactor(c, p0, p1){
@@ -926,8 +945,8 @@ export class PatternTextures {
     var lenP0 = eDistance(c, p0);
     var lenP1 = eDistance(c, p1);
     var lenP0P1 = eDistance(p0, p1);
-    var d0 = sub(p0, c);
-    var d1 = sub(p1, c);
+    var d0 = sub(p0, c);//subtract
+    var d1 = sub(p1, c);//subtract
     
     // z-component of cross product of normalized vectors 
     var z = (d1[0]*d0[1] - d1[1]*d0[0])/(lenP0*lenP1);

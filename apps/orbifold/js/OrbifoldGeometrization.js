@@ -1619,7 +1619,7 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
 
     var center = inputcenter;
     
-    var scale = inputscale;
+    var complexscale = inputscale;
 
 
     //////////////
@@ -1627,9 +1627,13 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
     // First calculate imagetransform from the origin TO the center.
     //
 
+    // the parameter angle is incorporated into the transforms
+    // (Scalar scale could be, and should be, as well.)
+
+
     var cc,ss,texturewidth;
-    cc = scale[0]; 
-    ss = scale[1];
+    cc = complexscale[0]; 
+    ss = complexscale[1];
     texturewidth= Math.sqrt(cc*cc+ss*ss);
     cc = cc/texturewidth;
     ss = ss/texturewidth;
@@ -1865,8 +1869,7 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
         crowntransformregistry:crowntransformregistry,
         imagetransform:imagetransform,
         imagetransformAsMobius:poincareMobiusFromSPlanesList(imagetransform),
-        resetcenter:center,
-        resetscale:scale,
+      
 
         listoftexturesamplingpoints:listoftexturesamplingpoints,
         trpointregistry:trpointregistry,
@@ -1875,75 +1878,68 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
     
 }
  
+// Originating in PatternTextures, this passes through WallPaperGroup_General,
+// which layers on the groupdata.
 
-export function resetCenterfromPt(mousepoint,/* center, angle, scale,*/groupdata){ 
+export function resetCenterfromPt(mousepoint, groupdata,lasttexturecenter){ 
         
-        var newcenter = [0,0];//center;
-        var newscale = [1,0];//scale;
-        var newangle = 0;//angle;
-
+       
         if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){return {center:newcenter, angle:newangle, scale:newscale};}
         var domain = groupdata.s;
         var transforms = groupdata.t;
         var smousepoint= new iSplane({v:[mousepoint[0],mousepoint[1],0,0],type:SPLANE_POINT});
 
         var FDmousepointdata = iToFundDomainWBounds(domain, transforms,smousepoint,200)
-        if(!FDmousepointdata.inDomain){return {center:newcenter, angle:newangle, scale:newscale};}
         
+        var slasttexturecenter = new iSplane({v:[lasttexturecenter[0],lasttexturecenter[1],0,0],type:SPLANE_POINT});
 
-    // should be something like: 
+        var oldCenterData = iToFundDomainWBounds(domain, transforms,slasttexturecenter,200)
+       
+
+        var newtexturetransform=iGetFactorizationU4(iGetInverseTransform(FDmousepointdata.transform));
+        var newtexturecenter = iTransformU4(newtexturetransform,oldCenterData.pnt)
+        newtexturecenter = [newtexturecenter.v[0],newtexturecenter.v[1]]
+
+        var angleAdjustment; 
+
+        // a little hyperbolic trig: we want the amount of turning deficit.
+
+        // Consider the triangle with vertex angles A at lasttexturecenter at distance a
+        // angle B at newtexturecenter at distance b from the origin, 
+        // and angle C at the origin. We want Pi - A - B - C. 
+        // We can compute a and b in the Poincare geometry, and C with a simple identity. 
+        // With a little trig, we have c by a law of coshes, 
+        // and then A and B by the law of sinhs.
+
+        var a, b, c, A, B,C;
 
         var zero = new complexN(0,0);
-        
-        var scale = poincareDerivativeAt( poincareMobiusFromSPlanesList(FDmousepointdata.transform),  zero)
-       // var scalarscale = Math.sqrt(scale.re*scale.re+scale.im*scale.im);
-
-      //  scale = [scale.re/sscale,scale.im/sscale]
-        var newtexturetransform=iGetFactorizationU4(iGetInverseTransform(FDmousepointdata.transform));
-        var center = iTransformU4(newtexturetransform,new iSplane({v:[0,0,0,0],type:SPLANE_POINT}))
-        
-
-
-        return {center:[center.v[0],center.v[1]], angle:Math.atan2(scale.im,scale.re),
-            scale:Math.sqrt(scale.re*scale.re+scale.im*scale.im), transform:newtexturetransform,
-            complextransform:poincareMobiusFromSPlanesList(newtexturetransform)}
-
-
-
-
-
-        // the transform back to the point should now be applied to the
-        // original center (the origin); this will give the new centerpoint
-        // near the mouse. To work out the angle, we must use the 
-        // derivative of the transformation, (evaluated at the origin, so easy).
-
-        /*var FDmousepoint = FDmousepointdata.pnt;
-
-        // Now, which of the crown transform points is closest? 
-        var crowntransforms = groupdata.c.crowntransformregistry;
-
-        var theclosest;
-        var thedistance = 100000000, newdistance, tpt, index;
-        for(var i = 0; i<crowntransforms.length;i++){
-            tpt = iTransformU4(crowntransforms[i],FDmousepoint).v;
-            newdistance = Math.sqrt(
-            (FDmousepoint[0]-tpt[0])*(FDmousepoint[0]-tpt[0])+
-            (FDmousepoint[1]-tpt[1])*(FDmousepoint[1]-tpt[1]))
-            if(newdistance<thedistance){
-                thedistance=newdistance;
-                theclosest = [tpt[0],tpt[1]];
-                index = i;
-            }
+        a = zero.poincareDiskDistanceTo(new complexN(lasttexturecenter[0],lasttexturecenter[1]));
+        b = zero.poincareDiskDistanceTo(new complexN(newtexturecenter[0],newtexturecenter[1]));
+        var cosC = (lasttexturecenter[0]*newtexturecenter[0]+lasttexturecenter[1]*newtexturecenter[1]);
+        cosC = cosC/Math.sqrt(lasttexturecenter[0]*lasttexturecenter[0]+lasttexturecenter[1]*lasttexturecenter[1]);
+        cosC = cosC/Math.sqrt(newtexturecenter[0]*newtexturecenter[0]+newtexturecenter[1]*newtexturecenter[1]);
+            
+        if(cosC>0.99999){
+            angleAdjustment=0;
         }
+        else{
 
-        // so now we should have the correct closest point
+            var sinC = Math.sqrt(1-cosC*cosC);
 
-        tpt = iTransformU4(crowntransforms[index],FDmousepoint).v;
-        */
+            var coshc= Math.cosh(a)*Math.cosh(b)-Math.sinh(a)*Math.sinh(b)*cosC;
+            var sinhc= Math.sqrt(abs(coshc*coshc-1));
 
+            
+            A = Math.asin(sinC*Math.sinh(a)/sinhc);
+            B = Math.asin(sinC*Math.sinh(b)/sinhc);
 
-        // return a transform put a point back into the center
-       // resetCenter(center,scale, this.FD.s, this.FD.t)
+            angleAdjustment = 3.14159265358979323846 - A - B - Math.acos(cosC);
+            //angleAdjustment=-angleAdjustment;
+        }
+        
+     
+        return {center:[newtexturecenter[0],newtexturecenter[1]],angleAdjustment:angleAdjustment};
+       
 
-        return {center:newcenter, angle:newangle, scale:newscale}
     }

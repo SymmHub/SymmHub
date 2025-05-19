@@ -68,7 +68,7 @@ const GL_CANVAS_STYLES = [
 ];
 
 const MYNAME = 'GroupRenderer';
-const DEBUG = true;
+const DEBUG = false;
 const EXPORT_ANIMATION = 'Animation Export';
 const STOP_EXPORT_ANIMATION = 'Stop Animation Export';
 
