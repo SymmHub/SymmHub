@@ -649,16 +649,15 @@ export class PatternTextures {
     //need to composite 
     var imagetransform = this.groupHandler.getGroup().c.imagetransformAsMobius;
 
-    var opt = {radius:8, style:"#FFFFAA"};
-    var opta = {radius:6, style:"#0000DD"};
+    var opt = {radius:14, style:"#FFFFAA"};
+    var opta = {radius:12, style:"#0000DD"};
     
     var opt1 = {radius:5, style:"#000000"};
     var opt2 = {width:1, style:"#000000", segCount:100};
     var opt1a = {radius:7, style:"#FFFFAA"};
     var opt2a = {width:3, style:"#FFFFAA", segCount:100};
-    
 
-    this.temppoint
+     var opt2a = {width:3, style:"#FFFFAA", segCount:100};
 
 
     var editPoints = [];
@@ -815,14 +814,11 @@ export class PatternTextures {
       // be incorporated into some texture controller object that handles this
       // for its own texture.
       
-      var temp = this.groupHandler.resetCenterfromPt(wpnt);//, [par['cx0'],par['cx1']], par['angle0'], par['scale0']);
-      
-      this.temppoint2 = temp.center;
+      var temp = this.groupHandler.resetCenterfromPt(wpnt);
 
       par['cx0']=temp.center[0];
-      par['cx0']=temp.center[1];
+      par['cy0']=temp.center[1];
       par['angle0']=temp.angle;
-      par['scale0']=temp.scale
       this.onChanged();
     }
     else {
@@ -836,8 +832,11 @@ export class PatternTextures {
         
         case 0:  
           // change texture center 
-          par['cx' + texIndex] += (wpnt[0] - lastMouse[0]);
-          par['cy' + texIndex] += (wpnt[1] - lastMouse[1]);
+        /*  par['cx' + texIndex] += (wpnt[0] - lastMouse[0]);
+          par['cy' + texIndex] += (wpnt[1] - lastMouse[1]);*/
+          par['cx0']= wpnt[0];
+          par['cy0']= wpnt[1];
+
           this.onChanged();
         break;        
         // corners 

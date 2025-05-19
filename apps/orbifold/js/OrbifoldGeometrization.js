@@ -1905,7 +1905,8 @@ export function resetCenterfromPt(mousepoint,/* center, angle, scale,*/groupdata
 
 
         return {center:[center.v[0],center.v[1]], angle:Math.atan2(scale.im,scale.re),
-            scale:Math.sqrt(scale.re*scale.re+scale.im*scale.im), transform:newtexturetransform}
+            scale:Math.sqrt(scale.re*scale.re+scale.im*scale.im), transform:newtexturetransform,
+            complextransform:poincareMobiusFromSPlanesList(newtexturetransform)}
 
 
 
