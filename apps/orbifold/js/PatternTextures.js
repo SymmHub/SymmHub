@@ -672,6 +672,13 @@ export class PatternTextures {
      var opt2a = {width:3, style:"#FFFFAA", segCount:100};
 
 
+     var xtraoptA = {width:7, style:"#FF00FF", segCount:10};
+     var xtraoptB = {width:5, style:"#FF00FF", segCount:10};
+
+
+    
+
+
     var editPoints = [];
     
     for(var i = 0; i < this.texCount; i++) {
@@ -832,6 +839,10 @@ export class PatternTextures {
       par['cy0']=temp.center[1];
 
       this.angleAdjustment[0]+=temp.angleAdjustment;
+      if(Math.abs(temp.angleAdjustment)>.0001){
+          console.log("a={",temp.angleAdjustment,",",this.angleAdjustment[0],"}")
+        }
+      
       while(this.angleAdjustment[0]<0){
         this.angleAdjustment[0]+=6.2831853071795864769;}
       while(this.angleAdjustment[0]>6.2831853071795864769){
