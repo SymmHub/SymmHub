@@ -1623,7 +1623,7 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
 
 
     var //imagetransform2,
-    imagetransform = transformFromCenterToPoint(inputcenter,inputscale,curvature=-1);
+    imagetransform = transformFromCenterToPoint(inputcenter,inputscale,curvature);
 
     var cc,ss,texturewidth;
     cc = inputscale[0]; 
@@ -1896,7 +1896,7 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
 export function resetCenterfromPt(mousepoint, groupdata,lasttexturecenter,curvature = -1){ 
         
         var angleAdjustment=0; 
-        if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){return {center:newcenter, angle:newangle, scale:newscale};}
+        if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){return {center:lasttexturecenter, angleAdjustment:0};}
         var domain = groupdata.s;
         var transforms = groupdata.t;
         var smousepoint= new iSplane({v:[mousepoint[0],mousepoint[1],0,0],type:SPLANE_POINT});
@@ -1931,7 +1931,8 @@ export function resetCenterfromPt(mousepoint, groupdata,lasttexturecenter,curvat
         // Thus, the net effect preserves the origin but rotates the plane, which we
         // can then measure.
 
-        
+        //THIS IS ONLY FOR CURVATURE < 0
+        // ALSO, HAVE TO TAKE THE BASEPOINT FURTHER INTO ACCOUNT
         var preface = (transformFromCenterToPoint(lasttexturecenter,[1,0],curvature));
         var suffix = iGetInverseTransform(transformFromCenterToPoint(newtexturecenter,[1,0],curvature));
         var route = iGetFactorizationU4(preface.concat(lasttexturetransforminverse).concat(newtexturetransform).concat(suffix))
@@ -1948,7 +1949,51 @@ export function resetCenterfromPt(mousepoint, groupdata,lasttexturecenter,curvat
                 (smallvectorimage.v[0]*smallvectorimage.v[0]+smallvectorimage.v[1]*smallvectorimage.v[1]));
 
         angleAdjustment=Math.acos(cosangle);
+        if(smallvector.v[0]*smallvectorimage.v[1]-smallvector.v[1]*smallvectorimage.v[0]<0){angleAdjustment*=-1;}
 
+        // however, we must also account for the holonomy that we
+        // introduced by reading around this path:
+
+        /* var additionalangleAdjustment; 
+
+        // a little hyperbolic trig: we want the amount of turning deficit.
+
+        // Consider the triangle with vertex angles A at lasttexturecenter at distance a
+        // angle B at newtexturecenter at distance b from the origin, 
+        // and angle C at the origin. We want Pi - A - B - C. 
+        // We can compute a and b in the Poincare geometry, and C with a simple identity. 
+        // With a little trig, we have c by a law of coshes, 
+        // and then A and B by the law of sinhs.
+
+        var a, b, c, A, B,C;
+
+        var zero = new complexN(0,0);
+        a = zero.poincareDiskDistanceTo(new complexN(lasttexturecenter[0],lasttexturecenter[1]));
+        b = zero.poincareDiskDistanceTo(new complexN(newtexturecenter[0],newtexturecenter[1]));
+        var cosC = (lasttexturecenter[0]*newtexturecenter[0]+lasttexturecenter[1]*newtexturecenter[1]);
+        cosC = cosC/Math.sqrt(lasttexturecenter[0]*lasttexturecenter[0]+lasttexturecenter[1]*lasttexturecenter[1]);
+        cosC = cosC/Math.sqrt(newtexturecenter[0]*newtexturecenter[0]+newtexturecenter[1]*newtexturecenter[1]);
+            
+        if(cosC>0.99999){
+            angleAdjustment=0;
+        }
+        else{
+
+            var sinC = Math.sqrt(1-cosC*cosC);
+
+            var coshc= Math.cosh(a)*Math.cosh(b)-Math.sinh(a)*Math.sinh(b)*cosC;
+            var sinhc= Math.sqrt(abs(coshc*coshc-1));
+
+            
+            A = Math.asin(sinC*Math.sinh(a)/sinhc);
+            B = Math.asin(sinC*Math.sinh(b)/sinhc);
+
+            additionalangleAdjustment = 3.14159265358979323846 - A - B - Math.acos(cosC);
+            //angleAdjustment=-angleAdjustment;
+        }
+
+        //angleAdjustment-=additionalangleAdjustment;
+*/
         // some debugging:
         var lpt = new complexN(lasttexturecenter[0],lasttexturecenter[1]);
         var npt = new complexN(newtexturecenter[0],newtexturecenter[1]);
@@ -1962,7 +2007,8 @@ export function resetCenterfromPt(mousepoint, groupdata,lasttexturecenter,curvat
                 ",returnfromlasttobase=",poincareMobiusFromSPlanesList(lasttexturetransforminverse).toString(true,10),
                 ",departtonextfrombase=",poincareMobiusFromSPlanesList(newtexturetransform).toString(true,10),
                 ",netroute=",poincareMobiusFromSPlanesList(route).toString(true,10),
-                ",angle=",angleAdjustment.toFixed(10),
+              //  ",additionalangle=",additionalangleAdjustment.toFixed(10),
+                ",angleadjustment=",angleAdjustment.toFixed(10),
                 "};");
             //to stop and check 
             transformFromCenterToPoint(lasttexturecenter,new complexN(1,0),curvature,true);

@@ -436,7 +436,7 @@ export class WallPaperGroup_General {
 
             var s =  Math.exp(patMakpar['scale0']);
             var aa  = patMak.angleAdjustment[0];
-            var angle = -(patMakpar['angle0'])*TORADIANS*0+aa;
+            var angle = -(patMakpar['angle0'])*TORADIANS+aa;
             var complexscale = [s*cos(angle),s*sin(angle)]; // a complex homothety
         
             var gcT= getTransformsForTexture(bounds, transforms,center,complexscale,this.curvature); 
