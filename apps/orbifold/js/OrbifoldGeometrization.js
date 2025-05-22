@@ -1895,20 +1895,34 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
 
 export function resetCenterfromPt(mousepoint, groupdata,lasttexturecenter,curvature = -1){ 
         
+
         var angleAdjustment=0; 
-        if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){return {center:lasttexturecenter, angleAdjustment:0};}
+        if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){
+            console.log("get back in bounds!");
+            return {center:lasttexturecenter, angleAdjustment:0};}
         var domain = groupdata.s;
         var transforms = groupdata.t;
-        var smousepoint= new iSplane({v:[mousepoint[0],mousepoint[1],0,0],type:SPLANE_POINT});
-
-        var FDmousepointdata = iToFundDomainWBounds(domain, transforms,smousepoint,200)
         
+
+         // move the last texture center to the FD:
         var slasttexturecenter = new iSplane({v:[lasttexturecenter[0],lasttexturecenter[1],0,0],type:SPLANE_POINT});
 
         
         var lastCenterData= iToFundDomainWBounds(domain, transforms,slasttexturecenter,200);
         var lasttexturetransforminverse =lastCenterData.transform;
 
+
+        // bring the mousepoint back to the FD; the transform is then the inverse of this.
+        // however, it might feel more natural to compare this to the other crown images
+        // of the center point in the FD, and compose with the transforms that bring that
+        // into place.
+
+        var smousepoint= new iSplane({v:[mousepoint[0],mousepoint[1],0,0],type:SPLANE_POINT});
+
+        var FDmousepointdata = iToFundDomainWBounds(domain, transforms,smousepoint,200)
+        
+
+      
         var newtexturetransform=iGetFactorizationU4(iGetInverseTransform(FDmousepointdata.transform));
         var newtexturecenter = iTransformU4(newtexturetransform,lastCenterData.pnt)
         newtexturecenter = [newtexturecenter.v[0],newtexturecenter.v[1]]
@@ -1940,60 +1954,31 @@ export function resetCenterfromPt(mousepoint, groupdata,lasttexturecenter,curvat
         // hopefully this is now a pair of planes, or pretty close to it. 
         // to make this easy, we do this: 
 
-        var smallvector = new iSplane({v:[.01,0,0,0],type:SPLANE_POINT});
+        var smallvector = new iSplane({v:[.00000001,0,0,0],type:SPLANE_POINT});
+        var smallperpvector = new iSplane({v:[0,.00000001,0,0],type:SPLANE_POINT});
 
         var smallvectorimage = iTransformU4(route,smallvector);
+        var smallvectorperpimage = iTransformU4(route,smallperpvector);
 
-        var cosangle = (smallvector.v[0]*smallvectorimage.v[0]+smallvector.v[1]*smallvectorimage.v[1])/
-            Math.sqrt((smallvector.v[0]*smallvector.v[0]+smallvector.v[1]*smallvector.v[1])*
+        var denominator = Math.sqrt((smallvector.v[0]*smallvector.v[0]+smallvector.v[1]*smallvector.v[1])*
                 (smallvectorimage.v[0]*smallvectorimage.v[0]+smallvectorimage.v[1]*smallvectorimage.v[1]));
+
+        var cosangle =1;
+        if(!isNaN(1/denominator)){ 
+            cosangle = (smallvector.v[0]*smallvectorimage.v[0]+
+                smallvector.v[1]*smallvectorimage.v[1])/denominator;}
+        
 
         angleAdjustment=Math.acos(cosangle);
         if(smallvector.v[0]*smallvectorimage.v[1]-smallvector.v[1]*smallvectorimage.v[0]<0){angleAdjustment*=-1;}
 
-        // however, we must also account for the holonomy that we
-        // introduced by reading around this path:
-
-        /* var additionalangleAdjustment; 
-
-        // a little hyperbolic trig: we want the amount of turning deficit.
-
-        // Consider the triangle with vertex angles A at lasttexturecenter at distance a
-        // angle B at newtexturecenter at distance b from the origin, 
-        // and angle C at the origin. We want Pi - A - B - C. 
-        // We can compute a and b in the Poincare geometry, and C with a simple identity. 
-        // With a little trig, we have c by a law of coshes, 
-        // and then A and B by the law of sinhs.
-
-        var a, b, c, A, B,C;
-
-        var zero = new complexN(0,0);
-        a = zero.poincareDiskDistanceTo(new complexN(lasttexturecenter[0],lasttexturecenter[1]));
-        b = zero.poincareDiskDistanceTo(new complexN(newtexturecenter[0],newtexturecenter[1]));
-        var cosC = (lasttexturecenter[0]*newtexturecenter[0]+lasttexturecenter[1]*newtexturecenter[1]);
-        cosC = cosC/Math.sqrt(lasttexturecenter[0]*lasttexturecenter[0]+lasttexturecenter[1]*lasttexturecenter[1]);
-        cosC = cosC/Math.sqrt(newtexturecenter[0]*newtexturecenter[0]+newtexturecenter[1]*newtexturecenter[1]);
-            
-        if(cosC>0.99999){
-            angleAdjustment=0;
-        }
-        else{
-
-            var sinC = Math.sqrt(1-cosC*cosC);
-
-            var coshc= Math.cosh(a)*Math.cosh(b)-Math.sinh(a)*Math.sinh(b)*cosC;
-            var sinhc= Math.sqrt(abs(coshc*coshc-1));
-
-            
-            A = Math.asin(sinC*Math.sinh(a)/sinhc);
-            B = Math.asin(sinC*Math.sinh(b)/sinhc);
-
-            additionalangleAdjustment = 3.14159265358979323846 - A - B - Math.acos(cosC);
-            //angleAdjustment=-angleAdjustment;
+        if(smallvectorimage.v[0]*smallvectorperpimage.v[0]+smallvectorimage.v[1]*smallvectorperpimage.v[1]<0)
+        {
+            // well, now we have to do something totally different. 
+            // 
         }
 
-        //angleAdjustment-=additionalangleAdjustment;
-*/
+        ///*
         // some debugging:
         var lpt = new complexN(lasttexturecenter[0],lasttexturecenter[1]);
         var npt = new complexN(newtexturecenter[0],newtexturecenter[1]);
@@ -2015,7 +2000,7 @@ export function resetCenterfromPt(mousepoint, groupdata,lasttexturecenter,curvat
             transformFromCenterToPoint(newtexturecenter,new complexN(1,0),curvature,true);
         
         }
-        
+        //*/
 
 
         return {center:[newtexturecenter[0],newtexturecenter[1]],angleAdjustment:angleAdjustment,
