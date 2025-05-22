@@ -102,7 +102,7 @@ function test_mtr3() {
         drawBuff.setUniforms({u_tex:backBuffer});
         gl.viewport(0, 0, 3*twidth, twidth);
         drawBuff.blit(null);
-        if(time < 50.) requestAnimationFrame(renderFrame);
+        if(time < 10.) requestAnimationFrame(renderFrame);
         
     }           
 }
