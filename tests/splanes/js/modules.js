@@ -22,5 +22,7 @@ export {
     setCanvasSize,
     createParamUI,
     ParamFloat,
+    ParamInt,
+    ParamBool,
 
 } from '../../../lib/uilib/uilib.js'

@@ -1,8 +1,8 @@
 export const GRID_UTIL = `
 
 
-float linearstep(float edge0, float edge1, float x)
-{
+float linearstep(float edge0, float edge1, float x){
+
     return  clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
 }
 
@@ -51,14 +51,17 @@ float getAxis(float val, float thickness){
 float getGridLines(float v, float gridStep, float thickness){
     
     // closest pixel to the line center     
-    float findex = round(v/gridStep);
+    //float findex = round(v/gridStep);
+    float findex = floor(v/gridStep + 0.5);
+    
     float pixel = gridStep * findex;
     
     int index = int(findex);
     
     float sDistToInt = (v-pixel);
     
-    if(sDistToInt > -0.5 && sDistToInt <= 0.5){
+    //if(sDistToInt > -0.5 && sDistToInt <= 0.5){
+    if(sDistToInt >= -0. && sDistToInt <= 1.){
         if(index % 50 == 0) return 1.;
         if(index % 10 == 0) return 0.4;
         if(index % 5  == 0) return 0.2;
@@ -77,7 +80,7 @@ float getCartesianGrid(vec2 p, vec2 gridStep, float lineWidth, float axesWidth){
     //float gridStep = 10.*exp(LN10*round(log(pixelSize)/LN10))/pixelSize;
     vec2 stp = gridStep/pixelSize;
     // offset pixel to avoid double lines 
-    p += vec2(pixelSize)*0.001; 
+    //p += vec2(pixelSize)*0.001; 
         
     float d =  getGridLines(p.x/pixelSize, stp.x, lineWidth);
     d = max(d, getGridLines(p.y/pixelSize, stp.y, lineWidth));
