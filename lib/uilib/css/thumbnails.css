@@ -1,0 +1,47 @@
+
+img.thumbnail {
+    width:128px; height: 128px;
+    margin: 4px;
+    border: solid #222;
+}
+
+
+.thumbnail-image {
+    border: 1px solid #888;
+    width:128px; height: 128px;
+}
+
+.thumbnail-caption {
+    position: relative;
+    bottom: 0px;         
+    left: 0px; 
+    width: 100%;
+    color: black;
+    background-color: #FFF0;
+    font-size: 12px;
+    padding: 2px;
+    margin: 0px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-align: center;
+    font: 12px "Helvetica Neue", sans-serif;
+    text-overflow: ellipsis;
+    /*pointer-events: none;  */
+}
+
+.thumbnail-container {
+    margin: 4px;
+    width: 128px;
+    position: relative;
+    border: noone; /*1px solid blue;*/
+    display: inline-block;
+    vertical-align: top;
+}
+
+.thumbnail-container:hover {
+    background-color: #DEF;
+}
+
+.thumbnail-container.selected {
+    background-color: #CDF;
+}

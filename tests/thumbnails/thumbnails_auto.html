@@ -1,0 +1,35 @@
+<html>
+    <link rel="stylesheet" href="css/thumbnails.css"/>
+<body>
+
+<h1>Thumbnails Generation Test</h1>
+
+<div id='thumbnails'></div>
+
+
+</body>
+
+<script type='module'>
+import {
+    appendThumbnails2
+} from './js/modules.js';
+
+let presets = `
+par-24-12-29-08-43-51-284.json
+par-24-12-30-15-30-04-480.json
+par-25-01-01-11-34-28-764.json
+par-25-04-29-14-50-47-996.json
+par-25-05-02-14-45-10-789.json
+`;
+
+ let list = document.getElementById('thumbnails');
+ let page = 'thumbnails.html';
+ let thumbfolder = 'img/';
+ 
+ appendThumbnails2({elem: list, presetsString: presets, page: page, folder: thumbfolder, target:'APPLICATION'});
+ 
+</script>              
+
+
+<html>
+

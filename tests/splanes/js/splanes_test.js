@@ -164,7 +164,7 @@ function test_splanes() {
                 }
             } break;
             case 2: 
-                prog.setUniforms({u_isoStep: config.isoStep, u_isoColor: [0,0,0.05,0.8]});
+                prog.setUniforms({u_isoStep: config.isoStep, u_isoColor: [0,0,0.05,0.99]});
                 prog.blit(backBuffer);
                 break;
             case 3: 

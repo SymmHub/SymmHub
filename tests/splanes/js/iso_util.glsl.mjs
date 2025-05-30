@@ -57,17 +57,20 @@ float isoline_v0(float v, float v0, float lineWidth) {
 // v0 - start of isolines 
 // stp distance between isolines 
 // thickness - isolines thickness 
-float isolines(float val, float v0, float stp, float thickness) {
+float isolines(float val, float v0, float stp, float lineWidth) {
 
+    val = (val - v0)/stp;
+    
     float div = 2.*length(vec2(dFdx(val), dFdy(val)));
     
-    float v = abs(mod(val - v0 + stp*0.5, stp)-stp*0.5)/div - 0.1*thickness;
+    float v = abs(fract(val - v0 + 0.5)-0.5)/div - 0.5*lineWidth;
     
-    return (1.-smoothstep(0.2,0.8, v)) * linearstep(1., 5., stp/div);
+    return smoothstep(1.,0., v) * mix(0.5, 1., linearstep(0., 5., 1./div));
+    
 }
 
 
-float isolines_auto(float v, float stp, float thickness){
+float isolines_auto(float v, float stp, float lineWidth){
 
     float minLinesDistance = 1.; 
     float grad =  length(vec2(dFdx(v), dFdy(v)));
@@ -76,15 +79,19 @@ float isolines_auto(float v, float stp, float thickness){
     //float isoStep = 1.*exp(LN10*round(log(grad*minLinesDistance)/LN10));
     float isoStep = stp;
     float iso = 0.;
-    float fact[] = float[2](5.,2.);
-    float th[] = float[2](0.5, 1.);
-    float intensity = 0.2;
-    float thick = thickness;///2.;
-    for(int i=0; i < 8; i++){
+    //float fact[] = float[2](5.,2.);
+    //float fact[] = float[2](2., 5.);
+    float fact[] = float[2](0.5, 0.2);
+    //float th[] = float[2](0.5, 1.);
+    float intensity = 1.;//0.2;
+    float fading = 0.5;
+    float thinning = 0.5;
+    float thick = lineWidth;///2.;
+    for(int i=0; i < 4; i++){
         iso = max(iso, intensity/(1. + intensity) * isolines(v, 0., isoStep, thick));
         isoStep *= fact[i & 1];
-        intensity *= 1.5;
-        thick *= 1.2;
+        intensity *= fading;
+        thick *= thinning;
     }
 
     return iso;
