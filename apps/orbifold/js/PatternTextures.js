@@ -294,6 +294,10 @@ export class PatternTextures {
     this.editPoints = [];
     this.dragging = false;
     this.imageGluedToOriginQ = true; 
+    this.angleAdjustment = [0]; 
+      //a net change of angle relative to the local fundamental domain, 
+      // for each of the one textures we are using. 
+
       //this is actually going to be a separate transform for each layer, but for now this is fine.
     
 
@@ -483,21 +487,29 @@ export class PatternTextures {
         if(debug)console.log('active texture:%d %s', i, url);
         var tex = this.texManager.getTexture(url, this.onChanged);
         
-        //if(debug)console.log("sampler:",samplers[tcount]);
         
 				tcount++;
-				var s = Math.exp(-par['scale' + i]);
-				var angle = par['angle' + i]*TORADIANS;
-	// BIG CHANGE: THE TEXTURES ARE BEING GLUED TO THE ORIGIN
-        scales.push(s);//*cos(angle)); //angle = 0;
-				scales.push(0);//*sin(angle)); 
+        // In effect, textures are glued to the origin.
+        // All of the actual work is now inside of crowntransforms.
+        
+        //  Angles are accounted for there.
+
+
+				// Scale can be moved away as well, simply by adjusting crown transforms 
+        // to precompose a couple of scaling inversions. For the moment, 
+        // scalar scale is still being used. 
+
+        // For now, the rest of this remains here as a distraction. 
+        
+        var s = Math.exp(-par['scale' + i]);
+      
+        scales.push(s);
+				scales.push(0);
 				//centers.push(par['cx' + i]);
 				//centers.push(par['cy' + i]);
         centers.push(0); 
-          // BIG CHANGE: THE TEXTURES ARE BEING GLUED TO THE ORIGIN
         centers.push(0); 
-          // BIG CHANGE: THE TEXTURES ARE BEING GLUED TO THE ORIGIN
-				samplers.push(tex.texture);
+        samplers.push(tex.texture);
         if(tex.isAnimation){
           hasAnimation = true;
         }          
@@ -649,14 +661,24 @@ export class PatternTextures {
     //need to composite 
     var imagetransform = this.groupHandler.getGroup().c.imagetransformAsMobius;
 
-    var opt = {radius:8, style:"#FFFFAA"};
-    var opta = {radius:6, style:"#0000DD"};
+    var opt = {radius:14, style:"#FFFFAA"};
+    var opta = {radius:12, style:"#0000DD"};
     
     var opt1 = {radius:5, style:"#000000"};
     var opt2 = {width:1, style:"#000000", segCount:100};
     var opt1a = {radius:7, style:"#FFFFAA"};
     var opt2a = {width:3, style:"#FFFFAA", segCount:100};
+
+     var opt2a = {width:3, style:"#FFFFAA", segCount:100};
+
+
+     var xtraoptA = {width:7, style:"#FF00FF", segCount:10};
+     var xtraoptB = {width:5, style:"#FF00FF", segCount:10};
+
+
     
+
+
     var editPoints = [];
     
     for(var i = 0; i < this.texCount; i++) {
@@ -782,6 +804,15 @@ export class PatternTextures {
     
     var pnt = [evt.canvasX,evt.canvasY];
     var wpnt = this.transform.transform2world(pnt); //mathpoint
+
+    this.temppoint = wpnt;
+
+    // if we're close to the boundary of the poincaré disk, 
+    // don't do anything.
+
+    if(this.groupHandler.curvature<0)
+      { if(wpnt[0]*wpnt[0]+wpnt[1]*wpnt[1]>.9){return;}}
+
     var par = this.params;
     
     // first of all, let's figure out what the _additional_ transform
@@ -798,14 +829,26 @@ export class PatternTextures {
       // The center point is therefore c(f(w))
       
 
-      //for now just hardwiring in one texture 
+      // For now just hardwiring in one texture; later this same code will 
+      // be incorporated into some texture controller object that handles this
+      // for its own texture.
       
-      var temp = this.groupHandler.resetCenterfromPt(wpnt, [par['cx0'],par['cx1']], par['angle0'], par['scale0']);
-      par['cx0']=temp.center[0];
-      par['cx0']=temp.center[1];
-      par['angle0']=temp.angle;
-      par['scale0']=temp.scale
+      var temp = this.groupHandler.resetCenterfromPt(wpnt,[par['cx0'],par['cy0']]);
 
+      par['cx0']=temp.center[0];
+      par['cy0']=temp.center[1];
+
+      this.angleAdjustment[0]+=temp.angleAdjustment;
+      if(Math.abs(temp.angleAdjustment)>.0001){
+          console.log("a={",temp.angleAdjustment,",",this.angleAdjustment[0],"}")
+        }
+      
+      while(this.angleAdjustment[0]<0){
+        this.angleAdjustment[0]+=6.2831853071795864769;}
+      while(this.angleAdjustment[0]>6.2831853071795864769){
+        this.angleAdjustment[0]-=6.2831853071795864769;}
+
+      this.onChanged();
     }
     else {
       var apnt = this.activePoint;
@@ -818,8 +861,11 @@ export class PatternTextures {
         
         case 0:  
           // change texture center 
-          par['cx' + texIndex] += (wpnt[0] - lastMouse[0]);
-          par['cy' + texIndex] += (wpnt[1] - lastMouse[1]);
+        /*  par['cx' + texIndex] += (wpnt[0] - lastMouse[0]);
+          par['cy' + texIndex] += (wpnt[1] - lastMouse[1]);*/
+          par['cx0']= wpnt[0];
+          par['cy0']= wpnt[1];
+
           this.onChanged();
         break;        
         // corners 
@@ -900,8 +946,9 @@ export class PatternTextures {
     return undefined;
   }
   
-  // calculates rotation and scale change when uses drad the corner point 
-  //  c - the center of rotation 
+
+  // calculates rotation and scale change when uses drag the corner point 
+  //  c - the center of rotation
   //  p0 - initial point 
   //  p1 new point 
   getCornerFactor(c, p0, p1){
@@ -909,8 +956,8 @@ export class PatternTextures {
     var lenP0 = eDistance(c, p0);
     var lenP1 = eDistance(c, p1);
     var lenP0P1 = eDistance(p0, p1);
-    var d0 = sub(p0, c);
-    var d1 = sub(p1, c);
+    var d0 = sub(p0, c);//subtract
+    var d1 = sub(p1, c);//subtract
     
     // z-component of cross product of normalized vectors 
     var z = (d1[0]*d0[1] - d1[1]*d0[0])/(lenP0*lenP1);
