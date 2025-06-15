@@ -57,6 +57,7 @@ export {
     Group_WP,
     Group_KLM,
     Group_KLMN,
+    Group_5splanes,
 }
 from '../../../../lib/grouplib/grouplib.js';
 
