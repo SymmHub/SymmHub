@@ -4,12 +4,12 @@
         <meta charset="utf-8">
         <meta http-equiv="Cache-Control" content="no-cache">
         <link rel="icon" type="image/x-icon" href="../images/icon_gs.svg">
-        <title>Ginzburg-Landau KLMN (local)</title>
+        <title>Ginzburg-Landau 5 splanes (local)</title>
         <meta name="description" content="Gray-Scott Simulation with KLM symmetry">
         <link rel="stylesheet" href="../css/thumbnails.css"/>
     </head>
     <body>   
-    <h1>Ginzburg-Landau Simulation with KLMN Symmetry (local)</h1>
+    <h1>Ginzburg-Landau 5 splanes (local)</h1>
     <div id='thumbnails'>
         
     </div>
@@ -22,13 +22,13 @@
         
     import {
         presets
-    } from './js/presets_klmn.js';
+    } from './js/presets_5splanes.js';
     
     function init(){
         let pFolder = new URL('presets',import.meta.url).pathname;        
         const thumbDiv = document.getElementById('thumbnails');
-        const appPage = '../symsim_ginzburg_landau_klmn.html';
-        const presetsFolder = pFolder + '/klmn/';   
+        const appPage = '../symsim_ginzburg_landau_5splanes.html';
+        const presetsFolder = pFolder + '/5splanes/';   
         appendThumbnails(thumbDiv, appPage, presetsFolder, presets);    
    } 
    init();     
