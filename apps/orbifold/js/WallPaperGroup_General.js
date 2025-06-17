@@ -408,6 +408,25 @@ export class WallPaperGroup_General {
         }
 
 
+
+        // Create the fundamental domain:
+
+        this.FD = {
+            s: bounds,
+            t: transforms,
+            i: interiors
+        }; 
+
+       
+        //this is passed along to getGroup, below, which in turn is called from
+        // calculateGroup in DefaultGroupRenderer.
+        // That is called in a number of places, particularly getUniforms
+        // ultimately, FD.s is u_domainData and FD.t is u_groupTransformsData
+        // which is assigned in DefaultDomainBuilder
+    }
+
+    getCrownTransformsData(){
+
         var patMak = this.patternMaker;
 
         var patMakpar = patMak.params;
@@ -439,7 +458,7 @@ export class WallPaperGroup_General {
             var angle = -(patMakpar['angle0'])*TORADIANS+aa;
             var complexscale = [s*cos(angle),s*sin(angle)]; // a complex homothety
         
-            var gcT= getTransformsForTexture(bounds, transforms,center,complexscale,this.curvature); 
+            var gcT= getTransformsForTexture(this.FD.s, this.FD.t,center,complexscale,this.curvature); 
 
             crowntransformsdata =gcT;
             
@@ -453,24 +472,11 @@ export class WallPaperGroup_General {
             crowntransformsdata = {crowntransformregistry:[[sPlaneSwapping(new complexN(.1,0.), new complexN(-.1,.3))]]};
         }
         
-
-        // Create the fundamental domain:
-
-        this.FD = {
-            s: bounds,
-            t: transforms,
-            i: interiors,
-            c: crowntransformsdata,
-        }; 
-
-        //this is passed along to getGroup, below, which in turn is called from
-        // calculateGroup in DefaultGroupRenderer.
-        // That is called in a number of places, particularly getUniforms
-        // ultimately, FD.s is u_domainData and FD.t is u_groupTransformsData
-        // which is assigned in DefaultDomainBuilder
+        this.FD.c=crowntransformsdata
     }
 
     getGroup() {
+        this.getCrownTransformsData();
         return this.FD // created in updateTheGroupGeometry(), right above
     }
 

@@ -796,7 +796,7 @@ export class GroupRenderer {
     //  group waas changed in GroupMaker
     //
     onGroupChanged() {
-
+        this.updateGroup();
         this.getGroup();
         if (this.params.debug)
             console.log("GroupRendederer.onGroupChanged()");
@@ -822,7 +822,7 @@ export class GroupRenderer {
     //
     onPatternChanged() {
 
-        this.onGroupChanged(); 
+        this.patternMaker.updatePatternData(); 
 
             // for now; we can trim this up if there's any timing issue.
 
@@ -1129,8 +1129,11 @@ export class GroupRenderer {
         }
     } // onStartAnimationExport()
     
-    getGroup(){
+    updateGroup(){
         this.groupMaker.updateTheGroupGeometry();
+    }
+    
+    getGroup(){
         return this.groupMaker.getGroup();
     }
 

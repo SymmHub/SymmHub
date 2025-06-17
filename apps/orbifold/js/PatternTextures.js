@@ -24,6 +24,12 @@ import {
 } from '../../../lib/invlib/Utilities.js';
 
 import {
+  iCumPackTransforms,
+   iPackRefCumulativeCount 
+} from '../../../lib/invlib/Inversive.js';
+
+
+import {
     TW as twgl 
 } from '../../../lib/invlib/modules.js';
 
@@ -523,6 +529,14 @@ export class PatternTextures {
     un.u_texCenters = centers;
 		un.u_textures = samplers;
 		un.u_texAlphas = alphas;
+
+
+    var ctrans = this.groupHandler.getGroup().c.crowntransformregistry; //fix this to be more transparent
+   
+    un.u_cTransCumRefCount=iPackRefCumulativeCount(ctrans, this.MAX_CROWN_COUNT);
+    un.u_cTransformsData=iCumPackTransforms(ctrans,  this.MAX_TOTAL_CROWN_COUNT);
+    un.u_crownCount = ctrans.length;
+
     
     if(hasAnimation)
       this.startAnimation();
@@ -641,6 +655,11 @@ export class PatternTextures {
     
     setTimeout(this.animate.bind(this),60);
     
+  }
+
+  updatePatternData(){
+     this.groupHandler.getCrownTransformsData()
+
   }
 
 
