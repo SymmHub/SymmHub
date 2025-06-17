@@ -148,7 +148,6 @@ export class DefaultDomainBuilder {
     var group = this.group;//Maker.getGroup();
     var fd = group.s;
     var trans = group.t;
-    var ctrans = group.c.crowntransformregistry; //fix this to be more transparent
         
     var p = this.params;
   
@@ -162,10 +161,7 @@ export class DefaultDomainBuilder {
       un.u_groupCumRefCount = iPackRefCumulativeCount(trans, this.MAX_GEN_COUNT);
       un.u_groupTransformsData = iCumPackTransforms(trans,  this.MAX_TOTAL_REF_COUNT);
       
-      un.u_cTransCumRefCount=iPackRefCumulativeCount(ctrans, this.MAX_CROWN_COUNT);
-      un.u_cTransformsData=iCumPackTransforms(ctrans,  this.MAX_TOTAL_CROWN_COUNT);
-      un.u_crownCount = ctrans.length;
-
+     
 
  /*console.log("{splanes,count} = {{"
 +(un.u_cTransformsData.map(t=>t.toFixed(4)).toString()

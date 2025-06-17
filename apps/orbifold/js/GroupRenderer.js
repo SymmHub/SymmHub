@@ -822,7 +822,7 @@ export class GroupRenderer {
     //
     onPatternChanged() {
 
-        this.onGroupChanged(); 
+        this.patternMaker.updatePatternData(); 
 
             // for now; we can trim this up if there's any timing issue.
 

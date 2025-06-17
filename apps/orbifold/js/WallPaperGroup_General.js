@@ -417,8 +417,7 @@ export class WallPaperGroup_General {
             i: interiors
         }; 
 
-        this.getCrownTransformsData()
-
+       
         //this is passed along to getGroup, below, which in turn is called from
         // calculateGroup in DefaultGroupRenderer.
         // That is called in a number of places, particularly getUniforms
@@ -477,6 +476,7 @@ export class WallPaperGroup_General {
     }
 
     getGroup() {
+        this.getCrownTransformsData();
         return this.FD // created in updateTheGroupGeometry(), right above
     }
 
