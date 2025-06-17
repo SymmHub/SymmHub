@@ -33,7 +33,7 @@ import {
 } from './modules.js';
 
 
-const DEBUG = true;
+const DEBUG = false;
 
 
 const MYNAME = 'Ginzburg-Landau';
@@ -393,7 +393,7 @@ function GinzburgLandauSimulation(){
             uNoiseCell:   par.noiseCell,
         }
                 
-        console.log('uni: ', uni);
+        if(DEBUG)console.log(`${MYNAME} uni: `, uni);
         program.setUniforms(uni);
         
         gBlitMaker.blit(gSimBuffer.write);  
@@ -706,12 +706,12 @@ function GinzburgLandauSimulation(){
 
     function setInternalBufferData(data){
         
-        console.log('setInternalBufferData()');
+        if(DEBUG)console.log('setInternalBufferData()');
         
         let gl = glCtx.gl; 
         let fdata = str2fa(data.buffer);
-        console.log('fdata.length:  ', fdata.length);
-        console.log('fdata: ', fdata[0], fdata[1], fdata[2], fdata[3], '...');
+        if(DEBUG)console.log('fdata.length:  ', fdata.length);
+        if(DEBUG)console.log('fdata: ', fdata[0], fdata[1], fdata[2], fdata[3], '...');
         const level = 0;
         const internalFormat = gl.RG32F; 
         const width = data.width;
@@ -733,7 +733,7 @@ function GinzburgLandauSimulation(){
     
     
     function getBufferData(){
-        console.log('getBufferData:');
+        if(DEBUG)console.log('getBufferData:');
         let data = {
             width: gSimBuffer.width, 
             height: gSimBuffer.height, 
@@ -745,7 +745,7 @@ function GinzburgLandauSimulation(){
 
     function setBufferData(data){
         
-        console.log(`setBufferData: [${data.width} x ${data.height}] = ${data.width*data.height}`);
+        if(DEBUG)console.log(`setBufferData: [${data.width} x ${data.height}] = ${data.width*data.height}`);
         setInternalBufferData(data);
         
     }
