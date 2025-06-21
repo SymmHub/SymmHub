@@ -920,19 +920,19 @@ function GinzburgLandauSimulation(){
     var myself = {
       
         getName: ()=>{return MYNAME;},
-        init: init,
-        setGroup: setGroup,
-        addEventListener: addEventListener,
+        init:               init,
+        setGroup:           setGroup,
+        addEventListener:   addEventListener,
         //initGUI: initGUI,
-        handleEvent: handleEvent,
-        getSimBuffer: getSimBuffer,
-        doStep: doStep,
+        handleEvent:        handleEvent,
+        getSimBuffer:       getSimBuffer,
+        doStep:             doStep,
         //repaint: repaint,
-        getPlotData: getPlotData,
-        getGroup:  getGroup,
-        applySymmetry: applySymmetry,
-        initSimulation:  initSimulation,
-        getParams:       getParams,
+        getPlotData:         getPlotData,
+        getGroup:           getGroup,
+        applySymmetry:      applySymmetry,
+        initSimulation:     initSimulation,
+        getParams:          getParams,
     };
   
     return myself;
