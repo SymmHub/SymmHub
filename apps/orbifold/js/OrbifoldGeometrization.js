@@ -1985,7 +1985,7 @@ export function resetCenterfromPt(mousepoint, groupdata,lasttexturecenter,curvat
 
         var dist = lpt.poincareDiskDistanceTo(npt);
         if(dist>.001){
-            console.log(
+          /*  console.log(
                 "{lpt=",lpt.toString(true),",npt=",npt.toString(true,10),
                 ",shiftfromorigintolast=",poincareMobiusFromSPlanesList(preface).toString(true,10),
                 ",shiftfromnexttoorigin=",poincareMobiusFromSPlanesList(suffix).toString(true,10),
@@ -1994,7 +1994,7 @@ export function resetCenterfromPt(mousepoint, groupdata,lasttexturecenter,curvat
                 ",netroute=",poincareMobiusFromSPlanesList(route).toString(true,10),
               //  ",additionalangle=",additionalangleAdjustment.toFixed(10),
                 ",angleadjustment=",angleAdjustment.toFixed(10),
-                "};");
+                "};");*/
             //to stop and check 
             transformFromCenterToPoint(lasttexturecenter,new complexN(1,0),curvature,true);
             transformFromCenterToPoint(newtexturecenter,new complexN(1,0),curvature,true);

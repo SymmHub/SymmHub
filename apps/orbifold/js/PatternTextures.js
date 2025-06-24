@@ -299,8 +299,10 @@ export class PatternTextures {
     this.extension = getParam(opt.extension,'.png');
     this.editPoints = [];
     this.dragging = false;
-    this.imageGluedToOriginQ = true; 
-    this.angleAdjustment = [0]; 
+   // this.imageGluedToOriginQ = true; 
+    this.angleAdjustment = [0];
+    this.imagetransformarray = [[]];
+    this.imagetransformsneedadjusting= [true]
       //a net change of angle relative to the local fundamental domain, 
       // for each of the one textures we are using. 
 
@@ -662,7 +664,7 @@ export class PatternTextures {
       // the center and angle information;
       // it's not really clear where the calculation of the imagetransform should take place.
     
-     this.groupHandler.getCrownTransformsData()
+     this.groupHandler.calcCrownTransformsData()
 
   }
 
@@ -731,10 +733,10 @@ export class PatternTextures {
         var centerpnt, temppt;
 
 
-        if(this.imageGluedToOriginQ){temppt = [0,0];}
-        else{temppt = [cx, cy];}
+       // if(this.imageGluedToOriginQ){temppt = [0,0];}
+       // else{temppt = [cx, cy];}
 
-        temppt = imagetransform.applyTo(new complexN(temppt[0],temppt[1]));
+        temppt = imagetransform.applyTo(new complexN(0,0));
         centerpnt = [temppt.re,temppt.im];
 
 
@@ -763,14 +765,6 @@ export class PatternTextures {
                                                        
         editPoints.push({p:trans(centerpnt),texIndex:texIndex, type:0}); // center point type 0
         
-        if(this.imageGluedToOriginQ){;}
-        // TBD
-        // just modify transform here to incorporate the shift from the origin to the center. 
-        // we are already calling on complexarithmatic.js, and we can splane it up. 
-        // 
-
-
-
         iDrawPoint(centerpnt, context, transform, opt);
         iDrawPoint(centerpnt, context, transform, opta);
         
@@ -863,7 +857,7 @@ export class PatternTextures {
 
       this.angleAdjustment[0]+=temp.angleAdjustment;
       if(Math.abs(temp.angleAdjustment)>.0001){
-          console.log("a={",temp.angleAdjustment,",",this.angleAdjustment[0],"}")
+      //    console.log("a={",temp.angleAdjustment,",",this.angleAdjustment[0],"}")
         }
       
       while(this.angleAdjustment[0]<0){

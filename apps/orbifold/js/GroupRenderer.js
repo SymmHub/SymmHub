@@ -303,8 +303,9 @@ export class GroupRenderer {
     //  specific shaders select out the uniforms they need: these 
     // are in orbifold_main.js
 
-    getUniforms(un) {
-
+    //THIS DOESN"T DO ANYTHING!
+   /* getUniforms(un) {
+        console.log("getting uniforms");
         if (!isDefined(un))
             un = {};
         this.getExtUniforms(this.domainBuilder, un, this.timeStamp);
@@ -316,7 +317,7 @@ export class GroupRenderer {
         // groupMaker will handle 
 
         return un;
-    }
+    }*/
 
     //
     //  collect uniforms from generic uniforms maker
@@ -679,6 +680,8 @@ export class GroupRenderer {
         
         let ts = this.timeStamp;
 
+        //getting the uniforms
+       
         //let allUni = this.getUniforms({});        
         let domainUni  = this.domainBuilder.getUniforms({},ts);        
         let configUni  = this.config.getUniforms({}, ts);
@@ -1131,6 +1134,8 @@ export class GroupRenderer {
     
     updateGroup(){
         this.groupMaker.updateTheGroupGeometry();
+        this.onPatternChanged();
+
     }
     
     getGroup(){

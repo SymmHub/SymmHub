@@ -145,6 +145,7 @@ export class WallPaperGroup_General {
     groupParamsChanged() {
         // console.time("paramsChanged")
         this.updateTheGroupGeometry();
+        this.calcCrownTransformsData();
         // the first time we hit this is when the constructor is called,
         // before initGUI; consequently, onChanged will not yet be defined.
 
@@ -417,6 +418,7 @@ export class WallPaperGroup_General {
             i: interiors
         }; 
 
+       // console.log('recalculating group');
        
         //this is passed along to getGroup, below, which in turn is called from
         // calculateGroup in DefaultGroupRenderer.
@@ -425,29 +427,17 @@ export class WallPaperGroup_General {
         // which is assigned in DefaultDomainBuilder
     }
 
-    getCrownTransformsData(){
-
+    calcCrownTransformsData(){
+       // console.log('crown');
         var patMak = this.patternMaker;
 
         var patMakpar = patMak.params;
 
         // for the moment we are assuming that there is 
         // only one active texture, the first one.
-        /*var centers=[], scales=[],  tcount = 0;
-
-        for(var i = 0; i < patMak.texCount; i++) {
-  
-            if(patMakpar['active' + i]){
-                tcount++;
-                var s = Math.exp(-patMakpar['scale' + i]);
-                var angle = patMakpar['angle' + i]*TORADIANS;
-                scales.push(s*cos(angle)); 
-                scales.push(s*sin(angle)); 
-                centers.push(patMakpar['cx' + i]);
-                centers.push(patMakpar['cy' + i]);
-            }
-        }*/
-
+        // We're keeping all the info in arrays inside of patMak.
+        
+        
         var crowntransformsdata;
         if(isDefined(patMakpar['cx0'])&&isDefined(patMakpar['cy0'])&&isDefined(patMakpar['scale0']))
         {
@@ -476,7 +466,8 @@ export class WallPaperGroup_General {
     }
 
     getGroup() {
-        this.getCrownTransformsData();
+        //this.calcCrownTransformsData();
+        //console.log('getting group');
         return this.FD // created in updateTheGroupGeometry(), right above
     }
 
