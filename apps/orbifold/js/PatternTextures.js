@@ -658,6 +658,10 @@ export class PatternTextures {
   }
 
   updatePatternData(){
+      // this function could be better isolated by explicitly passing in
+      // the center and angle information;
+      // it's not really clear where the calculation of the imagetransform should take place.
+    
      this.groupHandler.getCrownTransformsData()
 
   }
