@@ -161,55 +161,15 @@ export class DefaultDomainBuilder {
       un.u_groupCumRefCount = iPackRefCumulativeCount(trans, this.MAX_GEN_COUNT);
       un.u_groupTransformsData = iCumPackTransforms(trans,  this.MAX_TOTAL_REF_COUNT);
       
-     
-
- /*console.log("{splanes,count} = {{"
-+(un.u_cTransformsData.map(t=>t.toFixed(4)).toString()
-+"},"
-+"{"+un.u_cTransCumRefCount.toString()+"}"
-+"};"
-  ));*/
-
+      /*
       if(this.params.debug) {
          console.log("u_domainCount:", objectToString(un.u_domainCount));
          console.log("u_domainData:", objectToString(un.u_domainData));
          console.log("u_groupCumRefCount:", objectToString(un.u_groupCumRefCount));
          console.log("u_groupTransformsData:", objectToString(un.u_groupTransformsData));
-      }
+      }*/
       
-   /* } else {
-      // unpacked group data 
-      un.u_domainData = iPackDomain(fd, this.MAX_GEN_COUNT);
-      un.u_groupRefCount = iPackRefCount(trans, this.MAX_GEN_COUNT);
-      un.u_groupTransformsData = iPackTransforms(trans, this.MAX_GEN_COUNT, this.MAX_REF_COUNT);
-      
-      if(this.params.debug) {
-         console.log("u_domainData:", objectToString(un.u_domainData));
-         console.log("u_groupTransformsData:", objectToString(un.u_groupTransformsData));
-      }
-      
-    }*/
-    
-   /* if(this.USE_PERMUTATIONS){
-      un.u_permutationsData = packPermutations(this.params.permutations);
-      if(this.params.debug) console.log("u_permutationsData:", objectToString(un.u_permutationsData));
-      un.u_permutationsBase = this.params.permutationsBase;
-      un.u_texPermutationsBase = this.params.texPermutationsBase;      
-    }    */  
-
-    /*
-    if(!this.USEPACKING){
-      un.u_domainData = iPackDomain(fd, this.MAX_GEN_COUNT);
-      un.u_groupRefCount = iPackRefCount(trans, this.MAX_GEN_COUNT);
-      un.u_groupTransformsData = iPackTransforms(trans, this.MAX_GEN_COUNT, this.MAX_REF_COUNT);
-    }
-    else{
-      un.u_domainData = iCumPackTransforms(fd, this.MAX_GEN_COUNT,this.MAX_DOMAIN_SIZE); // NOTE: This has changed!!
-      un.u_domainCount = iPackRefCumulativeCount(fd,this.MAX_GEN_COUNT);
-      un.u_groupCumRefCount = iPackRefCumulativeCount(trans, this.MAX_GEN_COUNT);// NOTE: This has changed!!
-      un.u_groupTransformsData = iCumPackTransforms(trans, this.MAX_GEN_COUNT, this.MAX_TOTAL_REF_COUNT);
-    }
-    */
+ 
     return un;
   }  
   

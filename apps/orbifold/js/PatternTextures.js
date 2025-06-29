@@ -477,6 +477,8 @@ export class PatternTextures {
     
     let debug = this.debug;
     var par = this.params;
+
+    this.imagetransforms =[];
     
     var samplers = [];
     var centers = [];
@@ -532,6 +534,8 @@ export class PatternTextures {
     un.u_texCenters = centers;
 		un.u_textures = samplers;
 		un.u_texAlphas = alphas;
+
+    un.u_imageTransforms = 
 
 
     var ctrans = this.groupHandler.getGroup().c.crowntransformregistry; //fix this to be more transparent
