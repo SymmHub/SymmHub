@@ -301,7 +301,7 @@ export class PatternTextures {
     this.dragging = false;
    // this.imageGluedToOriginQ = true; 
     this.angleAdjustment = [0];
-    this.imagetransformarray = [[]];
+    this.imagetransformarray = [[[]]];
     this.imagetransformsneedadjusting= [true]
       //a net change of angle relative to the local fundamental domain, 
       // for each of the one textures we are using. 
@@ -419,6 +419,7 @@ export class PatternTextures {
     c['cx' + index].setValue(pm.center[0]);
     c['cy' + index].setValue(pm.center[1]);
 
+// THIS IS WHERE TO PUT AN UPDATED TRANSFORM
 
     
   }
@@ -665,6 +666,7 @@ export class PatternTextures {
       // it's not really clear where the calculation of the imagetransform should take place.
     
      this.groupHandler.calcCrownTransformsData()
+     // there's no need for this here; could move this to getUniforms
 
   }
 
@@ -851,6 +853,7 @@ export class PatternTextures {
       // for its own texture.
       
       var temp = this.groupHandler.resetCenterfromPt(wpnt,[par['cx0'],par['cy0']]);
+     /**/// this.groupHandler.resetTransformFromPt(wpnt, this.imagetransform[0]);
 
       par['cx0']=temp.center[0];
       par['cy0']=temp.center[1];
@@ -867,7 +870,7 @@ export class PatternTextures {
 
       this.onChanged();
     }
-    else {
+    else { //we are dragging the mouse
       var apnt = this.activePoint;
       var texIndex = (apnt.texIndex);
       var type = apnt.type;
