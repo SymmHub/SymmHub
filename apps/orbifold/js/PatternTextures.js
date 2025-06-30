@@ -31,7 +31,10 @@ import {
 
 
 import {
-    TW as twgl 
+    TW as twgl,
+    iSplane,
+    objectToString,
+    iTransformU4,
 } from '../../../lib/invlib/modules.js';
 
 // We need this to reset the centers into the FD. 
@@ -300,9 +303,12 @@ export class PatternTextures {
     this.extension = getParam(opt.extension,'.png');
     this.editPoints = [];
     this.dragging = false;
+   
+
+
    // this.imageGluedToOriginQ = true; 
     this.angleAdjustment = [0];
-    this.imagetransformarray = [[[]]];
+    
     this.imagetransformsneedadjusting= [true]
       //a net change of angle relative to the local fundamental domain, 
       // for each of the one textures we are using. 
@@ -476,10 +482,12 @@ export class PatternTextures {
 	//
 	getUniforms(un){
     
+     this.groupHandler.calcCrownTransformsData()// send in the current transform, remove references back to PT
+
     let debug = this.debug;
     var par = this.params;
 
-    this.imagetransforms =[];// for the moment, we wipe these each pass;
+    // this.imagetransforms =[];// for the moment, we wipe these each pass;
     // soon these will be initiated on load and updated with the dragging.
     
     var samplers = [];
@@ -562,7 +570,7 @@ export class PatternTextures {
     //var onChanged = options.onChanged;
 
     this.gl = options.gl;
-    this.onChanged = options.onChanged;
+    this.onChanged = options.onChanged; //  updatePatternData; for when center etc changes
     this.canvas = options.canvas;
     var onModified = this.onModified.bind(this);
     
@@ -599,7 +607,7 @@ export class PatternTextures {
       
       var uname = 'active',pname = uname + c;
       par[pname] = false;
-      ctrls[pname] = acFolder.add(par, pname).name(pname).onChange(onModified);	
+      ctrls[pname] = acFolder.add(par, pname).name(pname).onChange(onModified);	//updatePatternData
       
       var uname = 'tex', pname = uname + c;
       par[pname] = texNames[i][0];      
@@ -636,7 +644,7 @@ export class PatternTextures {
     // start/stop texture animation here 
     //
     
-    this.onChanged();
+    this.onChanged();//updatePatternData
   }
 
   startAnimation(){
@@ -662,13 +670,47 @@ export class PatternTextures {
     
   }
 
+  /// THIS is this.onChanged = this.onModified.
+  // is what is called when any of the data in the panel changes. However, it should not
+  /// be changing otherwise.
+
   updatePatternData(){
-      // this function could be better isolated by explicitly passing in
-      // the center and angle information;
-      // it's not really clear where the calculation of the imagetransform should take place.
+     
+    // if we get to this point, the presumption is that we should recalculate the 
+    // image transform from the center, scale and angle, all from scratch. 
+
+    var tcount = this.texCount;
     
-     this.groupHandler.calcCrownTransformsData()
-     // there's no need for this here; could move this to getUniforms
+    this.imagetransforms = [];
+    for(var i = 0; i < tcount; i++){
+      var centerx = this.params['cx' + (i)];
+      var centery = this.params['cy' + (i)];
+      var delta = Math.sqrt(centerx*centerx+centery*centery);
+      var scale = Math.exp(this.params['scale' + (i)]);
+      var angle =  this.params['angle'+(i)];
+
+      var imagetransform = [
+        new iSplane({v:[0,0,0,1],type:1}), //first apply the scaling
+        new iSplane({v:[0,0,0,Math.sqrt(scale)],type:1}),
+        new iSplane({v:[0,1,0,0],type:2}),// next the rotation
+        new iSplane({v:[Math.sin(angle/2),Math.cos(angle/2),0,0],type:2})];
+
+      if(delta>.000001 /*say*/)
+      {
+        imagetransform.push(new iSplane({v:[-centery/delta,centerx/delta,0,0],type:2}));
+        imagetransform.push(new iSplane({v:[-centery*delta,centerx*delta,0,delta*delta],type:1}));
+      }
+
+      this.imagetransforms.push(imagetransform);
+
+    }
+    console.log(objectToString(this.imagetransforms))
+
+
+    // each image transform should be set to the identity upon initialization
+    // then upon loading a json file, need to calculate from scratch. Thence this function updates the transform.
+
+
 
   }
 
@@ -679,7 +721,7 @@ export class PatternTextures {
     if(!par.showUI)
       return;
     
-    this.transform = transform;
+    this.transform = transform;// this is the world transform
 
     // writing this for rendering into fixed disk
     // transform is a further shift of this disk. 
@@ -711,7 +753,21 @@ export class PatternTextures {
     var editPoints = [];
     
     for(var i = 0; i < this.texCount; i++) {
-      
+     
+      // draw a little circle at the center of the various image transforms
+      // use the inversive library to do this because many functions in complexTransforms
+      // presume that the unit disk is preserved. 
+
+      var newimagetransform = this.imagetransforms[i];
+
+     var newpoint = iTransformU4(newimagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
+    // newpoint = [newpoint[0],newpoint[1]];
+
+     var optZ = {radius:5, style:"#A0F000"};
+    
+     iDrawPoint(newpoint, context, transform, optZ);
+
+
       var texIndex = i;
       var c = (i); 
       if(par['active' + c]){
@@ -737,12 +793,10 @@ export class PatternTextures {
         var centerpnt, temppt;
 
 
-       // if(this.imageGluedToOriginQ){temppt = [0,0];}
-       // else{temppt = [cx, cy];}
-
-        temppt = imagetransform.applyTo(new complexN(0,0));
-        centerpnt = [temppt.re,temppt.im];
-
+       temppt = [0,0];
+       temppt = imagetransform.applyTo(new complexN(0,0));
+       centerpnt = [temppt.re,temppt.im];
+       
 
 
         var corners = [];
@@ -844,9 +898,8 @@ export class PatternTextures {
     // one in order to grab it. Overlapping frames are an issue to be resolved. 
     
 
-    console.log("alt key", evt.ctrlKey );
 
-    if(!this.dragging && !evt.ctrlKey){
+    if(!this.dragging && !evt.shiftKey){
       // given wpt, find the nearest image of the center point-- and call that the center,
       // adjusting the scale. In other words, among the crown images of the tex center, 
       // which c is closest to the FD image f(w) of wpt?
@@ -873,7 +926,9 @@ export class PatternTextures {
       while(this.angleAdjustment[0]>6.2831853071795864769){
         this.angleAdjustment[0]-=6.2831853071795864769;}
 
-      this.onChanged();
+      this.onChanged(); 
+
+
     }
     else if(this.dragging){ //we are dragging the mouse
       var apnt = this.activePoint;
@@ -891,7 +946,7 @@ export class PatternTextures {
           par['cx0']= wpnt[0];
           par['cy0']= wpnt[1];
 
-          this.onChanged();
+          this.onChanged(); // update the image transform from the new data.
         break;        
         // corners 
         case 1:
@@ -902,7 +957,7 @@ export class PatternTextures {
           //console.log("scaleDelta:",factor.scaleDelta);
           par['angle' + texIndex] = this.normalizeAngle(par['angle' + texIndex]+(factor.angleDelta/TORADIANS));
           par['scale' + texIndex] += log(factor.scaleDelta); 
-          this.onChanged();
+          this.onChanged(); // update the image transform from the data.
         default: 
         break;
       }
