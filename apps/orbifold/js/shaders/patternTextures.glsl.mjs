@@ -11,8 +11,7 @@ export const patternTextures = `
 #endif 
 
 uniform int u_texCount;
-uniform vec2 u_texScales[MAX_TEX_COUNT];
-uniform vec2 u_texCenters[MAX_TEX_COUNT];
+//uniform float u_texTransform[MAX_TEX_COUNT*1]// MAX_splanes in a transform // length of a splane as a list of floats 
 uniform sampler2D u_textures[MAX_TEX_COUNT];
 uniform float u_texAlphas[MAX_TEX_COUNT];
 
@@ -37,12 +36,10 @@ vec4 getTextureInd(vec3 pnt, int index, float scale){
 	vec2 p = pnt.xy;
 	vec2 hf = vec2(0.5);
 
-  vec2 ts = u_texScales[index];		
-  vec2 tc = u_texCenters[index];
-  vec2 tp = hf + cMul(ts,p-tc);
-  vec2 mask2 = step(-hf,-abs(tp-hf));
+  vec2 tp = hf +p ;
+  vec2 mask2 = step(-hf,-abs(p));
   float mask = u_texAlphas[index]*mask2.x*mask2.y;
-  float lod = log2(512.*u_pixelSize*scale*length(u_texScales[index]));
+  float lod = log2(512.*u_pixelSize*scale);
   vec4 tcolor;
   switch(index){
     default:
@@ -112,14 +109,10 @@ vec4 getTexture(vec3 pnt, float scale){
 	//for(int i=0; i < MAX_TEX_COUNT; i++){
 	for(int i=0; i < u_texCount; i++){
 		//if(i < u_texCount){
-			vec2 ts = u_texScales[i];		
-			vec2 tc = u_texCenters[i];
-			vec2 tp = hf + cMul(ts,p-tc);
-			vec2 mask2 = step(-hf,-abs(tp-hf));
-			float mask = u_texAlphas[i]*mask2.x*mask2.y;
-      //vec4 tcolor = vec4(0,0,0,0);
-			//vec4 tcolor = mask*texture(u_textures[i], tp);
-      float lod = log2(512.*u_pixelSize*scale*length(u_texScales[i]));
+			vec2 tp = hf + p; //transformed point
+			vec2 mask2 = step(-hf,-abs(p)); //?? 
+			float mask = u_texAlphas[i]*mask2.x*mask2.y;//??
+      float lod = log2(512.*u_pixelSize*scale);//sampling scale
       vec4 texValue = vec4(0,0,0,0);
       switch(i){
         default:

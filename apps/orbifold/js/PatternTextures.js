@@ -25,7 +25,8 @@ import {
 
 import {
   iCumPackTransforms,
-   iPackRefCumulativeCount 
+   iPackRefCumulativeCount,
+   iPackTransforms,
 } from '../../../lib/invlib/Inversive.js';
 
 
@@ -478,7 +479,8 @@ export class PatternTextures {
     let debug = this.debug;
     var par = this.params;
 
-    this.imagetransforms =[];
+    this.imagetransforms =[];// for the moment, we wipe these each pass;
+    // soon these will be initiated on load and updated with the dragging.
     
     var samplers = [];
     var centers = [];
@@ -511,31 +513,27 @@ export class PatternTextures {
         // scalar scale is still being used. 
 
         // For now, the rest of this remains here as a distraction. 
+   
+/* #### */     
         
-        var s = Math.exp(-par['scale' + i]);
-      
-        scales.push(s);
-				scales.push(0);
-				//centers.push(par['cx' + i]);
-				//centers.push(par['cy' + i]);
-        centers.push(0); 
-        centers.push(0); 
+       
         samplers.push(tex.texture);
         if(tex.isAnimation){
           hasAnimation = true;
         }          
         alphas.push(par['alpha' + i]);
+
+/* #### */ 
         
       }
     }
     
 		un.u_texCount = tcount;
-		un.u_texScales = scales;
-    un.u_texCenters = centers;
 		un.u_textures = samplers;
 		un.u_texAlphas = alphas;
 
-    un.u_imageTransforms = 
+    un.u_imageTransforms =  iPackTransforms(this.imageTransforms, this.tcount, 5);
+      
 
 
     var ctrans = this.groupHandler.getGroup().c.crowntransformregistry; //fix this to be more transparent
@@ -845,7 +843,10 @@ export class PatternTextures {
     // SERIOUS TBD PROBLEM: you can either switch frames, or you can fix
     // one in order to grab it. Overlapping frames are an issue to be resolved. 
     
-    if(!this.dragging){
+
+    console.log("alt key", evt.ctrlKey );
+
+    if(!this.dragging && !evt.ctrlKey){
       // given wpt, find the nearest image of the center point-- and call that the center,
       // adjusting the scale. In other words, among the crown images of the tex center, 
       // which c is closest to the FD image f(w) of wpt?
@@ -874,7 +875,7 @@ export class PatternTextures {
 
       this.onChanged();
     }
-    else { //we are dragging the mouse
+    else if(this.dragging){ //we are dragging the mouse
       var apnt = this.activePoint;
       var texIndex = (apnt.texIndex);
       var type = apnt.type;
@@ -910,7 +911,8 @@ export class PatternTextures {
             
       evt.grabInput = true;
       return;
-    }      
+    } 
+         
     var activePoint = this.findActivePoint(pnt, this.editPoints, 5);
     if(isDefined(activePoint)){
       this.canvas.style.cursor = 'pointer';      
