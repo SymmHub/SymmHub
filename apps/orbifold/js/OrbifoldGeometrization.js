@@ -1892,6 +1892,32 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
 // Originating in PatternTextures, this passes through WallPaperGroup_General,
 // which layers on the groupdata.
 
+export function resetTransformfromPt(mousepoint, groupdata,lasttransform,curvature = -1){
+    var newtransform;
+        if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){
+            console.log("get back in bounds!");
+            return newtransform;}
+        var domain = groupdata.s;
+        var transforms = groupdata.t;
+
+
+        // get the center point of the last transform, the image of the origin. 
+        // this will be a base reference point in the transformed images, all of the form
+        // (transformimage)(group element)
+        // We are working in splane world
+        var lasttexturecenter = iTransformU4(lasttransform, new iSplane({v:[0,0,0,0],type:SPLANE_POINT}));
+        var lastCenterData= iToFundDomainWBounds(domain, transforms,lasttexturecenter,200);// should be a safe bound — elsewhere we restrict the maginitude of the new point, <.9, and hence the length of the words we have to encounter here. 
+
+        
+
+
+
+
+
+    return newtransform; 
+        }
+
+
 
 export function resetCenterfromPt(mousepoint, groupdata,lasttexturecenter,curvature = -1){ 
         

@@ -10,7 +10,7 @@ export const TEX_CAMERA = '[camera]';
 import {iDrawPoint, iDrawSegment} from '../../../lib/invlib/IDrawing.js';
 import {add,sub,distance1,eDistance} from '../../../lib/invlib/LinearAlgebra.js';
 
-import {cMul,complexN} from '../../../lib/invlib/ComplexArithmetic.js';
+import {cMul,complexN,transformFromCenterToPoint} from '../../../lib/invlib/ComplexArithmetic.js';
 
 
 
@@ -309,10 +309,7 @@ export class PatternTextures {
    // this.imageGluedToOriginQ = true; 
     this.angleAdjustment = [0];
     
-    this.imagetransformsneedadjusting= [true]
-      //a net change of angle relative to the local fundamental domain, 
-      // for each of the one textures we are using. 
-
+    
       //this is actually going to be a separate transform for each layer, but for now this is fine.
     
 
@@ -689,6 +686,7 @@ export class PatternTextures {
       var scale = Math.exp(this.params['scale' + (i)]);
       var angle =  this.params['angle'+(i)];
 
+
       var imagetransform = [
         new iSplane({v:[0,0,0,1],type:1}), //first apply the scaling
         new iSplane({v:[0,0,0,Math.sqrt(scale)],type:1}),
@@ -696,9 +694,14 @@ export class PatternTextures {
         new iSplane({v:[Math.sin(angle/2),Math.cos(angle/2),0,0],type:2})];
 
       if(delta>.000001 /*say*/)
-      {
-        imagetransform.push(new iSplane({v:[-centery/delta,centerx/delta,0,0],type:2}));
-        imagetransform.push(new iSplane({v:[-centery*delta,centerx*delta,0,delta*delta],type:1}));
+      { 
+        imagetransform=imagetransform.concat(
+        transformFromCenterToPoint(new complexN(centerx,centery),new complexN(scale*Math.cos(angle),scale*Math.sin(angle)))
+        );
+
+
+        //imagetransform.push(new iSplane({v:[-centery/delta,centerx/delta,0,0],type:2}));
+       // imagetransform.push(new iSplane({v:[-centery*delta,centerx*delta,0,delta*delta],type:1}));
       }
 
       this.imagetransforms.push(imagetransform);
@@ -760,7 +763,7 @@ export class PatternTextures {
 
       var newimagetransform = this.imagetransforms[i];
 
-     var newpoint = iTransformU4(newimagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
+      var newpoint = iTransformU4(newimagetransform, new iSplane({v:[0,.2,0,0],type:3})).v;
     // newpoint = [newpoint[0],newpoint[1]];
 
      var optZ = {radius:5, style:"#A0F000"};
@@ -911,10 +914,18 @@ export class PatternTextures {
       // for its own texture.
       
       var temp = this.groupHandler.resetCenterfromPt(wpnt,[par['cx0'],par['cy0']]);
-     /**/// this.groupHandler.resetTransformFromPt(wpnt, this.imagetransform[0]);
+      var resetdata = this.groupHandler.resetTransformfromPt(this.imagetransforms[0],[par['cx0'],par['cy0']]);
+     
+      par['cx0']=temp.center[0]; // the new center.
+      par['cy0']=temp.center[1]; // 
 
-      par['cx0']=temp.center[0];
-      par['cy0']=temp.center[1];
+
+      // ADD: change angle and scale as well;
+      // update this.imagetransform[0]=resetdata.imagetransform
+
+
+
+      // no need for angleAdjustment
 
       this.angleAdjustment[0]+=temp.angleAdjustment;
       if(Math.abs(temp.angleAdjustment)>.0001){
@@ -926,7 +937,7 @@ export class PatternTextures {
       while(this.angleAdjustment[0]>6.2831853071795864769){
         this.angleAdjustment[0]-=6.2831853071795864769;}
 
-      this.onChanged(); 
+      this.onChanged(); // THIS WILL BE REMOVED SHORTLY; only call onChanged when the centerpoint changing triggers a transform change.
 
 
     }
@@ -947,6 +958,7 @@ export class PatternTextures {
           par['cy0']= wpnt[1];
 
           this.onChanged(); // update the image transform from the new data.
+          // this should call 
         break;        
         // corners 
         case 1:
