@@ -1895,7 +1895,7 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
 
 
 
-export function getTransformsForTextureFromTransform(domain,transforms,imagetransform,curvature=-1){ 
+export function calcCrownTransformsDataFromTransform(domain,transforms,imagetransform,curvature=-1){ 
 
 // We are working in Splaneworld, using vectors and points as [x,y] when we can. 
 // (But we declare splanes as iSplane(new complexN([x,y]),0) 

@@ -479,10 +479,19 @@ export class PatternTextures {
 	//
 	getUniforms(un){
     
+      console.log("h",this.params['angle0']);
+      console.log(" ",this.angleadjustment);
+      var paramcenter = [this.params['cx0'],this.params['cy0']];
+      var paramangle = -this.params['angle0']*TORADIANS+this.angleadjustment;
+      var paramscale = this.params['scale0'];
+
      this.groupHandler.calcCrownTransformsData(
-      [this.params['cx0'],this.params['cy0']], 
-      -this.params['angle'+(0)]*TORADIANS+this.angleadjustment, 
-      this.params['scale0'])// send in the current transform, remove references back to PT
+      paramcenter, paramangle, paramscale
+      )// send in the current transform, remove references back to PT
+
+	// this.groupHandler.calcCrownTransformsDataFromTransform(this.imagetransforms);
+		
+     console.log(toString(this.groupHandler.getGroup().c.crowntransformregistry))
 
     let debug = this.debug;
     var par = this.params;
@@ -770,7 +779,7 @@ export class PatternTextures {
       var newpoint = iTransformU4(newimagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
     // newpoint = [newpoint[0],newpoint[1]];
 
-     var optZ = {radius:5, style:"#A0F000"};
+     var optZ = {radius:11, style:"#20F0F0"};
     
      iDrawPoint(newpoint, context, transform, optZ);
 
