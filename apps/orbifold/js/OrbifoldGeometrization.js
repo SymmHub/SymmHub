@@ -1888,34 +1888,271 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
         transformedpts:transformedpts}
     
 }
+
+
+
+
+
+
+
+export function getTransformsForTextureFromTransform(domain,transforms,imagetransform,curvature=-1){ 
+
+// We are working in Splaneworld, using vectors and points as [x,y] when we can. 
+// (But we declare splanes as iSplane(new complexN([x,y]),0) 
+// This is called from updateTheGroupGeometry in WallPaperGroup_General
+//center and scale are of the overlaid texture
+// domain is a list of "bounded splanes" themselves a list of 1-3 splanes.
+// transforms is a list of iTransforms that generate the group.
+
+// We'll calculate several useful things: 
+// * imagetransform is a list of splanes transforming the origin to center, 
+//      rotating by the angle of the vector [a,b] of scale
+// * crowntransformregistry, a list of lists of splanes, all possible transforms that take 
+//      some point of the FD to some point in the texture. Errors can ensue if we don't sample
+//      sufficiently, to be investigated; 
+// * listoftexturesamplingpoints, the points in the texture that are being sampled; these
+//      can be drawn inside of SymmetryUIController.js
+// * trpointregistry, similarly is a list of the images of a reference point back across the pattern.
+
+
+   
+   // we input imagetransform 
+
+   
+    // var inverseimagetransform = iGetInverseTransform(imagetransform);
+
+    //////////////
+    //
+    // Next we grab a reference point in the FD to move around. 
+    //
+    // Typically the origin should do-- separate code should always move the FD to include the origin
+    // Just in case, there is a backup, finding some random point:
+
+    cc=Math.random()*.01;ss=Math.random()*.01;
+
+    var origin = new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
+
+    if(curvature<0){
+        registrypoint=origin;}
+    else{
+        registrypoint = new iSplane({v:[.1,.0523982389282982,0,0],type:SPLANE_POINT})
+    }
+
+    var foundaregistrypoint=iToFundDomainWBounds(domain, transforms,registrypoint,20).inDomain
+    
+    var safety=0;
+    var r,t;
+
+    var registryscalingsize=100000;//Number.MAX_SAFE_INTEGER/2;
+    
+    while(!foundaregistrypoint && safety++<1000){// this is uniform? across a disk of radius .9 
+        // We just need one!
+        r = Math.sqrt(Math.random())* .9;
+        t = 6.2825 * Math.random();
+        cc=Math.round(registryscalingsize*r*Math.cos(t));
+        ss=Math.round(registryscalingsize*r*Math.sin(t));
+        registrypoint = new iSplane({v:[cc/registryscalingsize,ss/registryscalingsize,0,0], type:SPLANE_POINT});
+        var bb =(iToFundDomainWBounds(domain, transforms,registrypoint,20));
+        foundaregistrypoint = bb.inDomain;
+    }
+
+    // the only thing that matters is that the base point isn't on an edge
+    // so even we've missed the safety check (so cc,ss = 0,0, but this isn't in the FD) 
+    // we're probably still fine.
+    
+  
+    
+
+    //////////////
+    //
+    // Next create a point and transform registry
+    //
+
+
+    // for each vertex in a relatively fine grid, pull back to the fundamental domain.
+    // For the resulting transform, hash with the image of some generic point in the interior of the fundamental domain.
+    // If it has not already appeared, add it to the list of transforms that we are keeping.
+
+    // for the moment, we'll just make a simple grid of points in texture coordinates. 
+    // We can improve upon this.
+
+    var listoftexturesamplingpoints=[];
+
+    var steps = Math.round(Math.sqrt(distancetable.length)); //45;// gives 2025 test points. For some long skinny FDs this may not be enough.
+    var delta = 1/(steps -1)*texturewidth;
+
+    var pp;
+
+    var pointregistry=[],registrypoint;
+    var trpointregistry;
+
+    // We add the identity into the transform registry
+    
+    // or not.
+
+    var crowntransformregistry=[]//iGetInverseTransform(imagetransform)];
+
+    
+    // the point registry records the copies of the registry point that we've 
+    // already seen, in order to keep track of the transforms that we've already seen.
+    // We keep these as integers up to Number.MAX_SAFE_INTEGER/2 big.
+    pointregistry=[]//[cc,ss]]; //scaled up to integers 1000 x as big.
+
+    // to make a nice picture for debugging, we also include the transformed images of the registered points.
+    trpointregistry=[]//[registrypoint.v[0],registrypoint.v[1]]];
+
+
+//soley for debugging:
+    var transformedpts=[];
+
+    var spt,sptx, spty, ptx,pty;
+
+    var tttemp=[],i,j;
+
+    // now make a grid: 
+    for(var ij=0; ij<distancetable.length;ij++){
+
+            i= distancetable[ij][0];
+            j = distancetable[ij][1];
+
+      //  for(var j=0;j<steps;j++){
+
+
+            spt = new iSplane({v:[i*delta,j*delta,0,0], type:SPLANE_POINT});
+
+            spt = iTransformU4(imagetransform,spt);
+           
+            ptx = spt.v[0]
+            pty = spt.v[1]
+
+            // next transform the sampling by imagetransform 
+
+            // these are just to draw a cool grid
+            listoftexturesamplingpoints.push([ptx,pty]);// to make a picture for debugging
+            
+
+            // walk the point back into the domain
+            pp = iToFundDomainWBounds(domain, transforms, spt,200);
+            
+            // returns from Inversive.js
+
+            //{inDomain: yes/no, transform: a list of splanes taking us back,pnt:the image of the point,word:the transform as a word in the generators,};
+            //Incidentally, domains are now lists of splanes, rather than simple splanes. For a point to be outside 
+            // of domain[i][0], it has to be inside the remaining bounds domain[i][1,2].
+            // For the moment, we ignore this and just are paying attention to domain[i][0]
+
+            // and then let pp take the FD to a FD intersecting the texture bounds.
+
+            pp = iGetInverseTransform(iGetFactorizationU4(pp.transform));
+            
+            // create a copy of the registry point, and scale it for comparison
+            // to the stored points in registry. 
+            var imregpt = iTransformU4(pp,registrypoint);//for debugging
+            var ppx = Math.round(registryscalingsize*imregpt.v[0]);
+            var ppy = Math.round(registryscalingsize*imregpt.v[1]);
+                
+            // TBD if the testpt is too far out, let's not use it. 
+            // TBD hard-code as within .8 in Euclidean distance from the origin.
+
+            // now check to see if testpt is in the registry
+
+
+            var foundamatchq = false;
+
+            for (var ii = 0; ii<pointregistry.length && !foundamatchq; ii++){
+                foundamatchq=(ppx == pointregistry[ii][0] && ppy == pointregistry[ii][1]);
+            }
+            if(!foundamatchq){
+
+                // then we have a new copy of the reference point,
+                // which we keep in our pointregistry:
+                pointregistry.push([ppx,ppy]); 
+                // these are colored red in the debugging graphics.
+
+
+
+                // we adjust pp to include the transform on the texture
+                
+
+               
+                pp = pp.concat(iGetInverseTransform(imagetransform))//inverseimagetransform);
+                pp = iGetFactorizationU4(pp);
+                crowntransformregistry.push(pp);
+                
+                // for debugging
+                var sdkw = iTransformU4(pp,origin);
+               // sdkw = iTransformU4(iGetInverseTransform(imagetransform),imregpt);
+                transformedpts.push([sdkw.v[0],sdkw.v[1]]);
+
+
+                // for our debugging ; this is the new registry point, 
+                // the image of the origin in a FD that meets the transformed texture.
+                trpointregistry.push([imregpt.v[0],imregpt.v[1]]);
+
+
+
+            }
+           
+        }//end of grid
+     
+    
+   /* console.log("{crowntransforms,lens,splanes,totextrans}={"
+             +objectToString(crowntransformregistry.map(x=>poincareMobiusFromSPlanesList(x).toString(true)),true) 
+            +",{"+(crowntransformregistry.map(x=>x.length,true)).toString()+"}"
+            +",{"+(
+                crowntransformregistry.map(t=>(
+                    "{"+(t.map(
+                        s=>("{{"+(s.v.map(x=>x.toFixed(4))).toString()+"},"+s.type+"}")
+                     )).toString()+"}"
+                    ))
+                  )+"}"
+            +","+poincareMobiusFromSPlanesList(imagetransform).toString(true)
+           //+","+objectToString(pointregistry,true)
+                +"};");
+    
+*/
+  //  return [crowntransformregistry,listoftexturesamplingpoints,trpointregistry,transformedpts,extrasplanes]
+    
+    return {
+        crowntransformregistry:crowntransformregistry,
+        imagetransform:imagetransform,
+        imagetransformAsMobius:poincareMobiusFromSPlanesList(imagetransform),
+      
+
+        listoftexturesamplingpoints:listoftexturesamplingpoints,
+        trpointregistry:trpointregistry,
+        transformedpts:transformedpts}
+    
+}
+
+
+
+
  
 // Originating in PatternTextures, this passes through WallPaperGroup_General,
 // which layers on the groupdata.
 
 export function resetTransformfromPt(mousepoint, groupdata,lasttransform,curvature = -1){
     var newtransform;
-        if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){
+    if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){
             console.log("get back in bounds!");
             return newtransform;}
-        var domain = groupdata.s;
-        var transforms = groupdata.t;
+    var domain = groupdata.s;
+    var transforms = groupdata.t;
 
 
-        // get the center point of the last transform, the image of the origin. 
-        // this will be a base reference point in the transformed images, all of the form
-        // (transformimage)(group element)
-        // We are working in splane world
-        var lasttexturecenter = iTransformU4(lasttransform, new iSplane({v:[0,0,0,0],type:SPLANE_POINT}));
-        var lastCenterData= iToFundDomainWBounds(domain, transforms,lasttexturecenter,200);// should be a safe bound — elsewhere we restrict the maginitude of the new point, <.9, and hence the length of the words we have to encounter here. 
-
-        
-
-
-
-
+    // get the center point of the last transform, the image of the origin. 
+    // this will be a base reference point in the transformed images, all of the form
+    // (transformimage)(group element)
+    // We are working in splane world
+    var lasttexturecenter = iTransformU4(lasttransform, new iSplane({v:[0,0,0,0],type:SPLANE_POINT}));
+    var lastCenterData= iToFundDomainWBounds(domain, transforms,lasttexturecenter,200);// should be a safe bound — elsewhere we restrict the maginitude of the new point, <.9, and hence the length of the words we have to encounter here. 
 
     return newtransform; 
         }
+
+
+
 
 
 

@@ -479,7 +479,10 @@ export class PatternTextures {
 	//
 	getUniforms(un){
     
-     this.groupHandler.calcCrownTransformsData()// send in the current transform, remove references back to PT
+     this.groupHandler.calcCrownTransformsData(
+      [this.params['cx0'],this.params['cy0']], 
+      -this.params['angle'+(0)]*TORADIANS+this.angleadjustment, 
+      this.params['scale0'])// send in the current transform, remove references back to PT
 
     let debug = this.debug;
     var par = this.params;
@@ -537,7 +540,7 @@ export class PatternTextures {
 		un.u_textures = samplers;
 		un.u_texAlphas = alphas;
 
-    un.u_imageTransforms =  iPackTransforms(this.imageTransforms, this.tcount, 5);
+    un.u_imagetransforms =  iPackTransforms(this.imagetransforms, this.tcount, 5);
       
 
 
@@ -673,8 +676,10 @@ export class PatternTextures {
 
   updatePatternData(){
      
-    // if we get to this point, the presumption is that we should recalculate the 
-    // image transform from the center, scale and angle, all from scratch. 
+    // this is called any time that the image transform 
+    // needs to be calculated from the center, scale and angle, all from scratch. 
+    // We hit this when the controls are changed, etc. 
+    // We could call this while dragging the mouse
 
     var tcount = this.texCount;
     
@@ -686,29 +691,28 @@ export class PatternTextures {
       var scale = Math.exp(this.params['scale' + (i)]);
       var angle =  this.params['angle'+(i)];
 
+      var c = scale*Math.cos(angle); 
+      var s = scale*Math.sin(angle);
 
-      var imagetransform = [
-        new iSplane({v:[0,0,0,1],type:1}), //first apply the scaling
-        new iSplane({v:[0,0,0,Math.sqrt(scale)],type:1}),
-        new iSplane({v:[0,1,0,0],type:2}),// next the rotation
-        new iSplane({v:[Math.sin(angle/2),Math.cos(angle/2),0,0],type:2})];
+      var imagetransform = [];
+
+      var newtransform;
+      var complexcenter = [centerx,centery]
+      var complexscale = [c,s];
+
 
       if(delta>.000001 /*say*/)
       { 
-        imagetransform=imagetransform.concat(
-        transformFromCenterToPoint(new complexN(centerx,centery),new complexN(scale*Math.cos(angle),scale*Math.sin(angle)))
-        );
-
-
-        //imagetransform.push(new iSplane({v:[-centery/delta,centerx/delta,0,0],type:2}));
-       // imagetransform.push(new iSplane({v:[-centery*delta,centerx*delta,0,delta*delta],type:1}));
-      }
+        
+        newtransform = 
+            transformFromCenterToPoint(complexcenter,complexscale);
+        
+        imagetransform=imagetransform.concat(newtransform);}
 
       this.imagetransforms.push(imagetransform);
 
     }
     console.log(objectToString(this.imagetransforms))
-
 
     // each image transform should be set to the identity upon initialization
     // then upon loading a json file, need to calculate from scratch. Thence this function updates the transform.
@@ -763,7 +767,7 @@ export class PatternTextures {
 
       var newimagetransform = this.imagetransforms[i];
 
-      var newpoint = iTransformU4(newimagetransform, new iSplane({v:[0,.2,0,0],type:3})).v;
+      var newpoint = iTransformU4(newimagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
     // newpoint = [newpoint[0],newpoint[1]];
 
      var optZ = {radius:5, style:"#A0F000"};
@@ -796,7 +800,6 @@ export class PatternTextures {
         var centerpnt, temppt;
 
 
-       temppt = [0,0];
        temppt = imagetransform.applyTo(new complexN(0,0));
        centerpnt = [temppt.re,temppt.im];
        
@@ -914,8 +917,8 @@ export class PatternTextures {
       // for its own texture.
       
       var temp = this.groupHandler.resetCenterfromPt(wpnt,[par['cx0'],par['cy0']]);
-      var resetdata = this.groupHandler.resetTransformfromPt(this.imagetransforms[0],[par['cx0'],par['cy0']]);
-     
+      var resetdata = this.groupHandler.resetTransformfromPt(wpnt,this.imagetransforms[0]);
+      //this.imagetransforms[0]=resetdata.imagetransforms[0];
       par['cx0']=temp.center[0]; // the new center.
       par['cy0']=temp.center[1]; // 
 
@@ -957,8 +960,7 @@ export class PatternTextures {
           par['cx0']= wpnt[0];
           par['cy0']= wpnt[1];
 
-          this.onChanged(); // update the image transform from the new data.
-          // this should call 
+          this.onChanged(); //  updatePatternData
         break;        
         // corners 
         case 1:
@@ -969,7 +971,7 @@ export class PatternTextures {
           //console.log("scaleDelta:",factor.scaleDelta);
           par['angle' + texIndex] = this.normalizeAngle(par['angle' + texIndex]+(factor.angleDelta/TORADIANS));
           par['scale' + texIndex] += log(factor.scaleDelta); 
-          this.onChanged(); // update the image transform from the data.
+          this.onChanged(); // updatePatternData
         default: 
         break;
       }

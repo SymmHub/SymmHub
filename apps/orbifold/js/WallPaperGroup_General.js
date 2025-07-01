@@ -57,6 +57,7 @@ import {
     willOrbifoldFitQ,
     getTransformsForTexture,
     resetCenterfromPt,
+    resetTransformfromPt,
 }
 from './OrbifoldGeometrization.js';
 
@@ -145,7 +146,8 @@ export class WallPaperGroup_General {
     groupParamsChanged() {
         // console.time("paramsChanged")
         this.updateTheGroupGeometry();
-        this.calcCrownTransformsData();
+        // the crowntransforms are udated with the uniforms in PatternTextures.js during render
+
         // the first time we hit this is when the constructor is called,
         // before initGUI; consequently, onChanged will not yet be defined.
 
@@ -427,41 +429,29 @@ export class WallPaperGroup_General {
         // which is assigned in DefaultDomainBuilder
     }
 
-    calcCrownTransformsData(){
+    calcCrownTransformDataFromTransform(transform){
+        return getTransformsForTextureFromTransform(this.FD.s,this.FD.t,transform, this.curvature);
+
+    }
+
+    calcCrownTransformsData(center,angle,scale){
        // console.log('crown');
-        var patMak = this.patternMaker;
-
-        var patMakpar = patMak.params;
-
+        
         // for the moment we are assuming that there is 
         // only one active texture, the first one.
         // We're keeping all the info in arrays inside of patMak.
         
         
         var crowntransformsdata;
-        if(isDefined(patMakpar['cx0'])&&isDefined(patMakpar['cy0'])&&isDefined(patMakpar['scale0']))
-        {
-            var center = [patMakpar['cx0'],patMakpar['cy0']];
-
-            var s =  Math.exp(patMakpar['scale0']);
-            var aa  = patMak.angleAdjustment[0];
-            var angle = -(patMakpar['angle0'])*TORADIANS+aa;
-            var complexscale = [s*cos(angle),s*sin(angle)]; // a complex homothety
         
-            var gcT= getTransformsForTexture(this.FD.s, this.FD.t,center,complexscale,this.curvature); 
+        var s = scale;
+        var complexscale = [s*cos(angle),s*sin(angle)]; // a complex homothety
+    
+        var gcT= getTransformsForTexture(this.FD.s, this.FD.t,center,complexscale,this.curvature); 
 
-            crowntransformsdata =gcT;
-            
-            // put together the crown transforms, as an array for each active texture
-            // store these as an array
-
-            //this.crowntransformsdata = this.crowntransformsdata;
-        }
-        else
-        {   
-            crowntransformsdata = {crowntransformregistry:[[sPlaneSwapping(new complexN(.1,0.), new complexN(-.1,.3))]]};
-        }
+        crowntransformsdata =gcT;
         
+          
         this.FD.c=crowntransformsdata
     }
 
@@ -482,6 +472,10 @@ export class WallPaperGroup_General {
 
     }
 
+
+    resetTransformfromPt(mousepoint,imagetransform){
+        return resetTransformfromPt(mousepoint, this.getGroup(),imagetransform,this.curvature)
+    }
     resetCenterfromPt(mousepoint,center){ 
         return resetCenterfromPt(mousepoint,this.getGroup(),center, this.curvature)
     }
