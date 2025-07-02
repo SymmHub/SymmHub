@@ -1631,58 +1631,7 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
     texturewidth= Math.sqrt(cc*cc+ss*ss);
     var center = inputcenter;
 
-/*
-    var center = inputcenter;
-    
-    var complexscale = inputscale;
 
-
-    //////////////
-    //
-    // First calculate imagetransform from the origin TO the center.
-    //
-
-    // the parameter angle is incorporated into the transforms
-    // (Scalar scale could be, and should be, as well.)
-
-
-    
-    
-    cc = cc/texturewidth;
-    ss = ss/texturewidth;
-    if(ss>0){ss = Math.sqrt(.5*(1-cc));}
-    else{ss = -Math.sqrt(.5*(1-cc));}
-
-    cc = Math.sqrt(.5*(1+cc)); //half the angle 
-
-    var v1a = new iSplane({v:[1,0,0,0],type:SPLANE_PLANE});
-    var v1b = new iSplane({v:[cc,-ss,0,0],type:SPLANE_PLANE});
-    var vd = new iSplane({v:[0,1,0,0],type:2})
-
-    var imagetransform;
-    if(center[0]!=0 || center[1]!=0){
-
-        var ccenter = new complexN(center[0],center[1]);
-        var origin = new complexN(0,0);
-        var v2a = new iSplane({v:[-center[1],center[0],0,0],type:SPLANE_PLANE});
-        var v2b;
-        var dis = ccenter.abs()
-
-
-        //change this depending on curvature
-        if(curvature==0){
-            v2b = new iSplane({v:[center[0]/dis,center[1]/dis,0,.5* dis],type:SPLANE_PLANE});
-        }
-        else if(curvature<0){
-            v2b = sPlaneSwapping(origin,ccenter);}
-        else{
-            var dis2 = dis*dis
-            v2b = new iSplane({v:[-center[0]/dis2,-center[1]/dis2,0,Math.sqrt(1+dis2)/dis],type:SPLANE_SPHERE})
-        }
-        imagetransform = (iGetFactorizationU4([v1b,vd,v2a,v2b]));}
-    else{imagetransform=[v1b,vd]}// just rotate 
-
-*/
     // var inverseimagetransform = iGetInverseTransform(imagetransform);
 
     //////////////
@@ -1928,7 +1877,21 @@ export function calcCrownTransformsDataFromTransform(domain,transforms,imagetran
     // Typically the origin should do-- separate code should always move the FD to include the origin
     // Just in case, there is a backup, finding some random point:
 
-    cc=Math.random()*.01;ss=Math.random()*.01;
+    // calculate input scale. This is the magnitude of the derivative (sqrt det)
+    // we have this as a series of splanes; 
+
+
+
+     var cc,ss,texturewidth;
+    cc = 1//inputscale[0]; 
+    ss = 0//inputscale[1];
+    texturewidth= Math.sqrt(cc*cc+ss*ss);
+    var center = inputcenter;
+
+    
+
+
+    cc=Math.random()*.01; ss=Math.random()*.01;
 
     var origin = new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
 

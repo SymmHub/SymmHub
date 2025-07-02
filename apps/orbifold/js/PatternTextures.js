@@ -307,7 +307,7 @@ export class PatternTextures {
 
 
    // this.imageGluedToOriginQ = true; 
-    this.angleAdjustment = [0];
+    this.angleAdjustment = 0;
     
     
       //this is actually going to be a separate transform for each layer, but for now this is fine.
@@ -479,20 +479,24 @@ export class PatternTextures {
 	//
 	getUniforms(un){
     
-      console.log("h",this.params['angle0']);
-      console.log(" ",this.angleadjustment);
       var paramcenter = [this.params['cx0'],this.params['cy0']];
       var paramangle = -this.params['angle0']*TORADIANS+this.angleadjustment;
       var paramscale = this.params['scale0'];
 
-     this.groupHandler.calcCrownTransformsData(
+     this.crowntransforms = this.groupHandler.calcCrownTransformsData(
       paramcenter, paramangle, paramscale
-      )// send in the current transform, remove references back to PT
+      );
 
-	// this.groupHandler.calcCrownTransformsDataFromTransform(this.imagetransforms);
+     console.log("hey", toString(this.groupHandler.getGroup().c.crowntransformregistry))
+
+
+     this.crowntransforms = this.crowntransforms.crowntransformregistry
+      // send in the current transform, remove references back to PT
+
+
+	  // this.groupHandler.calcCrownTransformsDataFromTransform(this.imagetransforms);
 		
-     console.log(toString(this.groupHandler.getGroup().c.crowntransformregistry))
-
+    
     let debug = this.debug;
     var par = this.params;
 
@@ -544,6 +548,7 @@ export class PatternTextures {
         
       }
     }
+
     
 		un.u_texCount = tcount;
 		un.u_textures = samplers;
@@ -553,7 +558,7 @@ export class PatternTextures {
       
 
 
-    var ctrans = this.groupHandler.getGroup().c.crowntransformregistry; //fix this to be more transparent
+    var ctrans = this.crowntransforms//this.groupHandler.getGroup().c.crowntransformregistry;
    
     un.u_cTransCumRefCount=iPackRefCumulativeCount(ctrans, this.MAX_CROWN_COUNT);
     un.u_cTransformsData=iCumPackTransforms(ctrans,  this.MAX_TOTAL_CROWN_COUNT);
@@ -768,13 +773,13 @@ export class PatternTextures {
 
     var editPoints = [];
     
-    for(var i = 0; i < this.texCount; i++) {
+    var i = 0;
      
       // draw a little circle at the center of the various image transforms
       // use the inversive library to do this because many functions in complexTransforms
       // presume that the unit disk is preserved. 
 
-      var newimagetransform = this.imagetransforms[i];
+      var newimagetransform = this.imagetransforms[0];
 
       var newpoint = iTransformU4(newimagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
     // newpoint = [newpoint[0],newpoint[1]];
@@ -784,59 +789,44 @@ export class PatternTextures {
      iDrawPoint(newpoint, context, transform, optZ);
 
 
-      var texIndex = i;
-      var c = (i); 
-      if(par['active' + c]){
+     
+      if(par['active0']){
         
-				var s = 0.5*Math.exp(par['scale' + c]);
-			
-				var cx = par['cx' + c];
-				var cy = par['cy' + c];
 
-        /*  var angle = -par['angle' + c]*TORADIANS;
-        var sa = sin(angle);
-        var ca = cos(angle);
-        var rot = [ca, sa];
-        
-        var cpnt = [cx, cy];
-        var corners = [];
-        corners.push(add([cx, cy], cMul([s,s],rot)));  // corner point type 1
-        corners.push(add([cx, cy], cMul([-s,s],rot))); // corner point type 2
-        corners.push(add([cx, cy], cMul([-s,-s],rot)));// corner point type 3
-        corners.push(add([cx, cy], cMul([s,-s],rot))); // corner point type 4
-      */  
+
+        // here is where we can work out center, etc in terms of the newimagetransform
+
+				var s = 0.5*Math.exp(par['scale0']);
+			
+				
+				
 
         var centerpnt, temppt;
 
+        
+        centerpnt = [newpoint[0],newpoint[1]];
+        this.params['cx0'] = centerpnt[0];
+        this.params['cy1'] = centerpnt[1];
 
-       temppt = imagetransform.applyTo(new complexN(0,0));
-       centerpnt = [temppt.re,temppt.im];
-       
+
+      // we're going to need some help from Complex.js to figure out how scale changes. 
+
+
 
 
         var corners = [];
 
-        temppt = imagetransform.applyTo(new complexN(s,s));
-        corners.push([temppt.re,temppt.im]);
-        temppt = imagetransform.applyTo(new complexN(-s,s));
-        corners.push([temppt.re,temppt.im]);
-        temppt = imagetransform.applyTo(new complexN(-s,-s));
-        corners.push([temppt.re,temppt.im]);
-        temppt = imagetransform.applyTo(new complexN(s,-s));
-        corners.push([temppt.re,temppt.im]);
+        temppt = iTransformU4(newimagetransform, new iSplane({v:[s,s,0,0],type:3})).v;
+        corners.push([temppt[0],temppt[1]]);
+        temppt = iTransformU4(newimagetransform, new iSplane({v:[-s,s,0,0],type:3})).v;
+        corners.push([temppt[0],temppt[1]]);
+        temppt = iTransformU4(newimagetransform, new iSplane({v:[-s,-s,0,0],type:3})).v;
+        corners.push([temppt[0],temppt[1]]);
+        temppt = iTransformU4(newimagetransform, new iSplane({v:[s,-s,0,0],type:3})).v;
+        corners.push([temppt[0],temppt[1]]);
         
 
-
-        /*corners.push([s,s]);  // corner point type 1
-        corners.push([-s,s]);  // corner point type 2
-        corners.push([-s,-s]); // corner point type 3
-        corners.push([s,-s]);  // corner point type 4*/
-       
-
-        // now adjust by multiple transforms. First move to the virtual image at
-        // centerpoint
-                                                       
-        editPoints.push({p:trans(centerpnt),texIndex:texIndex, type:0}); // center point type 0
+        editPoints.push({p:trans(centerpnt),texIndex:0, type:0}); // center point type 0
         
         iDrawPoint(centerpnt, context, transform, opt);
         iDrawPoint(centerpnt, context, transform, opta);
@@ -852,7 +842,7 @@ export class PatternTextures {
         
         for(var k = 0; k < 4; k++){
           
-          editPoints.push({p:trans(corners[k]),texIndex:texIndex, type:(k+1)});
+          editPoints.push({p:trans(corners[k]),texIndex:0, type:(k+1)});
           
           iDrawPoint(corners[k], context, transform, opt1);
 
@@ -860,7 +850,7 @@ export class PatternTextures {
           iDrawSegment(corners[k],corners[(k+1)%4], context, transform, opt2);
         }   
       }
-    }
+    
     this.editPoints = editPoints;
     
   }
@@ -939,16 +929,17 @@ export class PatternTextures {
 
       // no need for angleAdjustment
 
-      this.angleAdjustment[0]+=temp.angleAdjustment;
+      this.angleAdjustment+=temp.angleAdjustment;
       if(Math.abs(temp.angleAdjustment)>.0001){
       //    console.log("a={",temp.angleAdjustment,",",this.angleAdjustment[0],"}")
         }
       
-      while(this.angleAdjustment[0]<0){
-        this.angleAdjustment[0]+=6.2831853071795864769;}
-      while(this.angleAdjustment[0]>6.2831853071795864769){
-        this.angleAdjustment[0]-=6.2831853071795864769;}
+      while(this.angleAdjustment<0){
+        this.angleAdjustment+=6.2831853071795864769;}
+      while(this.angleAdjustment>6.2831853071795864769){
+        this.angleAdjustment-=6.2831853071795864769;}
 
+      par['angle0']+=this.angleAdjustment
       this.onChanged(); // THIS WILL BE REMOVED SHORTLY; only call onChanged when the centerpoint changing triggers a transform change.
 
 

@@ -385,6 +385,8 @@ export class WallPaperGroup_General {
         crowntransformsdata = gcT;
 
         this.FD.c = crowntransformsdata
+
+        return crowntransformsdata;
     }
 
     getGroup() {
