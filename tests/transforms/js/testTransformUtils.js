@@ -2,11 +2,9 @@
 
 import {
     makeTransformClassificationU4
-} from './modules.js';
-
-import {
     Group_KLMN
-} from './modules.js';
+} from '../../../lib/symhublib/modules.js';
+
 
 const MYNAME = 'testTransformUtils';
 
