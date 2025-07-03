@@ -290,14 +290,22 @@ export class PatternTextures {
     
     this.debug = false;
     
-    this.textures = getParam(options.textures, [[{name:'red arrow', path:'../../library/images/arrow_red.png'}]]);
+    this.textures = getParam(options.textures[0],/*so as to not limit the change to a single texture to this module*/
+      [{name:'red arrow', path:'../../library/images/arrow_red.png'}]);
 		this.params = {
-      showUI:false
+      showUI:true,
+      active:true,
+      scale:0,
+      angle:0,
+      cx:.1,
+      cy:.2
+
     };
     var opt = getParam(options, {});
-    this.texCount = getParam(opt.texCount,this.textures.length);
+    this.texCount = 1; // There will be only one texture henceforth.
+    // all indices are being eliminated.
+
     this.baseDir = getParam(opt.baseDir,'images/');
-    //this.texNames = getParam(opt.texNames,[TEX_CAMERA,'arrow_red','arrow_blue','arrow_green', 'arrow_yellow','arrow_magenta','arrow_teal']);
     this.texNames = this.makeTexNames(this.textures);
     if(this.debug)console.log('this.texNames.length:%d',this.texNames.length);
     this.extension = getParam(opt.extension,'.png');
@@ -307,7 +315,10 @@ export class PatternTextures {
 
 
    // this.imageGluedToOriginQ = true; 
+
     this.angleAdjustment = 0;
+    this.imagetransform = [];
+
     
     
       //this is actually going to be a separate transform for each layer, but for now this is fine.
@@ -348,9 +359,9 @@ export class PatternTextures {
     pm.showUI = p.showUI;
     
     pm.textures = [];
-    for(var t = 0; t < this.textures.length; t++){
-      pm.textures[t] = this.getTexParamsMap(t);
-    }
+    
+    pm.textures = this.getTexParamsMap();
+
     return pm;
   }
 
@@ -366,12 +377,14 @@ export class PatternTextures {
 
     c.showUI.setValue(pm.showUI);
     
-    var len = Math.min(pm.textures.length, this.textures.length);
-    //console.log('len:', len);
+    var len = 1;
+
     
-    for(var t = 0; t < len; t++){
-      this.setTexParamsMap(t, pm.textures[t]);
-    }
+    
+    this.setTexParamsMap(pm.textures[0]);
+      //*******//
+      // the parameters upstream still are using arrays.
+
     
     //inspectProperties(p);
   }
@@ -379,16 +392,18 @@ export class PatternTextures {
   /**
     return params map for specific texture 
   */
-  getTexParamsMap(index){
+  getTexParamsMap(){
     
+
     var p = this.params;
     return {
-      active: p['active' + index],
-      name: p['tex' + index],
-      alpha: p['alpha' + index],
-      scale: p['scale' + index],
-      angle: p['angle' + index],
-      center: [p['cx' + index],p['cy' + index]]
+      showUI: p['showUI'],
+      active: p['active'],
+      name: p['tex'],
+      alpha: p['alpha'],
+      scale: p['scale'],
+      angle: p['angle'],
+      center: [p['cx'],p['cy']]
     };
     
   }
@@ -410,20 +425,22 @@ export class PatternTextures {
     // grouprenderer for a transform t back to the FD; 
     // with which we follow imagetransform.
 
-  setTexParamsMap(index, pm){
+  setTexParamsMap(pm){
     
-    //console.log('setTexParamsMap(',index, 'params:', pm);
     var c = this.controllers;
     
-    c['active' + index].setValue(pm.active);
-    c['tex' + index].setValue(pm.name);
-    c['alpha' + index].setValue(pm.alpha);
-    c['scale' + index].setValue(pm.scale);//scalar 
-    c['angle' + index].setValue(pm.angle);
-    c['cx' + index].setValue(pm.center[0]);
-    c['cy' + index].setValue(pm.center[1]);
+    c['active'].setValue(pm.active);
+    c['tex'].setValue(pm.name);
+    c['alpha'].setValue(pm.alpha);
+    c['scale'].setValue(pm.scale);//scalar 
+    c['angle'].setValue(pm.angle);
+    c['cx'].setValue(pm.center);
+    c['cy'].setValue(pm.center);
 
-// THIS IS WHERE TO PUT AN UPDATED TRANSFORM
+    console.log('updating imagetransform from setTexParamsMap')
+  //this.onChanged(); // no need to trigger an update of this.imagetransform
+
+
 
     
   }
@@ -433,15 +450,15 @@ export class PatternTextures {
     
     var tnames = [];
     
-    for(var t = 0;  t < textures.length; t++){
+    
       let nn = []; // names for texture  t 
-      tnames.push(nn);
-      let tn = textures[t];
+      tnames = nn;
+      let tn = textures;
       //console.log('tnames[%d]',t);      
       for(var n = 0;  n < tn.length; n++){
           //console.log('tname:',tn[n].name);
           nn.push(tn[n].name);
-      }      
+           
     }
     return tnames;
   }
@@ -449,21 +466,16 @@ export class PatternTextures {
   //
   // return URL for texture tindex
   //
-  getTexPath(tindex) {
+  getTexPath() {
     
     // currently selected name for texture t 
-    let selectedName = this.params['tex'+tindex];
-    
-    //console.log('getTexPath(%d) ',tindex);
-    //console.log('selectedName: %s ',selectedName);
-    var tnames = this.texNames[tindex];
-   // for(var i = 0; i < tnames.length; i++){
-   //   console.log('texName[%d]: %s ',i, tnames[i]);
-   // }
+    let selectedName = this.params['tex'];
+    var tnames = this.texNames;
+
     
     let selectedIndex = Math.max(0,tnames.indexOf(selectedName)); 
     
-    return this.textures[tindex][selectedIndex].path;
+    return this.textures[selectedIndex].path;
     
   }
   
@@ -480,9 +492,9 @@ export class PatternTextures {
 	getUniforms(un){
     
     
-      var paramcenter = [this.params['cx0'],this.params['cy0']];
-      var paramangle = -this.params['angle0']*TORADIANS+this.angleadjustment;
-      var paramscale = this.params['scale0'];
+      var paramcenter = [this.params['cx'],this.params['cy']];
+      var paramangle = -this.params['angle']*TORADIANS+this.angleAdjustment;
+      var paramscale = this.params['scale'];
 
      this.crowntransforms = this.groupHandler.calcCrownTransformsData(
       paramcenter, paramangle, paramscale
@@ -505,66 +517,59 @@ export class PatternTextures {
     // this.imagetransforms =[];// for the moment, we wipe these each pass;
     // soon these will be initiated on load and updated with the dragging.
     
-    var samplers = [];
-    var centers = [];
-    var scales = [];
-    var alphas = [];
+    var samplers;
+    var centers;
+    var scales;
+    var alphas;
     
-    var tcount = 0;
+    //var tcount = 0;
     
     var hasAnimation = false;
     
-    for(var i = 0; i < this.texCount; i++) {
+   // for(var i = 0; i < this.texCount; i++) 
+    //{
       
-      if(par['active' + i]){
+      if(par['active']){
         
-        var url = this.getTexPath(i);
+        var url = this.getTexPath();
                 
-        if(debug)console.log('active texture:%d %s', i, url);
         var tex = this.texManager.getTexture(url, this.onChanged);
         
         
-				tcount++;
-        // In effect, textures are glued to the origin.
-        // All of the actual work is now inside of crowntransforms.
-        
-        //  Angles are accounted for there.
+        // The texture unit sized at the origin, then transformed by imagetransform, 
+        // and then crowntransforms, some of the left imagetransform coset.
 
-
-				// Scale can be moved away as well, simply by adjusting crown transforms 
-        // to precompose a couple of scaling inversions. For the moment, 
-        // scalar scale is still being used. 
-
-        // For now, the rest of this remains here as a distraction. 
    
 /* #### */     
         
        
-        samplers.push(tex.texture);
+        samplers=tex.texture;
         if(tex.isAnimation){
           hasAnimation = true;
         }          
-        alphas.push(par['alpha' + i]);
+        alphas=par['alpha'];
 
 /* #### */ 
         
       }
-    }
+    //}
 
     
-		un.u_texCount = tcount;
-		un.u_textures = samplers;
-		un.u_texAlphas = alphas;
+		un.u_texCount = 1;
+		un.u_textures = [samplers];// still to turn into a scalar on the webgl side.
+		un.u_texAlphas = [alphas];
 
     un.u_imagetransforms =  iPackTransforms(this.imagetransforms, this.tcount, 5);
       
-
-
-    var ctrans = this.crowntransforms//this.groupHandler.getGroup().c.crowntransformregistry;
+    var ctrans
+    if(this.groupHandler.getGroup().c){
+      //var ctrans = this.crowntransforms//
+      ctrans = this.groupHandler.getGroup().c.crowntransformregistry;}
+    else ctrans = [];
    
     un.u_cTransCumRefCount=iPackRefCumulativeCount(ctrans, this.MAX_CROWN_COUNT);
     un.u_cTransformsData=iCumPackTransforms(ctrans,  this.MAX_TOTAL_CROWN_COUNT);
-    un.u_crownCount = ctrans.length;
+    un.u_crownCount = 0;/******/ // ctrans.length;
 
     
     if(hasAnimation)
@@ -598,60 +603,33 @@ export class PatternTextures {
     this.controllers = {};
     var ctrls = this.controllers;
     
-    ctrls.showUI = folder.add(par, 'showUI').onChange(onModified);	
-    var texFolder = folder.addFolder('tex');
-    var acFolder = folder.addFolder('active');
-    var alFolder = folder.addFolder('alpha');
-    var tranFolder = folder.addFolder('transform');
-    var scFolder = tranFolder.addFolder('scale');
-    var anFolder = tranFolder.addFolder('angle');
-    var cxFolder = tranFolder.addFolder('cx');
-    var cyFolder = tranFolder.addFolder('cy');
 
+    par['showUI'] = true; 
+    ctrls.showUI = folder.add(par, 'showUI').name('showUI').onChange(onModified);	// this goes to updatePatternData
 
+    par['active'] = true;      
+    ctrls.active = folder.add(par, 'active').name('active').onChange(onModified);	//updatePatternData
     
+    par['tex'] = texNames[0];      
+    ctrls['tex'] = folder.add(par, 'tex', texNames).name('tex').onChange(onModified);	
 
+    par['alpha'] = 1;      
+    ctrls['alpha'] = folder.add(par, 'alpha', 0, 1,  eps).name('alpha').onChange(onModified);	
     
-    var tcount = this.texCount;
+    par['scale'] = 0;      
+    ctrls['scale'] = folder.add(par, 'scale', -6, 6,  eps).name('scale').onChange(onModified);	
     
-    for(var i = 0; i < tcount; i++){
-      //
-      // store param names and values into single map par 
-      // make separate UI folder for each texture params
-      //
-      var c = (i);      
-      
-      var uname = 'active',pname = uname + c;
-      par[pname] = false;
-      ctrls[pname] = acFolder.add(par, pname).name(pname).onChange(onModified);	//updatePatternData
-      
-      var uname = 'tex', pname = uname + c;
-      par[pname] = texNames[i][0];      
-      ctrls[pname] = texFolder.add(par, pname, texNames[i]).name(pname).onChange(onModified);	
+    par['angle'] = 0;            
+    ctrls['angle'] = folder.add(par, 'angle', -360, 360,  eps).name('angle').onChange(onModified);	
 
-      var uname = 'alpha', pname = uname + c;
-      par[pname] = 1;      
-      ctrls[pname] = alFolder.add(par, pname, 0, 1,  eps).name(pname).onChange(onModified);	
-      
-      var uname = 'scale', pname = uname + c;
-      par[pname] = 0;      
-      ctrls[pname] = scFolder.add(par, pname, -6, 6,  eps).name(pname).onChange(onModified);	
-      
-      var uname = 'angle', pname = uname + c;
-      par[pname] = 0;            
-      ctrls[pname] = anFolder.add(par, pname, -360, 360,  eps).name(pname).onChange(onModified);	
-
-      var uname = 'cx', pname = uname + c;
-      par[pname] = 0;            
-      ctrls[pname] = cxFolder.add(par, pname, -10, 10,  eps).name(pname).onChange(onModified);	
-      
-      var uname = 'cy', pname = uname + c;
-      par[pname] = 0;            
-      ctrls[pname] = cyFolder.add(par, pname, -10, 10,  eps).name(pname).onChange(onModified);	
-      
-    }
+    par['cx'] = 0;            
+    ctrls['cx'] = folder.add(par, 'cx', -10, 10,  eps).name('cx').onChange(onModified);	
     
-    //gui.remember(par);    
+    par['cy'] = 0;            
+    ctrls['cy'] = folder.add(par, 'cy', -10, 10,  eps).name('cy').onChange(onModified);	
+    
+    console.log('updating image transforms from initGUI')
+    this.onModified()   
      
   }
 
@@ -696,23 +674,19 @@ export class PatternTextures {
     // needs to be calculated from the center, scale and angle, all from scratch. 
     // We hit this when the controls are changed, etc. 
     // We could call this while dragging the mouse
-
-    var tcount = this.texCount;
     
-    this.imagetransforms = [];
-    for(var i = 0; i < tcount; i++){
-      var centerx = this.params['cx' + (i)];
-      var centery = this.params['cy' + (i)];
+      var centerx = this.params['cx'];
+      var centery = this.params['cy'];
       var delta = Math.sqrt(centerx*centerx+centery*centery);
-      var scale = Math.exp(this.params['scale' + (i)]);
-      var angle =  this.params['angle'+(i)];
+      var scale = Math.exp(this.params['scale']);
+      var angle =  this.params['angle'];
 
       var c = scale*Math.cos(angle); 
       var s = scale*Math.sin(angle);
 
       var imagetransform = [];
 
-      var newtransform;
+      //var newtransform;
       var complexcenter = [centerx,centery]
       var complexscale = [c,s];
 
@@ -720,14 +694,17 @@ export class PatternTextures {
       if(delta>.000001 /*say*/)
       { 
         
-        newtransform = transformFromCenterToPoint(complexcenter,complexscale);
+        this.imagetransforms = transformFromCenterToPoint(complexcenter,complexscale);
         
-        imagetransform=imagetransform.concat(newtransform);
+       //imagetransform =imagetransform.concat(newtransform);
 	  }
+      else this.imagetransforms = 
+        [ new iSplane({v:[0,1,0,0],type:2}),
+          new iSplane({v:[0,1,0,0],type:2})];
 
-      this.imagetransforms.push(imagetransform);
+      //this.imagetransforms = imagetransform;
 
-    }
+    
     console.log(objectToString(this.imagetransforms))
 
     // each image transform should be set to the identity upon initialization
@@ -777,13 +754,17 @@ export class PatternTextures {
 
     var editPoints = [];
     
-    var i = 0;
+    
      
       // draw a little circle at the center of the various image transforms
       // use the inversive library to do this because many functions in complexTransforms
       // presume that the unit disk is preserved. 
 
-      var newimagetransform = this.imagetransforms[0];
+      var newimagetransform;
+      if(this.imagetransforms)
+        newimagetransform = this.imagetransforms;
+      else 
+        newimagetransform = []
 
       var newpoint = iTransformU4(newimagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
     // newpoint = [newpoint[0],newpoint[1]];
@@ -794,13 +775,13 @@ export class PatternTextures {
 
 
      
-      if(par['active0']){
+      if(par['active']){
         
 
 
         // here is where we can work out center, etc in terms of the newimagetransform
 
-				var s = 0.5*Math.exp(par['scale0']);
+				var s = 0.5*Math.exp(par['scale']);
 			
 				
 				
@@ -809,8 +790,8 @@ export class PatternTextures {
 
         
         centerpnt = [newpoint[0],newpoint[1]];
-        this.params['cx0'] = centerpnt[0];
-        this.params['cy1'] = centerpnt[1];
+        this.params['cx'] = centerpnt[0];
+        this.params['cy'] = centerpnt[1];
 
 
       // we're going to need some help from Complex.js to figure out how scale changes. 
@@ -830,7 +811,7 @@ export class PatternTextures {
         corners.push([temppt[0],temppt[1]]);
         
 
-        editPoints.push({p:trans(centerpnt),texIndex:0, type:0}); // center point type 0
+        editPoints.push({p:trans(centerpnt), type:0}); // center point type 0
         
         iDrawPoint(centerpnt, context, transform, opt);
         iDrawPoint(centerpnt, context, transform, opta);
@@ -846,7 +827,7 @@ export class PatternTextures {
         
         for(var k = 0; k < 4; k++){
           
-          editPoints.push({p:trans(corners[k]),texIndex:0, type:(k+1)});
+          editPoints.push({p:trans(corners[k]), type:(k+1)});
           
           iDrawPoint(corners[k], context, transform, opt1);
 
@@ -919,17 +900,18 @@ export class PatternTextures {
       // be incorporated into some texture controller object that handles this
       // for its own texture.
       
-      var temp = this.groupHandler.resetCenterfromPt(wpnt,[par['cx0'],par['cy0']]);
-      var resetdata = this.groupHandler.resetTransformfromPt(wpnt,this.imagetransforms[0]);
+      var temp = this.groupHandler.resetCenterfromPt(wpnt,[par['cx'],par['cy']]);
+      var resetdata = this.groupHandler.resetTransformfromPt(wpnt,this.imagetransforms);
       //this.imagetransforms[0]=resetdata.imagetransforms[0];
-      par['cx0']=temp.center[0]; // the new center.
-      par['cy0']=temp.center[1]; // 
+      par['cx']=temp.center[0]; // the new center.
+      par['cy']=temp.center[1]; // 
+      this.controllers['cx'].setValue(par['cx']);
+      this.controllers['cy'].setValue(par['cy']);
 
 
-      // ADD: change angle and scale as well;
-      // update this.imagetransform[0]=resetdata.imagetransform
 
 
+      /**** get rid of all this stuff*/ 
 
       // no need for angleAdjustment
 
@@ -943,39 +925,38 @@ export class PatternTextures {
       while(this.angleAdjustment>6.2831853071795864769){
         this.angleAdjustment-=6.2831853071795864769;}
 
-      par['angle0']+=this.angleAdjustment
+      par['angle']+=this.angleAdjustment
       this.onChanged(); // THIS WILL BE REMOVED SHORTLY; only call onChanged when the centerpoint changing triggers a transform change.
-
-
     }
+
     else if(this.dragging){ //we are dragging the mouse
       var apnt = this.activePoint;
-      var texIndex = (apnt.texIndex);
+      
       var type = apnt.type;
       var lastMouse = this.lastMouse;
-      //console.log("texIndex: %d, type: %d",texIndex, type);
       
       switch(type){
         
         case 0:  
-          // change texture center 
-        /*  par['cx' + texIndex] += (wpnt[0] - lastMouse[0]);
-          par['cy' + texIndex] += (wpnt[1] - lastMouse[1]);*/
-          par['cx0']= wpnt[0];
-          par['cy0']= wpnt[1];
-
-          this.onChanged(); //  updatePatternData
+          par['cx']= wpnt[0];
+          par['cy']= wpnt[1];
+          this.controllers['cx'].setValue(par['cx']);
+          this.controllers['cy'].setValue(par['cy']);
+          // triggers updatePatternData
         break;        
         // corners 
         case 1:
         case 2:
         case 3:
         case 4:
-          var factor = this.getCornerFactor([par['cx' + texIndex],par['cy' + texIndex]],lastMouse, wpnt);
-          //console.log("scaleDelta:",factor.scaleDelta);
-          par['angle' + texIndex] = this.normalizeAngle(par['angle' + texIndex]+(factor.angleDelta/TORADIANS));
-          par['scale' + texIndex] += log(factor.scaleDelta); 
-          this.onChanged(); // updatePatternData
+          /****** this is another place to insert a change to transform;
+           * does this correctly happen in onChanged?**/
+          var factor = this.getCornerFactor([par['cx'],par['cy']],lastMouse, wpnt);
+          par['angle'] = this.normalizeAngle(par['angle']+(factor.angleDelta/TORADIANS));
+          par['scale'] += log(factor.scaleDelta); 
+          this.controllers['angle'].setValue(par['angle']);
+          this.controllers['scale'].setValue(par['scale']);
+          //triggers updatePatternData
         default: 
         break;
       }
