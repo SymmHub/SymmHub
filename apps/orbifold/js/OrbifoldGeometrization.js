@@ -10,7 +10,7 @@ import {PI,HPI,TPI,abs,cos,cosh,sin,sinh,coth,asin,sqrt,cot,acosh,asinh,tanh,obj
   from '../../../lib/invlib/Utilities.js';
 import {iToFundDomainWBounds,iDistanceU4,
     iTransformU4,iGetInverseTransform,iGetFactorizationU4,
-    iGetFactorizationOfSplanes,
+    iGetFactorizationOfSplanes,derivativeOfSplaneList,
 } 
   from '../../../lib/invlib/Inversive.js';
 import {iSplane,SPLANE_POINT, SPLANE_PLANE,SPLANE_SPHERE} 
@@ -1880,18 +1880,9 @@ export function calcCrownTransformsDataFromTransform(domain,transforms,imagetran
     // calculate input scale. This is the magnitude of the derivative (sqrt det)
     // we have this as a series of splanes; 
 
+   
 
-
-     var cc,ss,texturewidth;
-    cc = 1//inputscale[0]; 
-    ss = 0//inputscale[1];
-    texturewidth= Math.sqrt(cc*cc+ss*ss);
-    var center = inputcenter;
-
-    
-
-
-    cc=Math.random()*.01; ss=Math.random()*.01;
+    var cc,ss,registrypoint;
 
     var origin = new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
 
@@ -1906,7 +1897,8 @@ export function calcCrownTransformsDataFromTransform(domain,transforms,imagetran
     var safety=0;
     var r,t;
 
-    var registryscalingsize=100000;//Number.MAX_SAFE_INTEGER/2;
+    var registryscalingsize=100000;
+    //We measure equivalence in the registry with coarse precision, ints to this size
     
     while(!foundaregistrypoint && safety++<1000){// this is uniform? across a disk of radius .9 
         // We just need one!
@@ -1942,7 +1934,7 @@ export function calcCrownTransformsDataFromTransform(domain,transforms,imagetran
     var listoftexturesamplingpoints=[];
 
     var steps = Math.round(Math.sqrt(distancetable.length)); //45;// gives 2025 test points. For some long skinny FDs this may not be enough.
-    var delta = 1/(steps -1)*texturewidth;
+    var delta = 1/(steps -1); // the texture always is from -.5 to .5
 
     var pp;
 
@@ -1958,8 +1950,8 @@ export function calcCrownTransformsDataFromTransform(domain,transforms,imagetran
     
     // the point registry records the copies of the registry point that we've 
     // already seen, in order to keep track of the transforms that we've already seen.
-    // We keep these as integers up to Number.MAX_SAFE_INTEGER/2 big.
-    pointregistry=[]//[cc,ss]]; //scaled up to integers 1000 x as big.
+    // We keep these as integers up to 100000 big.
+    pointregistry=[]; 
 
     // to make a nice picture for debugging, we also include the transformed images of the registered points.
     trpointregistry=[]//[registrypoint.v[0],registrypoint.v[1]]];

@@ -479,6 +479,7 @@ export class PatternTextures {
 	//
 	getUniforms(un){
     
+    
       var paramcenter = [this.params['cx0'],this.params['cy0']];
       var paramangle = -this.params['angle0']*TORADIANS+this.angleadjustment;
       var paramscale = this.params['scale0'];
@@ -493,9 +494,10 @@ export class PatternTextures {
      this.crowntransforms = this.crowntransforms.crowntransformregistry
       // send in the current transform, remove references back to PT
 
-
-	  // this.groupHandler.calcCrownTransformsDataFromTransform(this.imagetransforms);
-		
+    /*  var whatsup;  
+     if(!this.imagetransforms){console.log('n')} else{console.log('y');
+	   whatsup = this.groupHandler.calcCrownTransformsDataFromTransform(this.imagetransforms);
+		}*/
     
     let debug = this.debug;
     var par = this.params;
@@ -718,10 +720,10 @@ export class PatternTextures {
       if(delta>.000001 /*say*/)
       { 
         
-        newtransform = 
-            transformFromCenterToPoint(complexcenter,complexscale);
+        newtransform = transformFromCenterToPoint(complexcenter,complexscale);
         
-        imagetransform=imagetransform.concat(newtransform);}
+        imagetransform=imagetransform.concat(newtransform);
+	  }
 
       this.imagetransforms.push(imagetransform);
 
@@ -751,7 +753,9 @@ export class PatternTextures {
     var trans = ((isFunction(transform.transform2screen))? transform.transform2screen : transform.world2screen).bind(transform);
     
     //need to composite 
-    var imagetransform = this.groupHandler.getGroup().c.imagetransformAsMobius;
+    var temp  = this.groupHandler.getGroup();
+    if(!temp.c){return}
+    var imagetransform = temp.c.imagetransformAsMobius;
 
     var opt = {radius:14, style:"#FFFFAA"};
     var opta = {radius:12, style:"#0000DD"};
