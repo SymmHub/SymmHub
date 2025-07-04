@@ -317,34 +317,19 @@ export class PatternTextures {
    // this.imageGluedToOriginQ = true; 
 
     this.angleAdjustment = 0;
+
     this.imagetransform = [];
 
+    // when the center, scale or angle change, the controllers are changed, 
+    // and they trigger a reset of imagetransforms; 
+    // however, when imagetransforms is updated in some other way, for example, 
+    // by shifting FDs, center etc need to be updated, and their controllers changed
+    // --without-- again changing imagetransforms (Alternatively, could recalculate 
+    // imagetransforms; shouldn't really matter) 
+    this.updatetransformfromcenter=true;
+
     
     
-      //this is actually going to be a separate transform for each layer, but for now this is fine.
-    
-
-    // After initialization, orbifoldmain.js ensures that 
-    //
-    //    this.groupHandler 
-    //
-    // will be defined, and in particular, is able to record
-    //the transformation moving the texture rooted at the math-origin.
-    // It will also be able to walk the transformation back to the origin.
-
-
-    ///////////
-    //
-    //  We are now assuming there is just one texture, which itself always has its center at 00 and is not rotated in math coords.
-    //  center now becomes the center of a transformed copy of the image, which we
-    // render the outline of. 
-
-    // We will later have some functionality that allows the center of the transform to be 
-    // someplace else; for now, this.
-
-    // Later, the textures and each layer of the composited image 
-    // will each have their own structure.  Adapting TextureManager above seems simplest.
-
     
 	}
 
@@ -438,7 +423,7 @@ export class PatternTextures {
     c['cy'].setValue(pm.center);
 
     console.log('updating imagetransform from setTexParamsMap')
-  //this.onChanged(); // no need to trigger an update of this.imagetransform
+  // an update of this.imagetransform is triggered by the change to the controller.
 
 
 
@@ -496,25 +481,26 @@ export class PatternTextures {
       var paramangle = -this.params['angle']*TORADIANS+this.angleAdjustment;
       var paramscale = this.params['scale'];
 
+      console.log(paramcenter,paramangle,paramscale, this.imagetransform);
      this.crowntransforms = this.groupHandler.calcCrownTransformsData(
       paramcenter, paramangle, paramscale
       );
 
-     console.log("hey", toString(this.groupHandler.getGroup().c.crowntransformregistry))
+     console.log("hey", toString(this.crowntransforms.crowntransformregistry))
 
 
      this.crowntransforms = this.crowntransforms.crowntransformregistry
       // send in the current transform, remove references back to PT
 
     /*  var whatsup;  
-     if(!this.imagetransforms){console.log('n')} else{console.log('y');
-	   whatsup = this.groupHandler.calcCrownTransformsDataFromTransform(this.imagetransforms);
+     if(!this.imagetransform){console.log('n')} else{console.log('y');
+	   whatsup = this.groupHandler.calcCrownTransformsDataFromTransform(this.imagetransform);
 		}*/
     
     let debug = this.debug;
     var par = this.params;
 
-    // this.imagetransforms =[];// for the moment, we wipe these each pass;
+    // this.imagetransform =[];// for the moment, we wipe these each pass;
     // soon these will be initiated on load and updated with the dragging.
     
     var samplers;
@@ -559,13 +545,18 @@ export class PatternTextures {
 		un.u_textures = [samplers];// still to turn into a scalar on the webgl side.
 		un.u_texAlphas = [alphas];
 
-    un.u_imagetransforms =  iPackTransforms(this.imagetransforms, this.tcount, 5);
+    un.u_imagetransforms =  iPackTransforms(this.imagetransform, this.tcount, 5);
       
     var ctrans
     if(this.groupHandler.getGroup().c){
       //var ctrans = this.crowntransforms//
       ctrans = this.groupHandler.getGroup().c.crowntransformregistry;}
     else ctrans = [];
+
+    ctrans = [[new iSplane({v:[0,1,0,0],type:2}),new iSplane({v:[0,1,0,0],type:2})]];
+
+    ctrans = this.groupHandler.getGroup().c.crowntransformregistry;
+   
    
     un.u_cTransCumRefCount=iPackRefCumulativeCount(ctrans, this.MAX_CROWN_COUNT);
     un.u_cTransformsData=iCumPackTransforms(ctrans,  this.MAX_TOTAL_CROWN_COUNT);
@@ -675,6 +666,11 @@ export class PatternTextures {
     // We hit this when the controls are changed, etc. 
     // We could call this while dragging the mouse
     
+      if(!this.updatetransformfromcenter){
+          this.updatetransformfromcenter=true;
+          return ;
+      }
+
       var centerx = this.params['cx'];
       var centery = this.params['cy'];
       var delta = Math.sqrt(centerx*centerx+centery*centery);
@@ -694,18 +690,18 @@ export class PatternTextures {
       if(delta>.000001 /*say*/)
       { 
         
-        this.imagetransforms = transformFromCenterToPoint(complexcenter,complexscale);
+        this.imagetransform = transformFromCenterToPoint(complexcenter,complexscale);
         
        //imagetransform =imagetransform.concat(newtransform);
 	  }
-      else this.imagetransforms = 
+      else this.imagetransform = 
         [ new iSplane({v:[0,1,0,0],type:2}),
           new iSplane({v:[0,1,0,0],type:2})];
 
-      //this.imagetransforms = imagetransform;
+      //this.imagetransform = imagetransform;
 
-    
-    console.log(objectToString(this.imagetransforms))
+    console.log("updating transforms", objectToString(this.params))
+    console.log(objectToString(this.imagetransform))
 
     // each image transform should be set to the identity upon initialization
     // then upon loading a json file, need to calculate from scratch. Thence this function updates the transform.
@@ -761,24 +757,21 @@ export class PatternTextures {
       // presume that the unit disk is preserved. 
 
       var newimagetransform;
-      if(this.imagetransforms)
-        newimagetransform = this.imagetransforms;
+      if(this.imagetransform)
+        newimagetransform = this.imagetransform;
       else 
         newimagetransform = []
 
+     console.log("the image transform", newimagetransform);
+
       var newpoint = iTransformU4(newimagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
-    // newpoint = [newpoint[0],newpoint[1]];
-
-     var optZ = {radius:11, style:"#20F0F0"};
     
-     iDrawPoint(newpoint, context, transform, optZ);
-
-
      
+
       if(par['active']){
         
 
-
+        //*******//
         // here is where we can work out center, etc in terms of the newimagetransform
 
 				var s = 0.5*Math.exp(par['scale']);
@@ -895,18 +888,29 @@ export class PatternTextures {
       // which c is closest to the FD image f(w) of wpt?
       // The center point is therefore c(f(w))
       
+      var resetdata = this.groupHandler.resetTransformfromPtAndTransform(wpnt,this.imagetransform);
 
-      // For now just hardwiring in one texture; later this same code will 
-      // be incorporated into some texture controller object that handles this
-      // for its own texture.
-      
-      var temp = this.groupHandler.resetCenterfromPt(wpnt,[par['cx'],par['cy']]);
-      var resetdata = this.groupHandler.resetTransformfromPt(wpnt,this.imagetransforms);
-      //this.imagetransforms[0]=resetdata.imagetransforms[0];
-      par['cx']=temp.center[0]; // the new center.
-      par['cy']=temp.center[1]; // 
+
+      this.imagetransform = resetdata.imagetransform;
+      //**TBD**//
+      this.params['imagetransform']=this.imagetransform;
+
+      //this.imagetransform[0]=resetdata.imagetransform[0];
+      this.params['cx']=resetdata.center[0]; // the new center.
+      this.params['cy']=resetdata.center[1]; // 
+      this.params['angle']=resetdata.angle;
+      this.params['scale']=resetdata.scale;
+
+      //*****// this little routine needs to fixed up; actually, shouldn't matter if 
+      // updatePatternTexture is triggered. 
+      this.updatetransformfromcenter=false;
       this.controllers['cx'].setValue(par['cx']);
+      this.updatetransformfromcenter=false;
       this.controllers['cy'].setValue(par['cy']);
+      this.updatetransformfromcenter=false;
+      this.controllers['angle'].setValue(par['angle']);
+      this.updatetransformfromcenter=false;
+      this.controllers['scale'].setValue(par['scale']);
 
 
 
@@ -915,19 +919,15 @@ export class PatternTextures {
 
       // no need for angleAdjustment
 
-      this.angleAdjustment+=temp.angleAdjustment;
-      if(Math.abs(temp.angleAdjustment)>.0001){
-      //    console.log("a={",temp.angleAdjustment,",",this.angleAdjustment[0],"}")
-        }
-      
-      while(this.angleAdjustment<0){
-        this.angleAdjustment+=6.2831853071795864769;}
-      while(this.angleAdjustment>6.2831853071795864769){
-        this.angleAdjustment-=6.2831853071795864769;}
 
-      par['angle']+=this.angleAdjustment
-      this.onChanged(); // THIS WILL BE REMOVED SHORTLY; only call onChanged when the centerpoint changing triggers a transform change.
-    }
+      par['angle']=100+3*Math.random();
+      
+
+
+       }
+
+
+
 
     else if(this.dragging){ //we are dragging the mouse
       var apnt = this.activePoint;

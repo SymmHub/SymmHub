@@ -1,6 +1,6 @@
 import {nonNegHashOrbifold, WallpaperGroups, WallpaperGroupNames, getWallpaperGroupIndex, iGroup_Trivial, iGroup_S442, iGroup_442, iGroup_4S2, iGroup_S632, iGroup_632, iGroup_3S3, iGroup_S333, iGroup_333, iGroup_S2222, iGroup_2222_, iGroup_2222, iGroup_2S22, iGroup_22S, iGroup_SS, iGroup_SX, iGroup_22X, iGroup_XX, iGroup_O, iGroup_SN, iGroup_N, iGroup_SNN, iGroup_NN, iGroup_NX, iGroup_NS, iGroup_S22N, iGroup_22N, iGroup_2SN, iGroup_S532, iGroup_532, iGroup_S432, iGroup_432, iGroup_S332, iGroup_332, iGroup_3S2, getNonnegativeGroupData, iWallpaperGroup} from "./WallpaperGroups_NonNegative.js";
 
-import {keys, lengthKeys, twistKeys, hashOrbifoldString, countParameters, hashOrbifold, atomizeOrbifold, unfoldAtom, assembleFundamentalDomain, produceGenerators, willOrbifoldFitQ, calcCrownTransformsDataFromTransform,getTransformsForTexture, resetCenterfromPt, resetTransformfromPt, } from './OrbifoldGeometrization.js';
+import {keys, lengthKeys, twistKeys, hashOrbifoldString, countParameters, hashOrbifold, atomizeOrbifold, unfoldAtom, assembleFundamentalDomain, produceGenerators, willOrbifoldFitQ, calcCrownTransformsDataFromTransform,getTransformsForTexture, resetCenterfromPt,  resetTransformfromPtAndTransform, } from './OrbifoldGeometrization.js';
 
 import {random, isDefined, TORADIANS, cos, sin, asin, log, } from '../../../lib/invlib/Utilities.js';
 
@@ -407,8 +407,8 @@ export class WallPaperGroup_General {
 
     }
 
-    resetTransformfromPt(mousepoint, imagetransform) {
-        return resetTransformfromPt(mousepoint, this.getGroup(), imagetransform, this.curvature)
+    resetTransformfromPtAndTransform(mousepoint, imagetransform) {
+        return resetTransformfromPtAndTransform(mousepoint, this.getGroup(), imagetransform, this.curvature)
     }
     resetCenterfromPt(mousepoint, center) {
         return resetCenterfromPt(mousepoint, this.getGroup(), center, this.curvature)

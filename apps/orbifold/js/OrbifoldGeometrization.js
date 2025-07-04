@@ -2087,8 +2087,19 @@ export function calcCrownTransformsDataFromTransform(domain,transforms,imagetran
 // Originating in PatternTextures, this passes through WallPaperGroup_General,
 // which layers on the groupdata.
 
-export function resetTransformfromPt(mousepoint, groupdata,lasttransform,curvature = -1){
+export function resetTransformfromPtAndTransform(mousepoint, groupdata,lasttransform,curvature = -1){
     var newtransform;
+
+    var rand = .02*Math.random();
+    return {
+        center:[rand/2,0],
+        angle:10*Math.random(),
+        scale:.1*(1-2*Math.random()),
+        imagetransform:[new iSplane({v:[0,1+rand,0,0],type:2}),new iSplane({v:[0,1+rand,0,0],type:2})],
+    }
+
+    //******* //
+
     if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){
             console.log("get back in bounds!");
             return newtransform;}
