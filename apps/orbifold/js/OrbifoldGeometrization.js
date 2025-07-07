@@ -2090,19 +2090,12 @@ export function calcCrownTransformsDataFromTransform(domain,transforms,imagetran
 export function resetTransformfromPtAndTransform(mousepoint, groupdata,lasttransform,curvature = -1){
     var newtransform;
 
-    var rand = .02*Math.random();
-    return {
-        center:[rand/2,0],
-        angle:10*Math.random(),
-        scale:.1*(1-2*Math.random()),
-        imagetransform:[new iSplane({v:[0,1+rand,0,0],type:2}),new iSplane({v:[0,1+rand,0,0],type:2})],
-    }
 
-    //******* //
 
     if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){
             console.log("get back in bounds!");
-            return newtransform;}
+            return false;}
+
     var domain = groupdata.s;
     var transforms = groupdata.t;
 
@@ -2111,10 +2104,58 @@ export function resetTransformfromPtAndTransform(mousepoint, groupdata,lasttrans
     // this will be a base reference point in the transformed images, all of the form
     // (transformimage)(group element)
     // We are working in splane world
-    var lasttexturecenter = iTransformU4(lasttransform, new iSplane({v:[0,0,0,0],type:SPLANE_POINT}));
-    var lastCenterData= iToFundDomainWBounds(domain, transforms,lasttexturecenter,200);// should be a safe bound — elsewhere we restrict the maginitude of the new point, <.9, and hence the length of the words we have to encounter here. 
 
-    return newtransform; 
+    var origin = new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
+    var lasttexturecenter = iTransformU4(lasttransform, origin);
+    var lastCenterData= iToFundDomainWBounds(domain, transforms,lasttexturecenter,200);// should be a safe bound — elsewhere we restrict the maginitude of the new point, <.9, and hence the length of the words we have to encounter here. 
+    var mousepointData = iToFundDomainWBounds(domain, transforms,
+            new iSplane({v:[mousepoint[0],mousepoint[1],0,0],type:3}),200);
+
+    var lastgrouptransform = lastCenterData.transform;
+    var mousegrouptransform = mousepointData.transform;
+
+    newtransform = lasttransform.concat(lastgrouptransform.concat(mousegrouptransform.reverse()));
+    newtransform = iGetFactorizationU4(newtransform);
+    
+    // at this point we have: 
+        // O, the origin; T, the last centerpoint; M, the mousepoint.
+        // O->T is lasttransform. 
+        // in the group take g,h so that gM, hT are within the fundamental domain
+        // although gM ≠ hT, generically. Therefore hg^-1 T is in the same fundamental domain as the mousepoint, 
+        // and this is our new transform.
+
+
+    var newcenter = iTransformU4(newtransform, origin);
+    var temp = (transformFromCenterToPoint(newcenter.v.slice(0,2),[1,0],curvature)).reverse();
+    var temp = newtransform.concat(temp);
+
+    // how does temp screw up a unit box? this is the angle and scale that we are looking for.
+
+
+    var shifted = iTransformU4(temp, new iSplane({v:[1,0,0,0],type:3}));
+
+   
+    var x,y;
+    x = shifted.v[0];
+    y = shifted.v[1];
+    var newangle;
+
+    if(abs(x)<.0000001){
+        if(y>0){newangle = 90} else newangle = -90
+    } else newangle = Math.atan2(y,x)*180/3.14159;
+
+    var newscale = Math.sqrt(x*x+y*y);
+    newscale = Math.log(newscale);
+
+    console.log('testing ', x," ",y," ",newangle," ",newscale);
+
+
+    return {
+        center:[x,y],
+        angle:newangle,
+        scale:newscale,
+        imagetransform:newtransform,
+    }
         }
 
 

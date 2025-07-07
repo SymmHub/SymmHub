@@ -478,15 +478,17 @@ export class PatternTextures {
     
     
       var paramcenter = [this.params['cx'],this.params['cy']];
-      var paramangle = -this.params['angle']*TORADIANS+this.angleAdjustment;
+      var paramangle = -this.params['angle'];
       var paramscale = this.params['scale'];
 
-      console.log(paramcenter,paramangle,paramscale, this.imagetransform);
+      console.log("calculating uniforms from ", 
+        paramcenter,paramangle,paramscale, this.imagetransform);
+
      this.crowntransforms = this.groupHandler.calcCrownTransformsData(
       paramcenter, paramangle, paramscale
       );
 
-     console.log("hey", toString(this.crowntransforms.crowntransformregistry))
+     console.log("crown transform registry", toString(this.crowntransforms.crowntransformregistry))
 
 
      this.crowntransforms = this.crowntransforms.crowntransformregistry
@@ -680,8 +682,7 @@ export class PatternTextures {
       var c = scale*Math.cos(angle); 
       var s = scale*Math.sin(angle);
 
-      var imagetransform = [];
-
+      
       //var newtransform;
       var complexcenter = [centerx,centery]
       var complexscale = [c,s];
@@ -692,13 +693,12 @@ export class PatternTextures {
         
         this.imagetransform = transformFromCenterToPoint(complexcenter,complexscale);
         
-       //imagetransform =imagetransform.concat(newtransform);
 	  }
       else this.imagetransform = 
         [ new iSplane({v:[0,1,0,0],type:2}),
           new iSplane({v:[0,1,0,0],type:2})];
 
-      //this.imagetransform = imagetransform;
+     
 
     console.log("updating transforms", objectToString(this.params))
     console.log(objectToString(this.imagetransform))
@@ -756,15 +756,9 @@ export class PatternTextures {
       // use the inversive library to do this because many functions in complexTransforms
       // presume that the unit disk is preserved. 
 
-      var newimagetransform;
-      if(this.imagetransform)
-        newimagetransform = this.imagetransform;
-      else 
-        newimagetransform = []
+      
 
-     console.log("the image transform", newimagetransform);
-
-      var newpoint = iTransformU4(newimagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
+      var newpoint = iTransformU4(this.imagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
     
      
 
@@ -794,13 +788,13 @@ export class PatternTextures {
 
         var corners = [];
 
-        temppt = iTransformU4(newimagetransform, new iSplane({v:[s,s,0,0],type:3})).v;
+        temppt = iTransformU4(this.imagetransform, new iSplane({v:[s,s,0,0],type:3})).v;
         corners.push([temppt[0],temppt[1]]);
-        temppt = iTransformU4(newimagetransform, new iSplane({v:[-s,s,0,0],type:3})).v;
+        temppt = iTransformU4(this.imagetransform, new iSplane({v:[-s,s,0,0],type:3})).v;
         corners.push([temppt[0],temppt[1]]);
-        temppt = iTransformU4(newimagetransform, new iSplane({v:[-s,-s,0,0],type:3})).v;
+        temppt = iTransformU4(this.imagetransform, new iSplane({v:[-s,-s,0,0],type:3})).v;
         corners.push([temppt[0],temppt[1]]);
-        temppt = iTransformU4(newimagetransform, new iSplane({v:[s,-s,0,0],type:3})).v;
+        temppt = iTransformU4(this.imagetransform, new iSplane({v:[s,-s,0,0],type:3})).v;
         corners.push([temppt[0],temppt[1]]);
         
 
@@ -889,41 +883,36 @@ export class PatternTextures {
       // The center point is therefore c(f(w))
       
       var resetdata = this.groupHandler.resetTransformfromPtAndTransform(wpnt,this.imagetransform);
-
-
-      this.imagetransform = resetdata.imagetransform;
-      //**TBD**//
-      this.params['imagetransform']=this.imagetransform;
-
-      //this.imagetransform[0]=resetdata.imagetransform[0];
-      this.params['cx']=resetdata.center[0]; // the new center.
-      this.params['cy']=resetdata.center[1]; // 
-      this.params['angle']=resetdata.angle;
-      this.params['scale']=resetdata.scale;
-
-      //*****// this little routine needs to fixed up; actually, shouldn't matter if 
-      // updatePatternTexture is triggered. 
-      this.updatetransformfromcenter=false;
-      this.controllers['cx'].setValue(par['cx']);
-      this.updatetransformfromcenter=false;
-      this.controllers['cy'].setValue(par['cy']);
-      this.updatetransformfromcenter=false;
-      this.controllers['angle'].setValue(par['angle']);
-      this.updatetransformfromcenter=false;
-      this.controllers['scale'].setValue(par['scale']);
-
-
-
-
-      /**** get rid of all this stuff*/ 
-
-      // no need for angleAdjustment
-
-
-      par['angle']=100+3*Math.random();
       
+      if(resetdata){
+
+        this.imagetransform = resetdata.imagetransform;
+        //**TBD**//
+        this.params['imagetransform']=this.imagetransform;
+
+        //this.imagetransform[0]=resetdata.imagetransform[0];
+        this.params['cx']=resetdata.center[0]; // the new center.
+        this.params['cy']=resetdata.center[1]; // 
+        this.params['angle']=resetdata.angle;
+        this.params['scale']=resetdata.scale;
+
+        //*****// this little routine needs to fixed up; actually, shouldn't matter if 
+        // updatePatternTexture is triggered. 
+        this.updatetransformfromcenter=false;
+        this.controllers['cx'].setValue(this.params['cx']);
+        this.updatetransformfromcenter=false;
+        this.controllers['cy'].setValue(this.params['cy']);
+        this.updatetransformfromcenter=false;
+        this.controllers['angle'].setValue(this.params['angle']);
+        this.updatetransformfromcenter=false;
+        this.controllers['scale'].setValue(this.params['scale']);
+
+        //console.log('updating controllers', this.params['cy'],this.params['cy'],this.params['angle'],this.params['scale'])
+
+      }
 
 
+      
        }
 
 
@@ -932,17 +921,21 @@ export class PatternTextures {
     else if(this.dragging){ //we are dragging the mouse
       var apnt = this.activePoint;
       
+      console.log('draggin...');
       var type = apnt.type;
       var lastMouse = this.lastMouse;
       
       switch(type){
         
         case 0:  
-          par['cx']= wpnt[0];
-          par['cy']= wpnt[1];
-          this.controllers['cx'].setValue(par['cx']);
-          this.controllers['cy'].setValue(par['cy']);
-          // triggers updatePatternData
+          this.params['cx']= wpnt[0];
+          this.params['cy']= wpnt[1];
+          this.updatetransformfromcenter=false;
+          this.controllers['cx'].setValue(this.params['cx']);
+          //now this.updatetransformfromcenter=true;
+          this.controllers['cy'].setValue(this.params['cy']);
+          // and so triggers updatePatternData
+
         break;        
         // corners 
         case 1:
@@ -951,11 +944,11 @@ export class PatternTextures {
         case 4:
           /****** this is another place to insert a change to transform;
            * does this correctly happen in onChanged?**/
-          var factor = this.getCornerFactor([par['cx'],par['cy']],lastMouse, wpnt);
-          par['angle'] = this.normalizeAngle(par['angle']+(factor.angleDelta/TORADIANS));
-          par['scale'] += log(factor.scaleDelta); 
-          this.controllers['angle'].setValue(par['angle']);
-          this.controllers['scale'].setValue(par['scale']);
+          var factor = this.getCornerFactor([this.params['cx'],this.params['cy']],lastMouse, wpnt);
+          this.params['angle'] = this.normalizeAngle(this.params['angle']);
+          this.params['scale'] += log(factor.scaleDelta); 
+          this.controllers['angle'].setValue(this.params['angle']);
+          this.controllers['scale'].setValue(this.params['scale']);
           //triggers updatePatternData
         default: 
         break;
@@ -979,13 +972,7 @@ export class PatternTextures {
   onMouseUp(evt){
     
     this.dragging = false;
-
-    // reset all of the textures back to the origin.
-
-    var i = 0;
-
-
-    
+ 
   }
   
 
