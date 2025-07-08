@@ -388,7 +388,8 @@ export class PatternTextures {
       alpha: p['alpha'],
       scale: p['scale'],
       angle: p['angle'],
-      center: [p['cx'],p['cy']]
+      center: [p['cx'],p['cy']],
+      imagetransformstring: p['imagetransformstring']
     };
     
   }
@@ -421,6 +422,7 @@ export class PatternTextures {
     c['angle'].setValue(pm.angle);
     c['cx'].setValue(pm.center);
     c['cy'].setValue(pm.center);
+    c['imagetransformstring'].setValue(pm.imagetransformstring)
 
     console.log('updating imagetransform from setTexParamsMap')
   // an update of this.imagetransform is triggered by the change to the controller.
@@ -620,6 +622,9 @@ export class PatternTextures {
     
     par['cy'] = 0;            
     ctrls['cy'] = folder.add(par, 'cy', -10, 10,  eps).name('cy').onChange(onModified);	
+
+    par['imagetransformstring']='';
+    ctrls['imagetransformstring']=folder.add(par, 'imagetransformstring').name('trans').onChange(onModified); 
     
     console.log('updating image transforms from initGUI')
     this.onModified()   
@@ -679,8 +684,8 @@ export class PatternTextures {
       var scale = Math.exp(this.params['scale']);
       var angle =  this.params['angle'];
 
-      var c = scale*Math.cos(angle); 
-      var s = scale*Math.sin(angle);
+      var c = scale*Math.cos(angle*3.1415926536/180); 
+      var s = scale*Math.sin(angle*3.1415926536/180);
 
       
       //var newtransform;
@@ -836,14 +841,17 @@ export class PatternTextures {
 		case 'pointermove':
 		case 'mousemove':
 			this.onMouseMove(evt);
+      console.log('mousemoved')
 		break;
 		case 'pointerdown':
 		case 'mousedown':
 			this.onMouseDown(evt);
+      console.log('mousedown')
 		break;
 		case 'pointerup':
 		case 'mouseup':
 			this.onMouseUp(evt);
+      console.log('mouseup')
 		default:
 			return;
 	  }		       
@@ -862,8 +870,20 @@ export class PatternTextures {
     // if we're close to the boundary of the poincaré disk, 
     // don't do anything.
 
+    var radius = Math.sqrt(wpnt[0]*wpnt[0]+wpnt[1]*wpnt[1]);
     if(this.groupHandler.curvature<0)
-      { if(wpnt[0]*wpnt[0]+wpnt[1]*wpnt[1]>.9){return;}}
+      { if(radius>.95){
+        wpnt[0]=wpnt[0]/radius * .95;
+        wpnt[1]=wpnt[1]/radius * .95;
+        ;}}
+    if(this.groupHandler.curvature>0)
+      { if(radius>.999){
+        wpnt[0]=wpnt[0]/radius * .999;
+        wpnt[1]=wpnt[1]/radius * .999;
+        ;}}
+      
+
+
 
     var par = this.params;
     
@@ -882,7 +902,7 @@ export class PatternTextures {
       // which c is closest to the FD image f(w) of wpt?
       // The center point is therefore c(f(w))
       
-      var resetdata = this.groupHandler.resetTransformfromPtAndTransform(wpnt,this.imagetransform);
+     var resetdata= this.groupHandler.resetTransformfromPtAndTransform(wpnt,this.imagetransform);
       
       if(resetdata){
 
@@ -920,6 +940,7 @@ export class PatternTextures {
 
     else if(this.dragging){ //we are dragging the mouse
       var apnt = this.activePoint;
+      if(!apnt) return;
       
       console.log('draggin...');
       var type = apnt.type;
@@ -930,10 +951,22 @@ export class PatternTextures {
         case 0:  
           this.params['cx']= wpnt[0];
           this.params['cy']= wpnt[1];
+          
+         // var angledata = this.groupHandler.getAngleOfTransform(this.imagetransform);
+
+         // this.params['angle']=angledata['angle'];
+         // this.params['scale']=angledata['scale'];
+
           this.updatetransformfromcenter=false;
           this.controllers['cx'].setValue(this.params['cx']);
-          //now this.updatetransformfromcenter=true;
+         // this.updatetransformfromcenter=false;
           this.controllers['cy'].setValue(this.params['cy']);
+         /* this.updatetransformfromcenter=false;
+          this.controllers['angle'].setValue(this.params['angle']);
+          //now this.updatetransformfromcenter=true;
+          this.controllers['scale'].setValue(this.params['scale']);
+*/
+
           // and so triggers updatePatternData
 
         break;        
@@ -942,14 +975,23 @@ export class PatternTextures {
         case 2:
         case 3:
         case 4:
-          /****** this is another place to insert a change to transform;
-           * does this correctly happen in onChanged?**/
-          var factor = this.getCornerFactor([this.params['cx'],this.params['cy']],lastMouse, wpnt);
-          this.params['angle'] = this.normalizeAngle(this.params['angle']);
-          this.params['scale'] += log(factor.scaleDelta); 
+          var angledata = this.groupHandler.getAngleOfTransform(this.imagetransform);
+
+          this.params['angle']=angledata['angle'];
+          this.params['scale']=angledata['scale'];
+
+          var turndata = this.groupHandler.getAngleOfTurn(this.imagetransform, wpnt)
+          turndata.angle = turndata.angle + 3.141592/4 - type*3.1415926/2;
+
+          this.params['angle']=turndata['angle'];
+          this.params['scale']=turndata['scale'];
+
+          this.updatetransformfromcenter=false;
           this.controllers['angle'].setValue(this.params['angle']);
+          //now this.updatetransformfromcenter=true;
           this.controllers['scale'].setValue(this.params['scale']);
-          //triggers updatePatternData
+
+
         default: 
         break;
       }
@@ -1013,6 +1055,7 @@ export class PatternTextures {
     return undefined;
   }
   
+
 
   // calculates rotation and scale change when uses drag the corner point 
   //  c - the center of rotation

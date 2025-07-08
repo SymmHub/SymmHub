@@ -1569,36 +1569,24 @@ export function willOrbifoldFitQ(atomList,MAX_GEN_COUNT,MAX_REF_COUNT,MAX_DOMAIN
 import {distancetable} from './distancetable45.js'
 
 
-// this function brings the center back to the origin?
-
-export function resetCenter(inputcenter,inputscale, domain, transforms){
-
-var center;
-var returntocenter=iToFundDomainWBounds(domain, transforms,
-            new iSplane({v:[inputcenter[0],inputcenter[1],0,0],type:SPLANE_POINT}),20)
-
-    if(returntocenter.distance>-.03){
-        center = [returntocenter.pnt.v[0],returntocenter.pnt.v[1]];
-    }
-    else{center = inputcenter;}
-   
-    center = [returntocenter.pnt.v[0],returntocenter.pnt.v[1]];
 
 
-    var scale = inputscale;
 
-    // should be something like: 
 
-    var complexcenter = new complexN(inputcenter[0],inputcenter[1]);
-    var complexscale = new complexN(inputscale[0],inputscale[1]);
 
-   scale = poincareDerivativeAt( poincareMobiusFromSPlanesList(returntocenter.transform),  complexcenter).times(complexscale)
-    var sscale = Math.sqrt(scale.re*scale.re+scale.im*scale.im);
 
-    scale = [scale.re/sscale,scale.im/sscale]
 
-    return {center:center, scale:scale, transform:returntocenter.transform}
-}
+
+
+
+
+
+
+
+
+
+
+
 
 //inputscale includes information about the angle 
 
@@ -2085,7 +2073,9 @@ export function calcCrownTransformsDataFromTransform(domain,transforms,imagetran
 
  
 // Originating in PatternTextures, this passes through WallPaperGroup_General,
-// which layers on the groupdata.
+// which layers on the groupdata. As the mouse moves around, this finds a basepoint
+// in the same FD as the mouse
+// Returns an updated imagetransform, center, angle, scale.
 
 export function resetTransformfromPtAndTransform(mousepoint, groupdata,lasttransform,curvature = -1){
     var newtransform;
@@ -2132,17 +2122,13 @@ export function resetTransformfromPtAndTransform(mousepoint, groupdata,lasttrans
     // how does temp screw up a unit box? this is the angle and scale that we are looking for.
 
 
-    var shifted = iTransformU4(temp, new iSplane({v:[1,0,0,0],type:3}));
+    var shifted = iTransformU4(temp, new iSplane({v:[.5,0,0,0],type:3}));
 
    
     var x,y;
     x = shifted.v[0];
     y = shifted.v[1];
-    var newangle;
-
-    if(abs(x)<.0000001){
-        if(y>0){newangle = 90} else newangle = -90
-    } else newangle = Math.atan2(y,x)*180/3.14159;
+    var newangle = Math.atan2(y,x)*180/3.14159;
 
     var newscale = Math.sqrt(x*x+y*y);
     newscale = Math.log(newscale);
@@ -2159,122 +2145,38 @@ export function resetTransformfromPtAndTransform(mousepoint, groupdata,lasttrans
         }
 
 
+// this function detects the angle about which an image is being turned.
+
+export function getAngleOfTurn(transform,wpnt,curvature=-1){
+
+    // we find the center of the image, and then slide it back to the origin;
+    // we then see where the mousepoint is brought by this slide, and record the new angle and scale.
+
+    var origin = new iSplane({v:[0,0,0,0],type:3});
+    var centerofimage = iTransformU4(transform,origin);
+
+    var returnpt = iTransformU4(transformFromCenterToPoint(centerofimage,new complexN(1,0),curvature,true).reverse(),
+        new iSplane({v:[wpnt[0],wpnt[1],0,0],type:3})).v
+  
+    var x = returnpt[0];
+    var y = returnpt[1];
+    var angle = Math.atan2(y,x)*180/3.14159265;
+    var scale = Math.log(Math.sqrt(x*x+y*y));
+    return {center:[centerofimage.v[0],centerofimage.v[1]],angle:angle,scale:scale}
 
 
+}
 
-
-export function resetCenterfromPt(mousepoint, groupdata,lasttexturecenter,curvature = -1){ 
-        
-
-        var angleAdjustment=0; 
-        if(mousepoint[0]*mousepoint[0]+mousepoint[1]*mousepoint[1]>.9){
-            console.log("get back in bounds!");
-            return {center:lasttexturecenter, angleAdjustment:0};}
-        var domain = groupdata.s;
-        var transforms = groupdata.t;
-        
-
-         // move the last texture center to the FD:
-        var slasttexturecenter = new iSplane({v:[lasttexturecenter[0],lasttexturecenter[1],0,0],type:SPLANE_POINT});
-
-        
-        var lastCenterData= iToFundDomainWBounds(domain, transforms,slasttexturecenter,200);
-        var lasttexturetransforminverse =lastCenterData.transform;
-
-
-        // bring the mousepoint back to the FD; the transform is then the inverse of this.
-        // however, it might feel more natural to compare this to the other crown images
-        // of the center point in the FD, and compose with the transforms that bring that
-        // into place.
-
-        var smousepoint= new iSplane({v:[mousepoint[0],mousepoint[1],0,0],type:SPLANE_POINT});
-
-        var FDmousepointdata = iToFundDomainWBounds(domain, transforms,smousepoint,200)
-        
-
-      
-        var newtexturetransform=iGetFactorizationU4(iGetInverseTransform(FDmousepointdata.transform));
-        var newtexturecenter = iTransformU4(newtexturetransform,lastCenterData.pnt)
-        newtexturecenter = [newtexturecenter.v[0],newtexturecenter.v[1]]
-
-        
-        // so here are the texture transforms. What we need to understand is the
-        // angular change of the derivative; We might have some additional holonomy to work out;
-
-
-       // newtexturetransform;
-       // oldtexturetransform;
-
-
-        // we can measure the holonomy by taking the origin along the route
-        // (1) a straight shift to lasttexturecenter;
-        // (2) lasttexturetransforminverse, taking this to a copy of the center in the FD.
-        // (3) newtexturetransform, taking that FD copy of the center to the new center
-        // (4) and then a straight shift back to the origin.
-
-        // Thus, the net effect preserves the origin but rotates the plane, which we
-        // can then measure.
-
-        //THIS IS ONLY FOR CURVATURE < 0
-        // ALSO, HAVE TO TAKE THE BASEPOINT FURTHER INTO ACCOUNT
-        var preface = (transformFromCenterToPoint(lasttexturecenter,[1,0],curvature));
-        var suffix = iGetInverseTransform(transformFromCenterToPoint(newtexturecenter,[1,0],curvature));
-        var route = iGetFactorizationU4(preface.concat(lasttexturetransforminverse).concat(newtexturetransform).concat(suffix))
-
-        // hopefully this is now a pair of planes, or pretty close to it. 
-        // to make this easy, we do this: 
-
-        var smallvector = new iSplane({v:[.00000001,0,0,0],type:SPLANE_POINT});
-        var smallperpvector = new iSplane({v:[0,.00000001,0,0],type:SPLANE_POINT});
-
-        var smallvectorimage = iTransformU4(route,smallvector);
-        var smallvectorperpimage = iTransformU4(route,smallperpvector);
-
-        var denominator = Math.sqrt((smallvector.v[0]*smallvector.v[0]+smallvector.v[1]*smallvector.v[1])*
-                (smallvectorimage.v[0]*smallvectorimage.v[0]+smallvectorimage.v[1]*smallvectorimage.v[1]));
-
-        var cosangle =1;
-        if(!isNaN(1/denominator)){ 
-            cosangle = (smallvector.v[0]*smallvectorimage.v[0]+
-                smallvector.v[1]*smallvectorimage.v[1])/denominator;}
-        
-
-        angleAdjustment=Math.acos(cosangle);
-        if(smallvector.v[0]*smallvectorimage.v[1]-smallvector.v[1]*smallvectorimage.v[0]<0){angleAdjustment*=-1;}
-
-        if(smallvectorimage.v[0]*smallvectorperpimage.v[0]+smallvectorimage.v[1]*smallvectorperpimage.v[1]<0)
-        {
-            // well, now we have to do something totally different. 
-            // 
-        }
-
-        ///*
-        // some debugging:
-        var lpt = new complexN(lasttexturecenter[0],lasttexturecenter[1]);
-        var npt = new complexN(newtexturecenter[0],newtexturecenter[1]);
-
-        var dist = lpt.poincareDiskDistanceTo(npt);
-        if(dist>.001){
-          /*  console.log(
-                "{lpt=",lpt.toString(true),",npt=",npt.toString(true,10),
-                ",shiftfromorigintolast=",poincareMobiusFromSPlanesList(preface).toString(true,10),
-                ",shiftfromnexttoorigin=",poincareMobiusFromSPlanesList(suffix).toString(true,10),
-                ",returnfromlasttobase=",poincareMobiusFromSPlanesList(lasttexturetransforminverse).toString(true,10),
-                ",departtonextfrombase=",poincareMobiusFromSPlanesList(newtexturetransform).toString(true,10),
-                ",netroute=",poincareMobiusFromSPlanesList(route).toString(true,10),
-              //  ",additionalangle=",additionalangleAdjustment.toFixed(10),
-                ",angleadjustment=",angleAdjustment.toFixed(10),
-                "};");*/
-            //to stop and check 
-            transformFromCenterToPoint(lasttexturecenter,new complexN(1,0),curvature,true);
-            transformFromCenterToPoint(newtexturecenter,new complexN(1,0),curvature,true);
-        
-        }
-        //*/
-
-
-        return {center:[newtexturecenter[0],newtexturecenter[1]],angleAdjustment:angleAdjustment,
-        };
-       
-
-    }
+export function getAngleOfTransform(transform,curvature=-1){
+    var origin = new iSplane({v:[0,0,0,0],type:3});
+    var corner = new iSplane({v:[.5,0,0,0],type:3});
+    var centerofimage = iTransformU4(transform,origin);
+    var roundtrip = transform.concat(
+            transformFromCenterToPoint(centerofimage,new complexN(1,0),curvature,true).reverse());
+    var cornerimage = iTransformU4(roundtrip,corner);
+    var x = cornerimage.v[0]
+    var y = cornerimage.v[1]
+    var angle = Math.atan2(y,x)*180/3.14159;
+    var scale = Math.log(Math.sqrt(x*x+y*y));
+    return {center:[centerofimage.v[0],centerofimage.v[1]],angle:angle,scale:scale}
+}
