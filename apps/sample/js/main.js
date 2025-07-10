@@ -75,8 +75,10 @@ try {
       navigator: new InversiveNavigator(),
   });
   app.run();
-  const params = app .getParams();
-  params.visualization.colormap.colormap .setValue( 'rainbow' );
+  const visParam = app .getParams() .visualization .getValue();
+  console.dir( visParam );
+  visParam .colormap .colormap = 'rainbow';
+  app .getParams() .visualization .setValue( visParam );
 } catch (err) {
   console.error('error: ', err);
 }
