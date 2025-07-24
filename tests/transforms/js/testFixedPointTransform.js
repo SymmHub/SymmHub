@@ -47,7 +47,7 @@ import {
     combineV, 
         
 }
-from './modules.js';
+from '../../../lib/symhublib/modules.js';
 
 
 const EPSILON = 1.e-10;
