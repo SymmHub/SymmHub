@@ -624,7 +624,7 @@ export class PatternTextures {
     ctrls['cy'] = folder.add(par, 'cy', -10, 10,  eps).name('cy').onChange(onModified);	
 
     par['imagetransformstring']='';
-    ctrls['imagetransformstring']=folder.add(par, 'imagetransformstring').name('trans').onChange(onModified); 
+    ctrls['imagetransformstring']=folder.add(par, 'imagetransformstring',"hi").name('trans').onChange(onModified); 
     
     console.log('updating image transforms from initGUI')
     this.onModified()   
@@ -704,6 +704,12 @@ export class PatternTextures {
           new iSplane({v:[0,1,0,0],type:2})];
 
      
+    // update the image transform
+        this.updatetransformfromcenter=false;
+        this.params['imagetransformstring']=objectToString(this.imagetransform);
+        this.controllers['imagetransformstring'].setValue(this.params['imagetransformstring']);
+        this.updatetransformfromcenter=true;
+
 
     console.log("updating transforms", objectToString(this.params))
     console.log(objectToString(this.imagetransform))
@@ -729,11 +735,7 @@ export class PatternTextures {
 
     
     var trans = ((isFunction(transform.transform2screen))? transform.transform2screen : transform.world2screen).bind(transform);
-    
-    //need to composite 
-    var temp  = this.groupHandler.getGroup();
-    if(!temp.c){return}
-    var imagetransform = temp.c.imagetransformAsMobius;
+  
 
     var opt = {radius:14, style:"#FFFFAA"};
     var opta = {radius:12, style:"#0000DD"};
@@ -902,32 +904,31 @@ export class PatternTextures {
       // which c is closest to the FD image f(w) of wpt?
       // The center point is therefore c(f(w))
       
-     var resetdata= this.groupHandler.resetTransformfromPtAndTransform(wpnt,this.imagetransform);
+     var resetdata = this.groupHandler.resetTransformfromPtAndTransform(wpnt,this.imagetransform);
       
-      if(resetdata){
+      if(!!resetdata){
 
         this.imagetransform = resetdata.imagetransform;
-        //**TBD**//
+   
         this.params['imagetransform']=this.imagetransform;
-
-        //this.imagetransform[0]=resetdata.imagetransform[0];
+ 
         this.params['cx']=resetdata.center[0]; // the new center.
+        this.controllers['cx'].updateDisplay(this.params['cx']);
+        
+        this.controllers['cy'].updateDisplay(this.params['cy']);
         this.params['cy']=resetdata.center[1]; // 
+        
+        this.controllers['angle'].updateDisplay(this.params['angle']);
         this.params['angle']=resetdata.angle;
+        
+        this.controllers['scale'].updateDisplay(this.params['scale']);
         this.params['scale']=resetdata.scale;
 
-        //*****// this little routine needs to fixed up; actually, shouldn't matter if 
-        // updatePatternTexture is triggered. 
-        this.updatetransformfromcenter=false;
-        this.controllers['cx'].setValue(this.params['cx']);
-        this.updatetransformfromcenter=false;
-        this.controllers['cy'].setValue(this.params['cy']);
-        this.updatetransformfromcenter=false;
-        this.controllers['angle'].setValue(this.params['angle']);
-        this.updatetransformfromcenter=false;
-        this.controllers['scale'].setValue(this.params['scale']);
-
-        //console.log('updating controllers', this.params['cy'],this.params['cy'],this.params['angle'],this.params['scale'])
+        
+        this.params['imagetransformstring']=objectToString(this.imagetransform,true);
+        this.controllers['imagetransformstring'].updateDisplay(this.params['imagetransformstring']);
+        
+       //console.log('updating controllers', this.params['cy'],this.params['cy'],this.params['angle'],this.params['scale'])
 
       }
 
