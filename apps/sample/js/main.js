@@ -5,7 +5,7 @@ import { InversiveNavigator } from "../../../lib/symhublib/InversiveNavigator.js
 import { SymRenderer } from "../../../lib/symhublib/SymRenderer.js";
 import { createDoubleFBO } from "../../../lib/symhublib/webgl_utils.js";
 
-const createSampleApp = glContext =>
+const initBuffer = glContext =>
 {
   const gl = glContext.gl;
     
@@ -32,49 +32,58 @@ const createSampleApp = glContext =>
   gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, buffer.read.fbo);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  let eventDispatcher = new EventDispatcher();
-  const addEventListener = ( evtType, listener ) =>
-  {
-    eventDispatcher .addEventListener( evtType, listener );
-  };
-
-  const setGroup = group =>
-  {
-    console.log( 'setGroup' );
-  };
-
-  return {
-    addEventListener, setGroup,
-    getBuffer: () => buffer,
-  }
+  return buffer;
 }
 
-const createStaticSimulation = createApp => () =>
+const SymmHubApp = options =>
 {
-  let app;
+  // TODO: validate options
 
-  return {
-    init            : glContext => app = createApp( glContext ),
-    getName         : () => "simName",
-    addEventListener: ( evtType, listener ) => app .addEventListener( evtType, listener ),
-    setGroup        : group => app .setGroup( group ),
-    getSimBuffer    : () => app .getBuffer(),
-  };
-}
+  const create = () =>
+  {
+    let eventDispatcher = new EventDispatcher();
+    const addEventListener = ( evtType, listener ) =>
+    {
+      eventDispatcher .addEventListener( evtType, listener );
+    };
 
-const staticSimFactory = {
-  create: createStaticSimulation( createSampleApp ),
-  getName: () => "factoryName",
-  getClassName: () => "className",
+    const setGroup = group =>
+    {
+      console.log( 'setGroup irrelevant' );
+    };
+
+    let buffer;
+    const init = glContext => buffer = options.initBuffer( glContext );
+
+    return {
+      getName         : () => options.name,
+      addEventListener, setGroup, init,
+      getSimBuffer    : () => buffer,
+    };
+  }
+  const simCreator = {
+    create,
+    getName: () => `${options.name}-factory`,
+    getClassName: () => `${options.name}-class`,
+  }
+  const app = SymRenderer({
+      simCreator,
+      groupMaker: options.groupMaker,
+      navigator: options.navigator,
+  });
+  app.run();
+  return app;
 }
 
 try {
-  const app = SymRenderer({
-      simCreator: staticSimFactory,
-      groupMaker:  new Group_5splanes(),
-      navigator: new InversiveNavigator(),
-  });
-  app.run();
+  const app = SymmHubApp( {
+    initBuffer,
+    name: 'SampleApp',
+    groupMaker: new Group_5splanes(),
+    navigator: new InversiveNavigator(),
+  } );
+
+  // parameters cannot be set in a granular fashion, but a group can be set as a whole
   const visParam = app .getParams() .visualization .getValue();
   console.dir( visParam );
   visParam .colormap .colormap = 'rainbow';
