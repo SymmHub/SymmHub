@@ -72,6 +72,7 @@ const SymmHubApp = options =>
       simCreator,
       groupMaker: options.groupMaker,
       navigator: options.navigator,
+      preset:    options.preset,
   });
   app.run();
   return app;
@@ -83,6 +84,7 @@ try {
     name: 'SampleApp',
     groupMaker: new Group_5splanes(),
     navigator: new InversiveNavigator(),
+    preset: 'presets/par-25-07-28-12-43-10-651.json',
   } );
 
   // parameters cannot be set in a granular fashion, but a group can be set as a whole
