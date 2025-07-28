@@ -1,9 +1,11 @@
 
-import { Group_5splanes } from "../../../lib/grouplib/Group_5splanes.js";
-import { EventDispatcher } from "../../../lib/symhublib/EventDispatcher.js";
-import { InversiveNavigator } from "../../../lib/symhublib/InversiveNavigator.js";
-import { SymRenderer } from "../../../lib/symhublib/SymRenderer.js";
-import { createDoubleFBO } from "../../../lib/symhublib/webgl_utils.js";
+import { 
+    Group_5splanes, 
+    EventDispatcher,
+    InversiveNavigator,
+    SymRenderer,
+    createDoubleFBO,    
+} from "./modules.js";
 
 const initBuffer = glContext =>
 {
