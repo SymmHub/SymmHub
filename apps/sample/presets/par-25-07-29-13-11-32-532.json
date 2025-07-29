@@ -1,5 +1,5 @@
 {
-    "name": "par-25-07-28-17-13-12-070",
+    "name": "par-25-07-29-13-11-32-532",
     "appInfo": {
         "appName": "SymRenderer.Group_5splanes.SampleApp-class.InversiveNavigator_v1",
         "fileFormatRelease": 1
@@ -7,7 +7,7 @@
     "params": {
         "files": {},
         "display": {
-            "frameTime": 16.9,
+            "frameTime": 16.8,
             "customWidth": 1000,
             "customHeight": 1000,
             "sizeMultiplier": 1,
@@ -16,16 +16,16 @@
         },
         "recording": {
             "animTime": 0,
-            "animSpeed": 1,
+            "animSpeed": 1.1,
             "startFrame": 0,
             "endFrame": 100
         },
         "simulation": {},
         "simTransform": {
             "simCenterX": 0.08,
-            "simCenterY": 0.53,
-            "simScale": 2.5,
-            "simAngle": -40
+            "simCenterY": 1.3,
+            "simScale": 1.6,
+            "simAngle": 0
         },
         "visualization": {
             "colormap": {
@@ -33,19 +33,19 @@
                 "opacity": 0.7000000000000001,
                 "dataSource": "u",
                 "colormap": "rainbow",
-                "minValue": -1,
+                "minValue": 0,
                 "maxValue": 1,
                 "cmBanding": 0.5,
                 "cmWrap": "repeat",
                 "useMipmap": false
             },
             "colormap2": {
-                "enabled": true,
-                "opacity": 0.4,
-                "dataSource": "v",
-                "colormap": "rainbow",
+                "enabled": false,
+                "opacity": 1,
+                "dataSource": "u",
+                "colormap": "red blue 2",
                 "minValue": 0,
-                "maxValue": 0.4,
+                "maxValue": 1,
                 "cmBanding": 0.5,
                 "cmWrap": "clamp",
                 "useMipmap": false
@@ -312,10 +312,12 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": -0.096194886132085,
-                        "centerY": 0.10344418068657124,
+                        "centerX": -0.10998700433679277,
+                        "centerY": 0.4659219047239727,
                         "zoom": [
-                            0.8159438228265682
+                            [
+                                0.7014130597445637
+                            ]
                         ]
                     },
                     "options": {

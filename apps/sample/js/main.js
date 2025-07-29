@@ -13,6 +13,7 @@ import {
     presets
 } from './presets.js';
 
+ 
 const initBuffer = glContext =>
 {
   const gl = glContext.gl;
@@ -33,12 +34,6 @@ const initBuffer = glContext =>
   //const format = gl.RGBA, intFormat = gl.RGBA, texType = gl.UNSIGNED_BYTE;
   
   const buffer = createDoubleFBO( gl, simWidth, simHeight, intFormat, format, texType, filtering );
-
-  //gl.clearColor( 1, 0.5, 0, 1 );
-  //gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, buffer.write.fbo);
-  //gl.clear(gl.COLOR_BUFFER_BIT);
-  //gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, buffer.read.fbo);
-  //gl.clear(gl.COLOR_BUFFER_BIT);
 
   return buffer;
 }
@@ -68,13 +63,15 @@ const SymmHubApp = options =>
     
     function renderBuffer(opt){
         let gl = opt.gl;
-        let time = opt.timeStamp;
-        console.log('renderBuffer(), ', time);
+        let time = (opt.animationTime)? opt.animationTime: 0;
+        
+        //console.log('renderBuffer(), time:', time);
         
         if(!bufferRenderer){
             // prepare program 
             bufferRenderer = makeBufferRenderer(gl);
         } else {
+            gl.viewport(0, 0, buffer.width, buffer.height);          
             bufferRenderer.bind();                        
             let uni = {
                 uTime: time, 
@@ -92,6 +89,7 @@ const SymmHubApp = options =>
       addEventListener, setGroup, init,
       getSimBuffer    : () => buffer,
       render          : renderBuffer,
+      get canAnimate() {return true;},
     };
   }
   const simCreator = {
