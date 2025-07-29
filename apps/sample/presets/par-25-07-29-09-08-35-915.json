@@ -1,5 +1,5 @@
 {
-    "name": "par-25-07-28-17-16-59-824",
+    "name": "par-25-07-29-09-08-35-915",
     "appInfo": {
         "appName": "SymRenderer.Group_5splanes.SampleApp-class.InversiveNavigator_v1",
         "fileFormatRelease": 1
@@ -19,30 +19,30 @@
             "endFrame": 100
         },
         "simTransform": {
-            "simCenterX": 0.08,
-            "simCenterY": 0.53,
-            "simScale": 2.5,
-            "simAngle": -40
+            "simCenterX": 0,
+            "simCenterY": 0,
+            "simScale": 1.3,
+            "simAngle": 0
         },
         "visualization": {
             "colormap": {
                 "enabled": true,
-                "opacity": 0.6900000000000001,
-                "dataSource": "mod(uv)",
-                "colormap": "rainbow",
-                "minValue": -1,
+                "opacity": 1,
+                "dataSource": "u",
+                "colormap": "blue yellow 10",
+                "minValue": 0,
                 "maxValue": 1,
                 "cmBanding": 0.5,
                 "cmWrap": "repeat",
                 "useMipmap": false
             },
             "colormap2": {
-                "enabled": true,
-                "opacity": 0.199,
-                "dataSource": "arg(uv)",
-                "colormap": "violet-orange 2",
+                "enabled": false,
+                "opacity": 1,
+                "dataSource": "u",
+                "colormap": "red blue 2",
                 "minValue": 0,
-                "maxValue": 0.4,
+                "maxValue": 1,
                 "cmBanding": 0.5,
                 "cmWrap": "clamp",
                 "useMipmap": false
@@ -81,7 +81,7 @@
                 "opacity": 1,
                 "fundDomain": {
                     "fill": {
-                        "enabled": true,
+                        "enabled": false,
                         "color": "#ff000057"
                     },
                     "outline": {
@@ -107,7 +107,7 @@
                         "color": "#0035ffd9"
                     },
                     "outline": {
-                        "enabled": true,
+                        "enabled": false,
                         "width": 1,
                         "color": "#000000FF"
                     }
@@ -140,7 +140,7 @@
                 },
                 "screenGrid": {
                     "enabled": true,
-                    "step": 0.02,
+                    "step": 0.05,
                     "stepAuto": true,
                     "color": "#000000ff",
                     "width": 1
@@ -189,23 +189,23 @@
                 "className": "Group_5splanes",
                 "params": {
                     "n13": 2,
-                    "n23": 3,
-                    "n14": 3,
+                    "n23": 5,
+                    "n14": 2,
                     "n24": 2,
-                    "a3": 33.222778777838045,
-                    "n35": 4,
-                    "use_n35": true,
+                    "a3": 0,
+                    "n35": 2,
+                    "use_n35": false,
                     "a4": 180,
                     "n45": 2,
-                    "use_n45": true,
-                    "r1": 0.5599999999999999,
+                    "use_n45": false,
+                    "r1": 0.3999999999999999,
                     "r2": 1,
-                    "uhp": true,
+                    "uhp": false,
                     "s1": true,
                     "s2": true,
                     "s3": true,
                     "s4": true,
-                    "s5": true
+                    "s5": false
                 }
             },
             "transform": {
@@ -216,7 +216,7 @@
             },
             "options": {
                 "useSymm": true,
-                "iterations": 60
+                "iterations": 140
             }
         },
         "tools": {
@@ -231,25 +231,25 @@
                             "fpdMap": {
                                 "className": "FixedPointTransform",
                                 "params": {
-                                    "enabled": false,
+                                    "enabled": true,
                                     "showUI": false,
                                     "animate": false,
-                                    "word": "ac",
-                                    "orientation": "none",
-                                    "fp0x": -1,
-                                    "fp0y": 0,
-                                    "fp1x": 1,
-                                    "fp1y": 0,
+                                    "word": "bcbdcd",
+                                    "orientation": "1,-1",
+                                    "fp0x": -0.8419442740191171,
+                                    "fp0y": 0.5395644905351185,
+                                    "fp1x": 0.8419442740191202,
+                                    "fp1y": -0.5395644905351135,
                                     "basex": 0,
                                     "basey": 0,
-                                    "translation": 1,
+                                    "translation": 3.8475073705002663,
                                     "rotation": 0,
                                     "fraction": 0,
                                     "loopTime": 5
                                 }
                             },
                             "bandMap": {
-                                "enabled": false,
+                                "enabled": true,
                                 "fraction": 1
                             },
                             "logMap": {
@@ -309,10 +309,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": -0.047205559372167756,
-                        "centerY": 0.4607418531260877,
+                        "centerX": -0.07475567128270419,
+                        "centerY": 0.11012111835984598,
                         "zoom": [
-                            0.729330451516863
+                            0.5093306001564613
                         ]
                     },
                     "options": {

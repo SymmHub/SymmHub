@@ -7,7 +7,7 @@
     "params": {
         "files": {},
         "display": {
-            "frameTime": 16.1,
+            "frameTime": 16.9,
             "customWidth": 1000,
             "customHeight": 1000,
             "sizeMultiplier": 1,
@@ -27,17 +27,17 @@
         "visualization": {
             "colormap": {
                 "enabled": true,
-                "opacity": 0.7000000000000001,
+                "opacity": 1,
                 "dataSource": "u",
-                "colormap": "rainbow",
+                "colormap": "black red",
                 "minValue": -1,
                 "maxValue": 1,
                 "cmBanding": 0.5,
-                "cmWrap": "clamp",
+                "cmWrap": "repeat",
                 "useMipmap": false
             },
             "colormap2": {
-                "enabled": true,
+                "enabled": false,
                 "opacity": 0.4,
                 "dataSource": "v",
                 "colormap": "rainbow",

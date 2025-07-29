@@ -1,5 +1,5 @@
 {
-    "name": "par-25-07-28-17-16-59-824",
+    "name": "par-25-07-29-08-13-37-715",
     "appInfo": {
         "appName": "SymRenderer.Group_5splanes.SampleApp-class.InversiveNavigator_v1",
         "fileFormatRelease": 1
@@ -7,7 +7,7 @@
     "params": {
         "files": {},
         "display": {
-            "frameTime": 16.9,
+            "frameTime": 16.8,
             "customWidth": 1000,
             "customHeight": 1000,
             "sizeMultiplier": 1,
@@ -20,29 +20,29 @@
         },
         "simTransform": {
             "simCenterX": 0.08,
-            "simCenterY": 0.53,
-            "simScale": 2.5,
-            "simAngle": -40
+            "simCenterY": 0.7000000000000001,
+            "simScale": 0.9500000000000001,
+            "simAngle": 0
         },
         "visualization": {
             "colormap": {
                 "enabled": true,
-                "opacity": 0.6900000000000001,
-                "dataSource": "mod(uv)",
+                "opacity": 0.7000000000000001,
+                "dataSource": "u",
                 "colormap": "rainbow",
-                "minValue": -1,
+                "minValue": 0,
                 "maxValue": 1,
                 "cmBanding": 0.5,
                 "cmWrap": "repeat",
                 "useMipmap": false
             },
             "colormap2": {
-                "enabled": true,
-                "opacity": 0.199,
-                "dataSource": "arg(uv)",
-                "colormap": "violet-orange 2",
+                "enabled": false,
+                "opacity": 1,
+                "dataSource": "u",
+                "colormap": "red blue 2",
                 "minValue": 0,
-                "maxValue": 0.4,
+                "maxValue": 1,
                 "cmBanding": 0.5,
                 "cmWrap": "clamp",
                 "useMipmap": false
@@ -140,7 +140,7 @@
                 },
                 "screenGrid": {
                     "enabled": true,
-                    "step": 0.02,
+                    "step": 0.01,
                     "stepAuto": true,
                     "color": "#000000ff",
                     "width": 1
@@ -192,20 +192,20 @@
                     "n23": 3,
                     "n14": 3,
                     "n24": 2,
-                    "a3": 33.222778777838045,
-                    "n35": 4,
-                    "use_n35": true,
+                    "a3": 0,
+                    "n35": 2,
+                    "use_n35": false,
                     "a4": 180,
                     "n45": 2,
-                    "use_n45": true,
-                    "r1": 0.5599999999999999,
+                    "use_n45": false,
+                    "r1": 0.3999999999999999,
                     "r2": 1,
                     "uhp": true,
                     "s1": true,
                     "s2": true,
                     "s3": true,
                     "s4": true,
-                    "s5": true
+                    "s5": false
                 }
             },
             "transform": {
@@ -216,7 +216,7 @@
             },
             "options": {
                 "useSymm": true,
-                "iterations": 60
+                "iterations": 10
             }
         },
         "tools": {
@@ -309,10 +309,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": -0.047205559372167756,
-                        "centerY": 0.4607418531260877,
+                        "centerX": -0.01224134441450158,
+                        "centerY": 0.6079665823415982,
                         "zoom": [
-                            0.729330451516863
+                            1.5852269576411497
                         ]
                     },
                     "options": {

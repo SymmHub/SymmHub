@@ -1,5 +1,5 @@
 {
-    "name": "par-25-07-28-17-16-59-824",
+    "name": "par-25-07-29-09-06-33-107",
     "appInfo": {
         "appName": "SymRenderer.Group_5splanes.SampleApp-class.InversiveNavigator_v1",
         "fileFormatRelease": 1
@@ -7,7 +7,7 @@
     "params": {
         "files": {},
         "display": {
-            "frameTime": 16.9,
+            "frameTime": 16.6,
             "customWidth": 1000,
             "customHeight": 1000,
             "sizeMultiplier": 1,
@@ -19,30 +19,30 @@
             "endFrame": 100
         },
         "simTransform": {
-            "simCenterX": 0.08,
-            "simCenterY": 0.53,
-            "simScale": 2.5,
-            "simAngle": -40
+            "simCenterX": 0,
+            "simCenterY": 0,
+            "simScale": 1.3,
+            "simAngle": 0
         },
         "visualization": {
             "colormap": {
                 "enabled": true,
-                "opacity": 0.6900000000000001,
-                "dataSource": "mod(uv)",
-                "colormap": "rainbow",
-                "minValue": -1,
+                "opacity": 1,
+                "dataSource": "u",
+                "colormap": "red blue",
+                "minValue": 0,
                 "maxValue": 1,
                 "cmBanding": 0.5,
                 "cmWrap": "repeat",
                 "useMipmap": false
             },
             "colormap2": {
-                "enabled": true,
-                "opacity": 0.199,
-                "dataSource": "arg(uv)",
-                "colormap": "violet-orange 2",
+                "enabled": false,
+                "opacity": 1,
+                "dataSource": "u",
+                "colormap": "red blue 2",
                 "minValue": 0,
-                "maxValue": 0.4,
+                "maxValue": 1,
                 "cmBanding": 0.5,
                 "cmWrap": "clamp",
                 "useMipmap": false
@@ -81,7 +81,7 @@
                 "opacity": 1,
                 "fundDomain": {
                     "fill": {
-                        "enabled": true,
+                        "enabled": false,
                         "color": "#ff000057"
                     },
                     "outline": {
@@ -107,7 +107,7 @@
                         "color": "#0035ffd9"
                     },
                     "outline": {
-                        "enabled": true,
+                        "enabled": false,
                         "width": 1,
                         "color": "#000000FF"
                     }
@@ -189,23 +189,23 @@
                 "className": "Group_5splanes",
                 "params": {
                     "n13": 2,
-                    "n23": 3,
-                    "n14": 3,
+                    "n23": 5,
+                    "n14": 2,
                     "n24": 2,
-                    "a3": 33.222778777838045,
-                    "n35": 4,
-                    "use_n35": true,
+                    "a3": 0,
+                    "n35": 2,
+                    "use_n35": false,
                     "a4": 180,
                     "n45": 2,
-                    "use_n45": true,
-                    "r1": 0.5599999999999999,
+                    "use_n45": false,
+                    "r1": 0.3999999999999999,
                     "r2": 1,
-                    "uhp": true,
+                    "uhp": false,
                     "s1": true,
                     "s2": true,
                     "s3": true,
                     "s4": true,
-                    "s5": true
+                    "s5": false
                 }
             },
             "transform": {
@@ -216,7 +216,7 @@
             },
             "options": {
                 "useSymm": true,
-                "iterations": 60
+                "iterations": 140
             }
         },
         "tools": {
@@ -303,16 +303,53 @@
                     },
                     "inversive": {
                         "enabled": true,
-                        "itrans": []
+                        "itrans": [
+                            {
+                                "v": [
+                                    1,
+                                    4.2299497238218464e-14,
+                                    0,
+                                    -3.469426887344991e-14
+                                ],
+                                "type": 2
+                            },
+                            {
+                                "v": [
+                                    -0.8149056833764519,
+                                    0.5795935879569046,
+                                    0,
+                                    2.8499343818619594e-14
+                                ],
+                                "type": 2
+                            },
+                            {
+                                "v": [
+                                    112.50193360190555,
+                                    -83.12287474694297,
+                                    0,
+                                    139.88244125108602
+                                ],
+                                "type": 1
+                            },
+                            {
+                                "v": [
+                                    -1.6165913787100354,
+                                    0.052534404683366176,
+                                    0,
+                                    1.2712700533990675
+                                ],
+                                "type": 1
+                            }
+                        ]
                     },
                     "spherical": {
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": -0.047205559372167756,
-                        "centerY": 0.4607418531260877,
+                        "centerX": 0.0002771129954600964,
+                        "centerY": 0.0257501640372402,
                         "zoom": [
-                            0.729330451516863
+                            0.7598306205151774
                         ]
                     },
                     "options": {

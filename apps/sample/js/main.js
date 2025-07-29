@@ -77,10 +77,7 @@ const SymmHubApp = options =>
         } else {
             bufferRenderer.bind();                        
             let uni = {
-                //uTime: time, 
-                //u_aspect: 1.,
-                //u_scale: 1.,
-                //u_center: [0., 0.],                
+                uTime: time, 
             }                    
             bufferRenderer.setUniforms(uni);            
             gl.disable(gl.BLEND);        
