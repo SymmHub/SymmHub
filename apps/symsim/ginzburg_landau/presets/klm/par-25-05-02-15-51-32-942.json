@@ -11,10 +11,12 @@
             "customWidth": 1000,
             "customHeight": 1000,
             "sizeMultiplier": 1,
-            "canvasSize": "HD",
+            "canvasSize": "Fit To Window",
             "backgroundColor": "#000000ff"
         },
         "recording": {
+            "animTime": 0,
+            "animSpeed": 1,
             "startFrame": 0,
             "endFrame": 1800
         },
@@ -65,8 +67,7 @@
             "simCenterX": 0,
             "simCenterY": 0,
             "simScale": 1,
-            "simAngle": 0,
-            "simAlpha": 1
+            "simAngle": 0
         },
         "visualization": {
             "colormap": {
@@ -184,7 +185,7 @@
                 },
                 "screenGrid": {
                     "enabled": false,
-                    "step": 0.02,
+                    "step": 0.05,
                     "stepAuto": true,
                     "color": "#000000ff",
                     "width": 1
