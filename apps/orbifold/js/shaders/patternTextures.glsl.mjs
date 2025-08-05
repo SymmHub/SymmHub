@@ -14,7 +14,8 @@ uniform int u_texCount;
 //uniform float u_texTransform[MAX_TEX_COUNT*1]// MAX_splanes in a transform // length of a splane as a list of floats 
 uniform sampler2D u_textures[MAX_TEX_COUNT];
 uniform float u_texAlphas[MAX_TEX_COUNT];
-
+uniform float u_imagetransforms[25]; // this is enough for just one image transform, hand-wired
+uniform int u_imagetransformslength;
 
 vec4 getPattern(vec3 pnt, float scale){
 	
@@ -33,12 +34,28 @@ vec4 getTextureInd(vec3 pnt, int index, float scale){
   if(pnt.x>1.){pnt.x=1.;}
   if(pnt.y>1.){pnt.y=1.;}
   
-	vec2 p = pnt.xy;
-	vec2 hf = vec2(0.5);
+	vec3 p = vec3(pnt.x,pnt.y,0.0);
 
-  vec2 tp = hf +p ;
-  vec2 mask2 = step(-hf,-abs(p));
-  float mask = u_texAlphas[index]*mask2.x*mask2.y;
+ 
+	
+  for(int i =0; i < u_imagetransformslength; i++){
+    vec4 vv = vec4(
+      u_imagetransforms[0+5*i],
+      u_imagetransforms[1+5*i],
+      u_imagetransforms[2+5*i],
+      u_imagetransforms[3+5*i]);//a splane to transform by
+   // vec4 vv = vec4(0.,0.,0.,1.);
+
+    int type = int(u_imagetransforms[4+5*i]);
+    iSPlane v =  
+    iGeneralSplane(
+      vv,type);
+    iReflect(v,p,scale);
+      }
+
+  vec2 tp = vec2(p[0],p[1]);
+
+  float mask =1.0;// u_texAlphas[index]*mask2.x*mask2.y;
   float lod = log2(512.*u_pixelSize*scale);
   vec4 tcolor;
   switch(index){
@@ -102,12 +119,10 @@ vec4 getTextureInd(vec3 pnt, int index, float scale){
 
 vec4 getTexture(vec3 pnt, float scale){
 	
-	//return getPattern(pnt, scale);
 	vec4 color = vec4(0,0,0,0);
 	vec2 p = pnt.xy;
 	vec2 hf = vec2(0.5);
-	//for(int i=0; i < MAX_TEX_COUNT; i++){
-	for(int i=0; i < u_texCount; i++){
+	for(int i=0; i < u_texCount; i++){ //at this time u_texCount=1 
 		//if(i < u_texCount){
 			vec2 tp = hf + p; //transformed point
 			vec2 mask2 = step(-hf,-abs(p)); //?? 

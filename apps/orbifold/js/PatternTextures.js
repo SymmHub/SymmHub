@@ -549,8 +549,11 @@ export class PatternTextures {
 		un.u_textures = [samplers];// still to turn into a scalar on the webgl side.
 		un.u_texAlphas = [alphas];
 
-    un.u_imagetransforms =  iPackTransforms(this.imagetransform, this.tcount, 5);
+    un.u_imagetransforms =  iPackTransforms([this.imagetransform], 1 , 5);
       
+    un.u_imagetransformslength = this.imagetransform.length;
+    console.log("image transform", this.imagetransform,un.u_imagetransforms);
+
     var ctrans
     if(this.groupHandler.getGroup().c){
       //var ctrans = this.crowntransforms//
@@ -564,7 +567,7 @@ export class PatternTextures {
    
     un.u_cTransCumRefCount=iPackRefCumulativeCount(ctrans, this.MAX_CROWN_COUNT);
     un.u_cTransformsData=iCumPackTransforms(ctrans,  this.MAX_TOTAL_CROWN_COUNT);
-    un.u_crownCount = 0;/******/ // ctrans.length;
+    un.u_crownCount =  ctrans.length;
 
     
     if(hasAnimation)
