@@ -324,9 +324,11 @@ export class PatternTextures {
     // and they trigger a reset of imagetransforms; 
     // however, when imagetransforms is updated in some other way, for example, 
     // by shifting FDs, center etc need to be updated, and their controllers changed
-    // --without-- again changing imagetransforms (Alternatively, could recalculate 
-    // imagetransforms; shouldn't really matter) 
-    this.updatetransformfromcenter=true;
+    // --without-- again changing imagetransforms 
+    // (Alternatively, could recalculate imagetransforms; shouldn't really matter) 
+    // [[ WHICH IS IT?]]
+
+    this.updatetransformfromcenter=false;
 
     
     
@@ -420,9 +422,11 @@ export class PatternTextures {
     c['alpha'].setValue(pm.alpha);
     c['scale'].setValue(pm.scale);//scalar 
     c['angle'].setValue(pm.angle);
-    c['cx'].setValue(pm.center);
-    c['cy'].setValue(pm.center);
+    c['cx'].setValue(pm.center[0]);
+    c['cy'].setValue(pm.center[1]);
     c['imagetransformstring'].setValue(pm.imagetransformstring)
+    this.updatetransformfromcenter=true;
+    this.onModified() // updatePatternData
 
     console.log('updating imagetransform from setTexParamsMap')
   // an update of this.imagetransform is triggered by the change to the controller.
@@ -627,10 +631,11 @@ export class PatternTextures {
     ctrls['cy'] = folder.add(par, 'cy', -10, 10,  eps).name('cy').onChange(onModified);	
 
     par['imagetransformstring']='';
-    ctrls['imagetransformstring']=folder.add(par, 'imagetransformstring',"hi").name('trans').onChange(onModified); 
+    ctrls['imagetransformstring']=folder.add(par, 'imagetransformstring',"hi").name('trans').onChange(); 
+
     
-    console.log('updating image transforms from initGUI')
-    this.onModified()   
+   // console.log('updating image transforms from initGUI')
+   // this.onModified()   // no need for this. 
      
   }
 
@@ -672,15 +677,25 @@ export class PatternTextures {
   updatePatternData(){
      
     // this is called any time that the image transform 
-    // needs to be calculated from the center, scale and angle, all from scratch. 
+    // needs to be calculated from the parameters center, scale and angle, all from scratch. 
     // We hit this when the controls are changed, etc. 
     // We could call this while dragging the mouse
-    
-      if(!this.updatetransformfromcenter){
-          this.updatetransformfromcenter=true;
-          return ;
-      }
 
+    //  Instead this call is made only when 
+    //  these parameters are changed 
+    // (from the guiparams or an animation)
+    //  Once imagetransform is calculated, 
+    // while we drag the mouse or otherwise directly act
+    // in the image, we keep running track of image transform 
+    // and correspondingly update cx, cy, angle and scale 
+    // from imagetransform.
+    
+      
+      console.log("BANG!!!@")
+      if(!this.updatetransformfromcenter){return;}
+      
+      
+       
       var centerx = this.params['cx'];
       var centery = this.params['cy'];
       var delta = Math.sqrt(centerx*centerx+centery*centery);
@@ -711,10 +726,9 @@ export class PatternTextures {
         this.updatetransformfromcenter=false;
         this.params['imagetransformstring']=objectToString(this.imagetransform);
         this.controllers['imagetransformstring'].setValue(this.params['imagetransformstring']);
-        this.updatetransformfromcenter=true;
+        
 
-
-    console.log("updating transforms", objectToString(this.params))
+    console.log("updated imagetransform in updatePatternData", objectToString(this.params))
     console.log(objectToString(this.imagetransform))
 
     // each image transform should be set to the identity upon initialization
@@ -736,7 +750,8 @@ export class PatternTextures {
     // writing this for rendering into fixed disk
     // transform is a further shift of this disk. 
 
-    
+    // Set up various styles:
+
     var trans = ((isFunction(transform.transform2screen))? transform.transform2screen : transform.world2screen).bind(transform);
   
 
@@ -759,24 +774,21 @@ export class PatternTextures {
 
 
     var editPoints = [];
-    
-    
-     
+
       // draw a little circle at the center of the various image transforms
       // use the inversive library to do this because many functions in complexTransforms
       // presume that the unit disk is preserved. 
 
-      
 
       var newpoint = iTransformU4(this.imagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
     
-     
+     //console.log("newpoint ", newpoint)
 
       if(par['active']){
         
 
-        //*******//
-        // here is where we can work out center, etc in terms of the newimagetransform
+        // here we work out center, etc 
+        // in terms of the newimagetransform
 
 				var s = 0.5*Math.exp(par['scale']);
 			
@@ -837,8 +849,14 @@ export class PatternTextures {
     
   }
 
+
+
+  /////////////////////////////////////////
   //
-  //  handler of all UI events 
+  //  Mousing 
+
+
+  //  handler of UI events 
   //
   handleEvent(evt){
     
@@ -963,15 +981,12 @@ export class PatternTextures {
 
           this.updatetransformfromcenter=false;
           this.controllers['cx'].setValue(this.params['cx']);
-         // this.updatetransformfromcenter=false;
           this.controllers['cy'].setValue(this.params['cy']);
-         /* this.updatetransformfromcenter=false;
           this.controllers['angle'].setValue(this.params['angle']);
-          //now this.updatetransformfromcenter=true;
           this.controllers['scale'].setValue(this.params['scale']);
-*/
 
-          // and so triggers updatePatternData
+
+          // and so DOES NOT trigger updatePatternData
 
         break;        
         // corners 
