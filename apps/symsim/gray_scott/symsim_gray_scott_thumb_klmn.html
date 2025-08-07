@@ -7,17 +7,26 @@
         <title>Gray-Scott KLMN</title>
         <meta name="description" content="Gray-Scott Simulation with KLMN symmetry">
         <link rel="stylesheet" href="css/thumbnails.css"/>
+        <link rel="stylesheet" href="./css/index.css"/>
     </head>
-    <body>   
+<body>   
+    <header>
     <h1>Gray-Scott equation simulation with KLMN Symmetry</h1>
-    <div id='thumbnails'>
-        
+    </header>
+    <div class="container">
+        <div id='thumbnails'>
+        </div>
     </div>
-    </body>
-    <script type='module'>
+    <footer>
+    <a href='../index.html'>SymSim</a>
+    <a href='../../../index.html'>SymmHub</a>
+    </footer>
+</body>
+<script type='module'>
 import {
     appendThumbnails
-} from './js/modules.js'
+} from './js/appendThumbnails.js';
+
         
 import {
     presets

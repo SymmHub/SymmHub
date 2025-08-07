@@ -1,10 +1,19 @@
 
-import { Group_5splanes } from "../../../lib/grouplib/Group_5splanes.js";
-import { EventDispatcher } from "../../../lib/symhublib/EventDispatcher.js";
-import { InversiveNavigator } from "../../../lib/symhublib/InversiveNavigator.js";
-import { SymRenderer } from "../../../lib/symhublib/SymRenderer.js";
-import { createDoubleFBO } from "../../../lib/symhublib/webgl_utils.js";
+import { 
+    Group_5splanes, 
+    EventDispatcher,
+    InversiveNavigator,
+    SymRenderer,
+    createDoubleFBO, 
+    makeBufferRenderer, 
+    makeSamplesArray,
+} from "./modules.js";
 
+import {
+    presets
+} from './presets.js';
+
+ 
 const initBuffer = glContext =>
 {
   const gl = glContext.gl;
@@ -26,14 +35,9 @@ const initBuffer = glContext =>
   
   const buffer = createDoubleFBO( gl, simWidth, simHeight, intFormat, format, texType, filtering );
 
-  gl.clearColor( 1, 0.5, 0, 1 );
-  gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, buffer.write.fbo);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, buffer.read.fbo);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-
   return buffer;
 }
+
 
 const SymmHubApp = options =>
 {
@@ -54,11 +58,38 @@ const SymmHubApp = options =>
 
     let buffer;
     const init = glContext => buffer = options.initBuffer( glContext );
+    
+    let bufferRenderer = null;
+    
+    function renderBuffer(opt){
+        let gl = opt.gl;
+        let time = (opt.animationTime)? opt.animationTime: 0;
+        
+        //console.log('renderBuffer(), time:', time);
+        
+        if(!bufferRenderer){
+            // prepare program 
+            bufferRenderer = makeBufferRenderer(gl);
+        } else {
+            gl.viewport(0, 0, buffer.width, buffer.height);          
+            bufferRenderer.bind();                        
+            let uni = {
+                uTime: time, 
+            }                    
+            bufferRenderer.setUniforms(uni);            
+            gl.disable(gl.BLEND);        
+
+            bufferRenderer.blit(buffer.read);  
+            //buffer.swap();           
+        }                
+    }
 
     return {
       getName         : () => options.name,
       addEventListener, setGroup, init,
       getSimBuffer    : () => buffer,
+      render          : renderBuffer,
+      get canAnimate() {return true;},
     };
   }
   const simCreator = {
@@ -70,6 +101,8 @@ const SymmHubApp = options =>
       simCreator,
       groupMaker: options.groupMaker,
       navigator: options.navigator,
+      preset:    options.preset,
+      samples:   options.samples,
   });
   app.run();
   return app;
@@ -81,6 +114,9 @@ try {
     name: 'SampleApp',
     groupMaker: new Group_5splanes(),
     navigator: new InversiveNavigator(),
+    preset: 'presets/par-25-07-28-12-43-10-651.json',
+    samples: makeSamplesArray(presets, 'presets/'),
+
   } );
 
   // parameters cannot be set in a granular fashion, but a group can be set as a whole

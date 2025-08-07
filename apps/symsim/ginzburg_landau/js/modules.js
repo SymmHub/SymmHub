@@ -79,7 +79,6 @@ export {
     createImageSelector,
     createPresetsFilesFilter,
     createDefaultImageFilesFilter,    
-    makeDocument,
     writeFile,
     str2fa,
     clamp01,
