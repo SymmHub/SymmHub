@@ -490,14 +490,14 @@ export class PatternTextures {
       console.log("calculating uniforms from ", 
         paramcenter,paramangle,paramscale, this.imagetransform);
 
-     this.crowntransforms = this.groupHandler.calcCrownTransformsData(
+     this.crowntransformsdata = this.groupHandler.calcCrownTransformsData(
       paramcenter, paramangle, paramscale
       );
 
-     console.log("crown transform registry", toString(this.crowntransforms.crowntransformregistry))
+     console.log("crown transform registry", toString(this.crowntransformsdata.crowntransformregistry))
 
 
-     this.crowntransforms = this.crowntransforms.crowntransformregistry
+     this.crowntransforms = this.crowntransformsdata.crowntransformregistry
       // send in the current transform, remove references back to PT
 
     /*  var whatsup;  
@@ -846,6 +846,11 @@ export class PatternTextures {
       }
     
     this.editPoints = editPoints;
+
+    var ppts = this.crowntransformsdata.listoftexturesamplingpoints
+    if(ppts){    for (var i = 0; i<ppts.length;i++){
+      iDrawPoint(this.crowntransformsdata.listoftexturesamplingpoints[i], context, transform, opt)
+    }}
     
   }
 
