@@ -1,77 +1,14 @@
-import {
-    nonNegHashOrbifold,
-    WallpaperGroups,
-    WallpaperGroupNames,
-    getWallpaperGroupIndex,
-    iGroup_Trivial,
-    iGroup_S442,
-    iGroup_442,
-    iGroup_4S2,
-    iGroup_S632,
-    iGroup_632,
-    iGroup_3S3,
-    iGroup_S333,
-    iGroup_333,
-    iGroup_S2222,
-    iGroup_2222_,
-    iGroup_2222,
-    iGroup_2S22,
-    iGroup_22S,
-    iGroup_SS,
-    iGroup_SX,
-    iGroup_22X,
-    iGroup_XX,
-    iGroup_O,
-    iGroup_SN,
-    iGroup_N,
-    iGroup_SNN,
-    iGroup_NN,
-    iGroup_NX,
-    iGroup_NS,
-    iGroup_S22N,
-    iGroup_22N,
-    iGroup_2SN,
-    iGroup_S532,
-    iGroup_532,
-    iGroup_S432,
-    iGroup_432,
-    iGroup_S332,
-    iGroup_332,
-    iGroup_3S2,
-    getNonnegativeGroupData,
-    iWallpaperGroup
-}
-from "./WallpaperGroups_NonNegative.js";
+import {nonNegHashOrbifold, WallpaperGroups, WallpaperGroupNames, getWallpaperGroupIndex, iGroup_Trivial, iGroup_S442, iGroup_442, iGroup_4S2, iGroup_S632, iGroup_632, iGroup_3S3, iGroup_S333, iGroup_333, iGroup_S2222, iGroup_2222_, iGroup_2222, iGroup_2S22, iGroup_22S, iGroup_SS, iGroup_SX, iGroup_22X, iGroup_XX, iGroup_O, iGroup_SN, iGroup_N, iGroup_SNN, iGroup_NN, iGroup_NX, iGroup_NS, iGroup_S22N, iGroup_22N, iGroup_2SN, iGroup_S532, iGroup_532, iGroup_S432, iGroup_432, iGroup_S332, iGroup_332, iGroup_3S2, getNonnegativeGroupData, iWallpaperGroup} from "./WallpaperGroups_NonNegative.js";
 
-import {
-    keys,
-    lengthKeys,
-    twistKeys,
-    hashOrbifoldString,
-    countParameters,
-    hashOrbifold,
-    atomizeOrbifold,
-    unfoldAtom,
-    assembleFundamentalDomain,
-    produceGenerators,
-    willOrbifoldFitQ,
-    getTransformsForTexture,
-    resetCenterfromPt,
-    resetTransformfromPt,
-}
-from './OrbifoldGeometrization.js';
+import {keys, lengthKeys, twistKeys, hashOrbifoldString, countParameters, 
+hashOrbifold, atomizeOrbifold, unfoldAtom, assembleFundamentalDomain, 
+produceGenerators, willOrbifoldFitQ, calcCrownTransformsDataFromTransform,
+getTransformsForTexture,  resetTransformfromPtAndTransform, 
+getAngleOfTransform,getAngleOfTurn} from './OrbifoldGeometrization.js';
 
-import {
-    random,
-    isDefined,TORADIANS,cos,sin,asin,log,
-}
-from '../../../lib/invlib/Utilities.js';
+import {random, isDefined, TORADIANS, cos, sin, asin, log, } from '../../../lib/invlib/Utilities.js';
 
-import {
-    sPlaneThrough,sPlaneSwapping,complexN
-}
-from '../../../lib/invlib/ComplexArithmetic.js';
-
+import {sPlaneThrough, sPlaneSwapping, complexN} from '../../../lib/invlib/ComplexArithmetic.js';
 
 const DEFAULT_INCREMENT = 1.e-8;
 
@@ -80,7 +17,7 @@ provides generators for general wallpaper group
  */
 
 export const TWISTMAXVALUE = .5;
-export const TWISTMINVALUE =  - .5;
+export const TWISTMINVALUE = -.5;
 export const LENGTHMAXVALUE = 4;
 export const LENGTHMINVALUE = .3;
 
@@ -93,24 +30,29 @@ export class WallPaperGroup_General {
         this.generalHyperbolicGroupGuiParams = [];
         this.guiParams = [];
         this.guiParams["name"] = "32x";
-        this.curvature = -1; // for switching as needed.
-        this.standardName = ""; // for the Euclidean and spherical groups; ignored in hyperbolic case
-        this.nnn = 0; // to stash a possible parameter for spherical groups;
+        this.curvature = -1;
+        // for switching as needed.
+        this.standardName = "";
+        // for the Euclidean and spherical groups; ignored in hyperbolic case
+        this.nnn = 0;
+        // to stash a possible parameter for spherical groups;
 
         this.errorLog = "";
         this.parN = 0;
         this.parCounts = [];
         this.atomList = [];
         this.defaultIncrement = DEFAULT_INCREMENT;
-        this.randomOffsetRange = .001; // to put the group into general position by default
+        this.randomOffsetRange = .001;
+        // to put the group into general position by default
 
         this.symmetryUIController = options.symmetryUI;
-        this.fundamentalDomainPoints; // if the transform is not conformal, this is an
+        this.fundamentalDomainPoints;
+        // if the transform is not conformal, this is an
         // array of arrays of points; otherwise, a list of splanes.
         // If the fundamental domain is not being shown, it is empty.
         this.needsShiftQ = false;
         this.paramGuiFolder = null;
-        this.patternMaker=options.patternMaker;
+        this.patternMaker = options.patternMaker;
 
     }
 
@@ -118,12 +60,13 @@ export class WallPaperGroup_General {
         this.gui = options.gui;
         this.paramGui = options.folder;
         var me = this;
-        this.paramGui.gpname = this.paramGui.add(this.guiParams, "name").onChange(function () {
+        this.paramGui.gpname = this.paramGui.add(this.guiParams, "name").onChange(function() {
             me.groupNameChanged();
         })
-            this.groupNameChanged();
+        this.groupNameChanged();
 
-        this.onChanged = options.onChanged; // At the moment, this is the only one used.
+        this.onChanged = options.onChanged;
+        // At the moment, this is the only one used.
         this.canvas = options.overlayCanvas;
         this.groupConfig = options.groupConfig;
         this.renderer = options.renderer;
@@ -137,9 +80,10 @@ export class WallPaperGroup_General {
             onChanged: this.onChanged
         });
 
-    };
-
-    handleEvent(evt) { //just pass these along...
+    }
+    ;
+    handleEvent(evt) {
+        //just pass these along...
         this.symmetryUIController.handleEvent(evt);
     }
 
@@ -161,17 +105,17 @@ export class WallPaperGroup_General {
             this.onChanged();
         }
         //   console.timeEnd("paramsChanged")
-    };
-
+    }
+    ;
     groupNameChanged() {
         var okQ = this.updateTheGroup();
         if (okQ) {
             this.groupParamsChanged()
-        };
-        // else what? Not really clear what the right behavior should be.
+        }
+        ;// else what? Not really clear what the right behavior should be.
         // the group doesn't change, but the symbol in the text box is wrong.
-    };
-
+    }
+    ;
     getParamsMap() {
         var returnP = {
             "name": this.guiParams["name"]
@@ -182,14 +126,14 @@ export class WallPaperGroup_General {
         //return this.guiParams; // will save too much
         // there might be labels hanging around from other groups,
         // so only save the ones we actually want:
-        lengthKeys.forEach(function (key) {
+        lengthKeys.forEach(function(key) {
             for (i = 1; i <= me.parCounts[key]; i++) {
                 label = key + "_" + i.toString() + "_l";
                 returnP[label] = me.guiParams[label]
             }
         })
 
-        twistKeys.forEach(function (key) {
+        twistKeys.forEach(function(key) {
             for (i = 1; i <= me.parCounts[key]; i++) {
                 label = key + "_" + i.toString() + "_t";
                 returnP[label] = me.guiParams[label]
@@ -221,7 +165,8 @@ export class WallPaperGroup_General {
             if ((y.length) == 3 && ((y[2] == 't') || (y[2] == 'l'))) {
                 me.guiParams[x] = paramsMap[x]
             }
-        })
+        }
+        )
         // this.paramGui.__controllers[0].setValue(this.guiParams.name)
         this.paramGui.gpname.setValue(this.guiParams.name);
         this.rebuildGui();
@@ -229,7 +174,8 @@ export class WallPaperGroup_General {
 
     }
 
-    rebuildGui(text = "") { // this.guiParams[name] is presumed defined
+    rebuildGui(text="") {
+        // this.guiParams[name] is presumed defined
 
         console.log(`${MYNAME}.rebuildGui(${text})`, this.paramGuiFolder);
         if (this.paramGuiFolder)
@@ -246,8 +192,9 @@ export class WallPaperGroup_General {
         // re-initialize these global variables
         // this will be worked out as we proceed in Step 1
         this.parCounts = [];
-        var pparCounts = this.parCounts; //because scope of this not clear in:
-        keys.forEach(function (key) {
+        var pparCounts = this.parCounts;
+        //because scope of this not clear in:
+        keys.forEach(function(key) {
             pparCounts[key] = 0
         })
         this.parN = 0;
@@ -261,7 +208,8 @@ export class WallPaperGroup_General {
         {
             console.log(this.errorLog)
             this.rebuildGui(this.errorLog)
-            return false; //not Ok
+            return false;
+            //not Ok
         }
 
         var rehashed;
@@ -269,9 +217,9 @@ export class WallPaperGroup_General {
         if (this.curvature < 0) {
             this.parN = countParameters(hashed);
             rehashed = hashOrbifold(hashed, this.parCounts)
-                this.outMessage = "orbifold area = 2pi*" + Number.parseFloat(hashed.eulerchar).toFixed(2).slice(1, -1) + "\nManipulate the " + this.parN + " parameters at right to change the orbifold geometry."
+            this.outMessage = "orbifold area = 2pi*" + Number.parseFloat(hashed.eulerchar).toFixed(2).slice(1, -1) + "\nManipulate the " + this.parN + " parameters at right to change the orbifold geometry."
 
-                this.atomList = atomizeOrbifold(rehashed, this.parCounts);
+            this.atomList = atomizeOrbifold(rehashed, this.parCounts);
 
             // we make a check to see if we are going to have enough walls for our fundamental
             // domain and enough reflections for our generators
@@ -282,11 +230,10 @@ export class WallPaperGroup_General {
             // HOWEVER willOrbifoldFitQ is currently set to return false always.
             // For the time being, if too large a symbol is entered... nothing happens!
             // TO DO: 
-            if (this.renderer && willOrbifoldFitQ(this.atomList, this.renderer.MAX_GEN_COUNT,
-                    this.MAX_REF_COUNT, this.MAX_DOMAIN_SIZE)) {
+            if (this.renderer && willOrbifoldFitQ(this.atomList, this.renderer.MAX_GEN_COUNT, this.MAX_REF_COUNT, this.MAX_DOMAIN_SIZE)) {
                 this.rebuildGui("Reduce the size of the orbifold symbol");
                 return false;
-            // so for the time being we are just doing this:
+                // so for the time being we are just doing this:
             } else {
                 this.rebuildGui();
             }
@@ -303,36 +250,31 @@ export class WallPaperGroup_General {
 
         var me = this;
         this.paramGuiFolderItems = {};
-        lengthKeys.forEach(function (key) {
+        lengthKeys.forEach(function(key) {
             for (i = 1; i <= me.parCounts[key]; i++) {
                 if (typeof me.guiParams[key + "_" + i.toString() + "_l"] == "undefined") {
                     me.guiParams[key + "_" + i.toString() + "_l"] = 2 + (me.randomOffsetRange) * (random() - .5)
                 }
-                me.paramGuiFolderItems[key + "_" + i.toString() + "_l"] =
-                    me.paramGuiFolder.add(me.guiParams, key + "_" + i.toString() + "_l",
-                        LENGTHMINVALUE, LENGTHMAXVALUE, me.defaultIncrement).onChange(
-                        function () {
-                        me.groupParamsChanged();
-                    });
+                me.paramGuiFolderItems[key + "_" + i.toString() + "_l"] = me.paramGuiFolder.add(me.guiParams, key + "_" + i.toString() + "_l", LENGTHMINVALUE, LENGTHMAXVALUE, me.defaultIncrement).onChange(function() {
+                    me.groupParamsChanged();
+                });
 
             }
         });
 
-        twistKeys.forEach(function (key) {
+        twistKeys.forEach(function(key) {
             for (i = 1; i <= me.parCounts[key]; i++) {
                 if (typeof me.guiParams[key + "_" + i.toString() + "_t"] == "undefined") {
                     me.guiParams[key + "_" + i.toString() + "_t"] = 0
                 }
-                me.paramGuiFolderItems[key + "_" + i.toString() + "_t"] =
-                    me.paramGuiFolder.add(me.guiParams, key + "_" + i.toString() + "_t",
-                        TWISTMINVALUE, TWISTMAXVALUE, me.defaultIncrement).onChange(
-                        function () {
-                        me.groupParamsChanged();
-                    });
+                me.paramGuiFolderItems[key + "_" + i.toString() + "_t"] = me.paramGuiFolder.add(me.guiParams, key + "_" + i.toString() + "_t", TWISTMINVALUE, TWISTMAXVALUE, me.defaultIncrement).onChange(function() {
+                    me.groupParamsChanged();
+                });
             }
         })
 
-        return true; //all is Ok
+        return true;
+        //all is Ok
 
     }
 
@@ -341,35 +283,32 @@ export class WallPaperGroup_General {
         var bounds = [];
         var transforms;
         var interiors = [];
-        var crowntransforms=[];
+        var crowntransforms = [];
 
         if (this.curvature < 0) {
 
             this.assembledFD = assembleFundamentalDomain(this.atomList, this);
-                // calling back to OrbifoldGeometrization.js
-            
+            // calling back to OrbifoldGeometrization.js
+
             // assembledFD[0]=[vertList,edgeKeyList]
             // assembledFD[1] is a list of internal edges;
             // assembledFD[2] will be a list of cone points TO DO.
 
             this.generators = produceGenerators(this.assembledFD[0], this);
-                // calling back to OrbifoldGeometrization.js
-
+            // calling back to OrbifoldGeometrization.js
 
             transforms = this.generators;
 
-          
-            
-            var i,ss;
-            var fdpts = this.assembledFD[0][0]; //these are the vertices, which can be passed along if we wish to.
+            var i, ss;
+            var fdpts = this.assembledFD[0][0];
+            //these are the vertices, which can be passed along if we wish to.
 
             for (i = 0; i < fdpts.length; i++) {
 
                 // sPlanes have endpoints included -- thus we can draw our FD as arcs on
                 // the javascript side
                 // As a legacy kludge, add the info about the type of bound by hand.
-                var abound = sPlaneThrough(fdpts[i], fdpts[(i + 1) % (fdpts.length)],
-                        [fdpts[i], fdpts[(i + 1) % (fdpts.length)]]);
+                var abound = sPlaneThrough(fdpts[i], fdpts[(i + 1) % (fdpts.length)], [fdpts[i], fdpts[(i + 1) % (fdpts.length)]]);
                 abound["label"] = this.assembledFD[0][1][i];
                 var bound = [abound];
 
@@ -382,35 +321,33 @@ export class WallPaperGroup_General {
                 // additional pair of points at the end of the edge key;
                 // so, uhm, which way is positive?
                 for (var j = 2; j < this.assembledFD[0][1][i].length; j += 2) {
-                    bound.push(sPlaneThrough(
-                            this.assembledFD[0][1][i][j], this.assembledFD[0][1][i][j + 1]))
+                    bound.push(sPlaneThrough(this.assembledFD[0][1][i][j], this.assembledFD[0][1][i][j + 1]))
                 }
 
                 bounds.push(bound)
             }
 
-           
             // the interior edges
             interiors = this.assembledFD[1].map(x => {
                 var abound = sPlaneThrough(x[0][0], x[0][1], x[0]);
                 abound["label"] = x[1];
                 return [abound];
-            })
+            }
+            )
 
-        } //endif curvature<0
+        }//endif curvature<0
         else if (this.curvature >= 0) {
             var igroup = getNonnegativeGroupData(this.standardName, this);
             bounds = (igroup.s).map(x => {
                 x.bounds = [NaN, NaN];
                 return [x]
-            });
+            }
+            );
             // add the bounding info inside getEuclideanGroupData
             transforms = igroup.t;
             interiors = [];
 
         }
-
-
 
         // Create the fundamental domain:
 
@@ -418,47 +355,49 @@ export class WallPaperGroup_General {
             s: bounds,
             t: transforms,
             i: interiors
-        }; 
+        };
 
-       // console.log('recalculating group');
-       
+        // console.log('recalculating group');
+
         //this is passed along to getGroup, below, which in turn is called from
         // calculateGroup in DefaultGroupRenderer.
         // That is called in a number of places, particularly getUniforms
         // ultimately, FD.s is u_domainData and FD.t is u_groupTransformsData
         // which is assigned in DefaultDomainBuilder
     }
-
-    calcCrownTransformDataFromTransform(transform){
-        return getTransformsForTextureFromTransform(this.FD.s,this.FD.t,transform, this.curvature);
+     
+    calcCrownTransformsDataFromTransform(transform) {
+        return calcCrownTransformsDataFromTransform(this.FD.s, this.FD.t, transform, this.curvature);
 
     }
 
-    calcCrownTransformsData(center,angle,scale){
-       // console.log('crown');
-        
+    calcCrownTransformsData(center, angle, scale) {
+        // console.log('crown');
+
         // for the moment we are assuming that there is 
         // only one active texture, the first one.
         // We're keeping all the info in arrays inside of patMak.
-        
-        
-        var crowntransformsdata;
-        
-        var s = scale;
-        var complexscale = [s*cos(angle),s*sin(angle)]; // a complex homothety
-    
-        var gcT= getTransformsForTexture(this.FD.s, this.FD.t,center,complexscale,this.curvature); 
 
-        crowntransformsdata =gcT;
-        
-          
-        this.FD.c=crowntransformsdata
+        var crowntransformsdata;
+
+        var s = scale;
+        var complexscale = [s * Math.cos(angle), s * Math.sin(angle)];
+        // a complex homothety
+
+        var gcT = getTransformsForTexture(this.FD.s, this.FD.t, center, complexscale, this.curvature);
+
+        crowntransformsdata = gcT;
+
+        this.FD.c = crowntransformsdata
+
+        return crowntransformsdata;
     }
 
     getGroup() {
         //this.calcCrownTransformsData();
         //console.log('getting group');
-        return this.FD // created in updateTheGroupGeometry(), right above
+        return this.FD
+        // created in updateTheGroupGeometry(), right above
     }
 
     render(context, transform) {
@@ -472,13 +411,16 @@ export class WallPaperGroup_General {
 
     }
 
-
-    resetTransformfromPt(mousepoint,imagetransform){
-        return resetTransformfromPt(mousepoint, this.getGroup(),imagetransform,this.curvature)
+    resetTransformfromPtAndTransform(mousepoint, imagetransform) {
+        return resetTransformfromPtAndTransform(mousepoint, this.getGroup(), imagetransform, this.curvature)
     }
-    resetCenterfromPt(mousepoint,center){ 
-        return resetCenterfromPt(mousepoint,this.getGroup(),center, this.curvature)
+   
+   getAngleOfTurn(transform,wpnt){
+    return getAngleOfTurn(transform, wpnt, this.curvature)
+   }
+
+    getAngleOfTransform(transform){
+        return getAngleOfTransform(transform, this.curvature)
     }
 
-} // class Group_GeneralHyperbolic
-
+}
