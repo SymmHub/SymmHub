@@ -328,8 +328,7 @@ export class PatternTextures {
     // [[ WHICH IS IT?]]
 
     this.updatetransformfromcenter=false;
-    this.updatecenterfromtransform = false;
-   
+    
     this.tempcounter = 0;
     
     
@@ -417,7 +416,7 @@ export class PatternTextures {
   setTexParamsMap(pm){
     
     var c = this.controllers;
-    
+    console.log("starting set tex params; update from center ", this.updatetransformfromcenter)
     c['active'].setValue(pm.active);
     c['tex'].setValue(pm.name);
     c['alpha'].setValue(pm.alpha);
@@ -426,8 +425,10 @@ export class PatternTextures {
     c['cx'].setValue(pm.center[0]);
     c['cy'].setValue(pm.center[1]);
     c['imagetransformstring'].setValue(pm.imagetransformstring)
+    console.log("set eight values")
     this.updatetransformfromcenter=true;
-    this.updatecenterfromtransform = false;
+    
+
     this.onModified() // updatePatternData
 
     console.log('updating imagetransform from setTexParamsMap')
@@ -653,6 +654,8 @@ export class PatternTextures {
     //
     // start/stop texture animation here 
     //
+
+  console.log("modifying a pattern param")
     
     this.onChanged();//updatePatternData
   }
@@ -701,8 +704,8 @@ export class PatternTextures {
     // from imagetransform.
     
       
-      //console.log("BANG!!!@")
-      if(!this.updatetransformfromcenter || this.updatecenterfromtransform){return;}
+     
+      if(!this.updatetransformfromcenter){return;}
       
       
        
@@ -734,12 +737,11 @@ export class PatternTextures {
      
     // update the image transform
         this.updatetransformfromcenter=false;
-        this.updatecenterfromtransform = false;
         this.params['imagetransformstring']=objectToString(this.imagetransform);
         this.controllers['imagetransformstring'].setValue(this.params['imagetransformstring']);
         
 
-    console.log("updated imagetransform in updatePatternData", objectToString(this.params))
+    console.log("🔥 updated imagetransform in updatePatternData", objectToString(this.params))
     console.log(objectToString(this.imagetransform))
 
     // each image transform should be set to the identity upon initialization
@@ -872,14 +874,13 @@ export class PatternTextures {
     presumably we have the correct image transform that's been fed into that. 
     It's just not being used here*/
 
-     opt = {radius:3, style:"#FFFF55"};
-    var ppts = this.crowntransformsdata.listoftexturesamplingpoints
+     opt = {radius:6, style:"#FF2255"};
+   /* var ppts = this.crowntransformsdata.listoftexturesamplingpoints
     if(ppts){    for (var i = 0; i<ppts.length;i++){
       iDrawPoint(this.crowntransformsdata.listoftexturesamplingpoints[i], context, transform, opt)
-    }}
+    }}*/
+     iDrawPoint([this.params['cx'],this.params['cy']],context, transform, opt);
 
-    console.log("center",centerpnt, " newpoint ", newpoint, "center of crown", 
-      this.crowntransformsdata.listoftexturesamplingpoints[0]);
     
   }
 
@@ -970,16 +971,19 @@ export class PatternTextures {
         this.params['cx']=resetdata.center[0]; // the new center.
         this.controllers['cx'].updateDisplay(this.params['cx']);
         
-        this.controllers['cy'].updateDisplay(this.params['cy']);
         this.params['cy']=resetdata.center[1]; // 
+        this.controllers['cy'].updateDisplay(this.params['cy']);
         
-        this.controllers['angle'].updateDisplay(this.params['angle']);
         this.params['angle']=resetdata.angle;
+        this.controllers['angle'].updateDisplay(this.params['angle']);
         
-        this.controllers['scale'].updateDisplay(this.params['scale']);
+        /***************/
+       /* ***** Uncomment this once the dragging information is correct ****/
+       // this.updatetransformfromcenter=true;
         this.params['scale']=resetdata.scale;
-
+        this.controllers['scale'].setValue(this.params['scale']);
         
+       
         this.params['imagetransformstring']=objectToString(this.imagetransform,true);
         this.controllers['imagetransformstring'].updateDisplay(this.params['imagetransformstring']);
         
