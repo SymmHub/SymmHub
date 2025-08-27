@@ -680,8 +680,8 @@ export class GroupRenderer {
         
         let ts = this.timeStamp;
 
-        //getting the uniforms
-       
+        //getti
+        console.log("rendering!!");
         //let allUni = this.getUniforms({});        
         let domainUni  = this.domainBuilder.getUniforms({},ts);        
         let configUni  = this.config.getUniforms({}, ts);

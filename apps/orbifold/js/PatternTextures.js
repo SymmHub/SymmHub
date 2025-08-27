@@ -311,8 +311,7 @@ export class PatternTextures {
     this.extension = getParam(opt.extension,'.png');
     this.editPoints = [];
     this.dragging = false;
-   
-
+    
 
    // this.imageGluedToOriginQ = true; 
 
@@ -329,7 +328,9 @@ export class PatternTextures {
     // [[ WHICH IS IT?]]
 
     this.updatetransformfromcenter=false;
-
+    this.updatecenterfromtransform = false;
+   
+    this.tempcounter = 0;
     
     
     
@@ -426,6 +427,7 @@ export class PatternTextures {
     c['cy'].setValue(pm.center[1]);
     c['imagetransformstring'].setValue(pm.imagetransformstring)
     this.updatetransformfromcenter=true;
+    this.updatecenterfromtransform = false;
     this.onModified() // updatePatternData
 
     console.log('updating imagetransform from setTexParamsMap')
@@ -487,14 +489,22 @@ export class PatternTextures {
       var paramangle = -this.params['angle'];
       var paramscale = this.params['scale'];
 
-      console.log("calculating uniforms from ", 
-        paramcenter,paramangle,paramscale, this.imagetransform);
+   //   console.log("calculating uniforms from ", 
+     //   paramcenter,paramangle,paramscale, this.imagetransform);
 
+
+      /* crowntransforms data is being updated from the params!! So the params
+      are changing correctly, but somehow image transform itself is not being 
+      updated?? */
+
+      console.log("1 render gl", this.tempcounter++)
      this.crowntransformsdata = this.groupHandler.calcCrownTransformsData(
       paramcenter, paramangle, paramscale
       );
 
-     console.log("crown transform registry", toString(this.crowntransformsdata.crowntransformregistry))
+
+
+   //  console.log("crown transform registry", toString(this.crowntransformsdata.crowntransformregistry))
 
 
      this.crowntransforms = this.crowntransformsdata.crowntransformregistry
@@ -556,7 +566,7 @@ export class PatternTextures {
     un.u_imagetransforms =  iPackTransforms([this.imagetransform], 1 , 5);
       
     un.u_imagetransformslength = this.imagetransform.length;
-    console.log("image transform", this.imagetransform,un.u_imagetransforms);
+   // console.log("image transform", this.imagetransform,un.u_imagetransforms);
 
     var ctrans
     if(this.groupHandler.getGroup().c){
@@ -691,8 +701,8 @@ export class PatternTextures {
     // from imagetransform.
     
       
-      console.log("BANG!!!@")
-      if(!this.updatetransformfromcenter){return;}
+      //console.log("BANG!!!@")
+      if(!this.updatetransformfromcenter || this.updatecenterfromtransform){return;}
       
       
        
@@ -724,6 +734,7 @@ export class PatternTextures {
      
     // update the image transform
         this.updatetransformfromcenter=false;
+        this.updatecenterfromtransform = false;
         this.params['imagetransformstring']=objectToString(this.imagetransform);
         this.controllers['imagetransformstring'].setValue(this.params['imagetransformstring']);
         
@@ -782,7 +793,16 @@ export class PatternTextures {
 
       var newpoint = iTransformU4(this.imagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
     
-     //console.log("newpoint ", newpoint)
+     
+      console.log("2 render js",this.tempcounter++)
+      console.log(objectToString(this.imagetransform,true))
+      console.log("newpoint ", newpoint)
+
+
+      /* the edit points are being drawn using center etc.
+       Are they in synch with image transform?
+        No they are not. There is a flag that lets us know whether the transform
+        is behind the params or the other way around. Why is this flag not triggered correctly?*/
 
       if(par['active']){
         
@@ -823,6 +843,7 @@ export class PatternTextures {
         editPoints.push({p:trans(centerpnt), type:0}); // center point type 0
         
         iDrawPoint(centerpnt, context, transform, opt);
+
         iDrawPoint(centerpnt, context, transform, opta);
         
         for(var k = 0; k < 4; k++){
@@ -847,10 +868,18 @@ export class PatternTextures {
     
     this.editPoints = editPoints;
 
+    /*for debugging: We have the correct crown transform points, so 
+    presumably we have the correct image transform that's been fed into that. 
+    It's just not being used here*/
+
+     opt = {radius:3, style:"#FFFF55"};
     var ppts = this.crowntransformsdata.listoftexturesamplingpoints
     if(ppts){    for (var i = 0; i<ppts.length;i++){
       iDrawPoint(this.crowntransformsdata.listoftexturesamplingpoints[i], context, transform, opt)
     }}
+
+    console.log("center",centerpnt, " newpoint ", newpoint, "center of crown", 
+      this.crowntransformsdata.listoftexturesamplingpoints[0]);
     
   }
 
@@ -869,17 +898,17 @@ export class PatternTextures {
 		case 'pointermove':
 		case 'mousemove':
 			this.onMouseMove(evt);
-      console.log('mousemoved')
+ //     console.log('mousemoved')
 		break;
 		case 'pointerdown':
 		case 'mousedown':
 			this.onMouseDown(evt);
-      console.log('mousedown')
+   //   console.log('mousedown')
 		break;
 		case 'pointerup':
 		case 'mouseup':
 			this.onMouseUp(evt);
-      console.log('mouseup')
+ //    console.log('mouseup')
 		default:
 			return;
 	  }		       
@@ -969,13 +998,13 @@ export class PatternTextures {
       var apnt = this.activePoint;
       if(!apnt) return;
       
-      console.log('draggin...');
+   //   console.log('draggin...');
       var type = apnt.type;
       var lastMouse = this.lastMouse;
       
       switch(type){
         
-        case 0:  
+        case 0:  // the center of the frame is being dragged around. 
           this.params['cx']= wpnt[0];
           this.params['cy']= wpnt[1];
           
@@ -985,16 +1014,27 @@ export class PatternTextures {
          // this.params['scale']=angledata['scale'];
 
           this.updatetransformfromcenter=false;
+         
+          // this seems to work, at least so far as the transform is concerned. 
+
+
           this.controllers['cx'].setValue(this.params['cx']);
           this.controllers['cy'].setValue(this.params['cy']);
           this.controllers['angle'].setValue(this.params['angle']);
+
+          this.updatetransformfromcenter=true;
+         
           this.controllers['scale'].setValue(this.params['scale']);
 
 
           // and so DOES NOT trigger updatePatternData
 
-        break;        
-        // corners 
+        break;  
+
+
+        // Or one of the corners is being dragged around. 
+
+        // this is entirely screwed up.
         case 1:
         case 2:
         case 3:

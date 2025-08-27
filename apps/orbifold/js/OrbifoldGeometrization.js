@@ -2133,7 +2133,7 @@ export function resetTransformfromPtAndTransform(mousepoint, groupdata,lasttrans
     var newscale = Math.sqrt(x*x+y*y);
     newscale = Math.log(newscale);
 
-    console.log('testing ', x," ",y," ",newangle," ",newscale);
+ //   console.log('testing ', x," ",y," ",newangle," ",newscale);
 
 
     return {
