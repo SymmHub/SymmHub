@@ -7,7 +7,7 @@ import {
     VisualizationOverlay,
     SymRenderer,
     makeSamplesArray,
-    IteratedAttractorCreator,
+    PatternsCreator,
 } from "./modules.js";
 
 import {
@@ -28,7 +28,7 @@ const visManager = VisualizationManager({
 });
 
 const app = SymRenderer({
-      simCreator: IteratedAttractorCreator,
+      simCreator: PatternsCreator,
       visualization: visManager, 
       groupMaker: new Group_WP({type: '2222',a: 0.4}), // maker of the groups
       navigator:  new InversiveNavigator(),

@@ -23,5 +23,5 @@ export {
 
 
 export {
-    IteratedAttractorCreator
-} from './IteratedAttractors.js';
+    PatternsCreator
+} from './patterns.js';

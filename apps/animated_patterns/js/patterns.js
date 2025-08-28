@@ -6,10 +6,10 @@ import {
 } from './modules.js';
 
 
-const MYNAME = 'IteratedAttractor';
+const MYNAME = 'Patterns';
 const DEBUG = true;
 
-function IteratedAttractor(options){
+function Patterns(options){
     
     let eventDispatcher = new EventDispatcher();
     
@@ -96,15 +96,15 @@ function IteratedAttractor(options){
 }
     
 //
-//  factory of iterated attracrtors 
+//  factory of paterns
 //
-const IteratedAttractorCreator = {
+const PatternsCreator = {
     //
-    create:         ()=> {return IteratedAttractor();},
+    create:         ()=> {return Patterns();},
     getName:        () => {return `${MYNAME}-factory`;},
     getClassName:   ()=>{return `${MYNAME}-class`;}
     
 }
 
 
-export {IteratedAttractorCreator}
+export {PatternsCreator}

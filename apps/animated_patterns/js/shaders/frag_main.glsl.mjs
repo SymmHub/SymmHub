@@ -48,17 +48,29 @@ vec2 deform( in vec2 p, float time )
     return p;
 }
 
+vec2 sdeform4(vec2 p, float time){
+    return deform(p, time) + 
+           deform(-p, time) +  
+           deform(vec2(-p.y, p.x), time) + 
+           deform(vec2( p.y, -p.x), time);
+}
+
+vec2 sdeform2(vec2 p, float time){
+    return deform(p, time) + deform(-p, time);
+}
+
 vec2 sdeform( in vec2 p, float time ){
 
-    return deform(p, time) + deform(-p, time);
+    return sdeform4(p, time);
+    
 }
     
 void main(){
   
-  mode = (vUv.x < 0.);  
+    mode = false;
   
-    //outValue = vec2( sin(25.*vUv.x)*cos(36.*vUv.y), sin(25.*vUv.y)*cos(36.*vUv.x));  
     outValue = getColor(sdeform(2.*vUv, 0.05*uTime).x);
+    
     // palette
     if( vUv.y < -0.9 ) outValue = getColor(vUv.x);
   
