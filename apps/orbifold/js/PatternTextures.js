@@ -29,12 +29,15 @@ import {
    iPackTransforms,
 } from '../../../lib/invlib/Inversive.js';
 
+import{poincareMobiusFromSPlanesList}
+from '../../../lib/invLib/ComplexArithmetic.js'
 
 import {
     TW as twgl,
     iSplane,
     objectToString,
     iTransformU4,
+
 } from '../../../lib/invlib/modules.js';
 
 // We need this to reset the centers into the FD. 
@@ -503,6 +506,8 @@ export class PatternTextures {
       paramcenter, paramangle, paramscale
       );
 
+     
+
 
 
    //  console.log("crown transform registry", toString(this.crowntransformsdata.crowntransformregistry))
@@ -879,8 +884,37 @@ export class PatternTextures {
     if(ppts){    for (var i = 0; i<ppts.length;i++){
       iDrawPoint(this.crowntransformsdata.listoftexturesamplingpoints[i], context, transform, opt)
     }}*/
-     iDrawPoint([this.params['cx'],this.params['cy']],context, transform, opt);
+    /* iDrawPoint([this.params['cx'],this.params['cy']],context, transform, opt);
 
+
+
+
+
+
+        s = 0.5*Math.exp(par['scale']);
+      
+        var imagetransform = poincareMobiusFromSPlanesList(this.imagetransform)
+       
+       var vvvv = new complexN(0.,0.);
+        temppt = vvvv.applyMobius(imagetransform);
+        centerpnt = [temppt.re,temppt.im];
+
+        corners = [];
+
+        temppt = (new complexN(s,s)).applyMobius(imagetransform);
+	
+        iDrawPoint([temppt.re,temppt.im],context, transform, opt);
+        temppt = (new complexN(-s,s)).applyMobius(imagetransform);
+        iDrawPoint([temppt.re,temppt.im],context, transform, opt);
+        temppt = (new complexN(-s,-s)).applyMobius(imagetransform);
+        iDrawPoint([temppt.re,temppt.im],context, transform, opt);
+        temppt = (new complexN(s,-s)).applyMobius(imagetransform);
+        iDrawPoint([temppt.re,temppt.im],context, transform, opt);
+
+        opt = {radius:6, style:"#FF22FF"};
+
+
+*/
     
   }
 
@@ -987,7 +1021,7 @@ export class PatternTextures {
         this.params['imagetransformstring']=objectToString(this.imagetransform,true);
         this.controllers['imagetransformstring'].updateDisplay(this.params['imagetransformstring']);
         
-       //console.log('updating controllers', this.params['cy'],this.params['cy'],this.params['angle'],this.params['scale'])
+       console.log('mousing')
 
       }
 

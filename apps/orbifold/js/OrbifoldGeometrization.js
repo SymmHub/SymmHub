@@ -2097,27 +2097,52 @@ export function resetTransformfromPtAndTransform(mousepoint, groupdata,lasttrans
 
     var origin = new iSplane({v:[0,0,0,0],type:SPLANE_POINT});
     var lasttexturecenter = iTransformU4(lasttransform, origin);
+        // the center of the image after transforming, then:
     var lastCenterData= iToFundDomainWBounds(domain, transforms,lasttexturecenter,200);// should be a safe bound — elsewhere we restrict the maginitude of the new point, <.9, and hence the length of the words we have to encounter here. 
+        // pull back in the group, recording {inDomain,transform,pnt,word,distance}
+
     var mousepointData = iToFundDomainWBounds(domain, transforms,
             new iSplane({v:[mousepoint[0],mousepoint[1],0,0],type:3}),200);
+    // pull the mouse back in the group.
 
-    var lastgrouptransform = lastCenterData.transform;
+    var lastgrouptransform = lastCenterData.transform; 
     var mousegrouptransform = mousepointData.transform;
 
     newtransform = lasttransform.concat(lastgrouptransform.concat(mousegrouptransform.reverse()));
     newtransform = iGetFactorizationU4(newtransform);
+
+    // newtransform therefore moves the last texture center to the fundamental domain 
+    // containing the mouse. 
+
     
-    // at this point we have: 
+        // In short, taking
         // O, the origin; T, the last centerpoint; M, the mousepoint.
         // O->T is lasttransform. 
         // in the group take g,h so that gM, hT are within the fundamental domain
         // although gM ≠ hT, generically. Therefore hg^-1 T is in the same fundamental domain as the mousepoint, 
-        // and this is our new transform.
+        // and this is our new transform. 
+
+        // this puts everything in order, but
+        // we must update the angle, center,  and scale in the gui.
 
 
-    var newcenter = iTransformU4(newtransform, origin);
+    var newcenter = iTransformU4(newtransform, origin); 
+        // establish where our new center will be.
     var temp = (transformFromCenterToPoint(newcenter.v.slice(0,2),[1,0],curvature)).reverse();
+       
     var temp = newtransform.concat(temp);
+        // this should be a loop, bringing the origin back to itself. 
+
+    /* //let's test this.
+
+var pp = new iSplane({v:[0,0,0,0],type:3});
+    pp = iTransformU4(temp,pp).v;
+    pp= [Math.round(pp[0]*100000000),Math.round(pp[1]*100000000)]
+    console.log("did the loop work?",pp);
+
+    // yes, this seems to work. 
+    */
+
 
     // how does temp screw up a unit box? this is the angle and scale that we are looking for.
 
@@ -2128,12 +2153,13 @@ export function resetTransformfromPtAndTransform(mousepoint, groupdata,lasttrans
     var x,y;
     x = shifted.v[0];
     y = shifted.v[1];
+
     var newangle = Math.atan2(y,x)*180/3.14159;
 
     var newscale = Math.sqrt(x*x+y*y);
     newscale = Math.log(newscale);
 
- //   console.log('testing ', x," ",y," ",newangle," ",newscale);
+    console.log('testing ', x," ",y," ",newangle," ",newscale);
 
 
     return {
