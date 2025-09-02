@@ -1584,11 +1584,32 @@ import {distancetable} from './distancetable45.js'
 
 
 
+// Given (domain, transforms) describing our geometry, 
+// as well as some sort of image transformation information
+// (originally {center, angle, scale}, in transition to imagetransform), 
+// we must return the "crown transforms", as well as any 
+// other associated data (such as our sampling grid, 
+// or the images of the origin under the crown transforms). 
+
+// The transforms themselves are reported back in two forms, 
+// a list of iSplanes, which is the main native form of this engine, 
+// or as mobius transforms, useful for legacy code and debugging, but because they are 
+// diskPreservingMobius transformations, they cannot incorporate scaling.
+
+
+// First is the original version of this command, dating to May 2025, 
+// producing the crown given information for the parameters. We still use this
+// under certain circumstances 
+// -- *** BUT NEED TO CHECK OUT WHEN 
+// AND ELIMINATE UNLESS ABSOLUTELY NEEDED 
+// (for example, on loading, image transform is not properly defined, somehow, 
+// and this is a back-up.  )
+//inputscale includes information about the angle as well as the magnitude of the 
+// transform. 
 
 
 
 
-//inputscale includes information about the angle 
 
 export function getTransformsForTexture(domain,transforms,inputcenter,inputscale,curvature=-1){ 
 
@@ -1731,7 +1752,7 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
             // these are just to draw a cool grid, 
             // which is very helpful for debugging
             listoftexturesamplingpoints.push([ptx,pty]);
-            
+
 
             // walk the point back into the domain
             pp = iToFundDomainWBounds(domain, transforms, spt,200);

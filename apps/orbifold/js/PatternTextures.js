@@ -320,7 +320,9 @@ export class PatternTextures {
 
     this.angleAdjustment = 0;
 
-    this.imagetransform = [];
+    this.imagetransform = [ 
+        new iSplane({v:[1,0,0,0],type:2}),
+        new iSplane({v:[1,0,0,0],type:2})];
 
     // when the center, scale or angle change, the controllers are changed, 
     // and they trigger a reset of imagetransforms; 
@@ -504,7 +506,8 @@ export class PatternTextures {
       console.log("1 render gl", this.tempcounter++)
     
     //  if(this.lastevent.ctrlKey)//false && this.imagetransform&&this.imagetransform.length>0)
-     if( this.imagetransform&&this.imagetransform.length>0 && this.tempcounter>3)
+     if(//true||
+      ( this.imagetransform&&this.imagetransform.length>0 && this.tempcounter>3))
       {
         console.log('crown from image transform')
         this.crowntransformsdata =  this.groupHandler.calcCrownTransformsDataFromTransform(this.imagetransform);
@@ -705,21 +708,28 @@ export class PatternTextures {
     // We hit this when the controls are changed, etc. 
     // We could call this while dragging the mouse
 
-    //  Instead this call is made only when 
-    //  these parameters are changed 
-    // (from the guiparams or an animation)
-    //  Once imagetransform is calculated, 
-    // while we drag the mouse or otherwise directly act
-    // in the image, we keep running track of image transform 
-    // and correspondingly update cx, cy, angle and scale 
-    // from imagetransform.
+    //  But instead, we reach this function whenever
+    //  these parameters are changed (whether from the guiparams or an animation)
+    
+    // We often recalculate imagetransform from some other source, for 
+    // example, while we drag the mouse or otherwise directly act in the image. 
+    // When we do these things, we keep running track of image transform;  
+    // correspondingly update cx, cy, angle and scale from imagetransform within 
+    // the mousing function. 
+
+    // In order to keep track of when the parameters should be updated from the transform, 
+    // we use a flag, this.updatetransformfromcenter, and only proceed if it is true:
     
       
-     
-      if(!this.updatetransformfromcenter){return;}
+      if(!this.updatetransformfromcenter){
+        // the parameters are being updated from the image transform, and 
+        // we should leave things at that. 
+        return;}
       
+     // Otherwise, let's calculate the image transform from the 
+    // parameters:
       
-       
+
       var centerx = this.params['cx'];
       var centery = this.params['cy'];
       var delta = Math.sqrt(centerx*centerx+centery*centery);
@@ -735,17 +745,19 @@ export class PatternTextures {
       var complexscale = [c,s];
 
 
+      // update the image transform, using the complex center and complex scale. 
+      // if everything checks out ok, 
       if(delta>.000001 /*say*/)
       { 
         
         this.imagetransform = transformFromCenterToPoint(complexcenter,complexscale);
         
-	  }
+	  }// otherwise, the identity. (I am not sure if [] is handled correctly, so this: )
       else this.imagetransform = 
         [ new iSplane({v:[0,1,0,0],type:2}),
           new iSplane({v:[0,1,0,0],type:2})];
 
-     
+        this.updatetransformfromcenter=false; // for good measure; 
         this.params['imagetransformstring']=objectToString(this.imagetransform);
         this.controllers['imagetransformstring'].setValue(this.params['imagetransformstring']);
         
@@ -755,6 +767,8 @@ export class PatternTextures {
 
     // each image transform should be set to the identity upon initialization
     // then upon loading a json file, need to calculate from scratch. Thence this function updates the transform.
+
+    this.updatetransformfromcenter=true; // ready for the next pass through the event loop. 
 
 
 
@@ -1004,14 +1018,19 @@ export class PatternTextures {
     
 
 
-    if(!this.dragging && !evt.shiftKey){
+    if(!this.dragging // something else below
+      && !evt.shiftKey// for the moment this freezes the mousing, to be able to 
+      // move around and diagnose stuff
+      ){
+
       // given wpt, find the nearest image of the center point-- and call that the center,
       // adjusting the scale. In other words, among the crown images of the tex center, 
       // which c is closest to the FD image f(w) of wpt?
       // The center point is therefore c(f(w))
       
      var resetdata = this.groupHandler.resetTransformfromPtAndTransform(wpnt,this.imagetransform);
-      
+        //******* A LIKELY SUSPECT. To check the arithmetic.
+
       if(!!resetdata){
 
         this.imagetransform = resetdata.imagetransform;
@@ -1035,9 +1054,15 @@ export class PatternTextures {
         this.params['imagetransformstring']=objectToString(this.imagetransform,true);
         this.controllers['imagetransformstring'].updateDisplay(this.params['imagetransformstring']);
       
+        // reset the flag that an update should be followed through if any of the parameters change;
+        // this occurs in updatePatternTextureData, which is triggered by onChanged() etc.
+
         this.updatetransformfromcenter=true;  
        console.log('mousing')
 
+      }
+      else{
+        console.log("there's a problem with resetting the data;")
       }
 
 
