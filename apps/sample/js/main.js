@@ -1,4 +1,5 @@
 
+import { createSimulationRenderingLayer } from "../../symsim/simulations.js";
 import { 
     Group_5splanes, 
     EventDispatcher,
@@ -90,6 +91,7 @@ const SymmHubApp = options =>
       getSimBuffer    : () => buffer,
       render          : renderBuffer,
       get canAnimate() {return true;},
+      doStep          : () => {},
     };
   }
   const simCreator = {
@@ -97,8 +99,9 @@ const SymmHubApp = options =>
     getName: () => `${options.name}-factory`,
     getClassName: () => `${options.name}-class`,
   }
-  const app = SymRenderer({
-      simCreator,
+  const renderingLayer = createSimulationRenderingLayer( simCreator );
+  
+  const app = SymRenderer( renderingLayer, {
       groupMaker: options.groupMaker,
       navigator: options.navigator,
       preset:    options.preset,
