@@ -380,8 +380,8 @@ export class WallPaperGroup_General {
 
         var crowntransformsdata;
 
-        var s = scale;
-        var complexscale = [s * Math.cos(angle), s * Math.sin(angle)];
+        
+        var complexscale = [scale * Math.cos(angle), scale * Math.sin(angle)];
         // a complex homothety
 
         var gcT = getTransformsForTexture(this.FD.s, this.FD.t, center, complexscale, this.curvature);
@@ -394,8 +394,6 @@ export class WallPaperGroup_General {
     }
 
     getGroup() {
-        //this.calcCrownTransformsData();
-        //console.log('getting group');
         return this.FD
         // created in updateTheGroupGeometry(), right above
     }

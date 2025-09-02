@@ -1703,14 +1703,14 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
     trpointregistry=[]//[registrypoint.v[0],registrypoint.v[1]]];
 
 
-//soley for debugging:
+    //some points for debugging:
     var transformedpts=[];
 
     var spt,sptx, spty, ptx,pty;
 
     var tttemp=[],i,j;
 
-    // now make a grid: 
+    // now make a grid of points in the transformed bounds of the image: 
     for(var ij=0; ij<distancetable.length;ij++){
 
             i= distancetable[ij][0];
@@ -1728,8 +1728,9 @@ export function getTransformsForTexture(domain,transforms,inputcenter,inputscale
 
             // next transform the sampling by imagetransform 
 
-            // these are just to draw a cool grid
-            listoftexturesamplingpoints.push([ptx,pty]);// to make a picture for debugging
+            // these are just to draw a cool grid, 
+            // which is very helpful for debugging
+            listoftexturesamplingpoints.push([ptx,pty]);
             
 
             // walk the point back into the domain

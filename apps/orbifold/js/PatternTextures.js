@@ -314,7 +314,7 @@ export class PatternTextures {
     this.extension = getParam(opt.extension,'.png');
     this.editPoints = [];
     this.dragging = false;
-    
+    this.lastevent={ctrlKey:false};
 
    // this.imageGluedToOriginQ = true; 
 
@@ -502,11 +502,17 @@ export class PatternTextures {
       updated?? */
 
       console.log("1 render gl", this.tempcounter++)
-     this.crowntransformsdata = this.groupHandler.calcCrownTransformsData(
-      paramcenter, paramangle, paramscale
-      );
-
-     
+    
+    //  if(this.lastevent.ctrlKey)//false && this.imagetransform&&this.imagetransform.length>0)
+     if( this.imagetransform&&this.imagetransform.length>0 && this.tempcounter>3)
+      {
+        console.log('crown from image transform')
+        this.crowntransformsdata =  this.groupHandler.calcCrownTransformsDataFromTransform(this.imagetransform);
+      }
+      else{
+        console.log('crown from params')
+        this.crowntransformsdata = this.groupHandler.calcCrownTransformsData(   paramcenter, -paramangle/180*3.1416, Math.exp(paramscale) );
+      }
 
 
 
@@ -740,8 +746,6 @@ export class PatternTextures {
           new iSplane({v:[0,1,0,0],type:2})];
 
      
-    // update the image transform
-        this.updatetransformfromcenter=false;
         this.params['imagetransformstring']=objectToString(this.imagetransform);
         this.controllers['imagetransformstring'].setValue(this.params['imagetransformstring']);
         
@@ -801,7 +805,7 @@ export class PatternTextures {
       var newpoint = iTransformU4(this.imagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
     
      
-      console.log("2 render js",this.tempcounter++)
+      console.log("2 render js",this.tempcounter)
       console.log(objectToString(this.imagetransform,true))
       console.log("newpoint ", newpoint)
 
@@ -826,9 +830,7 @@ export class PatternTextures {
 
         
         centerpnt = [newpoint[0],newpoint[1]];
-        this.params['cx'] = centerpnt[0];
-        this.params['cy'] = centerpnt[1];
-
+   
 
       // we're going to need some help from Complex.js to figure out how scale changes. 
 
@@ -879,12 +881,25 @@ export class PatternTextures {
     presumably we have the correct image transform that's been fed into that. 
     It's just not being used here*/
 
-     opt = {radius:6, style:"#FF2255"};
-   /* var ppts = this.crowntransformsdata.listoftexturesamplingpoints
+     opt = {radius:1.2, style:"#FF2255"};
+    var ppts = this.crowntransformsdata.listoftexturesamplingpoints
     if(ppts){    for (var i = 0; i<ppts.length;i++){
-      iDrawPoint(this.crowntransformsdata.listoftexturesamplingpoints[i], context, transform, opt)
-    }}*/
+      iDrawPoint(ppts[i], context, transform, opt)
+    }}
+
+
+    opt = {radius:10, style:"#22AABB"};
+    var ppts = this.crowntransformsdata.transformedpts
+    if(ppts){    for (var i = 0; i<ppts.length;i++){
+      iDrawPoint(ppts[i], context, transform, opt)
+    }}
+
+
+
+
     /* iDrawPoint([this.params['cx'],this.params['cy']],context, transform, opt);
+
+
 
 
 
@@ -929,6 +944,7 @@ export class PatternTextures {
   //
   handleEvent(evt){
     
+    this.lastevent = evt;
 		switch(evt.type) {
 		case 'pointermove':
 		case 'mousemove':
@@ -1000,6 +1016,7 @@ export class PatternTextures {
 
         this.imagetransform = resetdata.imagetransform;
    
+        this.updatetransformfromcenter=false;
         this.params['imagetransform']=this.imagetransform;
  
         this.params['cx']=resetdata.center[0]; // the new center.
@@ -1011,16 +1028,14 @@ export class PatternTextures {
         this.params['angle']=resetdata.angle;
         this.controllers['angle'].updateDisplay(this.params['angle']);
         
-        /***************/
-       /* ***** Uncomment this once the dragging information is correct ****/
-       // this.updatetransformfromcenter=true;
         this.params['scale']=resetdata.scale;
         this.controllers['scale'].setValue(this.params['scale']);
         
        
         this.params['imagetransformstring']=objectToString(this.imagetransform,true);
         this.controllers['imagetransformstring'].updateDisplay(this.params['imagetransformstring']);
-        
+      
+        this.updatetransformfromcenter=true;  
        console.log('mousing')
 
       }
@@ -1052,20 +1067,18 @@ export class PatternTextures {
          // this.params['scale']=angledata['scale'];
 
           this.updatetransformfromcenter=false;
-         
-          // this seems to work, at least so far as the transform is concerned. 
-
+         // and so DOES NOT trigger updatePatternData
 
           this.controllers['cx'].setValue(this.params['cx']);
           this.controllers['cy'].setValue(this.params['cy']);
           this.controllers['angle'].setValue(this.params['angle']);
-
-          this.updatetransformfromcenter=true;
-         
+          
+          this.updatetransformfromcenter=true;//reset to being sensitive
           this.controllers['scale'].setValue(this.params['scale']);
 
-
-          // and so DOES NOT trigger updatePatternData
+          
+          
+         
 
         break;  
 
