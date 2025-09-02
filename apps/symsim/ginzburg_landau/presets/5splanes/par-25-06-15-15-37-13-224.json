@@ -7,14 +7,16 @@
     "params": {
         "files": {},
         "display": {
-            "frameTime": 16.9,
+            "canvasSize": "Fit To Window",
             "customWidth": 1000,
             "customHeight": 1000,
             "sizeMultiplier": 1,
-            "canvasSize": "HD",
-            "backgroundColor": "#FFFFFF00"
+            "backgroundColor": "#FFFFFF00",
+            "frameTime": 16.8
         },
         "recording": {
+            "animTime": 0,
+            "animSpeed": 1,
             "startFrame": 0,
             "endFrame": 100
         },
@@ -65,8 +67,7 @@
             "simCenterX": 0.5770000000000001,
             "simCenterY": 0.52,
             "simScale": 0.203,
-            "simAngle": 0,
-            "simAlpha": 1
+            "simAngle": 0
         },
         "visualization": {
             "colormap": {
@@ -137,7 +138,7 @@
                     }
                 },
                 "isolines": {
-                    "enabled": true,
+                    "enabled": false,
                     "type": "u",
                     "step": 1,
                     "offset": 0,
@@ -184,7 +185,7 @@
                 },
                 "screenGrid": {
                     "enabled": true,
-                    "step": 0.01,
+                    "step": 0.02,
                     "stepAuto": true,
                     "color": "#000000ff",
                     "width": 1
@@ -316,8 +317,8 @@
                                 "a2y": 1,
                                 "n1": 10,
                                 "n2": 0,
-                                "x0": 0,
-                                "y0": 0
+                                "shift1": 0,
+                                "shift2": 0
                             },
                             "expMap": {
                                 "enabled": false

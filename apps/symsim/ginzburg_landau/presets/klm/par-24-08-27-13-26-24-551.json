@@ -7,14 +7,16 @@
     "params": {
         "files": {},
         "display": {
-            "frameTime": 16.9,
+            "canvasSize": "Fit To Window",
             "customWidth": 1000,
             "customHeight": 1000,
-            "sizeMultiplier": 2,
-            "canvasSize": "4K",
-            "backgroundColor": "#000000ff"
+            "sizeMultiplier": 1,
+            "backgroundColor": "#000000ff",
+            "frameTime": 16.9
         },
         "recording": {
+            "animTime": 0,
+            "animSpeed": 1,
             "startFrame": 0,
             "endFrame": 1800
         },
@@ -65,8 +67,7 @@
             "simCenterX": 0,
             "simCenterY": 0,
             "simScale": 1,
-            "simAngle": 0,
-            "simAlpha": 1
+            "simAngle": 0
         },
         "visualization": {
             "colormap": {
@@ -184,7 +185,7 @@
                 },
                 "screenGrid": {
                     "enabled": false,
-                    "step": 0.005,
+                    "step": 0.02,
                     "stepAuto": true,
                     "color": "#000000ff",
                     "width": 1
@@ -303,8 +304,8 @@
                                 "a2y": 1,
                                 "n1": 10,
                                 "n2": 0,
-                                "x0": 0,
-                                "y0": 0
+                                "shift1": 0,
+                                "shift2": 0
                             },
                             "expMap": {
                                 "enabled": false
@@ -340,9 +341,11 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0,
-                        "centerY": 0,
-                        "zoom": 1
+                        "centerX": -0.006050160808742086,
+                        "centerY": -0.005377920718881815,
+                        "zoom": [
+                            0.7261496033463162
+                        ]
                     },
                     "options": {
                         "animation": true
