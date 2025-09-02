@@ -1,0 +1,172 @@
+<html>
+<body>
+<h1>Test Draw Color Points</h1>
+<canvas id="glcanvas" width="1000" height="1000"></canvas>
+<script>
+const canvas = document.getElementById("glcanvas");
+const gl = canvas.getContext("webgl2");
+
+// Vertex shader
+const vsSource = `#version 300 es
+in vec2 a_position;
+in vec3 a_color;
+
+out vec3 v_color; // pass to fragment shader
+
+void main() {
+    gl_PointSize = 1.; // set size of each point
+    vec2 p = a_position * 0.4;
+    gl_Position = vec4(p, 0.0, 1.0);
+    v_color = a_color;
+}`;
+
+// Fragment shader
+const fsSource = `#version 300 es
+precision highp float;
+in vec3 v_color;
+out vec4 outColor;
+
+void main() {
+    outColor = vec4(v_color, 1.0); // use per-point color
+}`;
+
+// Helper to compile shader
+function compileShader(type, source) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error(gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+    }
+    return shader;
+}
+
+// Create program
+const vs = compileShader(gl.VERTEX_SHADER, vsSource);
+const fs = compileShader(gl.FRAGMENT_SHADER, fsSource);
+const program = gl.createProgram();
+gl.attachShader(program, vs);
+gl.attachShader(program, fs);
+gl.linkProgram(program);
+if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error(gl.getProgramInfoLog(program));
+}
+gl.useProgram(program);
+
+//let data = getDataSquare();
+const pcount = 10000;
+let data = getDataSpiral(pcount, 0);
+
+// === Setup Position Buffer ===
+const posBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
+
+const posLoc = gl.getAttribLocation(program, "a_position");
+gl.enableVertexAttribArray(posLoc);
+gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+// === Setup Color Buffer ===
+const colorBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+gl.bufferData(gl.ARRAY_BUFFER, data.colors, gl.STATIC_DRAW);
+
+const colorLoc = gl.getAttribLocation(program, "a_color");
+gl.enableVertexAttribArray(colorLoc);
+gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
+
+requestAnimationFrame(drawFrame);
+let frameCount = 0;
+const FRAME_TIME = (1./60);
+
+function drawFrame(){
+
+    // Clear canvas and draw
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);    
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    
+    getDataSpiral(pcount, FRAME_TIME*(frameCount++), data);
+    //getAttractorPoints(pcount, FRAME_TIME*(frameCount++), data);
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, data.colors, gl.STATIC_DRAW);
+    
+    
+    gl.drawArrays(gl.POINTS, 0, pcount);
+    if(frameCount < 120) requestAnimationFrame(drawFrame);
+    
+}
+
+
+function getAttractorPoints(N, time, data = null){
+
+    let a = -1.85;
+    let b = -2.5;
+    let c = -1.05;
+    let d = 0.585;
+    
+    let a1 = a;
+    let a2 = c;
+    let a3 = a;
+    let b1 = b;
+    let b2 = d;
+    let b3 = b;
+    
+    if(!data){
+        data = {
+            points: new Float32Array(2*N),
+            colors: new Float32Array(3*N),
+        };
+    }
+    const points = data.points;
+    const colors = data.colors;
+    
+    let x = 0.1, y = 0.2;
+    for (let i = 0; i < N; i++) {
+        let x2 = Math.sin(a1 * y) + a2 * Math.cos(a3 * x);
+        let y2 = Math.sin(b1 * x) + b2 * Math.cos(b3 * y);
+        x = x2;
+        y = y2;
+        points[2*i] = (x);
+        points[2*i+1] = (y);
+        colors[3*i] =   Math.sqrt(x*x + y*y)*0.5;
+        colors[3*i+1] = 0;//(y + 1)*0.5;
+        colors[3*i+2] = 0;//(y + 1)*0.5 * (y + 1)*0.5;
+      
+    }
+    return data;
+}
+
+function getDataSpiral(N, time, data = null){
+
+    if(!data){
+        data = {
+            points: new Float32Array(2*N),
+            colors: new Float32Array(3*N),
+        };
+    }
+    const points = data.points;
+    const colors = data.colors;
+    for(let i =0; i < N; i++){
+        let phi = i*0.01 - 2*Math.PI*time;
+        let r = i/N;
+        let x = r*Math.cos(phi);
+        let y = r*Math.sin(phi);
+        points[2*i] = (x);
+        points[2*i+1] = (y);
+        colors[3*i] =   Math.sqrt(x*x + y*y)*0.5;
+        colors[3*i+1] = 0;//(y + 1)*0.5;
+        colors[3*i+2] = 0;//(y + 1)*0.5 * (y + 1)*0.5;
+    }
+
+    return data;
+}
+
+
+
+</script>
+</body>
+</html>

@@ -22,13 +22,23 @@ const gPrograms = {
     renderBuffer: progRenderBuffer,
 }
 
-export function makeBufferRenderer(gl){
+export function buildPrograms(gl, programs){
     console.log('makeBufferRenderer()');
-    let result = buildProgramsCached(gl, gPrograms);
+    let result = buildProgramsCached(gl, programs);
     if (!result) {
         throw new Error(`buildProgram() failed,  result: ${result}`);
     } else {
         console.log('makeBufferRenderer() success');        
     }
-    return gPrograms.renderBuffer.program;
+    programs.isReady = true;
+}
+
+
+export function getProgram(gl, progName){
+    
+    if( !gPrograms.isReady){
+        buildPrograms(gl, gPrograms);
+    }
+    
+    return gPrograms[progName].program;
 }

@@ -1,8 +1,8 @@
 import {    
-    makeBufferRenderer, 
+    getProgram, 
     EventDispatcher,
     createDoubleFBO, 
-    
+    DrawAttractor,
 } from './modules.js';
 
 
@@ -25,13 +25,14 @@ function IteratedAttractor(options){
       
     };
 
-    let buffer;
+    let mRenderedBuffer;
+    let mAttractor;
     
     function initBuffer(glContext) {
     
       const gl = glContext.gl;
         
-      const bufWidth = 2048;
+      const bufWidth = 1024;
       const bufHeight = bufWidth;
       //const filtering = gl.NEAREST;
       const filtering = gl.LINEAR;
@@ -46,42 +47,42 @@ function IteratedAttractor(options){
       // 4 components data, 1 byte per channel 
       //const format = gl.RGBA, intFormat = gl.RGBA, texType = gl.UNSIGNED_BYTE;
       
-      const buffer = createDoubleFBO( gl, bufWidth, bufHeight, intFormat, format, texType, filtering );
+      return createDoubleFBO( gl, bufWidth, bufHeight, intFormat, format, texType, filtering );
 
-      return buffer;
     }
-
     
     
     function init(glContext) {
         
-        buffer = initBuffer(glContext);
+        mRenderedBuffer = initBuffer(glContext);
+        mAttractor = DrawAttractor();
+        mAttractor.init(glContext);
         
     }
     
     let bufferRenderer = null;
     
-    function renderBuffer(opt){
+    function render(opt){
+        
         let gl = opt.gl;
         let time = (opt.animationTime)? opt.animationTime: 0;
         
-        //console.log('renderBuffer(), time:', time);
+        if(DEBUG)console.log(`${MYNAME}.renderBuffer(), time:`, time);
         
-        if(!bufferRenderer){
-            // prepare program 
-            bufferRenderer = makeBufferRenderer(gl);
-        } else {
-            gl.viewport(0, 0, buffer.width, buffer.height);          
-            bufferRenderer.bind();                        
-            let uni = {
-                uTime: time, 
-            }                    
-            bufferRenderer.setUniforms(uni);            
-            gl.disable(gl.BLEND);        
+        
+        bufferRenderer = getProgram(gl, 'renderBuffer');
+        gl.viewport(0, 0, mRenderedBuffer.width, mRenderedBuffer.height);   
 
-            bufferRenderer.blit(buffer.read);  
-            //buffer.swap();           
-        }                
+        mAttractor.render(gl, mRenderedBuffer);
+        
+        //bufferRenderer.bind();                        
+        //let uni = {
+        //     uTime: time, 
+        //}                    
+        //bufferRenderer.setUniforms(uni);        
+        //gl.disable(gl.BLEND);        
+        //bufferRenderer.blit(mRenderedBuffer.read);  
+        
     }
 
     return {
@@ -89,8 +90,8 @@ function IteratedAttractor(options){
         addEventListener: addEventListener, 
         setGroup        : setGroup, 
         init            : init,
-        getSimBuffer    : () => buffer,
-        render          : renderBuffer,
+        getSimBuffer    : () => mRenderedBuffer,
+        render          : render,
         get canAnimate() {return true;},
     };
 }

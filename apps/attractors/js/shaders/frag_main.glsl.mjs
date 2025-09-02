@@ -5,18 +5,21 @@ out vec4 outValue;
 
 #define PI2 (2.*3.1415926)
 
-bool mode;
+int mode;
 
 vec3 fcos( vec3 x )
 {
-    if( mode) return cos(x);                // naive
 
     vec3 w = fwidth(x);
-    #if 0
-    return cos(x) * sin(0.5*w)/(0.5*w);     // filtered-exact
-	#else
-    return cos(x) * smoothstep(6.28,0.0,w); // filtered-approx
-	#endif  
+    switch(mode){
+        case 0: 
+            return cos(x);                // naive
+        case 1: 
+            return cos(x) * sin(0.5*w)/(0.5*w);     // filtered-exact
+        case 2: 
+            return cos(x) * smoothstep(6.28,0.0,w); // filtered-approx
+    }
+	
 }
 
 vec4 getColor( in float t )
@@ -55,10 +58,18 @@ vec2 sdeform( in vec2 p, float time ){
     
 void main(){
   
-  mode = (vUv.x < 0.);  
+    mode = 0;
+    
+    if(vUv.y < -0.7)
+        mode = 0;
+    else if(vUv.x > 0.) 
+        mode = 1;
+    else 
+        mode = 2;
+   
   
     //outValue = vec2( sin(25.*vUv.x)*cos(36.*vUv.y), sin(25.*vUv.y)*cos(36.*vUv.x));  
-    outValue = getColor(sdeform(2.*vUv, 0.05*uTime).x);
+    outValue = getColor(1./length(vUv));
     // palette
     if( vUv.y < -0.9 ) outValue = getColor(vUv.x);
   
