@@ -12,6 +12,7 @@ export {
     VisualizationColormap,
     VisualizationImage,     
     createDoubleFBO, 
+    createFBO, 
     buildProgramsCached,
     makeSamplesArray,    
 
@@ -33,3 +34,8 @@ export {
 export {
     DrawAttractor
 } from './drawAttractor.js';
+
+
+export {
+    AttPrograms     
+} from './att_programs.js'

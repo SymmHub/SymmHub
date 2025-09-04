@@ -1,123 +1,101 @@
 import {
     CliffordAttractor,
-    buildPrograms,
+    createFBO,
+    AttPrograms,
 } from './modules.js';
-
-// Vertex shader
-const vsSource = 
-`
-in vec2 a_position;
-in vec3 a_color;
-
-out vec3 v_color; // pass to fragment shader
-
-void main() {
-    gl_PointSize = 1.; // set size of each point
-    vec2 p = a_position * 0.4;
-    gl_Position = vec4(p, 0.0, 1.0);
-    v_color = a_color;
-}`;
-
-// Fragment shader
-const fsSource = 
-`
-precision highp float;
-in vec3 v_color;
-out vec4 outColor;
-
-void main() {
-    //outColor = vec4(v_color, 1.0); // use per-point color
-    outColor = vec4(0.,0,1.,1.);
-}`;
 
 const MYNAME = 'drawAttractor';
 
-const Shaders = {
-    getName:  () => {return MYNAME;},
-    vsSource:vsSource,
-    fsSource,fsSource,
-}
-const drawPointsVert = {obj:Shaders, id:'vsSource'};
-const drawPointsFrag = {obj:Shaders, id:'fsSource'};
-const progPoints = {
-    name: 'pointsRenderer', 
-    vs: {frags:[drawPointsVert]}, 
-    fs: {frags: [drawPointsFrag]},
-};
 
-const gPrograms = {
-   progPoints,
-};
+const DEBUG = false;
 
 export function DrawAttractor(){
     
-    console.log(`${MYNAME}.DrawAttractor()`);
+    if(DEBUG)console.log(`${MYNAME}.DrawAttractor()`);
 
     let posBuffer;
-    let colorBuffer;
-    
+    let posLoc;
+    let mAccumulator;
+    let mAccumulatorWidth = 2048;
     let mAttractor = CliffordAttractor();
         
     function init(glContext){
         
         let gl = glContext.gl;
         
-        console.log(`${MYNAME}.init() gl:`,gl);
+        mAccumulator = createAccumulator(gl, mAccumulatorWidth);
         
-        buildPrograms(gl, gPrograms);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, mAccumulator.fbo);
+        gl.disable(gl.BLEND);        
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);    
+        gl.clear(gl.COLOR_BUFFER_BIT);
 
-        //let data = getDataSquare();
-
-        // === Setup Position Buffer ===
+        if(DEBUG)console.log(`${MYNAME}.init() gl:`,gl);
+        
         posBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, mAttractor.getPoints(), gl.STATIC_DRAW);
-        let prog = progPoints.program.program;
-        console.log(`${MYNAME} progPoints: `, prog);
+
+        let cpuAcc = AttPrograms.getProgram(gl, 'cpuAccumulator');
         
-        let posLoc = gl.getAttribLocation(prog, "a_position");
-        console.log(`${MYNAME} posLoc: `, posLoc);
-
-        gl.enableVertexAttribArray(posLoc);
-        gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-
-        // === Setup Color Buffer ===
-        colorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, mAttractor.getColors(), gl.STATIC_DRAW);
-
-        const colorLoc = gl.getAttribLocation(prog, "a_color");
-        console.log(`${MYNAME} colorLoc: `, colorLoc);
-        
-        gl.enableVertexAttribArray(colorLoc);
-        gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
+        posLoc = gl.getAttribLocation(cpuAcc.program, "a_position");
             
     } // function init()
            
-    let renderFlag = false;
-
     function render(gl, buffer){
         
-        console.log(`${MYNAME}.render() gl: `, gl, buffer);
-        if(renderFlag) 
-           return;
-       renderFlag = true;
-        // Clear canvas and draw
-        gl.bindFramebuffer(gl.FRAMEBUFFER, buffer.read.fbo);
+        if(DEBUG)console.log(`${MYNAME}.render() gl: `, gl, buffer);
         
-        gl.clearColor(1.0, 1.0, 1.0, 1.0);    
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        let prog = progPoints.program.program;
-        gl.useProgram(prog);
+        gl.viewport(0, 0, mAccumulator.width, mAccumulator.height);              
+        gl.bindFramebuffer(gl.FRAMEBUFFER, mAccumulator.fbo);
+
+        // enable blend to accumulate histogram 
+        gl.enable(gl.BLEND);   
+        gl.blendFunc(gl.ONE, gl.ONE);        
+        gl.blendEquation(gl.FUNC_ADD);
+        
+        let cpuAcc = AttPrograms.getProgram(gl, 'cpuAccumulator');
+        cpuAcc.bind();
         
         mAttractor.iterate();
         gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, mAttractor.getPoints(), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, mAttractor.getPointsCombined(), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(posLoc);
+        gl.vertexAttribPointer(posLoc, 4, gl.FLOAT, false, 0, 0);
+                
+        let cpuAccUni = {
+          colorSpeed:   0.22,
+          colorPhase:   Math.PI,
+          pointSize:    1,
+          colorSign:    1.,
+          jitter:        1.25,
+          resolution:   [mAccumulator.width, mAccumulator.height],
+        };
+        cpuAcc.setUniforms(cpuAccUni);
         
-        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, mAttractor.getColors(), gl.STATIC_DRAW);       
         gl.drawArrays(gl.POINTS, 0, mAttractor.getPointsCount());
             
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, buffer.fbo);
+        
+        let histRenderer = AttPrograms.getProgram(gl, 'renderHistogram');        
+        gl.viewport(0, 0, buffer.width, buffer.height);  
+                
+        histRenderer.bind();
+        
+        let histUni = {
+            scale: 1,
+            gamma: 2.2,
+            contrast: 1, 
+            brightness: 0.3,
+            saturation: 0.8,
+            dynamicRange:0.1,
+            invert: false,
+            src: mAccumulator,
+        };
+        
+        histRenderer.setUniforms(histUni);
+        gl.disable(gl.BLEND);        
+        histRenderer.blit(buffer);
+               
+        
     } // function render()
     
     
@@ -125,4 +103,36 @@ export function DrawAttractor(){
         init: init,
         render: render,
     }
+}
+
+/*
+scale = (totalPointsCount/bufPointsCount) * props.scaleFactor;
+
+
+function scaleFactor(scales) {
+  const X = scales.x.domain()[1] - scales.x.domain()[0];
+  const X0 = scales.xOriginal.domain()[1] - scales.xOriginal.domain()[0];
+  const Y = scales.y.domain()[1] - scales.y.domain()[0];
+  const Y0 = scales.yOriginal.domain()[1] - scales.yOriginal.domain()[0];
+  return (X * Y) / (X0 * Y0);
+}        
+*/
+
+function createAccumulator(gl, width, ){
+        
+    const filtering = gl.NEAREST;
+    //const filtering = gl.LINEAR;
+    //ext.formatRGBA.internalFormat, ext.formatRGBA.format, ext.halfFloatTexType, gl.NEAREST
+    // compatible formats see twgl / textures.js getTextureInternalFormatInfo()
+    // or https://webgl2fundamentals.org/webgl/lessons/webgl-data-textures.html
+    // 2 components data 
+    //const format = gl.RG, intFormat = gl.RG32F, texType = gl.FLOAT;
+    //const format = gl.RG, intFormat = gl.RG16F, texType = gl.FLOAT;
+    // 4 components data  4 byters per channel 
+    const format = gl.RGBA, intFormat = gl.RGBA32F, texType = gl.FLOAT;        
+    // 4 components data, 1 byte per channel 
+    //const format = gl.RGBA, intFormat = gl.RGBA, texType = gl.UNSIGNED_BYTE;
+  
+    return createFBO( gl, width, width, intFormat, format, texType, filtering );
+
 }

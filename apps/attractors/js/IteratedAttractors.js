@@ -67,22 +67,14 @@ function IteratedAttractor(options){
         let gl = opt.gl;
         let time = (opt.animationTime)? opt.animationTime: 0;
         
-        if(DEBUG)console.log(`${MYNAME}.renderBuffer(), time:`, time);
+        if(false)console.log(`${MYNAME}.renderBuffer(), time:`, time);
         
         
-        bufferRenderer = getProgram(gl, 'renderBuffer');
-        gl.viewport(0, 0, mRenderedBuffer.width, mRenderedBuffer.height);   
+        //bufferRenderer = getProgram(gl, 'renderBuffer');
+        //gl.viewport(0, 0, mRenderedBuffer.width, mRenderedBuffer.height);   
 
-        mAttractor.render(gl, mRenderedBuffer);
-        
-        //bufferRenderer.bind();                        
-        //let uni = {
-        //     uTime: time, 
-        //}                    
-        //bufferRenderer.setUniforms(uni);        
-        //gl.disable(gl.BLEND);        
-        //bufferRenderer.blit(mRenderedBuffer.read);  
-        
+        mAttractor.render(gl, mRenderedBuffer.read);
+                
     }
 
     return {

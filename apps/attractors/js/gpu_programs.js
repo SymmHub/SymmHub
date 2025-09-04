@@ -23,7 +23,7 @@ const gPrograms = {
 }
 
 export function buildPrograms(gl, programs){
-    console.log('makeBufferRenderer()');
+    console.log('buildPrograms()', programs);
     let result = buildProgramsCached(gl, programs);
     if (!result) {
         throw new Error(`buildProgram() failed,  result: ${result}`);
