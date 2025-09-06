@@ -3,7 +3,7 @@ import {
 } from './shaders/modules.js';
 
 import {
-    buildPrograms
+    buildProgramsCached
 } from './modules.js';
 
 const MYNAME = 'att_programs';
@@ -41,7 +41,7 @@ function programBuilder(){
         
         if(!programs.isReady){
             
-            buildPrograms(gl, programs);            
+            let result = buildProgramsCached(gl, programs);            
             console.log('ready: ', programs);
             programs.isReady = true;            
         }

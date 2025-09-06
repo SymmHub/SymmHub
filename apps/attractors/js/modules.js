@@ -1,7 +1,10 @@
-export { 
-    Group_WP
-} from "../../../lib/grouplib/Group_WP.js";
 
+
+export {
+    ParamFloat, 
+    ParamBool,
+    ParamObj,
+} from '../../../lib/uilib/uilib.js';
 
 export { 
     EventDispatcher, 
@@ -18,10 +21,9 @@ export {
 
 } from "../../../lib/symhublib/symhublib.js";
 
-export {
-    getProgram,
-    buildPrograms,
-} from './gpu_programs.js';
+export { 
+    Group_WP
+} from "../../../lib/grouplib/Group_WP.js";
 
 export {
     CliffordAttractor
@@ -30,10 +32,6 @@ export {
 export {
     IteratedAttractorCreator
 } from './IteratedAttractors.js';
-
-export {
-    DrawAttractor
-} from './drawAttractor.js';
 
 
 export {

@@ -27,6 +27,7 @@ export const cpu_accumulator_vert =
   }
 
   void main () {    
+    //v_color = colorscale(0.1*floor(10.*(a_position.z * colorSpeed * colorSign)));
     v_color = colorscale(a_position.z * colorSpeed * colorSign);
     vec2 xy = 0.4*a_position.xy;
     gl_Position = vec4(xy, 0, 1);
