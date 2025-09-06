@@ -19,21 +19,12 @@ export {
 } from "../../../lib/symhublib/symhublib.js";
 
 export {
-    getProgram,
-    buildPrograms,
-} from './gpu_programs.js';
-
-export {
     CliffordAttractor
 } from './clifford_attractor.js';
 
 export {
     IteratedAttractorCreator
 } from './IteratedAttractors.js';
-
-export {
-    DrawAttractor
-} from './drawAttractor.js';
 
 
 export {

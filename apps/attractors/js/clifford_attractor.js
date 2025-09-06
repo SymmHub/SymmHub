@@ -10,10 +10,9 @@ function CliffordAttractor(){
     //let p = { a: 1.7, b: 0.7, c: 1.4, d: 2.0 };
     let batchSize = pcount;
     let iterationsArray = new Array(4*batchSize);
-
-
-    //let data = initialize(pcount);
-    let mData = null;
+    let mFloat32Array = new Float32Array(4*batchSize);
+    let mTotalCount = 0;
+    
     initialize(pcount);
     
     function initialize(N, data){
@@ -26,35 +25,11 @@ function CliffordAttractor(){
         let b2 = p.d;
         let b3 = p.b;
     
-        let {a,b,c,d} = p;
-        
-        if(!data){
-            data = {
-                points: new Float32Array(2*N),
-                colors: new Float32Array(3*N),
-            };
-        }
-        const points = data.points;
-        const colors = data.colors;
-        
-        let x = 0.1, y = 0.2;
-        for (let i = 0; i < N; i++) {
-            let x2 = Math.sin(a * y) + c * Math.cos(a * x);
-            let y2 = Math.sin(b * x) + d * Math.cos(b * y);
-            x = x2;
-            y = y2;
-            points[2*i] = (x);
-            points[2*i+1] = (y);
-            colors[3*i] =   Math.sqrt(x*x + y*y)*0.5;
-            colors[3*i+1] = 1-colors[3*i];
-            colors[3*i+2] = 0.5;
-          
-        }
         cpuInitialize(iterationsArray);
-        cpuIterate(iterationsArray);
+        //cpuIterate(iterationsArray);
         console.log('iterationsArray: ', iterationsArray);
-        mData = data;
-        return data;
+        mFloat32Array = new Float32Array(iterationsArray.length);
+        
     }
     
     
@@ -78,6 +53,8 @@ function CliffordAttractor(){
             array[i + 2] = dist;
             array[i + 3] = i >> 2;
         }
+        
+        mTotalCount += batchSize;
                 
     }
     
@@ -95,7 +72,7 @@ function CliffordAttractor(){
             let x = (4 * ((ii / 2) % w)) / w + ox;
             let y = (4 * ii) / 2 / w / w + oy;
             //console.log('ii: ', ii, ' x:', x, ' y:', y);
-            for (let j = 0; j < 25; j++) {
+            for (let j = 0; j < 15; j++) {
               let x2 = Math.sin(a * y) + c * Math.cos(a * x);
               let y2 = Math.sin(b * x) + d * Math.cos(b * y);
               x = x2;
@@ -110,21 +87,13 @@ function CliffordAttractor(){
         }
     }
     
-    function getPointsCombined(){
-        return new Float32Array(iterationsArray);
-    }
-    
     function getPoints(){
-        return mData.points;
+        mFloat32Array.set(iterationsArray);
+        return mFloat32Array;
     }
-
-    function getColors(){
-        return mData.colors;
-    }
-    
+       
     function iterate(){
         cpuIterate(iterationsArray);
-        //console.log('iterate()');
         
     }
     
@@ -132,8 +101,7 @@ function CliffordAttractor(){
         initialize: initialize,
         iterate:    iterate,
         getPoints:  getPoints,
-        getPointsCombined: getPointsCombined,
-        getColors:  getColors,
+        getTotalCount: ()=>{return mTotalCount;},
         getPointsCount: ()=>{return pcount;},
     }
 }

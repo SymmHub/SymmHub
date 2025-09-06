@@ -1,8 +1,9 @@
 import {    
-    getProgram, 
     EventDispatcher,
     createDoubleFBO, 
-    DrawAttractor,
+    createFBO, 
+    CliffordAttractor,
+    AttPrograms,
 } from './modules.js';
 
 
@@ -27,36 +28,32 @@ function IteratedAttractor(options){
 
     let mRenderedBuffer;
     let mAttractor;
-    
-    function initBuffer(glContext) {
-    
-      const gl = glContext.gl;
-        
-      const bufWidth = 1024;
-      const bufHeight = bufWidth;
-      //const filtering = gl.NEAREST;
-      const filtering = gl.LINEAR;
-      //ext.formatRGBA.internalFormat, ext.formatRGBA.format, ext.halfFloatTexType, gl.NEAREST
-      // compatible formats see twgl / textures.js getTextureInternalFormatInfo()
-      // or https://webgl2fundamentals.org/webgl/lessons/webgl-data-textures.html
-      // 2 components data 
-      //const format = gl.RG, intFormat = gl.RG32F, texType = gl.FLOAT;
-      //const format = gl.RG, intFormat = gl.RG16F, texType = gl.FLOAT;
-      // 4 components data  4 byters per channel 
-      const format = gl.RGBA, intFormat = gl.RGBA32F, texType = gl.FLOAT;        
-      // 4 components data, 1 byte per channel 
-      //const format = gl.RGBA, intFormat = gl.RGBA, texType = gl.UNSIGNED_BYTE;
-      
-      return createDoubleFBO( gl, bufWidth, bufHeight, intFormat, format, texType, filtering );
-
-    }
-    
+    let mBufferWidth = 2*1024;
+    let mAccumulator;
+    let mPosBuffer; // points buffer
+    let mPosLoc;
     
     function init(glContext) {
+
+        let gl = glContext.gl;
         
-        mRenderedBuffer = initBuffer(glContext);
-        mAttractor = DrawAttractor();
-        mAttractor.init(glContext);
+        mAttractor = CliffordAttractor();        
+        //mAttractor.initialize(glContext);
+        mRenderedBuffer = createImageBuffer(gl, mBufferWidth);
+        mAccumulator = createAccumBuffer(gl, mBufferWidth);
+        
+        gl.bindFramebuffer(gl.FRAMEBUFFER, mAccumulator.fbo);
+        gl.disable(gl.BLEND);        
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);    
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        if(DEBUG)console.log(`${MYNAME}.init() gl:`,gl);
+        
+        mPosBuffer = gl.createBuffer();
+
+        let cpuAcc = AttPrograms.getProgram(gl, 'cpuAccumulator');
+        
+        mPosLoc = gl.getAttribLocation(cpuAcc.program, "a_position");
         
     }
     
@@ -68,14 +65,65 @@ function IteratedAttractor(options){
         let time = (opt.animationTime)? opt.animationTime: 0;
         
         if(false)console.log(`${MYNAME}.renderBuffer(), time:`, time);
+            
         
+        //mAttractor.render(gl, mRenderedBuffer.read);
+        let buffer = mRenderedBuffer.read;
         
-        //bufferRenderer = getProgram(gl, 'renderBuffer');
-        //gl.viewport(0, 0, mRenderedBuffer.width, mRenderedBuffer.height);   
+        if(false)console.log(`${MYNAME}.render() gl: `, gl, buffer);
+        
+        gl.viewport(0, 0, mAccumulator.width, mAccumulator.height);              
+        gl.bindFramebuffer(gl.FRAMEBUFFER, mAccumulator.fbo);
 
-        mAttractor.render(gl, mRenderedBuffer.read);
+        // enable blend to accumulate histogram 
+        gl.enable(gl.BLEND);   
+        gl.blendFunc(gl.ONE, gl.ONE);        
+        gl.blendEquation(gl.FUNC_ADD);
+        
+        let cpuAcc = AttPrograms.getProgram(gl, 'cpuAccumulator');
+        cpuAcc.bind();
+        
+        mAttractor.iterate();
+        gl.bindBuffer(gl.ARRAY_BUFFER, mPosBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, mAttractor.getPoints(), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(mPosLoc);
+        gl.vertexAttribPointer(mPosLoc, 4, gl.FLOAT, false, 0, 0);
                 
-    }
+        let cpuAccUni = {
+          colorSpeed:   0.22,
+          colorPhase:   Math.PI,
+          pointSize:    1,
+          colorSign:    1.,
+          jitter:        1.25,
+          resolution:   [mAccumulator.width, mAccumulator.height],
+        };
+        cpuAcc.setUniforms(cpuAccUni);
+        
+        gl.drawArrays(gl.POINTS, 0, mAttractor.getPointsCount());
+            
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, buffer.fbo);
+        
+        let histRenderer = AttPrograms.getProgram(gl, 'renderHistogram');        
+        gl.viewport(0, 0, buffer.width, buffer.height);  
+                
+        histRenderer.bind();
+        
+        let histUni = {
+            scale:      mAttractor.getTotalCount()/(mBufferWidth*mBufferWidth),
+            gamma: 2.2,
+            contrast: 1, 
+            brightness: 0.3,
+            saturation: 0.8,
+            dynamicRange:0.1,
+            invert: false,
+            src: mAccumulator,
+        };
+        
+        histRenderer.setUniforms(histUni);
+        gl.disable(gl.BLEND);        
+        histRenderer.blit(buffer);
+                       
+    } // render()
 
     return {
         getName         : () => MYNAME,
@@ -88,6 +136,23 @@ function IteratedAttractor(options){
     };
 }
     
+function createAccumBuffer(gl, width){
+        
+    const filtering = gl.NEAREST;
+    const format = gl.RGBA, intFormat = gl.RGBA32F, texType = gl.FLOAT;        
+    return createFBO( gl, width, width, intFormat, format, texType, filtering );
+
+}
+
+function createImageBuffer(gl, width) {
+
+  const filtering = gl.LINEAR;
+  const format = gl.RGBA, intFormat = gl.RGBA32F, texType = gl.FLOAT;              
+  return createDoubleFBO( gl, width, width, intFormat, format, texType, filtering );
+
+}
+
+    
 //
 //  factory of iterated attracrtors 
 //
@@ -99,5 +164,7 @@ const IteratedAttractorCreator = {
     
 }
 
+
+    
 
 export {IteratedAttractorCreator}
