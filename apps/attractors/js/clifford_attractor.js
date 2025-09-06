@@ -1,9 +1,23 @@
+
+import {
+    ParamFloat    
+} from './modules.js';
+
 const MYNAME = 'CliffordAttractor';
+
+
 
 function CliffordAttractor(){
 
     const pcount = 500000;
-    let p = {a:-1.85, b: -2.5, c:-1.05, d:0.585};
+    const mConfig = {
+        a:-1.85, 
+        b: -2.5, 
+        c:-1.05, 
+        d:0.585,
+    };
+    
+    //let p = {a:-1.85, b: -2.5, c:-1.05, d:0.585};
     //let p = { a: -1.4, b: -1.3, c: -1.8, d: -1.9 };
     //let p = { a: -1.4, b: 1.6, c: 1.0, d: 0.7 };
     //let p = { a: 1.7, b: 1.7, c: 0.6, d: 1.2 };
@@ -12,30 +26,39 @@ function CliffordAttractor(){
     let iterationsArray = new Array(4*batchSize);
     let mFloat32Array = new Float32Array(4*batchSize);
     let mTotalCount = 0;
+    let mParams;
+    let mNeedToRestart = true;
+    
     
     initialize(pcount);
     
     function initialize(N, data){
-
-    
-        let a1 = p.a;
-        let a2 = p.c;
-        let a3 = p.a;
-        let b1 = p.b;
-        let b2 = p.d;
-        let b3 = p.b;
-    
+        
         cpuInitialize(iterationsArray);
         //cpuIterate(iterationsArray);
         console.log('iterationsArray: ', iterationsArray);
         mFloat32Array = new Float32Array(iterationsArray.length);
+        mParams = makeParams(mConfig, onParamChanged);
+    }
+    
+    function onParamChanged(){
+        mNeedToRestart = true;
         
     }
     
+    function makeParams(cfg, onc){
+        let params = {
+            a: ParamFloat({obj:cfg, key:'a', onChnage: onc}),
+            b: ParamFloat({obj:cfg, key:'b', onChnage: onc}),
+            c: ParamFloat({obj:cfg, key:'c', onChnage: onc}),
+            d: ParamFloat({obj:cfg, key:'d', onChnage: onc}),            
+        }
+        return params;
+    }
     
     function cpuIterate(array) {
         
-        let {a,b,c,d} = p;
+        let {a,b,c,d} = mConfig;        
         
         for (let i = 0; i < array.length; i += 4) {
             let x = array[i];
@@ -60,12 +83,14 @@ function CliffordAttractor(){
     
     function cpuInitialize(array) {
         console.log(`${MYNAME}.cpuInitialize(array)`);
+        mTotalCount = 0;
+        
         let ox = Math.random() * 2 - 1;
         let oy = Math.random() * 2 - 1;
         //console.log('ox: ', ox, ' oy:', oy);
         let w = Math.sqrt(batchSize);
 
-        let {a,b,c,d} = p;
+        let {a,b,c,d} = mConfig;
 
         for (let i = 0; i < array.length; i += 4) {
             let ii = array.length * Math.random();
@@ -93,15 +118,22 @@ function CliffordAttractor(){
     }
        
     function iterate(){
+        
+        if(mNeedToRestart){
+            mNeedToRestart = false;
+            cpuInitialize(iterationsArray);          
+        }
         cpuIterate(iterationsArray);
         
     }
     
     return {
-        initialize: initialize,
-        iterate:    iterate,
-        getPoints:  getPoints,
-        getTotalCount: ()=>{return mTotalCount;},
+        getParams:      ()=>{return mParams;},
+        getClassName:   ()=>{return MYNAME+'-class';},
+        initialize:     initialize,
+        iterate:        iterate,
+        getPoints:      getPoints,
+        getTotalCount:  ()=>{return mTotalCount;},
         getPointsCount: ()=>{return pcount;},
     }
 }

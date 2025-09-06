@@ -4,6 +4,9 @@ import {
     createFBO, 
     CliffordAttractor,
     AttPrograms,
+    ParamFloat, 
+    ParamBool, 
+    ParamObj,
 } from './modules.js';
 
 
@@ -12,12 +15,12 @@ const DEBUG = true;
 
 function IteratedAttractor(options){
     
-    let eventDispatcher = new EventDispatcher();
+    let mEventDispatcher = new EventDispatcher();
     
     
     function addEventListener( evtType, listener ){        
         if(DEBUG)console.log(`${MYNAME}.addEventListener()`, evtType);
-        eventDispatcher .addEventListener( evtType, listener );      
+        mEventDispatcher.addEventListener( evtType, listener );      
     };
 
     function setGroup(group) {
@@ -27,25 +30,46 @@ function IteratedAttractor(options){
     };
 
     let mRenderedBuffer;
-    let mAttractor;
+    let mAttractor = null;
     let mBufferWidth = 2*1024;
     let mAccumulator;
     let mPosBuffer; // points buffer
     let mPosLoc;
+    let mConfig = {
+        gamma:      2.2,
+        contrast:   1, 
+        brightness: 0.3,
+        saturation: 0.8,
+        dynamicRange:0.1,
+        invert: false,  
+        colorSpeed:   0.22,
+        colorPhase:   Math.PI,
+        pointSize:    1,
+        colorSign:    1.,
+        jitter:        1.25,
+        
+    };
+    let mParams = null;
+    let myself = {
+        getName         : () => MYNAME,
+        addEventListener: addEventListener, 
+        setGroup        : setGroup, 
+        init            : init,
+        getParams:  ()=>{return mParams;},
+        getSimBuffer    : () => mRenderedBuffer,
+        render          : render,
+        get canAnimate() {return true;},
+    };
     
     function init(glContext) {
 
         let gl = glContext.gl;
         
         mAttractor = CliffordAttractor();        
-        //mAttractor.initialize(glContext);
         mRenderedBuffer = createImageBuffer(gl, mBufferWidth);
         mAccumulator = createAccumBuffer(gl, mBufferWidth);
-        
-        gl.bindFramebuffer(gl.FRAMEBUFFER, mAccumulator.fbo);
-        gl.disable(gl.BLEND);        
-        gl.clearColor(0.0, 0.0, 0.0, 0.0);    
-        gl.clear(gl.COLOR_BUFFER_BIT);
+        mParams = makeParams(mConfig, onParamChanged);
+        clearAccumulator(gl, mAccumulator);
 
         if(DEBUG)console.log(`${MYNAME}.init() gl:`,gl);
         
@@ -55,6 +79,14 @@ function IteratedAttractor(options){
         
         mPosLoc = gl.getAttribLocation(cpuAcc.program, "a_position");
         
+    }
+
+    function clearAccumulator(gl, buffer){
+        
+        gl.bindFramebuffer(gl.FRAMEBUFFER, buffer.fbo);
+        gl.disable(gl.BLEND);        
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);    
+        gl.clear(gl.COLOR_BUFFER_BIT);
     }
     
     let bufferRenderer = null;
@@ -88,10 +120,12 @@ function IteratedAttractor(options){
         gl.bufferData(gl.ARRAY_BUFFER, mAttractor.getPoints(), gl.STATIC_DRAW);
         gl.enableVertexAttribArray(mPosLoc);
         gl.vertexAttribPointer(mPosLoc, 4, gl.FLOAT, false, 0, 0);
+
+        let cfg = mConfig;
                 
         let cpuAccUni = {
-          colorSpeed:   0.22,
-          colorPhase:   Math.PI,
+          colorSpeed:   cfg.colorSpeed,
+          colorPhase:   cfg.colorPhase,
           pointSize:    1,
           colorSign:    1.,
           jitter:        1.25,
@@ -108,15 +142,16 @@ function IteratedAttractor(options){
                 
         histRenderer.bind();
         
+        
         let histUni = {
+            src:        mAccumulator,
             scale:      mAttractor.getTotalCount()/(mBufferWidth*mBufferWidth),
-            gamma: 2.2,
-            contrast: 1, 
-            brightness: 0.3,
-            saturation: 0.8,
-            dynamicRange:0.1,
-            invert: false,
-            src: mAccumulator,
+            gamma:      cfg.gamma,
+            contrast:   cfg.contrast,
+            brightness: cfg.brightness,
+            saturation: cfg.saturation,
+            dynamicRange:cfg.dynamicRange,
+            invert:      cfg.invert,            
         };
         
         histRenderer.setUniforms(histUni);
@@ -125,15 +160,49 @@ function IteratedAttractor(options){
                        
     } // render()
 
-    return {
-        getName         : () => MYNAME,
-        addEventListener: addEventListener, 
-        setGroup        : setGroup, 
-        init            : init,
-        getSimBuffer    : () => mRenderedBuffer,
-        render          : render,
-        get canAnimate() {return true;},
-    };
+    function informListeners(){
+
+
+        mEventDispatcher.dispatchEvent({type: 'imageChanged', target: myself});
+      
+    }
+
+    function scheduleRepaint(){
+
+        informListeners();
+
+    }
+  
+    function onParamChanged(){
+        scheduleRepaint();
+    }
+  
+    
+    function makeParams(cfg, onc){
+        
+        console.log(`${MYNAME}.makeParams() mAttractor:`, mAttractor);
+        let params = {
+            attractor:  ParamObj({name:'attractor params', obj: mAttractor}),
+            gamma:      ParamFloat({obj:cfg,key:'gamma', onChange:onc}),
+            contrast:   ParamFloat({obj:cfg,key:'contrast', onChange:onc}),
+            brightness: ParamFloat({obj:cfg,key:'brightness', onChange:onc}),
+            saturation: ParamFloat({obj:cfg,key:'saturation', onChange:onc}),
+            dynamicRange: ParamFloat({obj:cfg,key:'dynamicRange', onChange:onc}),
+            invert:     ParamBool({obj:cfg,key:'invert', onChange:onc}),   
+            
+            
+            colorSpeed:  ParamFloat({obj:cfg,key:'colorSpeed', onChange:onc}),
+            colorPhase:  ParamFloat({obj:cfg,key:'colorPhase', onChange:onc}),
+            pointSize:  ParamFloat({obj:cfg,key:'pointSize', onChange:onc}),
+            colorSign:  ParamFloat({obj:cfg,key:'colorSign', onChange:onc}),
+            jitter:     ParamFloat({obj:cfg,key:'jitter', onChange:onc}),
+
+        }
+        return params;
+        
+    }
+
+    return myself;
 }
     
 function createAccumBuffer(gl, width){

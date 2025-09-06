@@ -1,7 +1,10 @@
-export { 
-    Group_WP
-} from "../../../lib/grouplib/Group_WP.js";
 
+
+export {
+    ParamFloat, 
+    ParamBool,
+    ParamObj,
+} from '../../../lib/uilib/uilib.js';
 
 export { 
     EventDispatcher, 
@@ -17,6 +20,10 @@ export {
     makeSamplesArray,    
 
 } from "../../../lib/symhublib/symhublib.js";
+
+export { 
+    Group_WP
+} from "../../../lib/grouplib/Group_WP.js";
 
 export {
     CliffordAttractor
