@@ -48,7 +48,11 @@ function IteratedAttractor(options){
         colorPhase:   Math.PI,
         pointSize:    1,
         colorSign:    1.,
-        jitter:        1.25,
+        jitter:       1.25,
+        histCenterX:  0,
+        histCenterY:  0,
+        histWidth:    2.5,
+        
         
     };
     let mParams = null;
@@ -66,7 +70,7 @@ function IteratedAttractor(options){
         mAttractor.addEventListener('attractorChanged', onAttractorChanged);
         mRenderedBuffer = createImageBuffer(gl, mBufferWidth);
         mAccumulator = createAccumBuffer(gl, mBufferWidth);
-        mParams = makeParams(mConfig, onParamChanged);
+        mParams = makeParams(mConfig);
 
         if(DEBUG)console.log(`${MYNAME}.init() gl:`,gl);
         
@@ -105,10 +109,14 @@ function IteratedAttractor(options){
         mNeedToRender = mConfig.running;
         let gl = mGL;
         
-        if(false)console.log(`${MYNAME}.renderBuffer(), time:`, time);
+        if(DEBUG)console.log(`${MYNAME}.renderBuffer()`);
             
-        if(mNeedToClear)clearAccumulator(gl, mAccumulator);
-        mNeedToClear = false;
+        if(mNeedToClear){
+            
+            if(DEBUG)console.log(`${MYNAME}.clearAccumulator()`);
+            clearAccumulator(gl, mAccumulator);
+            mNeedToClear = false;
+        }
         //mAttractor.render(gl, mRenderedBuffer.read);
         let buffer = mRenderedBuffer.read;
         
@@ -140,6 +148,8 @@ function IteratedAttractor(options){
           colorSign:    1.,
           jitter:        1.25,
           resolution:   [mAccumulator.width, mAccumulator.height],
+          uHistScale:   1./cfg.histWidth,
+          uHistCenter:  [cfg.histCenterX,cfg.histCenterY],
         };
         cpuAcc.setUniforms(cpuAccUni);
         
@@ -183,23 +193,19 @@ function IteratedAttractor(options){
         informListeners();
 
     }
-  
-    function onParamChanged(){
-        mNeedToRender = true;
-        scheduleRepaint();
-    }
-    
+      
     function onAttractorChanged(){
         
         if(DEBUG)console.log(`${MYNAME}.onAttractorChanged()`); 
-        mNeedToClear = true;
-        mNeedToRender = true;
-        scheduleRepaint();        
+        onRestart();
     }
     
-    function makeParams(cfg, onc){
-        
+    function makeParams(cfg){
+                
         console.log(`${MYNAME}.makeParams() mAttractor:`, mAttractor);
+        let onc = onRerender;
+        let onres = onRestart;
+        
         let params = {
             attractor:  ParamObj({name:'attractor params', obj: mAttractor}),
             running:    ParamBool({obj:cfg,key:'running', onChange:onc}),   
@@ -209,17 +215,31 @@ function IteratedAttractor(options){
             saturation: ParamFloat({obj:cfg,key:'saturation', onChange:onc}),
             dynamicRange: ParamFloat({obj:cfg,key:'dynamicRange', onChange:onc}),
             invert:     ParamBool({obj:cfg,key:'invert', onChange:onc}),   
-            
-            
-            colorSpeed:  ParamFloat({obj:cfg,key:'colorSpeed', onChange:onc}),
-            colorPhase:  ParamFloat({obj:cfg,key:'colorPhase', onChange:onc}),
-            pointSize:  ParamFloat({obj:cfg,key:'pointSize', onChange:onc}),
-            colorSign:  ParamFloat({obj:cfg,key:'colorSign', onChange:onc}),
-            jitter:     ParamFloat({obj:cfg,key:'jitter', onChange:onc}),
+                        
+            colorSpeed:  ParamFloat({obj:cfg,key:'colorSpeed', onChange:onres}),
+            colorPhase:  ParamFloat({obj:cfg,key:'colorPhase', onChange:onres}),
+            pointSize:  ParamFloat({obj:cfg,key:'pointSize', onChange:onres}),
+            colorSign:  ParamFloat({obj:cfg,key:'colorSign', onChange:onres}),
+            jitter:     ParamFloat({obj:cfg,key:'jitter', onChange:onres}),
+            histWidth:  ParamFloat({obj:cfg,key:'histWidth', onChange:onres}),
+            histCenterX:  ParamFloat({obj:cfg,key:'histCenterX', onChange:onres}),
+            histCenterY:  ParamFloat({obj:cfg,key:'histCenterY', onChange:onres}),
 
         }
         return params;
         
+    }
+    
+    function onRerender(){
+        mNeedToRender = true;
+        scheduleRepaint();
+    }
+
+    function onRestart(){
+        
+        mNeedToRender = true;
+        mNeedToClear = true;        
+        scheduleRepaint();
     }
     
     myself = {

@@ -12,7 +12,7 @@
             "customHeight": 1000,
             "sizeMultiplier": 1,
             "backgroundColor": "#FFFFFF00",
-            "frameTime": 25.5
+            "frameTime": 22
         },
         "recording": {
             "animTime": 84.26599999999976,
@@ -24,10 +24,10 @@
             "attractor": {
                 "className": "CliffordAttractor-class",
                 "params": {
-                    "a": -2.4500000000000006,
-                    "b": -2.5,
-                    "c": -1.05,
-                    "d": 0.585
+                    "a": -1.4,
+                    "b": 1.6,
+                    "c": 1,
+                    "d": 0.7
                 }
             },
             "running": true,
@@ -41,13 +41,16 @@
             "colorPhase": 3.141592653589793,
             "pointSize": 1,
             "colorSign": 1,
-            "jitter": 1.25
+            "jitter": 1.25,
+            "histWidth": 2.5,
+            "histCenterX": 0,
+            "histCenterY": 0
         },
         "simTransform": {
-            "simCenterX": 0.066,
-            "simCenterY": 0.1,
-            "simScale": 0.38,
-            "simAngle": 57.00000000000001
+            "simCenterX": -0.018000000000000002,
+            "simCenterY": -0.08,
+            "simScale": 0.36000000000000004,
+            "simAngle": 0
         },
         "visualization": {
             "image": {
@@ -98,7 +101,7 @@
                     "width": 1
                 },
                 "generators": {
-                    "enabled": false,
+                    "enabled": true,
                     "width": 2,
                     "color": "#0000AAAA",
                     "shadow": {
@@ -168,7 +171,7 @@
             "group": {
                 "className": "Group_WP",
                 "params": {
-                    "type": "333",
+                    "type": "XX",
                     "a": 0.4,
                     "b": 0.5,
                     "c": 0,
