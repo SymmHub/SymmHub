@@ -12,7 +12,7 @@
             "customHeight": 1000,
             "sizeMultiplier": 1,
             "backgroundColor": "#FFFFFF00",
-            "frameTime": 16.9
+            "frameTime": 25.5
         },
         "recording": {
             "animTime": 84.26599999999976,
@@ -21,12 +21,27 @@
             "endFrame": 100
         },
         "simulation": {
+            "attractor": {
+                "className": "CliffordAttractor-class",
+                "params": {
+                    "a": -2.4500000000000006,
+                    "b": -2.5,
+                    "c": -1.05,
+                    "d": 0.585
+                }
+            },
+            "running": true,
             "gamma": 1.6999999999999997,
             "contrast": 1,
             "brightness": 0.3,
             "saturation": 0.6,
             "dynamicRange": 0.19999999999999876,
-            "invert": false
+            "invert": false,
+            "colorSpeed": 0.22,
+            "colorPhase": 3.141592653589793,
+            "pointSize": 1,
+            "colorSign": 1,
+            "jitter": 1.25
         },
         "simTransform": {
             "simCenterX": 0.066,

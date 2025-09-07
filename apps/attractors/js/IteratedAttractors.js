@@ -31,11 +31,13 @@ function IteratedAttractor(options){
 
     let mRenderedBuffer;
     let mAttractor = null;
-    let mBufferWidth = 2*1024;
+    let mBufferWidth = 1024;
     let mAccumulator;
     let mPosBuffer; // points buffer
     let mPosLoc;
+    
     let mConfig = {
+        running:    false,
         gamma:      2.2,
         contrast:   1, 
         brightness: 0.3,
@@ -50,26 +52,21 @@ function IteratedAttractor(options){
         
     };
     let mParams = null;
-    let myself = {
-        getName         : () => MYNAME,
-        addEventListener: addEventListener, 
-        setGroup        : setGroup, 
-        init            : init,
-        getParams:  ()=>{return mParams;},
-        getSimBuffer    : () => mRenderedBuffer,
-        render          : render,
-        get canAnimate() {return true;},
-    };
+    let myself = null; 
+    let mGL = null;
+    let mNeedToRender = true;
+    let mNeedToClear = true;
     
     function init(glContext) {
 
-        let gl = glContext.gl;
+        mGL = glContext.gl;
+        let gl = mGL;
         
-        mAttractor = CliffordAttractor();        
+        mAttractor = CliffordAttractor(); 
+        mAttractor.addEventListener('attractorChanged', onAttractorChanged);
         mRenderedBuffer = createImageBuffer(gl, mBufferWidth);
         mAccumulator = createAccumBuffer(gl, mBufferWidth);
         mParams = makeParams(mConfig, onParamChanged);
-        clearAccumulator(gl, mAccumulator);
 
         if(DEBUG)console.log(`${MYNAME}.init() gl:`,gl);
         
@@ -88,17 +85,30 @@ function IteratedAttractor(options){
         gl.clearColor(0.0, 0.0, 0.0, 0.0);    
         gl.clear(gl.COLOR_BUFFER_BIT);
     }
-    
-    let bufferRenderer = null;
-    
-    function render(opt){
+
+    function getSimBuffer(options){
         
-        let gl = opt.gl;
-        let time = (opt.animationTime)? opt.animationTime: 0;
+        if(mNeedToRender) 
+            render(options);
+        
+        if(mConfig.running) 
+            scheduleRepaint();
+        return mRenderedBuffer;
+    }
+     
+    //
+    //  render the image buffer 
+    //
+    function render(options){
+        
+        if(false)console.log(`${MYNAME}.render()`, options);
+        mNeedToRender = mConfig.running;
+        let gl = mGL;
         
         if(false)console.log(`${MYNAME}.renderBuffer(), time:`, time);
             
-        
+        if(mNeedToClear)clearAccumulator(gl, mAccumulator);
+        mNeedToClear = false;
         //mAttractor.render(gl, mRenderedBuffer.read);
         let buffer = mRenderedBuffer.read;
         
@@ -157,6 +167,7 @@ function IteratedAttractor(options){
         histRenderer.setUniforms(histUni);
         gl.disable(gl.BLEND);        
         histRenderer.blit(buffer);
+        
                        
     } // render()
 
@@ -168,21 +179,30 @@ function IteratedAttractor(options){
     }
 
     function scheduleRepaint(){
-
+        
         informListeners();
 
     }
   
     function onParamChanged(){
+        mNeedToRender = true;
         scheduleRepaint();
     }
-  
+    
+    function onAttractorChanged(){
+        
+        if(DEBUG)console.log(`${MYNAME}.onAttractorChanged()`); 
+        mNeedToClear = true;
+        mNeedToRender = true;
+        scheduleRepaint();        
+    }
     
     function makeParams(cfg, onc){
         
         console.log(`${MYNAME}.makeParams() mAttractor:`, mAttractor);
         let params = {
             attractor:  ParamObj({name:'attractor params', obj: mAttractor}),
+            running:    ParamBool({obj:cfg,key:'running', onChange:onc}),   
             gamma:      ParamFloat({obj:cfg,key:'gamma', onChange:onc}),
             contrast:   ParamFloat({obj:cfg,key:'contrast', onChange:onc}),
             brightness: ParamFloat({obj:cfg,key:'brightness', onChange:onc}),
@@ -201,7 +221,17 @@ function IteratedAttractor(options){
         return params;
         
     }
-
+    
+    myself = {
+        getName         : () => MYNAME,
+        addEventListener: addEventListener, 
+        setGroup        : setGroup, 
+        init            : init,
+        getParams:  ()=>{return mParams;},
+        getSimBuffer    : getSimBuffer,
+        render          : render,
+        //get canAnimate() {return true;},
+    };
     return myself;
 }
     

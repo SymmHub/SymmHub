@@ -1,15 +1,18 @@
 
 import {
-    ParamFloat    
+    ParamFloat,
+    EventDispatcher,
 } from './modules.js';
 
 const MYNAME = 'CliffordAttractor';
 
-
+const DEBUG = true;
 
 function CliffordAttractor(){
 
-    const pcount = 500000;
+    let mEventDispatcher = new EventDispatcher();
+
+    const pcount = 100000;
     const mConfig = {
         a:-1.85, 
         b: -2.5, 
@@ -28,6 +31,7 @@ function CliffordAttractor(){
     let mTotalCount = 0;
     let mParams;
     let mNeedToRestart = true;
+    let myself = null;
     
     
     initialize(pcount);
@@ -40,18 +44,13 @@ function CliffordAttractor(){
         mFloat32Array = new Float32Array(iterationsArray.length);
         mParams = makeParams(mConfig, onParamChanged);
     }
-    
-    function onParamChanged(){
-        mNeedToRestart = true;
         
-    }
-    
     function makeParams(cfg, onc){
         let params = {
-            a: ParamFloat({obj:cfg, key:'a', onChnage: onc}),
-            b: ParamFloat({obj:cfg, key:'b', onChnage: onc}),
-            c: ParamFloat({obj:cfg, key:'c', onChnage: onc}),
-            d: ParamFloat({obj:cfg, key:'d', onChnage: onc}),            
+            a: ParamFloat({obj:cfg, key:'a', onChange: onc}),
+            b: ParamFloat({obj:cfg, key:'b', onChange: onc}),
+            c: ParamFloat({obj:cfg, key:'c', onChange: onc}),
+            d: ParamFloat({obj:cfg, key:'d', onChange: onc}),            
         }
         return params;
     }
@@ -126,8 +125,32 @@ function CliffordAttractor(){
         cpuIterate(iterationsArray);
         
     }
+
+    function addEventListener( evtType, listener ){        
+        if(DEBUG)console.log(`${MYNAME}.addEventListener()`, evtType);
+        mEventDispatcher.addEventListener( evtType, listener );      
+    };
+ 
+    function scheduleRepaint(){        
+        informListeners();
+    }
+
+    function informListeners(){
+
+        mEventDispatcher.dispatchEvent({type: 'attractorChanged', target: myself});
+      
+    }
+
+    function onParamChanged(){
+
+        if(DEBUG)console.log(`${MYNAME}.onParamChanged()`);
+        mNeedToRestart = true;
+        scheduleRepaint();
+        
+    }
+ 
     
-    return {
+    myself = {
         getParams:      ()=>{return mParams;},
         getClassName:   ()=>{return MYNAME+'-class';},
         initialize:     initialize,
@@ -135,7 +158,9 @@ function CliffordAttractor(){
         getPoints:      getPoints,
         getTotalCount:  ()=>{return mTotalCount;},
         getPointsCount: ()=>{return pcount;},
+        addEventListener: addEventListener,
     }
+    return myself;
 }
 
 

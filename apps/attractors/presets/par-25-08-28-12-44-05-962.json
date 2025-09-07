@@ -12,7 +12,7 @@
             "customHeight": 1000,
             "sizeMultiplier": 1,
             "backgroundColor": "#FFFFFF00",
-            "frameTime": 18.1
+            "frameTime": 23.2
         },
         "recording": {
             "animTime": 32.26499999999938,
@@ -20,7 +20,29 @@
             "startFrame": 0,
             "endFrame": 100
         },
-        "simulation": {},
+        "simulation": {
+            "attractor": {
+                "className": "CliffordAttractor-class",
+                "params": {
+                    "a": -1.85,
+                    "b": -2.5,
+                    "c": -1.05,
+                    "d": 0.585
+                }
+            },
+            "running": true,
+            "gamma": 2.2,
+            "contrast": 1,
+            "brightness": 0.3,
+            "saturation": 0.8,
+            "dynamicRange": 0.1,
+            "invert": false,
+            "colorSpeed": 0.22,
+            "colorPhase": 3.141592653589793,
+            "pointSize": 1,
+            "colorSign": 1,
+            "jitter": 1.25
+        },
         "simTransform": {
             "simCenterX": 0,
             "simCenterY": 0,
@@ -255,10 +277,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0.003880909751533844,
-                        "centerY": -0.012739771335152632,
+                        "centerX": 0.013535967623990413,
+                        "centerY": -0.008964861490282387,
                         "zoom": [
-                            1.6107283335964229
+                            2.218175158899124
                         ]
                     },
                     "options": {
