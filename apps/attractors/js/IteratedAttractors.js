@@ -32,7 +32,7 @@ function IteratedAttractor(options){
 
     let mRenderedBuffer;
     let mAttractor = null;
-    let mBufferWidth = 4*1024;
+    let mBufferWidth = 1024;
     let mAccumulator;
     let mPosBuffer; // points buffer
     let mPosLoc;

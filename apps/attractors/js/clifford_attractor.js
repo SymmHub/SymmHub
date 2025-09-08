@@ -21,6 +21,7 @@ function CliffordAttractor(){
         c:-1.05, 
         d:0.585,
         startCount: 15,
+        avgDist: 0,
     };
     
     //let p = {a:-1.85, b: -2.5, c:-1.05, d:0.585};
@@ -67,6 +68,7 @@ function CliffordAttractor(){
             c: ParamFloat({obj:cfg, key:'c', onChange: onc}),
             d: ParamFloat({obj:cfg, key:'d', onChange: onc}),            
             startCount: ParamInt({obj:cfg, key:'startCount', onChange: onc}), 
+            avgDist:    ParamFloat({obj:cfg, key:'avgDist'}), 
             random:     ParamFunc({func: onRandom, name: 'Random!'}),
         }
         return params;
@@ -75,7 +77,7 @@ function CliffordAttractor(){
     function cpuIterate(array) {
         
         let {a,b,c,d} = mConfig;        
-        
+        let avgDist = 0;
         for (let i = 0; i < array.length; i += 4) {
             let x = array[i];
             let y = array[i + 1];
@@ -86,13 +88,16 @@ function CliffordAttractor(){
             let dx = x2 - x;
             let dy = y2 - y;
             let dist = Math.sqrt(dx * dx + dy * dy);
-
+            avgDist += dist;
             array[i] = x2;
             array[i + 1] = y2;
             array[i + 2] = dist;
             array[i + 3] = i >> 2;
         }
         
+        avgDist /= (array.length/4);
+        mConfig.avgDist = avgDist;
+        mParams.avgDist.updateDisplay();
         mTotalCount += batchSize;
                 
     }
