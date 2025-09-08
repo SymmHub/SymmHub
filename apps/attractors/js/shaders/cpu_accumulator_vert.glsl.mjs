@@ -10,8 +10,9 @@ uniform float pointSize;
 uniform float colorSign;
 uniform float jitter;
 uniform vec2 resolution;
+// parameters to transform points positions into histogram image 
 uniform float uHistScale;
-uniform   vec2 uHistCenter;
+uniform vec2 uHistCenter;
   
 
 vec3 colorscale (float t) {
@@ -32,7 +33,7 @@ vec2 qrand2(float n) {
 void main () {    
     //v_color = colorscale(0.1*floor(10.*(a_position.z * colorSpeed * colorSign)));
     v_color = colorscale(a_position.z * colorSpeed * colorSign);
-    vec2 xy = uHistScale*a_position.xy + uHistCenter;
+    vec2 xy = uHistScale*(a_position.xy-uHistCenter);
     gl_Position = vec4(xy, 0, 1);
     gl_PointSize = pointSize;
 

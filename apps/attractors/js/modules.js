@@ -2,6 +2,8 @@
 
 export {
     ParamFloat, 
+    ParamFunc,
+    ParamInt, 
     ParamBool,
     ParamObj,
 } from '../../../lib/uilib/uilib.js';

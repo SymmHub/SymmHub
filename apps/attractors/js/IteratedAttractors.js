@@ -7,6 +7,7 @@ import {
     ParamFloat, 
     ParamBool, 
     ParamObj,
+    ParamFunc,
 } from './modules.js';
 
 
@@ -31,7 +32,7 @@ function IteratedAttractor(options){
 
     let mRenderedBuffer;
     let mAttractor = null;
-    let mBufferWidth = 1024;
+    let mBufferWidth = 4*1024;
     let mAccumulator;
     let mPosBuffer; // points buffer
     let mPosLoc;
@@ -51,7 +52,8 @@ function IteratedAttractor(options){
         jitter:       1.25,
         histCenterX:  0,
         histCenterY:  0,
-        histWidth:    2.5,
+        histWidth:    5,
+        iterate:    true,         
         
         
     };
@@ -109,12 +111,13 @@ function IteratedAttractor(options){
         mNeedToRender = mConfig.running;
         let gl = mGL;
         
-        if(DEBUG)console.log(`${MYNAME}.renderBuffer()`);
+        if(false)console.log(`${MYNAME}.render()`);
             
         if(mNeedToClear){
             
             if(DEBUG)console.log(`${MYNAME}.clearAccumulator()`);
             clearAccumulator(gl, mAccumulator);
+            mAttractor.restart();
             mNeedToClear = false;
         }
         //mAttractor.render(gl, mRenderedBuffer.read);
@@ -133,7 +136,7 @@ function IteratedAttractor(options){
         let cpuAcc = AttPrograms.getProgram(gl, 'cpuAccumulator');
         cpuAcc.bind();
         
-        mAttractor.iterate();
+        if(mConfig.iterate) mAttractor.iterate();
         gl.bindBuffer(gl.ARRAY_BUFFER, mPosBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, mAttractor.getPoints(), gl.STATIC_DRAW);
         gl.enableVertexAttribArray(mPosLoc);
@@ -148,7 +151,7 @@ function IteratedAttractor(options){
           colorSign:    1.,
           jitter:        1.25,
           resolution:   [mAccumulator.width, mAccumulator.height],
-          uHistScale:   1./cfg.histWidth,
+          uHistScale:   2./cfg.histWidth,
           uHistCenter:  [cfg.histCenterX,cfg.histCenterY],
         };
         cpuAcc.setUniforms(cpuAccUni);
@@ -200,6 +203,11 @@ function IteratedAttractor(options){
         onRestart();
     }
     
+    function onStep(){
+        mAttractor.iterate();
+        scheduleRepaint();
+    }
+    
     function makeParams(cfg){
                 
         console.log(`${MYNAME}.makeParams() mAttractor:`, mAttractor);
@@ -209,6 +217,8 @@ function IteratedAttractor(options){
         let params = {
             attractor:  ParamObj({name:'attractor params', obj: mAttractor}),
             running:    ParamBool({obj:cfg,key:'running', onChange:onc}),   
+            iterate:    ParamBool({obj:cfg,key:'iterate', onChange:onc}),   
+            makeStep:   ParamFunc({func:onStep, name:'step!'}),
             gamma:      ParamFloat({obj:cfg,key:'gamma', onChange:onc}),
             contrast:   ParamFloat({obj:cfg,key:'contrast', onChange:onc}),
             brightness: ParamFloat({obj:cfg,key:'brightness', onChange:onc}),
@@ -216,14 +226,14 @@ function IteratedAttractor(options){
             dynamicRange: ParamFloat({obj:cfg,key:'dynamicRange', onChange:onc}),
             invert:     ParamBool({obj:cfg,key:'invert', onChange:onc}),   
                         
-            colorSpeed:  ParamFloat({obj:cfg,key:'colorSpeed', onChange:onres}),
-            colorPhase:  ParamFloat({obj:cfg,key:'colorPhase', onChange:onres}),
-            pointSize:  ParamFloat({obj:cfg,key:'pointSize', onChange:onres}),
-            colorSign:  ParamFloat({obj:cfg,key:'colorSign', onChange:onres}),
-            jitter:     ParamFloat({obj:cfg,key:'jitter', onChange:onres}),
-            histWidth:  ParamFloat({obj:cfg,key:'histWidth', onChange:onres}),
-            histCenterX:  ParamFloat({obj:cfg,key:'histCenterX', onChange:onres}),
-            histCenterY:  ParamFloat({obj:cfg,key:'histCenterY', onChange:onres}),
+            colorSpeed:     ParamFloat({obj:cfg,key:'colorSpeed', onChange:onres}),
+            colorPhase:     ParamFloat({obj:cfg,key:'colorPhase', onChange:onres}),
+            pointSize:      ParamFloat({obj:cfg,key:'pointSize', onChange:onres}),
+            colorSign:      ParamFloat({obj:cfg,key:'colorSign', onChange:onres}),
+            jitter:         ParamFloat({obj:cfg,key:'jitter', onChange:onres}),
+            histWidth:      ParamFloat({obj:cfg,key:'histWidth', onChange:onres}),
+            histCenterX:    ParamFloat({obj:cfg,key:'histCenterX', onChange:onres}),
+            histCenterY:    ParamFloat({obj:cfg,key:'histCenterY', onChange:onres}),
 
         }
         return params;

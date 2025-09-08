@@ -1,6 +1,8 @@
 
 import {
     ParamFloat,
+    ParamInt,
+    ParamFunc,
     EventDispatcher,
 } from './modules.js';
 
@@ -12,12 +14,13 @@ function CliffordAttractor(){
 
     let mEventDispatcher = new EventDispatcher();
 
-    const pcount = 100000;
+    const pcount = 500000;
     const mConfig = {
         a:-1.85, 
         b: -2.5, 
         c:-1.05, 
         d:0.585,
+        startCount: 15,
     };
     
     //let p = {a:-1.85, b: -2.5, c:-1.05, d:0.585};
@@ -34,23 +37,37 @@ function CliffordAttractor(){
     let myself = null;
     
     
-    initialize(pcount);
+    initialize();
     
-    function initialize(N, data){
+    function initialize(){
         
         cpuInitialize(iterationsArray);
-        //cpuIterate(iterationsArray);
         console.log('iterationsArray: ', iterationsArray);
         mFloat32Array = new Float32Array(iterationsArray.length);
         mParams = makeParams(mConfig, onParamChanged);
     }
         
+    function onRandom(){
+       mConfig.a = 3*(2*Math.random()-1);
+       mConfig.b = 3*(2*Math.random()-1);
+       mConfig.c = 3*(2*Math.random()-1);
+       mConfig.d = 3*(2*Math.random()-1);
+       mParams.a.updateDisplay();
+       mParams.b.updateDisplay();
+       mParams.c.updateDisplay();
+       mParams.d.updateDisplay();
+       onParamChanged();
+       
+    }
+    
     function makeParams(cfg, onc){
         let params = {
             a: ParamFloat({obj:cfg, key:'a', onChange: onc}),
             b: ParamFloat({obj:cfg, key:'b', onChange: onc}),
             c: ParamFloat({obj:cfg, key:'c', onChange: onc}),
             d: ParamFloat({obj:cfg, key:'d', onChange: onc}),            
+            startCount: ParamInt({obj:cfg, key:'startCount', onChange: onc}), 
+            random:     ParamFunc({func: onRandom, name: 'Random!'}),
         }
         return params;
     }
@@ -89,14 +106,14 @@ function CliffordAttractor(){
         //console.log('ox: ', ox, ' oy:', oy);
         let w = Math.sqrt(batchSize);
 
-        let {a,b,c,d} = mConfig;
+        let {a,b,c,d, startCount} = mConfig;
 
         for (let i = 0; i < array.length; i += 4) {
             let ii = array.length * Math.random();
             let x = (4 * ((ii / 2) % w)) / w + ox;
             let y = (4 * ii) / 2 / w / w + oy;
             //console.log('ii: ', ii, ' x:', x, ' y:', y);
-            for (let j = 0; j < 15; j++) {
+            for (let j = 0; j < startCount; j++) {
               let x2 = Math.sin(a * y) + c * Math.cos(a * x);
               let y2 = Math.sin(b * x) + d * Math.cos(b * y);
               x = x2;
@@ -105,8 +122,8 @@ function CliffordAttractor(){
             //console.log('ii: ', ii, ' x:', x, ' y:', y);
             array[i] = x;
             array[i+1] = y;
-            array[i+2] = 0;
-            array[i+3] = 0;
+            array[i+2] = 0.;
+            array[i+3] = 0.;
             
         }
     }
@@ -115,7 +132,11 @@ function CliffordAttractor(){
         mFloat32Array.set(iterationsArray);
         return mFloat32Array;
     }
-       
+    
+    function restart(){
+       cpuInitialize(iterationsArray);          
+    }
+    
     function iterate(){
         
         if(mNeedToRestart){
@@ -153,7 +174,7 @@ function CliffordAttractor(){
     myself = {
         getParams:      ()=>{return mParams;},
         getClassName:   ()=>{return MYNAME+'-class';},
-        initialize:     initialize,
+        restart:        restart,
         iterate:        iterate,
         getPoints:      getPoints,
         getTotalCount:  ()=>{return mTotalCount;},
