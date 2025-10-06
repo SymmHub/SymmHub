@@ -94,8 +94,9 @@ function IteratedAttractor(options){
 
     function getSimBuffer(options){
         
-        if(mNeedToRender) 
-            render(options);
+        if(mNeedToRender) {
+            render(options);            
+        }
         
         if(mConfig.running) 
             scheduleRepaint();
@@ -107,7 +108,7 @@ function IteratedAttractor(options){
     //
     function render(options){
         
-        if(false)console.log(`${MYNAME}.render()`, options);
+        if(DEBUG)console.log(`${MYNAME}.render()`, options);
         mNeedToRender = mConfig.running;
         let gl = mGL;
         
@@ -135,30 +136,30 @@ function IteratedAttractor(options){
         
         let cpuAcc = AttPrograms.getProgram(gl, 'cpuAccumulator');
         cpuAcc.bind();
-        
-        if(mConfig.iterate) mAttractor.iterate();
-        gl.bindBuffer(gl.ARRAY_BUFFER, mPosBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, mAttractor.getPoints(), gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(mPosLoc);
-        gl.vertexAttribPointer(mPosLoc, 4, gl.FLOAT, false, 0, 0);
-
         let cfg = mConfig;
-                
-        let cpuAccUni = {
-          colorSpeed:   cfg.colorSpeed,
-          colorPhase:   cfg.colorPhase,
-          pointSize:    1,
-          colorSign:    1.,
-          jitter:        1.25,
-          resolution:   [mAccumulator.width, mAccumulator.height],
-          uHistScale:   2./cfg.histWidth,
-          uHistCenter:  [cfg.histCenterX,cfg.histCenterY],
-        };
-        cpuAcc.setUniforms(cpuAccUni);
         
-        gl.drawArrays(gl.POINTS, 0, mAttractor.getPointsCount());
+        if(cfg.iterate) {
+            // add points to histogram 
+            mAttractor.iterate();
+            gl.bindBuffer(gl.ARRAY_BUFFER, mPosBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, mAttractor.getPoints(), gl.STATIC_DRAW);
+            gl.enableVertexAttribArray(mPosLoc);
+            gl.vertexAttribPointer(mPosLoc, 4, gl.FLOAT, false, 0, 0);        
+                        
+            let cpuAccUni = {
+              colorSpeed:   cfg.colorSpeed,
+              colorPhase:   cfg.colorPhase,
+              pointSize:    1,
+              colorSign:    1.,
+              jitter:        1.25,
+              resolution:   [mAccumulator.width, mAccumulator.height],
+              uHistScale:   2./cfg.histWidth,
+              uHistCenter:  [cfg.histCenterX,cfg.histCenterY],
+            };
+            cpuAcc.setUniforms(cpuAccUni);
             
-        //gl.bindFramebuffer(gl.FRAMEBUFFER, buffer.fbo);
+            gl.drawArrays(gl.POINTS, 0, mAttractor.getPointsCount());
+        }    
         
         let histRenderer = AttPrograms.getProgram(gl, 'renderHistogram');        
         gl.viewport(0, 0, buffer.width, buffer.height);  
