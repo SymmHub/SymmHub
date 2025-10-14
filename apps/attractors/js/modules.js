@@ -6,7 +6,13 @@ export {
     ParamInt, 
     ParamBool,
     ParamObj,
+    ParamGroup,
+    
 } from '../../../lib/uilib/uilib.js';
+
+export {
+    iPoint
+} from '../../../lib/invlib/invlib.js';
 
 export { 
     EventDispatcher, 
@@ -20,7 +26,7 @@ export {
     createFBO, 
     buildProgramsCached,
     makeSamplesArray,    
-
+    
 } from "../../../lib/symhublib/symhublib.js";
 
 export { 
@@ -38,4 +44,14 @@ export {
 
 export {
     AttPrograms     
-} from './att_programs.js'
+} from './att_programs.js';
+
+export {
+    mulberry32,
+    splitmix32,
+    lcg,
+    antti2,
+    qrand2x,
+    qrand2y,
+    
+} from './random_seeded.js';
