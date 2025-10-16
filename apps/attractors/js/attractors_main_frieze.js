@@ -1,6 +1,6 @@
 
 import { 
-    Group_WP, 
+    Group_Frieze, 
     InversiveNavigator,
     VisualizationManager,
     VisualizationImage,
@@ -12,7 +12,7 @@ import {
 
 import {
     presets
-} from './presets.js';
+} from './presets_frieze.js';
  
 const visManager = VisualizationManager({
       visLayers: [
@@ -30,9 +30,9 @@ const visManager = VisualizationManager({
 const app = SymRenderer({
       simCreator: IteratedAttractorCreator,
       visualization: visManager, 
-      groupMaker: new Group_WP({type: '2222',a: 0.4}), // maker of the groups
+      groupMaker: new Group_Frieze({type: '*22∞',a: 0.4}), // maker of the groups
       navigator:  new InversiveNavigator(),
-      samples:    makeSamplesArray(presets, 'presets/'),
+      samples:    makeSamplesArray(presets, 'presets/frieze/'),
 });
 
 app.run();

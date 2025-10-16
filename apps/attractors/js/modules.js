@@ -30,8 +30,14 @@ export {
 } from "../../../lib/symhublib/symhublib.js";
 
 export { 
-    Group_WP
+    Group_WP,
 } from "../../../lib/grouplib/Group_WP.js";
+
+export { 
+    Group_Frieze,
+} from "../../../lib/grouplib/grouplib.js";
+    
+
 
 export {
     CliffordAttractor
