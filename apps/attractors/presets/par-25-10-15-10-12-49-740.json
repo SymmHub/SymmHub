@@ -1,5 +1,5 @@
 {
-    "name": "par-25-09-06-15-09-03-100",
+    "name": "par-25-10-15-10-12-49-740",
     "appInfo": {
         "appName": "SymRenderer.Group_WP.IteratedAttractor-class.InversiveNavigator_v1",
         "fileFormatRelease": 1
@@ -12,7 +12,7 @@
             "customHeight": 1000,
             "sizeMultiplier": 1,
             "backgroundColor": "#FFFFFF00",
-            "frameTime": 92.8
+            "frameTime": 16.9
         },
         "recording": {
             "animTime": 84.26599999999976,
@@ -30,7 +30,22 @@
                     "d": 0.7
                 }
             },
-            "running": true,
+            "iterations": {
+                "startCount": 15,
+                "seed": 12345,
+                "iterPerBatch": 1,
+                "batchSize": 10000,
+                "maxBatchCount": 100,
+                "batchCount": 100,
+                "avgDist": 1.983065172986986
+            },
+            "isRunning": true,
+            "iterate": true,
+            "accumulate": true,
+            "symmetry": {
+                "enabled": true,
+                "iterations": 5
+            },
             "gamma": 1.6999999999999997,
             "contrast": 1,
             "brightness": 0.3,
@@ -42,14 +57,14 @@
             "pointSize": 1,
             "colorSign": 1,
             "jitter": 1.25,
-            "histWidth": 6.699999999999994,
-            "histCenterX": 0,
-            "histCenterY": 0
+            "histWidth": 4.400000000000015,
+            "histCenterX": 0.09999999999999998,
+            "histCenterY": 0.0799999999999998
         },
         "simTransform": {
-            "simCenterX": -0.018000000000000002,
-            "simCenterY": -0.08,
-            "simScale": 0.36000000000000004,
+            "simCenterX": 0.07700000000000001,
+            "simCenterY": 0,
+            "simScale": 0.14,
             "simAngle": 0
         },
         "visualization": {
@@ -123,7 +138,7 @@
                 },
                 "screenGrid": {
                     "enabled": false,
-                    "step": 0.01,
+                    "step": 0.005,
                     "stepAuto": true,
                     "color": "#000000ff",
                     "width": 1
@@ -171,7 +186,7 @@
             "group": {
                 "className": "Group_WP",
                 "params": {
-                    "type": "XX",
+                    "type": "3*3",
                     "a": 0.4,
                     "b": 0.5,
                     "c": 0,
@@ -280,10 +295,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0.06262271039780921,
-                        "centerY": -0.056370260582458045,
+                        "centerX": 0.12030620623590653,
+                        "centerY": -0.05156401464948939,
                         "zoom": [
-                            1.0560190331522183
+                            2.976624910092325
                         ]
                     },
                     "options": {

@@ -40,6 +40,7 @@ function IteratedAttractor(options){
         
       if(DEBUG)console.log(`${MYNAME}.setGroup()`, group );
       mGroup = group;
+      onRestart();
       
     };
 
@@ -151,6 +152,7 @@ function IteratedAttractor(options){
         mFloat32Array = new Float32Array(asize);        
     }
 
+    let mCount = 0;
 
     function cpuIteratePoint(pnt0, pnt1){
         
@@ -250,9 +252,24 @@ function IteratedAttractor(options){
         let {histWidth, histCenterX, histCenterY} = mConfig;
         
         //if(true)console.log(`point in fd:`, res.pnt.v);    
+        let fact = histWidth/2;
+        let ipnt = iPoint([(pnt.x - histCenterX)/fact , (pnt.y - histCenterY)/fact]);
+        let res = group.toFundDomain({pnt: ipnt});
+        let v = res.pnt.v;
+        pnt.x = fact*v[0]+histCenterX;
+        pnt.y = fact*v[1]+histCenterY;
+        
+    }
+
+    function pnt2fd_test(group, pnt){
+        
+        let {histWidth, histCenterX, histCenterY} = mConfig;
+        
+        //if(true)console.log(`point in fd:`, res.pnt.v);    
         let fact = histWidth*2;
         let ipnt = iPoint([(pnt.x - histCenterX)/fact , (pnt.y - histCenterY)/fact]);
         let res = group.toFundDomain({pnt: ipnt});
+        console.log('res: ', res)
         let v = res.pnt.v;
         pnt.x = fact*v[0]+histCenterX;
         pnt.y = fact*v[1]+histCenterY;
@@ -292,7 +309,7 @@ function IteratedAttractor(options){
     //
     function renderBuffer(options){
         
-        if(DEBUG)console.log(`${MYNAME}.renderBuffer()`, options);
+        if(false)console.log(`${MYNAME}.renderBuffer()`, options);
         //if(DEBUG)console.trace(`${MYNAME}.render()`);
         
         mNeedToRender = mConfig.isRunning;
@@ -316,7 +333,7 @@ function IteratedAttractor(options){
         
         let cfg = mConfig;
         
-        console.log('${MYNAME} has new points: ', mHasNewPoints);
+        if(false)console.log('${MYNAME} has new points: ', mHasNewPoints);
         let cpuAcc = AttPrograms.getProgram(gl, 'cpuAccumulator');
         cpuAcc.bind();
 
@@ -434,10 +451,12 @@ function IteratedAttractor(options){
         let params = {
             attractor:      ParamObj({name:'attractor params', obj: mAttractor}),
             iterations:     makeIterationsParams(cfg.iterations, onres),
+            symmetry:       makeSymmetryParams(mConfig.symmetry, onres),
+
             isRunning:      ParamBool({obj:cfg,key:'isRunning', onChange:onc}),   
             iterate:        ParamBool({obj:cfg,key:'iterate', onChange:onc}),   
             accumulate:     ParamBool({obj:cfg,key:'accumulate', onChange:onc}),   
-            symmetry:       makeSymmetryParams(),
+
             makeStep:       ParamFunc({func:onSingleStep, name:'single step!'}),
             gamma:          ParamFloat({obj:cfg,key:'gamma', onChange:onc}),
             contrast:       ParamFloat({obj:cfg,key:'contrast', onChange:onc}),
@@ -454,7 +473,6 @@ function IteratedAttractor(options){
             histWidth:      ParamFloat({obj:cfg,key:'histWidth', onChange:onres}),
             histCenterX:    ParamFloat({obj:cfg,key:'histCenterX', onChange:onres}),
             histCenterY:    ParamFloat({obj:cfg,key:'histCenterY', onChange:onres}),
-            symmetry:       makeSymmetryParams(mConfig.symmetry, onres),
 
         }
         return params;
@@ -487,11 +505,22 @@ function IteratedAttractor(options){
             params: {
                 enabled:     ParamBool({obj: cfg, key: 'enabled', onChange: onchange}),
                 iterations:  ParamInt({obj: cfg, key: 'iterations', onChange: onchange}),
+                testSymm:    ParamFunc({func:onTestSymm, name:'test symm!'}),
             }
         });
         
     }  // makeSymmetryParams()
     
+    function onTestSymm(){
+        console.log('onTestSymm()', mGroup);
+        for(let i = 0; i < 10; i++){
+            let x = 5.*i - 25;
+            let y = 50;
+            let pnt = {x:x, y:y};
+            pnt2fd_test(mGroup, pnt);
+            console.log(' ', x, y, '-> , ',pnt.x, pnt.y);
+        }
+    }
     
     function onRerender(){
         mNeedToRender = true;

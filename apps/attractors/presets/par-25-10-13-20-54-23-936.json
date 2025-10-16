@@ -1,5 +1,5 @@
 {
-    "name": "par-25-09-06-14-52-37-957",
+    "name": "par-25-10-13-20-54-23-936",
     "appInfo": {
         "appName": "SymRenderer.Group_WP.IteratedAttractor-class.InversiveNavigator_v1",
         "fileFormatRelease": 1
@@ -12,7 +12,7 @@
             "customHeight": 1000,
             "sizeMultiplier": 1,
             "backgroundColor": "#FFFFFF00",
-            "frameTime": 101.2
+            "frameTime": 16.8
         },
         "recording": {
             "animTime": 84.26599999999976,
@@ -24,17 +24,32 @@
             "attractor": {
                 "className": "CliffordAttractor-class",
                 "params": {
-                    "a": 1.7,
-                    "b": 1.7,
-                    "c": 0.6,
-                    "d": 1.2
+                    "a": -1.4,
+                    "b": 1.6,
+                    "c": 1,
+                    "d": 0.7
                 }
             },
-            "running": true,
-            "gamma": 2.3000000000000003,
+            "iterations": {
+                "startCount": 15,
+                "seed": 12345,
+                "iterPerBatch": 1,
+                "batchSize": 10000,
+                "maxBatchCount": 100,
+                "batchCount": 100,
+                "avgDist": 1.0344230566778394
+            },
+            "isRunning": true,
+            "iterate": true,
+            "accumulate": true,
+            "symmetry": {
+                "enabled": true,
+                "iterations": 5
+            },
+            "gamma": 1.6999999999999997,
             "contrast": 1,
             "brightness": 0.3,
-            "saturation": 1.0999999999999999,
+            "saturation": 0.6,
             "dynamicRange": 0.19999999999999876,
             "invert": false,
             "colorSpeed": 0.22,
@@ -42,14 +57,14 @@
             "pointSize": 1,
             "colorSign": 1,
             "jitter": 1.25,
-            "histWidth": 5.899999999999997,
-            "histCenterX": 0,
-            "histCenterY": 0
+            "histWidth": 3.0000000000000027,
+            "histCenterX": -1.5400000000000011,
+            "histCenterY": -0.12000000000000001
         },
         "simTransform": {
-            "simCenterX": 0,
-            "simCenterY": 0.13,
-            "simScale": 0.2,
+            "simCenterX": -0.018000000000000002,
+            "simCenterY": -0.08,
+            "simScale": 0.36000000000000004,
             "simAngle": 0
         },
         "visualization": {
@@ -171,7 +186,7 @@
             "group": {
                 "className": "Group_WP",
                 "params": {
-                    "type": "*333",
+                    "type": "XX",
                     "a": 0.4,
                     "b": 0.5,
                     "c": 0,
@@ -280,10 +295,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0.019552769295708018,
-                        "centerY": 0.11983760906660297,
+                        "centerX": -0.056377490138373544,
+                        "centerY": -0.018927866644444825,
                         "zoom": [
-                            1.5983651941266888
+                            1.3411094921526132
                         ]
                     },
                     "options": {
