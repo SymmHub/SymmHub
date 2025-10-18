@@ -1,7 +1,7 @@
 {
-    "name": "par-25-10-16-17-21-36-397",
+    "name": "par-25-10-18-09-28-18-730",
     "appInfo": {
-        "appName": "SymRenderer.Group_Frieze-class.IteratedAttractor-class.InversiveNavigator_v1",
+        "appName": "SymRenderer.Group_Spherical-class.IteratedAttractor-class.InversiveNavigator_v1",
         "fileFormatRelease": 1
     },
     "params": {
@@ -12,7 +12,7 @@
             "customHeight": 1000,
             "sizeMultiplier": 1,
             "backgroundColor": "#FFFFFF00",
-            "frameTime": 16.9
+            "frameTime": 16.7
         },
         "recording": {
             "animTime": 0,
@@ -24,10 +24,10 @@
             "attractor": {
                 "className": "CliffordAttractor-class",
                 "params": {
-                    "a": -1.85,
-                    "b": -2.5,
-                    "c": -1.05,
-                    "d": 0.585
+                    "a": -2.427650326337101,
+                    "b": -2.3430836522699208,
+                    "c": 1.1505093876597434,
+                    "d": -2.37100001485756
                 }
             },
             "iterations": {
@@ -37,7 +37,7 @@
                 "batchSize": 100000,
                 "maxBatchCount": 100,
                 "batchCount": 100,
-                "avgDist": 1.2152410803705669
+                "avgDist": 1.4816527843656135
             },
             "symmetry": {
                 "enabled": true,
@@ -57,15 +57,15 @@
             "pointSize": 1,
             "colorSign": 1,
             "jitter": 1.25,
-            "histWidth": 11,
-            "histCenterX": 0,
-            "histCenterY": -1.4
+            "histWidth": 9,
+            "histCenterX": -2.0000000000000004,
+            "histCenterY": 1.9000000000000004
         },
         "simTransform": {
-            "simCenterX": 0,
-            "simCenterY": 0,
-            "simScale": 1.4000000000000001,
-            "simAngle": 11.000000000000002
+            "simCenterX": 0.44000000000000006,
+            "simCenterY": 0.8270000000000001,
+            "simScale": 2,
+            "simAngle": 0
         },
         "visualization": {
             "image": {
@@ -79,7 +79,7 @@
                 "opacity": 1,
                 "fundDomain": {
                     "fill": {
-                        "enabled": false,
+                        "enabled": true,
                         "color": "#FF0000AA"
                     },
                     "outline": {
@@ -184,10 +184,11 @@
         },
         "symmetry": {
             "group": {
-                "className": "Group_Frieze-class",
+                "className": "Group_Spherical-class",
                 "params": {
-                    "type": "22∞",
-                    "a": 0.4
+                    "type": "nx",
+                    "n": 6,
+                    "subtype": 0
                 }
             },
             "transform": {
@@ -291,12 +292,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": -0.25067280561660626,
-                        "centerY": -0.03967992007202787,
+                        "centerX": -0.1755758704535834,
+                        "centerY": 0.02730587210045825,
                         "zoom": [
-                            [
-                                0.5143693498777443
-                            ]
+                            0.3676602329038792
                         ]
                     },
                     "options": {

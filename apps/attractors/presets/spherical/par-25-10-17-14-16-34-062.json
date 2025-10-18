@@ -1,7 +1,7 @@
 {
-    "name": "par-25-10-16-17-21-36-397",
+    "name": "par-25-10-17-14-16-34-062",
     "appInfo": {
-        "appName": "SymRenderer.Group_Frieze-class.IteratedAttractor-class.InversiveNavigator_v1",
+        "appName": "SymRenderer.Group_Spherical-class.IteratedAttractor-class.InversiveNavigator_v1",
         "fileFormatRelease": 1
     },
     "params": {
@@ -37,7 +37,7 @@
                 "batchSize": 100000,
                 "maxBatchCount": 100,
                 "batchCount": 100,
-                "avgDist": 1.2152410803705669
+                "avgDist": 0.7491668029285161
             },
             "symmetry": {
                 "enabled": true,
@@ -62,9 +62,9 @@
             "histCenterY": -1.4
         },
         "simTransform": {
-            "simCenterX": 0,
-            "simCenterY": 0,
-            "simScale": 1.4000000000000001,
+            "simCenterX": 0.11000000000000001,
+            "simCenterY": 0.05,
+            "simScale": 1.2000000000000002,
             "simAngle": 11.000000000000002
         },
         "visualization": {
@@ -79,7 +79,7 @@
                 "opacity": 1,
                 "fundDomain": {
                     "fill": {
-                        "enabled": false,
+                        "enabled": true,
                         "color": "#FF0000AA"
                     },
                     "outline": {
@@ -184,10 +184,11 @@
         },
         "symmetry": {
             "group": {
-                "className": "Group_Frieze-class",
+                "className": "Group_Spherical-class",
                 "params": {
-                    "type": "22∞",
-                    "a": 0.4
+                    "type": "2*n",
+                    "n": 4,
+                    "subtype": 0
                 }
             },
             "transform": {
@@ -291,12 +292,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": -0.25067280561660626,
-                        "centerY": -0.03967992007202787,
+                        "centerX": -0.18036845392480014,
+                        "centerY": -0.12370227693286844,
                         "zoom": [
-                            [
-                                0.5143693498777443
-                            ]
+                            0.5548145274391724
                         ]
                     },
                     "options": {

@@ -31,13 +31,11 @@ export {
 
 export { 
     Group_WP,
-} from "../../../lib/grouplib/Group_WP.js";
-
-export { 
     Group_Frieze,
+    Group_Spherical,
 } from "../../../lib/grouplib/grouplib.js";
-    
 
+   
 
 export {
     CliffordAttractor
