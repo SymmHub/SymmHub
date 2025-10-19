@@ -33,6 +33,7 @@ export {
     Group_WP,
     Group_Frieze,
     Group_Spherical,
+    Group_KLM,
 } from "../../../lib/grouplib/grouplib.js";
 
    
