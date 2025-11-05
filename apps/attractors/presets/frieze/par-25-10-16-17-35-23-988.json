@@ -34,10 +34,10 @@
                 "startCount": 15,
                 "seed": 12345,
                 "iterPerBatch": 1,
-                "batchSize": 100000,
+                "batchSize": 10000,
                 "maxBatchCount": 100,
                 "batchCount": 100,
-                "avgDist": 1.1910189095991885
+                "avgDist": 1.1742834293607616
             },
             "symmetry": {
                 "enabled": true,
@@ -88,6 +88,17 @@
                         "color": "#000000AA",
                         "shadowsWidth": 10,
                         "shadowsColor": "#0000FFAA"
+                    }
+                },
+                "buffer": {
+                    "fill": {
+                        "enabled": false,
+                        "color": "#00FF0022"
+                    },
+                    "outline": {
+                        "enabled": false,
+                        "width": 1,
+                        "color": "#00AA00AA"
                     }
                 },
                 "isolines": {
@@ -291,12 +302,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": -0.39596625590444456,
-                        "centerY": 0.08165586015813742,
+                        "centerX": -0.36843811008310007,
+                        "centerY": 0.007344909143141539,
                         "zoom": [
-                            [
-                                0.6497463869656758
-                            ]
+                            0.8258795850732745
                         ]
                     },
                     "options": {

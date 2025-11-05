@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Cache-Control" content="no-cache">
+        <link rel="icon" type="image/x-icon" href="./css/icon_attractors.svg">
+        <title>Attractors Frieze</title>
+        <meta name="description" content="Iterated Attractors weith Frieze Symmetry">
+        <link rel="stylesheet" href="css/thumbnails.css"/>
+        <link rel="stylesheet" href="css/index.css"/>
+    </head>
+<body>   
+
+    <header>
+    <h1>Iterated Attractors with Frieze Symmetry</h1>
+    </header>
+    <div class="container">
+        <div id='thumbnails'>
+        </div>
+    </div>
+    <footer>
+   <a href='./index.html'>Attractors</a>
+   <a href='../../index.html'>SymmHub</a>
+    </footer>
+</body>
+<script type='module'>
+    import {
+        appendThumbnails
+    } from './js/appendThumbnails.js';
+    import {
+        presets 
+    } from './js/presets_frieze.js';
+    
+     let list = document.getElementById('thumbnails');
+     let appPage = 'att_frieze.html';
+     let presetsFolder = 'presets/frieze/';
+     appendThumbnails(list, appPage, presetsFolder, presets);
+     
+    </script>              
+</html>

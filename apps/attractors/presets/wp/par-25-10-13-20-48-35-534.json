@@ -12,7 +12,7 @@
             "customHeight": 1000,
             "sizeMultiplier": 1,
             "backgroundColor": "#FFFFFF00",
-            "frameTime": 22
+            "frameTime": 16.9
         },
         "recording": {
             "animTime": 0,
@@ -35,17 +35,17 @@
                 "seed": 12345,
                 "iterPerBatch": 1,
                 "batchSize": 10000,
-                "maxBatchCount": 3000,
-                "batchCount": 1510,
-                "avgDist": 1.0183971256526052
+                "maxBatchCount": 100,
+                "batchCount": 100,
+                "avgDist": 1.0078035977066409
             },
-            "isRunning": true,
-            "iterate": true,
-            "accumulate": true,
             "symmetry": {
                 "enabled": true,
                 "iterations": 5
             },
+            "isRunning": true,
+            "iterate": true,
+            "accumulate": true,
             "gamma": 2.2,
             "contrast": 2.200000000000001,
             "brightness": -0.05000000000000109,
@@ -88,6 +88,17 @@
                         "color": "#000000AA",
                         "shadowsWidth": 10,
                         "shadowsColor": "#0000FFAA"
+                    }
+                },
+                "buffer": {
+                    "fill": {
+                        "enabled": false,
+                        "color": "#00FF0022"
+                    },
+                    "outline": {
+                        "enabled": false,
+                        "width": 1,
+                        "color": "#00AA00AA"
                     }
                 },
                 "isolines": {

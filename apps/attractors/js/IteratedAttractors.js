@@ -197,9 +197,9 @@ function IteratedAttractor(options){
         let par = mParams.iterations;
         cfg.avgDist = avgDist;
         par.avgDist.updateDisplay();
-        cfg.batchCount++;
+       
+        cfg.batchCount++;        
         par.batchCount.updateDisplay();
-        
     }
 
     function cpuInitialize(array) {
@@ -228,9 +228,9 @@ function IteratedAttractor(options){
             //console.log('ii: ', ii, ' x:', x, ' y:', y);
             pnt.x = x;
             pnt.y = y;
-            for (let j = 0; j < startCount; j++) {
-                cpuIteratePoint(pnt, pnt);
-            }
+           // for (let j = 0; j < startCount; j++) {
+           //     cpuIteratePoint(pnt, pnt);
+           // }
             array[i]   = pnt.x;
             array[i+1] = pnt.y;
             array[i+2] = 0.;
@@ -337,7 +337,8 @@ function IteratedAttractor(options){
         let cpuAcc = AttPrograms.getProgram(gl, 'cpuAccumulator');
         cpuAcc.bind();
 
-        let {iterPerBatch} = mConfig.iterations;
+        let {iterPerBatch,batchCount, startCount} = mConfig.iterations;
+        
         for(let k = 0; k < iterPerBatch; k++){
             
             if(mNeedToIterate || cfg.isRunning) {
@@ -346,6 +347,7 @@ function IteratedAttractor(options){
                 iterate();
             }
                
+            
             if(mHasNewPoints){
                 //
                 // append points to accumulator
@@ -371,8 +373,7 @@ function IteratedAttractor(options){
                 
                 gl.viewport(0, 0, mAccumulator.width, mAccumulator.height);              
                 gl.bindFramebuffer(gl.FRAMEBUFFER, mAccumulator.fbo);
-
-                if(cfg.accumulate){
+                if(cfg.accumulate && (batchCount > startCount)){
                     // enable blend to accumulate histogram 
                     gl.enable(gl.BLEND);   
                     gl.blendFunc(gl.ONE, gl.ONE);        
@@ -385,29 +386,32 @@ function IteratedAttractor(options){
                 }
                 gl.drawArrays(gl.POINTS, 0, points.length/4);
             }
+        }
+        //if(batchCount < startCount)  
+        //        return;
+        
+        if(true){
+            let histRenderer = AttPrograms.getProgram(gl, 'renderHistogram');        
+            gl.viewport(0, 0, buffer.width, buffer.height);  
+                    
+            histRenderer.bind();
+                    
+            let histUni = {
+                src:        mAccumulator,
+                scale:      mTotalCount/ (mBufferWidth*mBufferWidth),
+                gamma:      cfg.gamma,
+                contrast:   cfg.contrast,
+                brightness: cfg.brightness,
+                saturation: cfg.saturation,
+                dynamicRange:cfg.dynamicRange,
+                invert:      cfg.invert,            
+            };
+            
+            histRenderer.setUniforms(histUni);
+            gl.disable(gl.BLEND); 
+            //if(DEBUG) console.log(`${MYNAME} histRenderer.blit()`);
+            histRenderer.blit(buffer);
         }        
-        
-        let histRenderer = AttPrograms.getProgram(gl, 'renderHistogram');        
-        gl.viewport(0, 0, buffer.width, buffer.height);  
-                
-        histRenderer.bind();
-                
-        let histUni = {
-            src:        mAccumulator,
-            scale:      mTotalCount/ (mBufferWidth*mBufferWidth),
-            gamma:      cfg.gamma,
-            contrast:   cfg.contrast,
-            brightness: cfg.brightness,
-            saturation: cfg.saturation,
-            dynamicRange:cfg.dynamicRange,
-            invert:      cfg.invert,            
-        };
-        
-        histRenderer.setUniforms(histUni);
-        gl.disable(gl.BLEND); 
-        //if(DEBUG) console.log(`${MYNAME} histRenderer.blit()`);
-        histRenderer.blit(buffer);
-        
                        
     } // render()
 
