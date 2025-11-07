@@ -1,0 +1,304 @@
+{
+    "name": "par-25-11-07-14-01-00-052",
+    "appInfo": {
+        "appName": "SymRenderer.Group_WP.PatternImage.InversiveNavigator_v1",
+        "fileFormatRelease": 1
+    },
+    "params": {
+        "files": {},
+        "display": {
+            "canvasSize": "Fit To Window",
+            "customWidth": 1000,
+            "customHeight": 1000,
+            "sizeMultiplier": 1,
+            "backgroundColor": "#FFFFFF00",
+            "frameTime": 16.9
+        },
+        "recording": {
+            "animTime": 0,
+            "animSpeed": 1,
+            "startFrame": 0,
+            "endFrame": 100
+        },
+        "simulation": {
+            "centerX": 0,
+            "centerY": 0,
+            "scale": 0.9600000000000002,
+            "angle": -17,
+            "transparency": 0,
+            "texture": {
+                "texName": "p126_03_over",
+                "showFrame": false,
+                "texSize": 2048
+            }
+        },
+        "simTransform": {
+            "simCenterX": 0.07,
+            "simCenterY": 0.13,
+            "simScale": 0.45,
+            "simAngle": -45.00000000000001
+        },
+        "visualization": {
+            "image": {
+                "enabled": true,
+                "opacity": 1,
+                "dataSource": "u",
+                "useMipmap": false
+            },
+            "overlay": {
+                "enabled": false,
+                "opacity": 1,
+                "fundDomain": {
+                    "fill": {
+                        "enabled": false,
+                        "color": "#ff000031"
+                    },
+                    "outline": {
+                        "enabled": false,
+                        "width": 1,
+                        "color": "#000000AA",
+                        "shadowsWidth": 10,
+                        "shadowsColor": "#0000FFAA"
+                    }
+                },
+                "buffer": {
+                    "fill": {
+                        "enabled": true,
+                        "color": "#00ff0045"
+                    },
+                    "outline": {
+                        "enabled": false,
+                        "width": 1,
+                        "color": "#00AA00AA"
+                    }
+                },
+                "isolines": {
+                    "enabled": false,
+                    "type": "u",
+                    "step": 0.1,
+                    "offset": 0,
+                    "width": 1,
+                    "levels": 1,
+                    "color": "#000000ff"
+                },
+                "tiling": {
+                    "fill": {
+                        "enabled": false,
+                        "color": "#FFFF0055"
+                    },
+                    "outline": {
+                        "enabled": false,
+                        "width": 1,
+                        "color": "#000000FF"
+                    }
+                },
+                "limitset": {
+                    "enabled": false,
+                    "color": "#000000ff",
+                    "width": 1
+                },
+                "generators": {
+                    "enabled": false,
+                    "width": 2,
+                    "color": "#0000AAAA",
+                    "shadow": {
+                        "enabled": true,
+                        "color": "#0000AA55",
+                        "width": 10
+                    }
+                },
+                "worldGrid": {
+                    "enabled": false,
+                    "type": "cartesian",
+                    "stepx": 0.1,
+                    "stepy": 0.1,
+                    "offsetx": 0,
+                    "offsety": 0,
+                    "levels": 1,
+                    "color": "#000000ff",
+                    "width": 1
+                },
+                "screenGrid": {
+                    "enabled": false,
+                    "step": 0.01,
+                    "stepAuto": true,
+                    "color": "#000000ff",
+                    "width": 1
+                },
+                "ruler": {
+                    "enabled": false,
+                    "color": "#000000ff",
+                    "background": "#AAAAAAAA",
+                    "width": 20
+                }
+            },
+            "options": {
+                "visualComponent": 0,
+                "interpolation": "biquadratic",
+                "showChecker": false,
+                "useMipmap": false
+            }
+        },
+        "misc": {
+            "options": {
+                "showChecker": false,
+                "showGrid": false,
+                "showRuler": false
+            },
+            "dataPlot": {
+                "potType": 0,
+                "viewport": {
+                    "xmin": -1.3,
+                    "xmax": 1.3,
+                    "ymin": -0.2,
+                    "ymax": 1.1
+                },
+                "viewbox": {
+                    "width": 65,
+                    "height": 20,
+                    "left": 17.5,
+                    "bottom": 0,
+                    "centerX": 0,
+                    "centerY": 0,
+                    "zoom": 1
+                }
+            }
+        },
+        "symmetry": {
+            "group": {
+                "className": "Group_WP",
+                "params": {
+                    "type": "*2222",
+                    "a": 0.4,
+                    "b": 0.5,
+                    "c": 0,
+                    "angle_a": 0,
+                    "angle_b": 90
+                }
+            },
+            "transform": {
+                "translationX": 0,
+                "translationY": 0,
+                "rotation": 0,
+                "scale": 1
+            },
+            "options": {
+                "useSymm": true,
+                "iterations": 10
+            }
+        },
+        "tools": {
+            "tool": "move",
+            "transform": {
+                "className": "InversiveNavigator_v1",
+                "params": {
+                    "projection": {
+                        "className": "ProjectionTransform",
+                        "params": {
+                            "enabled": true,
+                            "fpdMap": {
+                                "className": "FixedPointTransform",
+                                "params": {
+                                    "enabled": false,
+                                    "showUI": false,
+                                    "animate": false,
+                                    "word": "ac",
+                                    "orientation": "none",
+                                    "fp0x": -1,
+                                    "fp0y": 0,
+                                    "fp1x": 1,
+                                    "fp1y": 0,
+                                    "basex": 0,
+                                    "basey": 0,
+                                    "translation": 1,
+                                    "rotation": 0,
+                                    "fraction": 0,
+                                    "loopTime": 5
+                                }
+                            },
+                            "bandMap": {
+                                "enabled": false,
+                                "fraction": 1
+                            },
+                            "logMap": {
+                                "enabled": false
+                            },
+                            "periodicMap": {
+                                "enabled": false,
+                                "a1x": 1,
+                                "a1y": 0,
+                                "a2x": 0,
+                                "a2y": 1,
+                                "cx": 0,
+                                "cy": 0
+                            },
+                            "scaleMap": {
+                                "enabled": false,
+                                "a1x": 1,
+                                "a1y": 0,
+                                "a2x": 0,
+                                "a2y": 1,
+                                "n1": 10,
+                                "n2": 0,
+                                "shift1": 0,
+                                "shift2": 0
+                            },
+                            "expMap": {
+                                "enabled": false
+                            },
+                            "loxMap": {
+                                "enabled": false
+                            },
+                            "uhpMap": {
+                                "enabled": false
+                            },
+                            "rationalMap": {
+                                "enabled": false,
+                                "x1": 1,
+                                "y1": 0,
+                                "n1": 1,
+                                "x2": 0,
+                                "y2": 1,
+                                "n2": -1,
+                                "x3": -1,
+                                "y3": 0,
+                                "n3": 1,
+                                "x4": 0,
+                                "y4": -1,
+                                "n4": -1
+                            }
+                        }
+                    },
+                    "inversive": {
+                        "enabled": true,
+                        "itrans": []
+                    },
+                    "spherical": {
+                        "enabled": false
+                    },
+                    "euclidean": {
+                        "centerX": -0.02050924897386623,
+                        "centerY": -0.025404465132130037,
+                        "zoom": [
+                            1.395793791827727
+                        ]
+                    },
+                    "options": {
+                        "animation": true
+                    }
+                }
+            },
+            "drawing": {
+                "symmetry": false,
+                "brushR": 1,
+                "brushG": 0,
+                "brushB": 0,
+                "brushA": 1,
+                "brushRadius": 0.01,
+                "brushBlur": 0.5,
+                "brushX": 0,
+                "brushY": 0
+            }
+        }
+    }
+}

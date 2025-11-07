@@ -59,6 +59,7 @@ function IteratedAttractor(options){
     
     
     let mConfig = {
+        
         iterations: {
             startCount: 15,
             seed:       12345,
