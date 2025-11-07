@@ -1,7 +1,7 @@
 {
-    "name": "par-25-11-07-13-53-01-194",
+    "name": "par-25-11-07-15-08-48-228",
     "appInfo": {
-        "appName": "SymRenderer.Group_WP.PatternImage.InversiveNavigator_v1",
+        "appName": "SymRenderer.Group_KLM.PatternImage.InversiveNavigator_v1",
         "fileFormatRelease": 1
     },
     "params": {
@@ -11,8 +11,8 @@
             "customWidth": 1000,
             "customHeight": 1000,
             "sizeMultiplier": 1,
-            "backgroundColor": "#FFFFFF00",
-            "frameTime": 16.9
+            "backgroundColor": "#ffffffe0",
+            "frameTime": 16.4
         },
         "recording": {
             "animTime": 0,
@@ -21,21 +21,21 @@
             "endFrame": 100
         },
         "simulation": {
-            "centerX": 0,
-            "centerY": 0,
-            "scale": 0.9600000000000002,
-            "angle": -17,
+            "centerX": -0.10000000000000007,
+            "centerY": -0.010000000000000087,
+            "scale": 0.9900000000000001,
+            "angle": 0,
             "transparency": 0,
             "texture": {
-                "texName": "p118_02_over",
+                "texName": "Tafel_094_09_over",
                 "showFrame": false,
-                "texSize": 2048
+                "texSize": 1024
             }
         },
         "simTransform": {
-            "simCenterX": 0,
-            "simCenterY": 0,
-            "simScale": 0.24000000000000002,
+            "simCenterX": 0.29000000000000004,
+            "simCenterY": 0.11000000000000001,
+            "simScale": 0.36000000000000004,
             "simAngle": 0
         },
         "visualization": {
@@ -46,12 +46,12 @@
                 "useMipmap": false
             },
             "overlay": {
-                "enabled": false,
+                "enabled": true,
                 "opacity": 1,
                 "fundDomain": {
                     "fill": {
                         "enabled": false,
-                        "color": "#ff000031"
+                        "color": "#ff00001c"
                     },
                     "outline": {
                         "enabled": false,
@@ -63,13 +63,13 @@
                 },
                 "buffer": {
                     "fill": {
-                        "enabled": true,
-                        "color": "#00ff0045"
+                        "enabled": false,
+                        "color": "#00ff350c"
                     },
                     "outline": {
                         "enabled": false,
-                        "width": 1,
-                        "color": "#00AA00AA"
+                        "width": 7,
+                        "color": "#513b44f7"
                     }
                 },
                 "isolines": {
@@ -120,7 +120,7 @@
                 },
                 "screenGrid": {
                     "enabled": false,
-                    "step": 0.01,
+                    "step": 0.05,
                     "stepAuto": true,
                     "color": "#000000ff",
                     "width": 1
@@ -166,14 +166,13 @@
         },
         "symmetry": {
             "group": {
-                "className": "Group_WP",
+                "className": "Group_KLM",
                 "params": {
-                    "type": "22X",
-                    "a": 0.4,
-                    "b": 0.5,
-                    "c": 0,
-                    "angle_a": 0,
-                    "angle_b": 90
+                    "s": true,
+                    "K": 6,
+                    "L": 3,
+                    "M": 3,
+                    "hasR": false
                 }
             },
             "transform": {
@@ -184,7 +183,7 @@
             },
             "options": {
                 "useSymm": true,
-                "iterations": 10
+                "iterations": 30
             }
         },
         "tools": {
@@ -217,7 +216,7 @@
                                 }
                             },
                             "bandMap": {
-                                "enabled": false,
+                                "enabled": true,
                                 "fraction": 1
                             },
                             "logMap": {
@@ -277,10 +276,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0.06924922795602184,
-                        "centerY": 0.09561399704398377,
+                        "centerX": -0.043405593394681884,
+                        "centerY": 0.060418883877795766,
                         "zoom": [
-                            1.5951804636904716
+                            0.613756426190917
                         ]
                     },
                     "options": {
