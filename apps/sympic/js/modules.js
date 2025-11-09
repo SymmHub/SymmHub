@@ -44,6 +44,7 @@ export {
     Group_Frieze,
     Group_Spherical,
     Group_KLM,
+    Group_KLMN,
 } from "../../../lib/grouplib/grouplib.js";
 
    
