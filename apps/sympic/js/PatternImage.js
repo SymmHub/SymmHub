@@ -12,6 +12,7 @@ import {
     createDoubleFBO,
     TextureFile,
     Textures,
+    DataPacking,
     PatternImage_programs,
 }
 from './modules.js';
@@ -42,6 +43,10 @@ function PatternImage(options){
     let mTextureMaker = null;
     let mNeedToRender = true;
     let mPrograms = PatternImage_programs;
+    let mGroupData = null;
+    let mGroup = null; 
+
+
     let mConfig = {
         bufferWidth: 1024,
         centerX: 0,
@@ -49,6 +54,7 @@ function PatternImage(options){
         scale: 1,
         angle: 0,
         transparency: 0,
+        useCrown: false,
         
     };
 
@@ -73,12 +79,18 @@ function PatternImage(options){
         });
 
         mParams = makeParams(mConfig);
+
+        mGroupData = DataPacking.createGroupDataSampler(mGL);
                 
     }
 
 
     function setGroup(group){
         if(DEBUG)console.log(`${MYNAME}.setGroup()`, group);
+        mGroup = group;
+        DataPacking.packGroupToSampler(mGL, mGroupData, mGroup); 
+        informListeners();
+        mNeedToRender = true;
     }
 
     function onTextureChange(){
@@ -103,6 +115,7 @@ function PatternImage(options){
             scale:   ParamFloat({obj: cfg, key: 'scale', onChange: onc}),
             angle:   ParamFloat({obj: cfg, key: 'angle', onChange: onc}),
             transparency:   ParamFloat({obj: cfg, key: 'transparency', onChange: onc}),
+            useCrown:   ParamBool({obj: cfg, key: 'useCrown', onChange: onc}),
             texture:    ParamObj({name: 'texture', obj: mTextureMaker }),
         }
     }
@@ -153,6 +166,8 @@ function PatternImage(options){
             uImageCenter: [cfg.centerX, cfg.centerY],
             uImageTransparency: cfg.transparency,
             uImage:             mTextureMaker.getTexture(),
+            uCrownData:         mGroupData, 
+            uUseCrown:          cfg.useCrown,
         };
 
         program.setUniforms(imgUni);

@@ -9,12 +9,17 @@ const MYNAME = 'att_programs';
 
 const complexFrag = {obj:LibShaders, id:'complex'};
 const renderImageVertMain = {obj:LibShaders, id:'canvasVertexShader'};
+const isplaneFrag = {obj:LibShaders, id:'isplane'};
+const inversiveFrag = {obj:LibShaders, id:'inversiveSampler'};
+const utilsFrag = {obj:LibShaders, id:'utils'};
+
+
 const renderImageFragMain = {obj:ImgShaders, id:'renderImage'};
 
 const renderImageProgram = {
     name: 'renderImage', 
     vs: {frags: [renderImageVertMain]}, 
-    fs: {frags: [complexFrag, renderImageFragMain]},
+    fs: {frags: [complexFrag, utilsFrag, isplaneFrag, inversiveFrag, renderImageFragMain]},
 };
 
 

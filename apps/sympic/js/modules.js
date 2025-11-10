@@ -19,7 +19,8 @@ export {
 } from '../../../lib/uilib/uilib.js';
 
 export {
-    iPoint
+    iPoint,
+    DataPacking, 
 } from '../../../lib/invlib/invlib.js';
 
 export { 
