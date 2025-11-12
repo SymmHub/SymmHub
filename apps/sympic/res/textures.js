@@ -5,13 +5,21 @@ import {
 import {
     resources as tex_haeckel_challenger
 } from './tex_haeckel_challenger.js';
+
+import {
+    resources as misc
+} from './misc.js';
+
+
 const MYPATH = new URL('./', import.meta.url).pathname;
+
 
 console.log('textures MYPATH: ', MYPATH);
 
 export const textures = {
-   haeckel_kunst: getTexInfoArray(tex_haeckel_kunst, MYPATH + 'haeckel_kunst/'),
-   haeckel_challenger: getTexInfoArray(tex_haeckel_challenger, MYPATH + 'haeckel_challenger/'),
+    haeckel_kunst: getTexInfoArray(tex_haeckel_kunst, MYPATH + 'haeckel_kunst/'),
+    haeckel_challenger: getTexInfoArray(tex_haeckel_challenger, MYPATH + 'haeckel_challenger/'),
+    misc: getTexInfoArray(misc, MYPATH + 'misc/'),
 };
 
 
