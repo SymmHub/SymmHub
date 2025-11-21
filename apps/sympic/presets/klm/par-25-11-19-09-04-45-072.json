@@ -1,7 +1,7 @@
 {
-    "name": "par-25-11-17-13-14-13-692",
+    "name": "par-25-11-19-09-04-45-072",
     "appInfo": {
-        "appName": "SymRenderer.Group_Spherical-class.PatternImage.InversiveNavigator_v1",
+        "appName": "SymRenderer.Group_KLM.PatternImage.InversiveNavigator_v1",
         "fileFormatRelease": 1
     },
     "params": {
@@ -21,23 +21,23 @@
             "endFrame": 100
         },
         "simulation": {
-            "centerX": -0.2630000000000001,
-            "centerY": 0,
-            "scale": 0.5400000000000001,
-            "angle": 0,
+            "centerX": 0.04000000000000012,
+            "centerY": -0.1000000000000001,
+            "scale": 0.7999999999999998,
+            "angle": -12,
             "transparency": 0,
-            "useCrown": false,
+            "useCrown": true,
             "texture": {
-                "texName": "Tafel_007_02_over",
+                "texName": "Tafel_017_07_over",
                 "showFrame": false,
                 "texSize": 1024
             }
         },
         "simTransform": {
-            "simCenterX": 0.28,
-            "simCenterY": 0.05500000000000001,
-            "simScale": 0.44000000000000006,
-            "simAngle": 0
+            "simCenterX": 0.15000000000000002,
+            "simCenterY": 0.02,
+            "simScale": 0.193,
+            "simAngle": -39
         },
         "visualization": {
             "image": {
@@ -64,8 +64,8 @@
                 },
                 "buffer": {
                     "fill": {
-                        "enabled": false,
-                        "color": "#1ec6411e"
+                        "enabled": true,
+                        "color": "#00ff350c"
                     },
                     "outline": {
                         "enabled": false,
@@ -121,7 +121,7 @@
                 },
                 "screenGrid": {
                     "enabled": false,
-                    "step": 0.02,
+                    "step": 0.01,
                     "stepAuto": true,
                     "color": "#000000ff",
                     "width": 1
@@ -143,8 +143,8 @@
         "misc": {
             "options": {
                 "showChecker": false,
-                "showGrid": false,
-                "showRuler": false
+                "showGrid": true,
+                "showRuler": true
             },
             "dataPlot": {
                 "potType": 0,
@@ -167,12 +167,13 @@
         },
         "symmetry": {
             "group": {
-                "className": "Group_Spherical-class",
+                "className": "Group_KLM",
                 "params": {
-                    "type": "*532",
-                    "n": 5,
-                    "subtype": 0,
-                    "centered": true
+                    "s": false,
+                    "K": 5,
+                    "L": 2,
+                    "M": 3,
+                    "hasR": false
                 }
             },
             "transform": {
@@ -183,7 +184,7 @@
             },
             "options": {
                 "useSymm": true,
-                "iterations": 50
+                "iterations": 30
             }
         },
         "tools": {
@@ -273,13 +274,13 @@
                         "itrans": []
                     },
                     "spherical": {
-                        "enabled": true
+                        "enabled": false
                     },
                     "euclidean": {
-                        "centerX": -0.05013544947586488,
-                        "centerY": -0.1462771246137707,
+                        "centerX": -0.0009030436145299168,
+                        "centerY": 0.036875160559189185,
                         "zoom": [
-                            0.8009323901056414
+                            2.649945209735722
                         ]
                     },
                     "options": {

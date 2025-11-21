@@ -53,5 +53,119 @@ function testInversion(){
         
 }
 
+function test2(){
 
-testInversion();
+    const PHI = "φ"; 
+    const U = "u";   // u = sqrt(phi + 2)
+
+    function getSymbolicInvertedIcosahedron() {
+        // Definition of symbols for display
+        
+        console.log(`--- CONSTANT DEFINITIONS ---`);
+        console.log(`${PHI} = (1 + √5) / 2  (Golden Ratio)`);
+        console.log(`${U} = √(${PHI} + 2)      (Normalization Factor)`);
+        console.log(`Inversion Center: (0, 0, -1), Radius: √2`);
+        console.log(`Resulting z-coordinate is always 0 (Planar Projection)\n`);
+
+        const vertices = [];
+
+        // --- GROUP 1: The "Equatorial" Vertices (Invariant) ---
+        // These original points had z=0. They lie on the intersection 
+        // of the sphere and the inversion plane, so they do not move.
+        // Algebraic Form: (±1/u, ±φ/u)
+        console.log(`--- GROUP 1: Invariant Points (On Unit Circle) ---`);
+        const signs = [-1, 1];
+        signs.forEach(s1 => {
+            signs.forEach(s2 => {
+                const sign1 = s1 > 0 ? "" : "-";
+                const sign2 = s2 > 0 ? "" : "-";
+                
+                vertices.push({
+                    type: "Unit Circle",
+                    coord: `( ${sign1}1/${U}, ${sign2}${PHI}/${U}, 0 )`
+                });
+            });
+        });
+        console.log(`  • 4 points generated: (±1/${U}, ±${PHI}/${U}, 0)`);
+
+
+        // --- GROUP 2: Vertices on the Y-Axis ---
+        // Original: (0, ±1/u, ±φ/u)
+        // These project onto the Y-axis. They form reciprocal pairs.
+        // Inner pair: ±(u - φ)  |  Outer pair: ±(u + φ)
+        console.log(`\n--- GROUP 2: Y-Axis Points (Reciprocals) ---`);
+        
+        // Inner Y (Derived from z > 0)
+        signs.forEach(s => {
+            const sign = s > 0 ? "" : "-";
+            vertices.push({
+                type: "Y-Axis Inner",
+                coord: `( 0, ${sign}(${U} - ${PHI}), 0 )`
+            });
+        });
+        
+        // Outer Y (Derived from z < 0)
+        signs.forEach(s => {
+            const sign = s > 0 ? "" : "-";
+            vertices.push({
+                type: "Y-Axis Outer",
+                coord: `( 0, ${sign}(${U} + ${PHI}), 0 )`
+            });
+        });
+        console.log(`  • 2 Inner points: (0, ±(${U} - ${PHI}), 0)`);
+        console.log(`  • 2 Outer points: (0, ±(${U} + ${PHI}), 0)`);
+
+
+        // --- GROUP 3: Vertices on the X-Axis ---
+        // Original: (±φ/u, 0, ±1/u)
+        // These project onto the X-axis. They form reciprocal pairs.
+        // Inner pair: ±φ/(u + 1) | Outer pair: ±φ/(u - 1)
+        console.log(`\n--- GROUP 3: X-Axis Points (Reciprocals) ---`);
+
+        // Inner X
+        signs.forEach(s => {
+            const sign = s > 0 ? "" : "-";
+            vertices.push({
+                type: "X-Axis Inner",
+                coord: `( ${sign}${PHI}/(${U} + 1), 0, 0 )`
+            });
+        });
+
+        // Outer X
+        signs.forEach(s => {
+            const sign = s > 0 ? "" : "-";
+            vertices.push({
+                type: "X-Axis Outer",
+                coord: `( ${sign}${PHI}/(${U} - 1), 0, 0 )`
+            });
+        });
+        console.log(`  • 2 Inner points: (±${PHI}/(${U} + 1), 0, 0)`);
+        console.log(`  • 2 Outer points: (±${PHI}/(${U} - 1), 0, 0)`);
+
+        return vertices;
+    }
+
+    // Execute
+    const symbolicVertices = getSymbolicInvertedIcosahedron();
+
+    // Optional: Verify numerically that these symbolic forms match the calculated ones
+    console.log(`\n--- NUMERICAL VERIFICATION ---`);
+    const phi = (1 + Math.sqrt(5)) / 2;
+    const u = Math.sqrt(phi + 2);
+
+    // Pick one from Group 3 Outer: phi / (u - 1)
+    const symbolicValue = phi / (u - 1);
+
+    // Calculate via raw inversion of original vertex (phi/u, 0, -1/u)
+    const origX = phi/u;
+    const origZ = -1/u;
+    const invertedX = origX / (1 + origZ); // x / (1+z)
+
+    console.log(`Symbolic [φ/(${U}-1)]: ${symbolicValue.toFixed(8)}`);
+    console.log(`Calculated [x/(1+z)]:   ${invertedX.toFixed(8)}`);
+}
+
+
+
+//testInversion();
+test2();

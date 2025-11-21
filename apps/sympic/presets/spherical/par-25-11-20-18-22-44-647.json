@@ -1,5 +1,5 @@
 {
-    "name": "par-25-11-17-13-14-13-692",
+    "name": "par-25-11-20-18-22-44-647",
     "appInfo": {
         "appName": "SymRenderer.Group_Spherical-class.PatternImage.InversiveNavigator_v1",
         "fileFormatRelease": 1
@@ -21,28 +21,28 @@
             "endFrame": 100
         },
         "simulation": {
-            "centerX": -0.2630000000000001,
+            "centerX": 0,
             "centerY": 0,
             "scale": 0.5400000000000001,
             "angle": 0,
             "transparency": 0,
-            "useCrown": false,
+            "useCrown": true,
             "texture": {
-                "texName": "Tafel_007_02_over",
+                "texName": "haeckel 19",
                 "showFrame": false,
                 "texSize": 1024
             }
         },
         "simTransform": {
-            "simCenterX": 0.28,
-            "simCenterY": 0.05500000000000001,
-            "simScale": 0.44000000000000006,
-            "simAngle": 0
+            "simCenterX": 0.02,
+            "simCenterY": 0.037000000000000005,
+            "simScale": 1.1,
+            "simAngle": 227.00000000000003
         },
         "visualization": {
             "image": {
                 "enabled": true,
-                "opacity": 1,
+                "opacity": 0.7000000000000001,
                 "dataSource": "u",
                 "useMipmap": false
             },
@@ -169,10 +169,10 @@
             "group": {
                 "className": "Group_Spherical-class",
                 "params": {
-                    "type": "*532",
-                    "n": 5,
+                    "type": "nx",
+                    "n": 6,
                     "subtype": 0,
-                    "centered": true
+                    "centered": false
                 }
             },
             "transform": {
@@ -270,16 +270,35 @@
                     },
                     "inversive": {
                         "enabled": true,
-                        "itrans": []
+                        "itrans": [
+                            {
+                                "v": [
+                                    -0.999692974208898,
+                                    0.024778162106336727,
+                                    0,
+                                    -3.2204680699266963e-15
+                                ],
+                                "type": 2
+                            },
+                            {
+                                "v": [
+                                    -1.0551265825982914,
+                                    0.015940210380915188,
+                                    0,
+                                    1.4538040430582988
+                                ],
+                                "type": 1
+                            }
+                        ]
                     },
                     "spherical": {
                         "enabled": true
                     },
                     "euclidean": {
-                        "centerX": -0.05013544947586488,
-                        "centerY": -0.1462771246137707,
+                        "centerX": 0.059614839400656844,
+                        "centerY": -0.09771972211401532,
                         "zoom": [
-                            0.8009323901056414
+                            0.8286730406843092
                         ]
                     },
                     "options": {

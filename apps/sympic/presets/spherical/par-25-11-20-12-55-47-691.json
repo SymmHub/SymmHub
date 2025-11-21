@@ -1,5 +1,5 @@
 {
-    "name": "par-25-11-17-13-14-13-692",
+    "name": "par-25-11-20-12-55-47-691",
     "appInfo": {
         "appName": "SymRenderer.Group_Spherical-class.PatternImage.InversiveNavigator_v1",
         "fileFormatRelease": 1
@@ -21,14 +21,14 @@
             "endFrame": 100
         },
         "simulation": {
-            "centerX": -0.2630000000000001,
-            "centerY": 0,
-            "scale": 0.5400000000000001,
-            "angle": 0,
+            "centerX": -0.27000000000000013,
+            "centerY": -0.1,
+            "scale": 0.4099999999999999,
+            "angle": -36,
             "transparency": 0,
-            "useCrown": false,
+            "useCrown": true,
             "texture": {
-                "texName": "Tafel_007_02_over",
+                "texName": "Tafel_043_04_over",
                 "showFrame": false,
                 "texSize": 1024
             }
@@ -169,9 +169,9 @@
             "group": {
                 "className": "Group_Spherical-class",
                 "params": {
-                    "type": "*532",
+                    "type": "532",
                     "n": 5,
-                    "subtype": 0,
+                    "subtype": 1,
                     "centered": true
                 }
             },
@@ -270,16 +270,35 @@
                     },
                     "inversive": {
                         "enabled": true,
-                        "itrans": []
+                        "itrans": [
+                            {
+                                "v": [
+                                    -0.3343167992346691,
+                                    0.9424607566097838,
+                                    0,
+                                    -8.581026624488233e-15
+                                ],
+                                "type": 2
+                            },
+                            {
+                                "v": [
+                                    18.366592240277193,
+                                    -51.81818192815074,
+                                    0,
+                                    54.98595901554742
+                                ],
+                                "type": 1
+                            }
+                        ]
                     },
                     "spherical": {
                         "enabled": true
                     },
                     "euclidean": {
-                        "centerX": -0.05013544947586488,
-                        "centerY": -0.1462771246137707,
+                        "centerX": 0.04678008886859876,
+                        "centerY": 0.029619976101756363,
                         "zoom": [
-                            0.8009323901056414
+                            1.0186738651821943
                         ]
                     },
                     "options": {
