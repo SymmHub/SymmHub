@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Cache-Control" content="no-cache">
+        <link rel="icon" type="image/x-icon" href="../css/icon_gs.svg">
+        <title>SymChaos Spherical Symmetry(local)</title>
+        <meta name="description" content="SymChaos Spherical Symmetry">
+        <link rel="stylesheet" href="../css/thumbnails.css"/>
+        <link rel="stylesheet" href="../css/index.css"/>
+    </head>
+    <body>   
+    <header>
+    <h1>SymChaos with Spherical Symmetry (local)</h1>
+    </header>
+    <div class="container">
+        <div id='thumbnails'>
+        </div>
+    </div>
+    <footer>
+    <a href='../../../index.html'>SymmHub</a> |
+    <a href='../index.html'>SymChaos</a> | 
+    <a href='./index.html'>Local</a>
+    </footer>
+    </body>
+    <script type='module'>
+    
+    import {
+        appendThumbnails
+    } from '../js/appendThumbnails.js';
+        
+    import {
+        presets
+    } from './js/presets_spherical.js';
+    
+    function init(){
+        let pFolder = new URL('presets',import.meta.url).pathname;        
+        const thumbDiv = document.getElementById('thumbnails');
+        const appPage = '../att_spherical.html';
+        const presetsFolder = pFolder + '/spherical/';   
+        appendThumbnails(thumbDiv, appPage, presetsFolder, presets);    
+   } 
+   init();     
+    
+    </script>              
+</html>
