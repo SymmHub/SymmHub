@@ -7,12 +7,26 @@ export {
     ParamBool,
     ParamObj,
     ParamGroup,
+    setParamValues,
     
 } from '../../../lib/uilib/uilib.js';
 
 export {
-    iPoint
+    iPoint,
+    TORADIANS,
+    
+    cDiv,
+    cMul, 
+    cSub,
+    cAdd,
+    cPolar,
+
 } from '../../../lib/invlib/invlib.js';
+
+export {
+    ShaderFragments as LibShaders
+} from '../../../lib/shaders/modules.js';
+
 
 export { 
     EventDispatcher, 

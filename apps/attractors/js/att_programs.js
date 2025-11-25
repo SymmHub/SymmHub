@@ -1,9 +1,10 @@
 import {
-    Shaders as AttrShaders
+    Shaders as AttrShaders,    
 } from './shaders/modules.js';
 
 import {
-    buildProgramsCached
+    buildProgramsCached,
+    LibShaders,
 } from './modules.js';
 
 const MYNAME = 'att_programs';
@@ -12,11 +13,12 @@ const cpuAccumulatorVert = {obj:AttrShaders, id:'cpu_accumulator_vert'};
 const cpuAccumulatorFrag = {obj:AttrShaders, id:'cpu_accumulator_frag'};
 const drawHistVert = {obj:AttrShaders, id:'draw_hist_vert'};
 const drawHistFrag = {obj:AttrShaders, id:'draw_hist_frag'};
+const complexFrag = {obj:LibShaders, id:'complex'};
 
 
 const cpuAccumulator = {
     name: 'cpuAccumulator', 
-    vs: {frags:[cpuAccumulatorVert]}, 
+    vs: {frags:[complexFrag, cpuAccumulatorVert]}, 
     fs: {frags: [cpuAccumulatorFrag]},
 };
 

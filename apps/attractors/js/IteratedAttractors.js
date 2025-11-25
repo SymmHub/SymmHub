@@ -19,7 +19,14 @@ import {
     antti2,
     qrand2x,
     qrand2y,
-    
+
+    TORADIANS, 
+    cDiv, 
+    cMul, 
+    cAdd, 
+    cSub,
+    cPolar,
+    setParamValues,
 } from './modules.js';
 
 
@@ -61,6 +68,9 @@ function IteratedAttractor(options){
     let mConfig = {
         
         iterations: {
+            isRunning:    true,
+            //iterate:        true,         
+            accumulate:     true,
             startCount: 15,
             seed:       12345,
             batchSize:  100000,
@@ -69,26 +79,40 @@ function IteratedAttractor(options){
             avgDist:    0,
             batchCount: 0,
         },
-        isRunning:    false,
-        iterate:        true,         
-        accumulate:     true,
-        histCenterX:  0,
-        histCenterY:  0,
-        histWidth:    5,           
         
-        gamma:      2.2,
-        contrast:   1, 
-        brightness: 0.3,
-        saturation: 0.8,
-        dynamicRange:0.1,
-        invert:         false,  
+        attTrans: {
+            absolute: true,
+            centerX:    0,
+            centerY:    0,
+            scale:      1,
+            angle:      0,
+            // obsolete 
+            histCenterX:  0,
+            histCenterY:  0,
+            histWidth:    5, 
+        },         
+        bufTrans: {  // transformation of buffer in the parent view 
+            centerX: 0,
+            centerY: 0,
+            scale: 1,
+            angle: 0,            
+            transScale: [1,0],  
+            transCenter: [0,1],
+        },
+        coloring: {
+            gamma:      2.2,
+            contrast:   1, 
+            brightness: 0.3,
+            saturation: 0.8,
+            dynamicRange:0.1,
+            invert:         false,  
 
-        colorSpeed:   0.22,
-        colorPhase:   Math.PI,
-        pointSize:    1,
-        colorSign:    1.,
-        jitter:       1.25,
-
+            colorSpeed:   0.22,
+            colorPhase:   Math.PI,
+            pointSize:    1,
+            colorSign:    1.,
+            jitter:       1.25,
+        },
         symmetry: {
             enabled:    false,        
             iterations: 5, 
@@ -250,7 +274,21 @@ function IteratedAttractor(options){
     //
     function pnt2fd(group, pnt){
         
-        let {histWidth, histCenterX, histCenterY} = mConfig;
+        let {transScale, transCenter} = mConfig.bufTrans;
+        
+        //if(true)console.log(`point in fd:`, res.pnt.v);    
+        let pb = cAdd(cMul(transScale, [pnt.x, pnt.y]), transCenter);
+        let ipnt = iPoint(pb);
+        let res = group.toFundDomain({pnt: ipnt});
+        let v = cDiv(cSub(res.pnt.v, transCenter), transScale);
+        pnt.x = v[0];
+        pnt.y = v[1];
+        
+    }
+
+    function pnt2fd_old(group, pnt){
+        
+        let {histWidth, histCenterX, histCenterY} = mConfig.attTrans;
         
         //if(true)console.log(`point in fd:`, res.pnt.v);    
         let fact = histWidth/2;
@@ -262,9 +300,10 @@ function IteratedAttractor(options){
         
     }
 
+    /*
     function pnt2fd_test(group, pnt){
         
-        let {histWidth, histCenterX, histCenterY} = mConfig;
+        let {histWidth, histCenterX, histCenterY} = mConfig.attTrans;
         
         //if(true)console.log(`point in fd:`, res.pnt.v);    
         let fact = histWidth*2;
@@ -276,7 +315,7 @@ function IteratedAttractor(options){
         pnt.y = fact*v[1]+histCenterY;
         
     }
-
+*/
     function getPoints(){
         if(mHasNewPoints){
             mHasNewPoints = false;
@@ -296,11 +335,28 @@ function IteratedAttractor(options){
 
     function getSimBuffer(options){
         
+        if(options.simTransConfig){
+            let bufTrans = mConfig.bufTrans;
+            let simTrans = options.simTransConfig;
+            if( simTrans.simCenterX != bufTrans.centerX || 
+                simTrans.simCenterY != bufTrans.centerY ||
+                simTrans.simScale   != bufTrans.scale ||
+                simTrans.simAngle   != bufTrans.angle) {
+                bufTrans.centerX    = simTrans.simCenterX;
+                bufTrans.centerY    = simTrans.simCenterY;
+                bufTrans.scale      = simTrans.simScale;
+                bufTrans.angle      = simTrans.simAngle;
+                mNeedToRender = true;
+                mNeedToClear = true;
+                console.log(`${MYNAME} sim trans changed`);
+            }
+        }
+        
         if(mNeedToRender) {
             renderBuffer(options);            
         }
         
-        if(mConfig.isRunning) 
+        if(mConfig.iterations.isRunning) 
             scheduleRepaint();
         return mRenderedBuffer;
     }
@@ -310,10 +366,10 @@ function IteratedAttractor(options){
     //
     function renderBuffer(options){
         
-        if(false)console.log(`${MYNAME}.renderBuffer()`, options);
+        //if(true)console.log(`${MYNAME}.renderBuffer()`, options);
         //if(DEBUG)console.trace(`${MYNAME}.render()`);
-        
-        mNeedToRender = mConfig.isRunning;
+        let icfg = mConfig.iterations;
+        mNeedToRender = icfg.isRunning;
         let gl = mGL;
         
         if(false)console.log(`${MYNAME}.render()`);
@@ -342,8 +398,8 @@ function IteratedAttractor(options){
         
         for(let k = 0; k < iterPerBatch; k++){
             
-            if(mNeedToIterate || cfg.isRunning) {
-                mNeedToIterate = cfg.isRunning;
+            if(mNeedToIterate || icfg.isRunning) {
+                mNeedToIterate = icfg.isRunning;
                 // make new batch of points
                 iterate();
             }
@@ -360,21 +416,43 @@ function IteratedAttractor(options){
                 gl.enableVertexAttribArray(mPosLoc);
                 gl.vertexAttribPointer(mPosLoc, 4, gl.FLOAT, false, 0, 0);        
                             
+                let attTrans = cfg.attTrans;
+                let ccfg = cfg.coloring;
+                let attScale = cPolar(attTrans.scale, attTrans.angle * TORADIANS);
+                let attCenter = [attTrans.centerX,attTrans.centerY];
+                
+                let bufTrans = mConfig.bufTrans;
+                let bufCenter = [bufTrans.centerX, bufTrans.centerY];
+                let bufScale = cPolar(bufTrans.scale, bufTrans.angle*TORADIANS);
+                
+                let transScale = attScale;
+                let transCenter = attCenter;
+                if(attTrans.absolute) {
+                    transScale = cDiv(attScale, bufScale);
+                    transCenter = cDiv(cSub(attCenter, bufCenter),bufScale);                
+                }
+                
+                // save the trnasofomation to use for symmetrization 
+                mConfig.bufTrans.transScale  = transScale;
+                mConfig.bufTrans.transCenter = transCenter;
+                
                 let cpuAccUni = {
-                  colorSpeed:   cfg.colorSpeed,
-                  colorPhase:   cfg.colorPhase,
-                  pointSize:    cfg.pointSize,
-                  colorSign:    cfg.colorSign,
-                  jitter:       cfg.jitter,
+                  colorSpeed:   ccfg.colorSpeed,
+                  colorPhase:   ccfg.colorPhase,
+                  pointSize:    ccfg.pointSize,
+                  colorSign:    ccfg.colorSign,
+                  jitter:       ccfg.jitter,
                   resolution:   [mAccumulator.width, mAccumulator.height],
-                  uHistScale:   2./cfg.histWidth,
-                  uHistCenter:  [cfg.histCenterX,cfg.histCenterY],
+                  uAttScale:   transScale,
+                  uAttCenter:  transCenter,
+                  //uHistScale:   2./attTrans.histWidth,
+                  //uHistCenter:  [attTrans.histCenterX,attTrans.histCenterY],
                 };
                 cpuAcc.setUniforms(cpuAccUni);
                 
                 gl.viewport(0, 0, mAccumulator.width, mAccumulator.height);              
                 gl.bindFramebuffer(gl.FRAMEBUFFER, mAccumulator.fbo);
-                if(cfg.accumulate && (batchCount > startCount)){
+                if(icfg.accumulate && (batchCount > startCount)){
                     // enable blend to accumulate histogram 
                     gl.enable(gl.BLEND);   
                     gl.blendFunc(gl.ONE, gl.ONE);        
@@ -391,6 +469,8 @@ function IteratedAttractor(options){
         //if(batchCount < startCount)  
         //        return;
         
+        let ccfg = cfg.coloring;
+        
         if(true){
             let histRenderer = AttPrograms.getProgram(gl, 'renderHistogram');        
             gl.viewport(0, 0, buffer.width, buffer.height);  
@@ -398,14 +478,14 @@ function IteratedAttractor(options){
             histRenderer.bind();
                     
             let histUni = {
-                src:        mAccumulator,
-                scale:      mTotalCount/ (mBufferWidth*mBufferWidth),
-                gamma:      cfg.gamma,
-                contrast:   cfg.contrast,
-                brightness: cfg.brightness,
-                saturation: cfg.saturation,
-                dynamicRange:cfg.dynamicRange,
-                invert:      cfg.invert,            
+                src:            mAccumulator,
+                scale:          mTotalCount/ (mBufferWidth*mBufferWidth),
+                gamma:          ccfg.gamma,
+                contrast:       ccfg.contrast,
+                brightness:     ccfg.brightness,
+                saturation:     ccfg.saturation,
+                dynamicRange:   ccfg.dynamicRange,
+                invert:         ccfg.invert,            
             };
             
             histRenderer.setUniforms(histUni);
@@ -455,47 +535,76 @@ function IteratedAttractor(options){
         
         let params = {
             attractor:      ParamObj({name:'attractor params', obj: mAttractor}),
+            attTransform:   makeAttTransParams(cfg.attTrans, onres),
             iterations:     makeIterationsParams(cfg.iterations, onres),
-            symmetry:       makeSymmetryParams(mConfig.symmetry, onres),
-
-            isRunning:      ParamBool({obj:cfg,key:'isRunning', onChange:onc}),   
-            iterate:        ParamBool({obj:cfg,key:'iterate', onChange:onc}),   
-            accumulate:     ParamBool({obj:cfg,key:'accumulate', onChange:onc}),   
-
-            makeStep:       ParamFunc({func:onSingleStep, name:'single step!'}),
-            gamma:          ParamFloat({obj:cfg,key:'gamma', onChange:onc}),
-            contrast:       ParamFloat({obj:cfg,key:'contrast', onChange:onc}),
-            brightness:     ParamFloat({obj:cfg,key:'brightness', onChange:onc}),
-            saturation:     ParamFloat({obj:cfg,key:'saturation', onChange:onc}),
-            dynamicRange:   ParamFloat({obj:cfg,key:'dynamicRange', onChange:onc}),
-            invert:         ParamBool({obj:cfg,key:'invert', onChange:onc}),   
-                        
-            colorSpeed:     ParamFloat({obj:cfg,key:'colorSpeed', onChange:onres}),
-            colorPhase:     ParamFloat({obj:cfg,key:'colorPhase', onChange:onres}),
-            pointSize:      ParamFloat({obj:cfg,key:'pointSize', onChange:onres}),
-            colorSign:      ParamFloat({obj:cfg,key:'colorSign', onChange:onres}),
-            jitter:         ParamFloat({obj:cfg,key:'jitter', onChange:onres}),
-            histWidth:      ParamFloat({obj:cfg,key:'histWidth', onChange:onres}),
-            histCenterX:    ParamFloat({obj:cfg,key:'histCenterX', onChange:onres}),
-            histCenterY:    ParamFloat({obj:cfg,key:'histCenterY', onChange:onres}),
-
+            symmetry:       makeSymmetryParams(cfg.symmetry, onres),            
+            coloring:       makeColoringParams(cfg.coloring),
         }
         return params;
         
     }
     
-    function makeIterationsParams(cfg, onc){
+    
+    function makeColoringParams(ccfg){
+    
+        let onc = onRerender;
+        let onres = onRestart;
+    
+        return ParamGroup({
+            name:   'coloring',
+            params: {
+                gamma:          ParamFloat({obj:ccfg,key:'gamma', onChange:onc}),
+                contrast:       ParamFloat({obj:ccfg,key:'contrast', onChange:onc}),
+                brightness:     ParamFloat({obj:ccfg,key:'brightness', onChange:onc}),
+                saturation:     ParamFloat({obj:ccfg,key:'saturation', onChange:onc}),
+                dynamicRange:   ParamFloat({obj:ccfg,key:'dynamicRange', onChange:onc}),
+                invert:         ParamBool({obj:ccfg,key:'invert', onChange:onc}),   
+                            
+                colorSpeed:     ParamFloat({obj:ccfg,key:'colorSpeed', onChange:onres}),
+                colorPhase:     ParamFloat({obj:ccfg,key:'colorPhase', onChange:onres}),
+                pointSize:      ParamFloat({obj:ccfg,key:'pointSize', onChange:onres}),
+                colorSign:      ParamFloat({obj:ccfg,key:'colorSign', onChange:onres}),
+                jitter:         ParamFloat({obj:ccfg,key:'jitter', onChange:onres}),
+            },            
+        });
+    
+    }
+
+    function makeAttTransParams(tcfg, onc){
+        
+        return ParamGroup({
+            name:   'attractor transform',
+            params: {        
+                absolute:       ParamBool({obj:tcfg, key: 'absolute', onChange: onc}),
+                centerX:        ParamFloat({obj:tcfg, key: 'centerX', onChange: onc}),
+                centerY:        ParamFloat({obj:tcfg, key: 'centerY', onChange: onc}),
+                scale:          ParamFloat({obj:tcfg, key: 'scale', onChange: onc}),
+                angle:          ParamFloat({obj:tcfg, key: 'angle', name:'angle(deg)', onChange: onc}),                
+                histWidth:      ParamFloat({obj:tcfg,key:'histWidth', onChange:onc}),
+                histCenterX:    ParamFloat({obj:tcfg,key:'histCenterX', onChange:onc}),
+                histCenterY:    ParamFloat({obj:tcfg,key:'histCenterY', onChange:onc}),
+                }
+            });
+    
+    }
+    
+    function makeIterationsParams(icfg, onc){
         
         return ParamGroup({
             name: 'iterations',
             params: {
-                startCount: ParamInt({obj:cfg, key:'startCount', onChange: onc}), 
-                seed:       ParamInt({obj:cfg, key:'seed', onChange: onc}), 
-                iterPerBatch: ParamInt({obj:cfg, key:'iterPerBatch', onChange:onc}),
-                batchSize: ParamInt({obj:cfg, key:'batchSize', onChange:onc}),
-                maxBatchCount:  ParamInt({obj:cfg, key:'maxBatchCount', onChange:onc}),            
-                batchCount: ParamInt({obj:cfg, key:'batchCount'}),
-                avgDist:    ParamFloat({obj:cfg, key:'avgDist'}), 
+                isRunning:      ParamBool({obj:icfg,key:'isRunning', onChange:onc}),   
+                //iterate:        ParamBool({obj:icfg,key:'iterate', onChange:onc}),   
+                accumulate:     ParamBool({obj:icfg,key:'accumulate', onChange:onc}),   
+
+                makeStep:       ParamFunc({func:onSingleStep, name:'single step!'}),            
+                startCount:     ParamInt({obj:icfg, key:'startCount', onChange: onc}), 
+                seed:           ParamInt({obj:icfg, key:'seed', onChange: onc}), 
+                iterPerBatch:   ParamInt({obj:icfg, key:'iterPerBatch', onChange:onc}),
+                batchSize:      ParamInt({obj:icfg, key:'batchSize', onChange:onc}),
+                maxBatchCount:  ParamInt({obj:icfg, key:'maxBatchCount', onChange:onc}),            
+                batchCount:     ParamInt({obj:icfg, key:'batchCount'}),
+                avgDist:        ParamFloat({obj:icfg, key:'avgDist'}), 
             }
             
             
@@ -539,6 +648,40 @@ function IteratedAttractor(options){
         scheduleRepaint();
     }
     
+    function setParamsMap(pmap, initialize=false) {
+    
+        if(false) console.log(`${MYNAME}.setParamsMap()`, pmap); 
+        if(!pmap.attTransform) {
+            updateAttTransform(pmap);
+        }
+        setParamValues(mParams, pmap, initialize);
+        
+    }
+    
+    function updateAttTransform(pmap){
+    
+        if(DEBUG) console.log(`${MYNAME}.updateAttTrans()`, pmap); 
+        console.log(`${MYNAME}. histCenterX:`,pmap.histCenterX);
+        console.log(`${MYNAME}. histCenterY:`,pmap.histCenterY);
+        console.log(`${MYNAME}. histWidth:`,  pmap.histWidth);
+    
+        let scale = 2./pmap.histWidth;
+        pmap.attTransform = {
+            histCenterX: pmap.histCenterX,
+            histCenterY: pmap.histCenterY,
+            histWidth:   pmap.histWidth,
+            absolute:   false,
+            scale:      scale,
+            angle:      0,
+            centerX:    -scale*pmap.histCenterX,
+            centerY:    -scale*pmap.histCenterY,
+            };
+            
+        // histCentyerY;
+        // histWidth
+    }
+    
+    
     myself = {
         getName         : () => MYNAME,
         addEventListener: addEventListener, 
@@ -546,6 +689,7 @@ function IteratedAttractor(options){
         init            : init,
         getParams:  ()=>{return mParams;},
         getSimBuffer    : getSimBuffer,
+        setParamsMap    : setParamsMap,
         //render          : render,
         //get canAnimate() {return true;},
     };
@@ -579,8 +723,5 @@ const IteratedAttractorCreator = {
     getClassName:   ()=>{return `${MYNAME}-class`;}
     
 }
-
-
     
-
 export {IteratedAttractorCreator}
