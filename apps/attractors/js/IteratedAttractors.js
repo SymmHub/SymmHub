@@ -86,10 +86,6 @@ function IteratedAttractor(options){
             centerY:    0,
             scale:      1,
             angle:      0,
-            // obsolete 
-            histCenterX:  0,
-            histCenterY:  0,
-            histWidth:    5, 
         },         
         bufTrans: {  // transformation of buffer in the parent view 
             centerX: 0,
@@ -286,36 +282,6 @@ function IteratedAttractor(options){
         
     }
 
-    function pnt2fd_old(group, pnt){
-        
-        let {histWidth, histCenterX, histCenterY} = mConfig.attTrans;
-        
-        //if(true)console.log(`point in fd:`, res.pnt.v);    
-        let fact = histWidth/2;
-        let ipnt = iPoint([(pnt.x - histCenterX)/fact , (pnt.y - histCenterY)/fact]);
-        let res = group.toFundDomain({pnt: ipnt});
-        let v = res.pnt.v;
-        pnt.x = fact*v[0]+histCenterX;
-        pnt.y = fact*v[1]+histCenterY;
-        
-    }
-
-    /*
-    function pnt2fd_test(group, pnt){
-        
-        let {histWidth, histCenterX, histCenterY} = mConfig.attTrans;
-        
-        //if(true)console.log(`point in fd:`, res.pnt.v);    
-        let fact = histWidth*2;
-        let ipnt = iPoint([(pnt.x - histCenterX)/fact , (pnt.y - histCenterY)/fact]);
-        let res = group.toFundDomain({pnt: ipnt});
-        console.log('res: ', res)
-        let v = res.pnt.v;
-        pnt.x = fact*v[0]+histCenterX;
-        pnt.y = fact*v[1]+histCenterY;
-        
-    }
-*/
     function getPoints(){
         if(mHasNewPoints){
             mHasNewPoints = false;
@@ -445,8 +411,6 @@ function IteratedAttractor(options){
                   resolution:   [mAccumulator.width, mAccumulator.height],
                   uAttScale:   transScale,
                   uAttCenter:  transCenter,
-                  //uHistScale:   2./attTrans.histWidth,
-                  //uHistCenter:  [attTrans.histCenterX,attTrans.histCenterY],
                 };
                 cpuAcc.setUniforms(cpuAccUni);
                 
@@ -527,6 +491,29 @@ function IteratedAttractor(options){
         scheduleRepaint();
     }
     
+    function onAbsoluteChanged(){
+    
+        // Ca - absolute center 
+        // Sa - absolute scale 
+        //
+        // Cr - relative center
+        // Sr - relative scale
+        // 
+        // Cb - buffer center
+        // Sb - buffer scale 
+        // 
+        // relative to absolute transform
+        // Sa = Sb * Sr
+        // Ca = Sb * Cr + Cb;
+        //
+        // absolute to relative transform
+        // Sra = Sa/Sb
+        // Cra = (Ca - Cb)/Sb;
+        console.log(`${MYNAME} onAbsoluteChanged()`, mConfig.attTrans.absolute);
+        onAttractorChanged();
+         
+    }
+    
     function makeParams(cfg){
                 
         console.log(`${MYNAME}.makeParams() mAttractor:`, mAttractor);
@@ -580,9 +567,6 @@ function IteratedAttractor(options){
                 centerY:        ParamFloat({obj:tcfg, key: 'centerY', onChange: onc}),
                 scale:          ParamFloat({obj:tcfg, key: 'scale', onChange: onc}),
                 angle:          ParamFloat({obj:tcfg, key: 'angle', name:'angle(deg)', onChange: onc}),                
-                histWidth:      ParamFloat({obj:tcfg,key:'histWidth', onChange:onc}),
-                histCenterX:    ParamFloat({obj:tcfg,key:'histCenterX', onChange:onc}),
-                histCenterY:    ParamFloat({obj:tcfg,key:'histCenterY', onChange:onc}),
                 }
             });
     
@@ -667,9 +651,6 @@ function IteratedAttractor(options){
     
         let scale = 2./pmap.histWidth;
         pmap.attTransform = {
-            histCenterX: pmap.histCenterX,
-            histCenterY: pmap.histCenterY,
-            histWidth:   pmap.histWidth,
             absolute:   false,
             scale:      scale,
             angle:      0,
@@ -677,8 +658,6 @@ function IteratedAttractor(options){
             centerY:    -scale*pmap.histCenterY,
             };
             
-        // histCentyerY;
-        // histWidth
     }
     
     
