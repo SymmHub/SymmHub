@@ -16,14 +16,14 @@ const drawHistFrag = {obj:AttrShaders, id:'draw_hist_frag'};
 const complexFrag = {obj:LibShaders, id:'complex'};
 
 
-const cpuAccumulator = {
-    name: 'cpuAccumulator', 
+const cpuHistogramBuilder = {
+    name: 'cpuHistogramBuilder', 
     vs: {frags:[complexFrag, cpuAccumulatorVert]}, 
     fs: {frags: [cpuAccumulatorFrag]},
 };
 
-const renderHistogram = {
-    name: 'drawHist', 
+const histogramRenderer = {
+    name: 'histogramRenderer', 
     vs: {frags: [drawHistVert]}, 
     fs: {frags: [drawHistFrag]},
 };
@@ -32,8 +32,8 @@ const renderHistogram = {
 function programBuilder(){
 
     const programs = {
-       cpuAccumulator:  cpuAccumulator,
-       renderHistogram: renderHistogram,       
+       cpuHistogramBuilder:  cpuHistogramBuilder,
+       histogramRenderer: histogramRenderer,       
     };
  
     
@@ -49,7 +49,7 @@ function programBuilder(){
         }
         let pr = programs[progName];
         if(pr) return pr.program;
-        else throw new Error('progrma ${progName} not found');
+        else throw new Error(`program ${progName} not found`);
     }
     
     return  {

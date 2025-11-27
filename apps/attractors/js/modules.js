@@ -74,3 +74,11 @@ export {
     qrand2y,
     
 } from './random_seeded.js';
+
+export {
+    IteratorCPU
+} from './iterator_cpu.js';
+
+export {
+    IteratorGPU
+} from './iterator_gpu.js';

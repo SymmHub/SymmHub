@@ -27,6 +27,10 @@ import {
     cSub,
     cPolar,
     setParamValues,
+    
+    IteratorCPU,
+    IteratorGPU,
+    
 } from './modules.js';
 
 
@@ -46,35 +50,22 @@ function IteratedAttractor(options){
     function setGroup(group) {
         
       if(DEBUG)console.log(`${MYNAME}.setGroup()`, group );
-      mGroup = group;
+      mConfig.state.group = group;
       onRestart();
       
     };
-
-    let mRenderedBuffer;
-    let mAttractor = null;
-    //let mBufferWidth = 256;
-    //let mBufferWidth = 512;
-    let mBufferWidth = 1024;
-    //let mBufferWidth = 2048;
-    //let mBufferWidth = 4096;
-    
-    let mAccumulator;
-    let mPosBuffer; // points buffer
-    let mPosLoc;
-    let mGroup = null;
-    
-    
+            
     let mConfig = {
         
         iterations: {
+            useGPU:       false,
             isRunning:    true,
             //iterate:        true,         
             accumulate:     true,
             startCount: 15,
             seed:       12345,
             batchSize:  100000,
-            iterPerBatch: 1,
+            iterPerFrame: 1,
             maxBatchCount: 100,
             avgDist:    0,
             batchCount: 0,
@@ -86,13 +77,14 @@ function IteratedAttractor(options){
             centerY:    0,
             scale:      1,
             angle:      0,
-        },         
+        },     
+        
         bufTrans: {  // transformation of buffer in the parent view 
             centerX: 0,
             centerY: 0,
             scale: 1,
             angle: 0,            
-            transScale: [1,0],  
+            transScale: [1,0],   // transform to render attractor into buffer 
             transCenter: [0,1],
         },
         coloring: {
@@ -111,187 +103,99 @@ function IteratedAttractor(options){
         },
         symmetry: {
             enabled:    false,        
-            iterations: 5, 
+            maxIter: 5, 
         },
+        
+        state: { // current state data
+            histogram:      null,
+            group:          null,
+            attractor:      null, 
+            renderedBuffer: null,  
+            bufferWidth:    1024, 
+            needToClear:    true,
+            needToRender:   true,
+            needToIterate:  true,
+            totalCount:     0,
+            hasNewPoints:   false,
+        }
+        
         
     };
     
     let mParams = null;
     let myself = null; 
     let mGL = null;
-    let mNeedToRender = true;
-    let mNeedToClear = true;
-    let mNeedToIterate = true;
-    let mTotalCount = 0;
-    let mHasNewPoints = false;
     
-    let mIterationsArray; // array to perform iterations 
-    let mFloat32Array;    // array to pass points to rendering
+    
+    let mIteratorGPU = null;
+    let mIteratorCPU = null;
+        
+    //
+    //  data for CPU calculations 
+    //
+    const mCpuConfig = {
+        
+        histogramBuilder:  'cpuHistogramBuilder',
+        iterationsArray:    null, // array to perform iterations 
+        float32Array:       null, // array to pass points to rendering
+        posBuffer: null,    // buffer to pass points array to to GPU 
+        posLoc:    null,    // location of attribute to pass points to GPU        
+    };
     
     function init(glContext) {
 
+        
         mGL = glContext.gl;
         let gl = mGL;
         
-        mAttractor = CliffordAttractor(); 
-        mAttractor.addEventListener('attractorChanged', onAttractorChanged);
+        const scfg = mConfig.state;
+        
+        scfg.attractor = CliffordAttractor(); 
+        scfg.attractor.addEventListener('attractorChanged', onAttractorChanged);
                 
-        mRenderedBuffer = createImageBuffer(gl, mBufferWidth);
-        mAccumulator = createAccumBuffer(gl, mBufferWidth);
+        scfg.renderedBuffer = createImageBuffer(gl, scfg.bufferWidth);
+        scfg.histogram = createHistogramBuffer(gl, scfg.bufferWidth);
+        
         mParams = makeParams(mConfig);
 
         if(DEBUG)console.log(`${MYNAME}.init() gl:`,gl);
         
-        mPosBuffer = gl.createBuffer();
-
-        let cpuAcc = AttPrograms.getProgram(gl, 'cpuAccumulator');
+        if(!mIteratorCPU){
+            mIteratorCPU = IteratorCPU();
+        }
+        if(!mIteratorGPU) {
+            mIteratorGPU = IteratorGPU();
+        }
         
-        mPosLoc = gl.getAttribLocation(cpuAcc.program, "a_position");
+        
+        initIterators();
+                    
+    }
 
-        cpuInitArrays();
+    function initIterators(){
+        
+        mIteratorCPU.init(mGL, mConfig);
+        mIteratorGPU.init(mGL, mConfig);        
         
     }
 
     function restart(){
         
         if(DEBUG) console.log(`${MYNAME}.restart()`);
-        if(mIterationsArray.length != mConfig.iterations.batchSize * 4) 
-            cpuInitArrays();
-        cpuInitialize(mIterationsArray);    
-        //mNeedToRestart = false;
+        
+        if(mConfig.iterations.useGPU){
+            mIteratorGPU.restart();
+        } else {
+            mIteratorCPU.restart();
+        }
+        
+        mConfig.iterations.batchCount = 0;
+        mParams.iterations.batchCount.updateDisplay();
+        mConfig.state.hasNewPoints = true;
     }
     
-    function iterate(){
-        // TODO CPU or WebGL
-        cpuIterate(mIterationsArray);
-    }
-
-    function cpuInitArrays(){
-        let asize = 4*getBatchSize();
-        mIterationsArray = new Float64Array(asize);
-        //mIterationsArray = new Float32Array(asize);
-        mFloat32Array = new Float32Array(asize);        
-    }
-
-    let mCount = 0;
-
-    function cpuIteratePoint(pnt0, pnt1){
-        
-        mAttractor.cpuIteratePoint(pnt0, pnt1);
-        
-        if(mConfig.symmetry.enabled){
-            // map point to FD 
-            pnt2fd(mGroup, pnt1);
-        }
-        
-    }
-
-    function cpuIterate(array) {
-        let cfg = mConfig.iterations;
-        if(cfg.batchCount >= cfg.maxBatchCount)
-            return;
-        
-        mHasNewPoints = true;
-        let avgDist = 0;
-        let pnt0 = {x:0, y:0};
-        let pnt1 = {x:0, y:0};
-        for (let i = 0; i < array.length; i += 4) {
-            pnt0.x = array[i];
-            pnt0.y = array[i+1];            
-            cpuIteratePoint(pnt0, pnt1);
-            //let x = array[i];
-            //let y = array[i + 1];
-            //calculate(xy, xy1);
-            let x1 = pnt1.x;
-            let y1 = pnt1.y;            
-            let dx = x1 - pnt0.x;
-            let dy = y1 - pnt0.y;
-            let dist = Math.sqrt(dx * dx + dy * dy);
-            avgDist += dist;
-            array[i    ] = x1;
-            array[i + 1] = y1;
-            array[i + 2] = dist;
-            array[i + 3] = i >> 2;
-        }
-        
-        avgDist /= (array.length/4);
-        let par = mParams.iterations;
-        cfg.avgDist = avgDist;
-        par.avgDist.updateDisplay();
-       
-        cfg.batchCount++;        
-        par.batchCount.updateDisplay();
-    }
-
-    function cpuInitialize(array) {
-        console.log(`${MYNAME}.cpuInitialize(array)`);
-        let cfg = mConfig.iterations;
-        let par = mParams.iterations;
-        let {startCount, seed} = cfg;
-
-        //let seed = 12345;
-        //let rnd = mulberry32(seed);
-        let rnd = splitmix32(seed);
-        //lcg,
-        //let rnd = antti2(123);
-                
-        let w = Math.floor(Math.sqrt(getBatchSize())) | 0;
-        
-        let pnt = {x:0, y:0};
-   
-        for (let i = 0; i < array.length; i += 4) {
-            
-            let ii = i/4;
-
-            let x = 2*rnd()-1;
-            let y = 2*rnd()-1;
-            
-            //console.log('ii: ', ii, ' x:', x, ' y:', y);
-            pnt.x = x;
-            pnt.y = y;
-           // for (let j = 0; j < startCount; j++) {
-           //     cpuIteratePoint(pnt, pnt);
-           // }
-            array[i]   = pnt.x;
-            array[i+1] = pnt.y;
-            array[i+2] = 0.;
-            array[i+3] = 0.;
-            
-        }
-
-        cfg.batchCount = 0;
-        par.batchCount.updateDisplay();
-        mHasNewPoints = true;
-                
-    }
-
-    //
-    //  transform point into fundamental domain 
-    //
-    function pnt2fd(group, pnt){
-        
-        let {transScale, transCenter} = mConfig.bufTrans;
-        
-        //if(true)console.log(`point in fd:`, res.pnt.v);    
-        let pb = cAdd(cMul(transScale, [pnt.x, pnt.y]), transCenter);
-        let ipnt = iPoint(pb);
-        let res = group.toFundDomain({pnt: ipnt});
-        let v = cDiv(cSub(res.pnt.v, transCenter), transScale);
-        pnt.x = v[0];
-        pnt.y = v[1];
-        
-    }
-
-    function getPoints(){
-        if(mHasNewPoints){
-            mHasNewPoints = false;
-            mFloat32Array.set(mIterationsArray); 
-        }            
-        return mFloat32Array;
-    }
-
-
-    function clearAccumulator(gl, buffer){
+    
+    function clearHistogram(gl, buffer){
         
         gl.bindFramebuffer(gl.FRAMEBUFFER, buffer.fbo);
         gl.disable(gl.BLEND);        
@@ -302,148 +206,105 @@ function IteratedAttractor(options){
     function getSimBuffer(options){
         
         if(options.simTransConfig){
+        
+            // buffer was possible moved 
+            
             let bufTrans = mConfig.bufTrans;
             let simTrans = options.simTransConfig;
             if( simTrans.simCenterX != bufTrans.centerX || 
                 simTrans.simCenterY != bufTrans.centerY ||
                 simTrans.simScale   != bufTrans.scale ||
                 simTrans.simAngle   != bufTrans.angle) {
+                // buffer moved, need to re-render 
                 bufTrans.centerX    = simTrans.simCenterX;
                 bufTrans.centerY    = simTrans.simCenterY;
                 bufTrans.scale      = simTrans.simScale;
                 bufTrans.angle      = simTrans.simAngle;
-                mNeedToRender = true;
-                mNeedToClear = true;
+                mConfig.state.needToRender = true;
+                mConfig.state.needToClear = true;
                 console.log(`${MYNAME} sim trans changed`);
             }
         }
         
-        if(mNeedToRender) {
+        if(mConfig.state.needToRender) {
             renderBuffer(options);            
         }
         
         if(mConfig.iterations.isRunning) 
             scheduleRepaint();
-        return mRenderedBuffer;
+        return mConfig.state.renderedBuffer;
     }
      
     //
     //  render the image buffer 
     //
+    function _renderBuffer(options){
+    
+        if(mConfig.iterations.useGPU){
+            renderBuffer_gpu(options);
+        } else {
+            renderBuffer_cpu(options);        
+        }
+    }
+
+    
     function renderBuffer(options){
         
         //if(true)console.log(`${MYNAME}.renderBuffer()`, options);
         //if(DEBUG)console.trace(`${MYNAME}.render()`);
-        let icfg = mConfig.iterations;
-        mNeedToRender = icfg.isRunning;
         let gl = mGL;
         
         if(false)console.log(`${MYNAME}.render()`);
             
-        if(mNeedToClear){
+        const {state} = mConfig;
+        
+        if(state.needToClear){
             
-            if(DEBUG)console.log(`${MYNAME}.clearAccumulator()`);
-            clearAccumulator(gl, mAccumulator);
+            if(DEBUG)console.log(`${MYNAME}.clearHistogram()`);
+            clearHistogram(gl, state.histogram);
             restart();
-            mNeedToClear = false;
-            mTotalCount = 0;
+            state.needToClear = false;
+            state.totalCount = 0;
         }
-        //mAttractor.render(gl, mRenderedBuffer.read);
-        let buffer = mRenderedBuffer.read;
+        
+        initAttTransforms();
+
         
         if(false)console.log(`${MYNAME}.render() gl: `, gl, buffer);
         
         
         let cfg = mConfig;
+        let {iterations} = mConfig;
         
-        if(false)console.log('${MYNAME} has new points: ', mHasNewPoints);
-        let cpuAcc = AttPrograms.getProgram(gl, 'cpuAccumulator');
-        cpuAcc.bind();
-
-        let {iterPerBatch,batchCount, startCount} = mConfig.iterations;
+        if(iterations.batchCount < iterations.maxBatchCount){
         
-        for(let k = 0; k < iterPerBatch; k++){
+            if(mConfig.iterations.useGPU)
+                mIteratorGPU.updateHistogram();
+            else 
+                mIteratorCPU.updateHistogram();
+            //updateHistogram_cpu();
             
-            if(mNeedToIterate || icfg.isRunning) {
-                mNeedToIterate = icfg.isRunning;
-                // make new batch of points
-                iterate();
-            }
-               
+            iterations.batchCount += iterations.iterPerFrame;        
+            mParams.iterations.batchCount.updateDisplay();
             
-            if(mHasNewPoints){
-                //
-                // append points to accumulator
-                //
-
-                let points = getPoints();
-                gl.bindBuffer(gl.ARRAY_BUFFER, mPosBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
-                gl.enableVertexAttribArray(mPosLoc);
-                gl.vertexAttribPointer(mPosLoc, 4, gl.FLOAT, false, 0, 0);        
-                            
-                let attTrans = cfg.attTrans;
-                let ccfg = cfg.coloring;
-                let attScale = cPolar(attTrans.scale, attTrans.angle * TORADIANS);
-                let attCenter = [attTrans.centerX,attTrans.centerY];
-                
-                let bufTrans = mConfig.bufTrans;
-                let bufCenter = [bufTrans.centerX, bufTrans.centerY];
-                let bufScale = cPolar(bufTrans.scale, bufTrans.angle*TORADIANS);
-                
-                let transScale = attScale;
-                let transCenter = attCenter;
-                if(attTrans.absolute) {
-                    transScale = cDiv(attScale, bufScale);
-                    transCenter = cDiv(cSub(attCenter, bufCenter),bufScale);                
-                }
-                
-                // save the trnasofomation to use for symmetrization 
-                mConfig.bufTrans.transScale  = transScale;
-                mConfig.bufTrans.transCenter = transCenter;
-                
-                let cpuAccUni = {
-                  colorSpeed:   ccfg.colorSpeed,
-                  colorPhase:   ccfg.colorPhase,
-                  pointSize:    ccfg.pointSize,
-                  colorSign:    ccfg.colorSign,
-                  jitter:       ccfg.jitter,
-                  resolution:   [mAccumulator.width, mAccumulator.height],
-                  uAttScale:   transScale,
-                  uAttCenter:  transCenter,
-                };
-                cpuAcc.setUniforms(cpuAccUni);
-                
-                gl.viewport(0, 0, mAccumulator.width, mAccumulator.height);              
-                gl.bindFramebuffer(gl.FRAMEBUFFER, mAccumulator.fbo);
-                if(icfg.accumulate && (batchCount > startCount)){
-                    // enable blend to accumulate histogram 
-                    gl.enable(gl.BLEND);   
-                    gl.blendFunc(gl.ONE, gl.ONE);        
-                    gl.blendEquation(gl.FUNC_ADD);
-                    mTotalCount += getBatchSize();
-                } else {
-                    gl.disable(gl.BLEND); 
-                    gl.clear(gl.COLOR_BUFFER_BIT);
-                    mTotalCount = getBatchSize();
-                }
-                gl.drawArrays(gl.POINTS, 0, points.length/4);
-            }
-        }
-        //if(batchCount < startCount)  
-        //        return;
+            mParams.iterations.batchCount.updateDisplay();
+            mParams.iterations.avgDist.updateDisplay();
+         }
         
         let ccfg = cfg.coloring;
         
         if(true){
-            let histRenderer = AttPrograms.getProgram(gl, 'renderHistogram');        
+        
+            let buffer = cfg.state.renderedBuffer.read;
+            let histRenderer = AttPrograms.getProgram(gl, 'histogramRenderer');        
             gl.viewport(0, 0, buffer.width, buffer.height);  
                     
             histRenderer.bind();
-                    
+            const bufWidth = cfg.state.bufferWidth;
+            
             let histUni = {
-                src:            mAccumulator,
-                scale:          mTotalCount/ (mBufferWidth*mBufferWidth),
+                src:            cfg.state.histogram,
+                scale:          state.totalCount/ (bufWidth*bufWidth),
                 gamma:          ccfg.gamma,
                 contrast:       ccfg.contrast,
                 brightness:     ccfg.brightness,
@@ -460,6 +321,37 @@ function IteratedAttractor(options){
                        
     } // render()
 
+
+    //
+    //
+    //
+    function initAttTransforms(){
+    
+        const cfg = mConfig;
+        
+        let attTrans = cfg.attTrans;
+        
+        let attScale = cPolar(attTrans.scale, attTrans.angle * TORADIANS);
+        let attCenter = [attTrans.centerX,attTrans.centerY];
+        
+        const bufTrans = cfg.bufTrans;
+        let bufCenter = [bufTrans.centerX, bufTrans.centerY];
+        let bufScale = cPolar(bufTrans.scale, bufTrans.angle*TORADIANS);
+        
+        let transScale = attScale;
+        let transCenter = attCenter;
+        if(attTrans.absolute) {
+            transScale = cDiv(attScale, bufScale);
+            transCenter = cDiv(cSub(attCenter, bufCenter),bufScale);                
+        }
+        
+        //
+        // save the transformation to use for symmetrization step 
+        //
+        cfg.bufTrans.transScale  = transScale;
+        cfg.bufTrans.transCenter = transCenter;
+    }
+        
     function informListeners(){
 
 
@@ -472,14 +364,7 @@ function IteratedAttractor(options){
         informListeners();
 
     }
-     
-    function  getBatchSize(){
-        
-        let {batchSize, iterPerBatch} = mConfig.iterations;
-        return batchSize*iterPerBatch;
-      
-    }
-    
+         
     function onAttractorChanged(){
         
         if(DEBUG)console.log(`${MYNAME}.onAttractorChanged()`); 
@@ -487,7 +372,7 @@ function IteratedAttractor(options){
     }
     
     function onSingleStep(){
-        mNeedToIterate = true;
+        mConfig.state.needToIterate = true;
         scheduleRepaint();
     }
     
@@ -516,12 +401,12 @@ function IteratedAttractor(options){
     
     function makeParams(cfg){
                 
-        console.log(`${MYNAME}.makeParams() mAttractor:`, mAttractor);
+        if(DEBUG)console.log(`${MYNAME}.makeParams() `);
         let onc = onRerender;
         let onres = onRestart;
         
         let params = {
-            attractor:      ParamObj({name:'attractor params', obj: mAttractor}),
+            attractor:      ParamObj({name:'attractor params', obj: cfg.state.attractor}),
             attTransform:   makeAttTransParams(cfg.attTrans, onres),
             iterations:     makeIterationsParams(cfg.iterations, onres),
             symmetry:       makeSymmetryParams(cfg.symmetry, onres),            
@@ -577,6 +462,7 @@ function IteratedAttractor(options){
         return ParamGroup({
             name: 'iterations',
             params: {
+                useGPU:         ParamBool({obj:icfg,key:'useGPU', onChange:onc}),   
                 isRunning:      ParamBool({obj:icfg,key:'isRunning', onChange:onc}),   
                 //iterate:        ParamBool({obj:icfg,key:'iterate', onChange:onc}),   
                 accumulate:     ParamBool({obj:icfg,key:'accumulate', onChange:onc}),   
@@ -584,7 +470,7 @@ function IteratedAttractor(options){
                 makeStep:       ParamFunc({func:onSingleStep, name:'single step!'}),            
                 startCount:     ParamInt({obj:icfg, key:'startCount', onChange: onc}), 
                 seed:           ParamInt({obj:icfg, key:'seed', onChange: onc}), 
-                iterPerBatch:   ParamInt({obj:icfg, key:'iterPerBatch', onChange:onc}),
+                iterPerFrame:   ParamInt({obj:icfg, key:'iterPerFrame', onChange:onc}),
                 batchSize:      ParamInt({obj:icfg, key:'batchSize', onChange:onc}),
                 maxBatchCount:  ParamInt({obj:icfg, key:'maxBatchCount', onChange:onc}),            
                 batchCount:     ParamInt({obj:icfg, key:'batchCount'}),
@@ -602,7 +488,7 @@ function IteratedAttractor(options){
             name: 'symmetry',
             params: {
                 enabled:     ParamBool({obj: cfg, key: 'enabled', onChange: onchange}),
-                iterations:  ParamInt({obj: cfg, key: 'iterations', onChange: onchange}),
+                maxIter:    ParamInt({obj: cfg, key: 'maxIter', onChange: onchange}),
                 testSymm:    ParamFunc({func:onTestSymm, name:'test symm!'}),
             }
         });
@@ -610,25 +496,25 @@ function IteratedAttractor(options){
     }  // makeSymmetryParams()
     
     function onTestSymm(){
-        console.log('onTestSymm()', mGroup);
+        console.log('onTestSymm()', mConfig.state.group);
         for(let i = 0; i < 10; i++){
             let x = 5.*i - 25;
             let y = 50;
             let pnt = {x:x, y:y};
-            pnt2fd_test(mGroup, pnt);
+            pnt2fd_test(mCOnfig.state.group, pnt);
             console.log(' ', x, y, '-> , ',pnt.x, pnt.y);
         }
     }
     
     function onRerender(){
-        mNeedToRender = true;
+        mConfig.state.needToRender = true;
         scheduleRepaint();
     }
 
     function onRestart(){
         
-        mNeedToRender = true;
-        mNeedToClear = true;        
+        mConfig.state.needToRender = true;
+        mConfig.state.needToClear = true;        
         scheduleRepaint();
     }
     
@@ -644,11 +530,12 @@ function IteratedAttractor(options){
     
     function updateAttTransform(pmap){
     
-        if(DEBUG) console.log(`${MYNAME}.updateAttTrans()`, pmap); 
-        console.log(`${MYNAME}. histCenterX:`,pmap.histCenterX);
-        console.log(`${MYNAME}. histCenterY:`,pmap.histCenterY);
-        console.log(`${MYNAME}. histWidth:`,  pmap.histWidth);
-    
+        if(DEBUG){
+            console.log(`${MYNAME}.updateAttTrans()`, pmap); 
+            console.log(`${MYNAME}. histCenterX:`,pmap.histCenterX);
+            console.log(`${MYNAME}. histCenterY:`,pmap.histCenterY);
+            console.log(`${MYNAME}. histWidth:`,  pmap.histWidth);
+        }
         let scale = 2./pmap.histWidth;
         pmap.attTransform = {
             absolute:   false,
@@ -675,7 +562,7 @@ function IteratedAttractor(options){
     return myself;
 }
     
-function createAccumBuffer(gl, width){
+function createHistogramBuffer(gl, width){
         
     const filtering = gl.NEAREST;
     const format = gl.RGBA, intFormat = gl.RGBA32F, texType = gl.FLOAT;        
