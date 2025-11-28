@@ -26,6 +26,8 @@ import {
     cAdd, 
     cSub,
     cPolar,
+    cAbs, 
+    cArg, 
     setParamValues,
     
     IteratorCPU,
@@ -376,7 +378,10 @@ function IteratedAttractor(options){
         scheduleRepaint();
     }
     
-    function onAbsoluteChanged(){
+    //
+    //  convert on user request between absolute and relative transform
+    //
+    function onConvertTransformAbsRel(){
     
         // Ca - absolute center 
         // Sa - absolute scale 
@@ -394,11 +399,59 @@ function IteratedAttractor(options){
         // absolute to relative transform
         // Sra = Sa/Sb
         // Cra = (Ca - Cb)/Sb;
-        console.log(`${MYNAME} onAbsoluteChanged()`, mConfig.attTrans.absolute);
+        const {attTrans, bufTrans} = mConfig;
+        console.log(`${MYNAME} onConvertTransform()`, attTrans.absolute);
+        // attractor transform params
+        let Sa = cPolar(attTrans.scale, attTrans.angle * TORADIANS);
+        let Ca = [attTrans.centerX,attTrans.centerY];   
+        
+        // buffer transform params     
+        let Sb = cPolar(bufTrans.scale, bufTrans.angle*TORADIANS);        
+        let Cb = [bufTrans.centerX, bufTrans.centerY];
+        console.log('bufTrans:', bufTrans);
+        attTrans.absolute = !attTrans.absolute;
+        console.log('attTrans.absolute:', attTrans.absolute);
+
+        let sa, ca;
+        if(attTrans.absolute){
+            console.log('convert to absolute');
+            // relative to absolute transform
+            // sa = Sb * Sa
+            // ca = Sb * Ca + Cb;
+            sa = cMul(Sb,Sa);
+            ca = cAdd(cMul(Sb, Ca), Cb);   
+            console.log('Sa:', Sa, 'Ca:', Ca);
+            console.log('Sb:', Sb, 'Cb:', Cb);
+            console.log('sa:', sa, 'ca:', ca);   
+        } else {
+            console.log('convert to relative');
+            // absolute to relative  
+            // sa = Sa/Sb
+            // ca = (Ca - Cb)/Sb;              
+            sa = cDiv(Sa,Sb);
+            ca = cDiv(cSub(Ca, Cb), Sb);
+            console.log('Sa:', Sa, 'Ca:', Ca);
+            console.log('Sb:', Sb, 'Cb:', Cb);
+            console.log('sa:', sa, 'ca:', ca);   
+        }
+        attTrans.centerX = ca[0];
+        attTrans.centerY = ca[1];
+        attTrans.scale = cAbs(sa);
+        attTrans.angle = cArg(sa)/TORADIANS;
+        let par = mParams.attTrans;
+        par.centerX.updateDisplay();
+        par.centerY.updateDisplay();
+        par.scale.updateDisplay();
+        par.angle.updateDisplay();
+        par.absolute.updateDisplay();
+        
         onAttractorChanged();
          
     }
     
+    //
+    //
+    //
     function makeParams(cfg){
                 
         if(DEBUG)console.log(`${MYNAME}.makeParams() `);
@@ -407,7 +460,7 @@ function IteratedAttractor(options){
         
         let params = {
             attractor:      ParamObj({name:'attractor params', obj: cfg.state.attractor}),
-            attTransform:   makeAttTransParams(cfg.attTrans, onres),
+            attTrans:       makeAttTransParams(cfg.attTrans, onres),
             iterations:     makeIterationsParams(cfg.iterations, onres),
             symmetry:       makeSymmetryParams(cfg.symmetry, onres),            
             coloring:       makeColoringParams(cfg.coloring),
@@ -448,6 +501,7 @@ function IteratedAttractor(options){
             name:   'attractor transform',
             params: {        
                 absolute:       ParamBool({obj:tcfg, key: 'absolute', onChange: onc}),
+                abs2rel:        ParamFunc({func: onConvertTransformAbsRel,name: 'ans<->rel'}),
                 centerX:        ParamFloat({obj:tcfg, key: 'centerX', onChange: onc}),
                 centerY:        ParamFloat({obj:tcfg, key: 'centerY', onChange: onc}),
                 scale:          ParamFloat({obj:tcfg, key: 'scale', onChange: onc}),
@@ -521,9 +575,16 @@ function IteratedAttractor(options){
     function setParamsMap(pmap, initialize=false) {
     
         if(false) console.log(`${MYNAME}.setParamsMap()`, pmap); 
-        if(!pmap.attTransform) {
-            updateAttTransform(pmap);
+        
+        if(pmap.attTransform) {
+            // rename wrong key
+            pmap.attTrans = pmap.attTransform;
+            delete pmap.attTransform;
         }
+        
+        if(!pmap.attTrans) {
+            updateAttTransform(pmap);
+        } 
         setParamValues(mParams, pmap, initialize);
         
     }
@@ -537,7 +598,7 @@ function IteratedAttractor(options){
             console.log(`${MYNAME}. histWidth:`,  pmap.histWidth);
         }
         let scale = 2./pmap.histWidth;
-        pmap.attTransform = {
+        pmap.attTrans = {
             absolute:   false,
             scale:      scale,
             angle:      0,

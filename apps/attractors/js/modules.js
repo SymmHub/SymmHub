@@ -20,7 +20,8 @@ export {
     cSub,
     cAdd,
     cPolar,
-
+    cAbs, 
+    cArg,
 } from '../../../lib/invlib/invlib.js';
 
 export {

@@ -30,42 +30,48 @@
                     "d": -1.1391055719378969
                 }
             },
+            "attTrans": {
+                "absolute": true,
+                "centerX": 0.21937931034482772,
+                "centerY": 0.058,
+                "scale": 0.11494252873563238,
+                "angle": 0
+            },
             "iterations": {
+                "useGPU": false,
+                "isRunning": true,
+                "accumulate": true,
                 "startCount": 15,
                 "seed": 12345,
-                "iterPerBatch": 1,
+                "iterPerFrame": 1,
                 "batchSize": 10000,
                 "maxBatchCount": 100,
                 "batchCount": 100,
-                "avgDist": 3.004555695813084
+                "avgDist": 2.994426149391196
             },
             "symmetry": {
                 "enabled": true,
-                "iterations": 5
+                "maxIter": 5
             },
-            "isRunning": true,
-            "iterate": true,
-            "accumulate": true,
-            "gamma": 2.1900000000000004,
-            "contrast": 2.000000000000001,
-            "brightness": 0.4600000000000002,
-            "saturation": 0.8,
-            "dynamicRange": 0.1,
-            "invert": false,
-            "colorSpeed": 0.22,
-            "colorPhase": 3.141592653589793,
-            "pointSize": 1,
-            "colorSign": 1,
-            "jitter": 1.25,
-            "histWidth": 8.699999999999985,
-            "histCenterX": -0.36000000000000043,
-            "histCenterY": 0
+            "coloring": {
+                "gamma": 2.2,
+                "contrast": 1,
+                "brightness": 0.3,
+                "saturation": 0.8,
+                "dynamicRange": 0.1,
+                "invert": false,
+                "colorSpeed": 0.22,
+                "colorPhase": 3.141592653589793,
+                "pointSize": 1,
+                "colorSign": 1,
+                "jitter": 1.25
+            }
         },
         "simTransform": {
-            "simCenterX": 0.17800000000000002,
-            "simCenterY": 0.058,
-            "simScale": 0.5,
-            "simAngle": 0
+            "simCenterX": 0.33,
+            "simCenterY": 0,
+            "simScale": 0.34,
+            "simAngle": 40
         },
         "visualization": {
             "image": {
@@ -75,7 +81,7 @@
                 "useMipmap": false
             },
             "overlay": {
-                "enabled": false,
+                "enabled": true,
                 "opacity": 1,
                 "fundDomain": {
                     "fill": {
@@ -92,7 +98,7 @@
                 },
                 "buffer": {
                     "fill": {
-                        "enabled": true,
+                        "enabled": false,
                         "color": "#00FF0022"
                     },
                     "outline": {
@@ -304,10 +310,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0.03668497638424524,
-                        "centerY": 0.005904447586223112,
+                        "centerX": -0.1167667914727494,
+                        "centerY": 0.0162630702042871,
                         "zoom": [
-                            1.321765241978113
+                            1.1151527067485951
                         ]
                     },
                     "options": {

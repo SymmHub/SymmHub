@@ -12,7 +12,7 @@
             "customHeight": 1000,
             "sizeMultiplier": 1,
             "backgroundColor": "#FFFFFF00",
-            "frameTime": 17
+            "frameTime": 16.8
         },
         "recording": {
             "animTime": 0,
@@ -30,41 +30,47 @@
                     "d": -1.0193434549109766
                 }
             },
+            "attTrans": {
+                "absolute": true,
+                "centerX": 0.78,
+                "centerY": -0.08290909090909093,
+                "scale": 0.5836363636363637,
+                "angle": 0
+            },
             "iterations": {
+                "useGPU": false,
+                "isRunning": true,
+                "accumulate": true,
                 "startCount": 15,
                 "seed": 12345,
-                "iterPerBatch": 1,
+                "iterPerFrame": 1,
                 "batchSize": 10000,
                 "maxBatchCount": 100,
                 "batchCount": 100,
-                "avgDist": 2.628444685512822
+                "avgDist": 2.635071464159473
             },
             "symmetry": {
                 "enabled": true,
-                "iterations": 5
+                "maxIter": 5
             },
-            "isRunning": true,
-            "iterate": true,
-            "accumulate": true,
-            "gamma": 2.2,
-            "contrast": 0.8,
-            "brightness": 0.37000000000000016,
-            "saturation": 0.8,
-            "dynamicRange": 0.1,
-            "invert": false,
-            "colorSpeed": 0.22,
-            "colorPhase": 3.141592653589793,
-            "pointSize": 1,
-            "colorSign": 1,
-            "jitter": 1.25,
-            "histWidth": 11,
-            "histCenterX": 0,
-            "histCenterY": -1.4
+            "coloring": {
+                "gamma": 2.2,
+                "contrast": 1,
+                "brightness": 0.3,
+                "saturation": 0.8,
+                "dynamicRange": 0.1,
+                "invert": false,
+                "colorSpeed": 0.22,
+                "colorPhase": 3.141592653589793,
+                "pointSize": 1,
+                "colorSign": 1,
+                "jitter": 1.25
+            }
         },
         "simTransform": {
-            "simCenterX": 0.78,
-            "simCenterY": -0.9,
-            "simScale": 3.2100000000000004,
+            "simCenterX": 1.3800000000000001,
+            "simCenterY": 0,
+            "simScale": 1.7100000000000002,
             "simAngle": 0
         },
         "visualization": {
@@ -304,10 +310,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": -0.013505361272618754,
-                        "centerY": 0.08321864652894419,
+                        "centerX": -0.2704865024086978,
+                        "centerY": -0.047739698513110496,
                         "zoom": [
-                            0.29162112796735434
+                            0.26916756472887404
                         ]
                     },
                     "options": {

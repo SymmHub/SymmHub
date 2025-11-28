@@ -12,7 +12,7 @@
             "customHeight": 1000,
             "sizeMultiplier": 1,
             "backgroundColor": "#FFFFFF00",
-            "frameTime": 16.9
+            "frameTime": 16.8
         },
         "recording": {
             "animTime": 0,
@@ -30,42 +30,48 @@
                     "d": -1.1391055719378969
                 }
             },
+            "attTrans": {
+                "absolute": true,
+                "centerX": 0.4711914893617023,
+                "centerY": 0.058,
+                "scale": 0.10638297872340445,
+                "angle": 0
+            },
             "iterations": {
+                "useGPU": false,
+                "isRunning": true,
+                "accumulate": true,
                 "startCount": 15,
                 "seed": 12345,
-                "iterPerBatch": 1,
+                "iterPerFrame": 1,
                 "batchSize": 10000,
                 "maxBatchCount": 100,
                 "batchCount": 100,
-                "avgDist": 1.7613372475634435
+                "avgDist": 1.7511630147824861
             },
             "symmetry": {
                 "enabled": true,
-                "iterations": 5
+                "maxIter": 5
             },
-            "isRunning": true,
-            "iterate": true,
-            "accumulate": true,
-            "gamma": 2.1900000000000004,
-            "contrast": 2.000000000000001,
-            "brightness": 0.4600000000000002,
-            "saturation": 0.8,
-            "dynamicRange": 0.1,
-            "invert": false,
-            "colorSpeed": 0.22,
-            "colorPhase": 3.141592653589793,
-            "pointSize": 1,
-            "colorSign": 1,
-            "jitter": 1.25,
-            "histWidth": 9.399999999999983,
-            "histCenterX": -0.5000000000000004,
-            "histCenterY": 0
+            "coloring": {
+                "gamma": 2.2,
+                "contrast": 1,
+                "brightness": 0.3,
+                "saturation": 0.8,
+                "dynamicRange": 0.1,
+                "invert": false,
+                "colorSpeed": 0.22,
+                "colorPhase": 3.141592653589793,
+                "pointSize": 1,
+                "colorSign": 1,
+                "jitter": 1.25
+            }
         },
         "simTransform": {
-            "simCenterX": 0.41800000000000004,
-            "simCenterY": 0.058,
-            "simScale": 0.5,
-            "simAngle": 0
+            "simCenterX": 0.533,
+            "simCenterY": 0,
+            "simScale": 0.39,
+            "simAngle": 45.00000000000001
         },
         "visualization": {
             "image": {
@@ -75,7 +81,7 @@
                 "useMipmap": false
             },
             "overlay": {
-                "enabled": true,
+                "enabled": false,
                 "opacity": 1,
                 "fundDomain": {
                     "fill": {
@@ -92,7 +98,7 @@
                 },
                 "buffer": {
                     "fill": {
-                        "enabled": false,
+                        "enabled": true,
                         "color": "#00FF0022"
                     },
                     "outline": {
@@ -304,10 +310,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0.09232502987173676,
-                        "centerY": 0.052356306014841814,
+                        "centerX": 0.05341787699764751,
+                        "centerY": 0.027445944389647932,
                         "zoom": [
-                            1.0271284736572355
+                            0.9501322456663183
                         ]
                     },
                     "options": {
