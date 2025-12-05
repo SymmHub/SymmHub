@@ -1,5 +1,5 @@
 import {
-    Shaders as AttrShaders,    
+    Shaders as AttShaders,    
 } from './shaders/modules.js';
 
 import {
@@ -9,31 +9,64 @@ import {
 
 const MYNAME = 'att_programs';
 
-const cpuAccumulatorVert = {obj:AttrShaders, id:'cpu_accumulator_vert'};
-const cpuAccumulatorFrag = {obj:AttrShaders, id:'cpu_accumulator_frag'};
-const drawHistVert = {obj:AttrShaders, id:'draw_hist_vert'};
-const drawHistFrag = {obj:AttrShaders, id:'draw_hist_frag'};
-const complexFrag = {obj:LibShaders, id:'complex'};
+const complexFrag =         {obj:LibShaders, id:'complex'};
+
+const attUtils =            {obj:AttShaders, id:'utils'};
+const overlay =             {obj:AttShaders, id:'extract_overlay'};
+const cpuAccumulatorVert =  {obj:AttShaders, id:'cpu_accumulator_vert'};
+const cpuAccumulatorFrag =  {obj:AttShaders, id:'cpu_accumulator_frag'};
+const drawHistVert =        {obj:AttShaders, id:'draw_hist_vert'};
+const drawHistFrag =        {obj:AttShaders, id:'draw_hist_frag'};
+const blitVert         =    {obj:AttShaders, id:'blit_vert'};
+const initQrand2Frag    =   {obj:AttShaders, id:'init_qrand2_frag'};
+const gpuAccumulatorVert  = {obj:AttShaders, id:'gpu_accumulator_vert' };
+const gpuAccumulatorFrag  = {obj:AttShaders, id:'gpu_accumulator_frag' };
+const gpuIteratorVert     = {obj:AttShaders, id:'gpu_iterator_vert' };
+const gpuIteratorFrag     = {obj:AttShaders, id:'gpu_iterator_frag' };
+
 
 
 const cpuHistogramBuilder = {
     name: 'cpuHistogramBuilder', 
-    vs: {frags:[complexFrag, cpuAccumulatorVert]}, 
+    vs: {frags:[complexFrag, attUtils, cpuAccumulatorVert]}, 
     fs: {frags: [cpuAccumulatorFrag]},
 };
 
 const histogramRenderer = {
     name: 'histogramRenderer', 
     vs: {frags: [drawHistVert]}, 
-    fs: {frags: [drawHistFrag]},
+    fs: {frags: [overlay, drawHistFrag]},
 };
+
+
+const gpuInitializer = {
+    name: 'gpuInitializer',
+    vs: {frags:[blitVert]},
+    fs: {frags:[attUtils,initQrand2Frag]},
+}
+
+const gpuIterator = {
+    name: 'gpuIterator',
+    vs: {frags:[gpuIteratorVert]},
+    fs: {frags:[gpuIteratorFrag]},
+}
+
+const gpuAccumulator = {
+    name: 'gpuAccumulator',
+    vs: {frags:[complexFrag, gpuAccumulatorVert]},
+    //vs: {frags:[blitVert]},
+    fs: {frags:[gpuAccumulatorFrag]},
+}
 
 
 function programBuilder(){
 
     const programs = {
-       cpuHistogramBuilder:  cpuHistogramBuilder,
-       histogramRenderer: histogramRenderer,       
+        cpuHistogramBuilder:  cpuHistogramBuilder,
+        histogramRenderer: histogramRenderer, 
+        gpuAccumulator,
+        gpuInitializer,
+        gpuIterator,
     };
  
     

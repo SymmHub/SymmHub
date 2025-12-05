@@ -17,7 +17,7 @@ uniform vec2 resolution;
 //uniform float uHistScale;
 //uniform vec2 uHistCenter;
 
-// parameters to transfform attractor point into world coordinatres 
+// parameters to transfform attractor point into world coordinates 
 uniform vec2 uAttScale;
 uniform vec2 uAttCenter;
 
@@ -31,17 +31,10 @@ vec3 colorscale (float t) {
     );
 }
 
-// 2D random points 
-const float g = 1.32471795724474602596;
-const vec2 q = vec2(1.0 / g, 1.0/(g*g));
-vec2 qrand2(float n) {
-    return fract(0.5 + q * n);
-}
-
 void main () {    
     //v_color = colorscale(0.1*floor(10.*(a_position.z * colorSpeed * colorSign)));
+
     v_color = colorscale(a_position.z * colorSpeed * colorSign);
-    //vec2 xy = uHistScale*(a_position.xy-uHistCenter);
     vec2 xy = cMul(uAttScale,a_position.xy) + uAttCenter;     
     gl_Position = vec4(xy, 0, 1);
     gl_PointSize = pointSize;

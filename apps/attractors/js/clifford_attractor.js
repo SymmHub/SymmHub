@@ -66,6 +66,15 @@ function CliffordAttractor(){
         return params;
     }
     
+    function getUniforms(){
+        let {a,b,c,d} = mConfig;        
+        return {
+            u_a: a,
+            u_b: b,
+            u_c: c,
+            u_d: d,            
+        };
+    }
     function cpuIteratePoint(pnt0, pnt1){
         
         let {a,b,c,d} = mConfig;        
@@ -102,10 +111,11 @@ function CliffordAttractor(){
  
     
     myself = {
-        getParams:      ()=>mParams,
-        getClassName:   ()=>{return MYNAME+'-class';},
-        addEventListener:       addEventListener,
-        cpuIteratePoint:        cpuIteratePoint,
+        getParams:          ()=>mParams,
+        getClassName:       ()=>{return MYNAME+'-class';},
+        addEventListener:   addEventListener,
+        cpuIteratePoint:    cpuIteratePoint,
+        getUniforms:        getUniforms,
     }
     return myself;
 }

@@ -40,7 +40,8 @@ export function IteratorCPU(){
         let prg = AttPrograms.getProgram(gl, mCpuConfig.histogramBuilder);
         
         mCpuConfig.posLoc = gl.getAttribLocation(prg.program, "a_position");
-
+        if(true) console.log(`${MYNAME} histogramBuilder: `, prg);
+        if(true) console.log(`${MYNAME}mCpuConfig.posLoc: `, mCpuConfig.posLoc);
         cpuInitArrays();
     }
 
@@ -84,7 +85,7 @@ export function IteratorCPU(){
         let pnt1 = {x:0, y:0};
         for (let i = 0; i < array.length; i += 4) {
             pnt0.x = array[i];
-            pnt0.y = array[i+1];            
+            pnt0.y = array[i+1];
             cpuIteratePoint(pnt0, pnt1);
             //let x = array[i];
             //let y = array[i + 1];
@@ -93,7 +94,8 @@ export function IteratorCPU(){
             let y1 = pnt1.y;            
             let dx = x1 - pnt0.x;
             let dy = y1 - pnt0.y;
-            let dist = Math.sqrt(dx * dx + dy * dy);
+            //let dist = Math.sqrt(dx * dx + dy * dy);
+            let dist = (Math.atan2(pnt0.y, pnt0.x)/Math.PI+1.);
             avgDist += dist;
             array[i    ] = x1;
             array[i + 1] = y1;
@@ -123,7 +125,7 @@ export function IteratorCPU(){
         const icfg = cfg.iterations;
         cfg.state.needToRender = icfg.isRunning;
         let {iterPerFrame,batchCount, startCount} = icfg;
-
+        const {histogram} = state;
          
         let ccfg = cfg.coloring;
         
@@ -133,7 +135,7 @@ export function IteratorCPU(){
           pointSize:    ccfg.pointSize,
           colorSign:    ccfg.colorSign,
           jitter:       ccfg.jitter,
-          resolution:   [state.histogram.width, state.histogram.height],
+          resolution:   [histogram.width, histogram.height],
           uAttScale:    cfg.bufTrans.transScale,
           uAttCenter:   cfg.bufTrans.transCenter,
         };
@@ -159,8 +161,8 @@ export function IteratorCPU(){
                 gl.enableVertexAttribArray(mCpuConfig.posLoc);
                 gl.vertexAttribPointer(mCpuConfig.posLoc, 4, gl.FLOAT, false, 0, 0);        
                                                             
-                gl.viewport(0, 0, state.histogram.width, state.histogram.height);              
-                gl.bindFramebuffer(gl.FRAMEBUFFER, state.histogram.fbo);
+                gl.viewport(0, 0, histogram.width, histogram.height);              
+                gl.bindFramebuffer(gl.FRAMEBUFFER, histogram.fbo);
                 
                 if(icfg.accumulate && (batchCount > startCount)){
                     // enable blend to accumulate histogram 

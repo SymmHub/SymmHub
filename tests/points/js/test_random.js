@@ -66,18 +66,18 @@ function test_random(seed) {
 
 // 2D random points 
 // https://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/
-// one dimensiopnal uniform "random" numbers 
-g = 1.6180339887498948482
-a1 = 1.0/g
+// one dimensional uniform "random" numbers 
+const g1 = 1.6180339887498948482; 
+const a1 = 1.0/g1;
 function qrand1(n){
     return (0.5 + a1*n) % 1;
 }
 
 
 // two dimensional case 
-const g = 1.32471795724474602596;
-const q0 = 1.0/ g;
-const q1 = 1.0/(g*g);
+const g2 = 1.32471795724474602596;
+const q0 = 1.0/ g2;
+const q1 = 1.0/(g2*g2);
 
 
 function qrand2x(n) {
@@ -92,12 +92,12 @@ function qrand2(n) {
     return [qradnx(n), qrandy(n)];
 }
 
-// 3d cased 
+// 3d case 
 /*
-g = 1.22074408460575947536
-a1 = 1.0/g
-a2 = 1.0/(g*g)
-a3 = 1.0/(g*g*g)
+g3 = 1.22074408460575947536
+a1 = 1.0/g3
+a2 = 1.0/(g3*g3)
+a3 = 1.0/(g3*g3*g3)
 x[n] = (0.5+a1*n) %1 
 y[n] = (0.5+a2*n) %1 
 z[n] = (0.5+a3*n) %1 
@@ -105,7 +105,7 @@ z[n] = (0.5+a3*n) %1
 
 function test_random_points(rnd){
     
-    let n = 1000000;
+    let n = 100000;
     const canvas = document.getElementById("canvas");
     let gc = canvas.getContext('2d');
     let width  = canvas.width;
@@ -124,7 +124,7 @@ function test_random_points(rnd){
 }
 
 function test_qrand2(){
-    let n = 1000000;
+    let n = 100000;
     const canvas = document.getElementById("canvas");
     let gc = canvas.getContext('2d');
     let width  = canvas.width;
@@ -142,10 +142,9 @@ function test_qrand2(){
 
 
 let seed = Date.now();//1234567;
-//test_random_points(lcg(seed));
+test_random_points(lcg(seed));
 //test_random_points(mulberry32(seed));
 //test_random_points(antti(seed)); 
 //test_random_points(antti2(seed));
 //test_random_points(splitmix32(seed));
-
-test_qrand2();
+//test_qrand2();

@@ -41,7 +41,7 @@ export {
     createFBO, 
     buildProgramsCached,
     makeSamplesArray,    
-    
+    readPixelsFromBuffer,
 } from "../../../lib/symhublib/symhublib.js";
 
 export { 

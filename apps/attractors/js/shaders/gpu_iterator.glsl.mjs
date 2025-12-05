@@ -1,0 +1,44 @@
+
+export const gpu_iterator_vert = 
+`
+in vec2 position;
+
+void main () {
+   
+    gl_Position = vec4(position, 0, 1);
+    
+}`;
+
+
+export const  gpu_iterator_frag = 
+
+`
+#ifndef PI
+#define PI 3.14159265358979323846
+#endif
+
+uniform sampler2D uPointsData;
+
+out vec4 outPnt;  // result of iteration 
+
+uniform float u_a;// = -1.2924227902;
+uniform float u_b;// = -2.2028329188;
+uniform float u_c;// =  2.9478754451; 
+uniform float u_d;// = -0.6062945894;
+
+vec2 iterate(vec2 p){
+   
+   return vec2(
+        sin(u_a * p.y) + u_c * cos(u_a * p.x),
+        sin(u_b * p.x) + u_d * cos(u_b * p.y));    
+}
+void main () {
+
+    vec2 p0 = texelFetch(uPointsData, ivec2(gl_FragCoord.xy), 0).xy;
+    vec2 p1 = iterate(p0);
+    float dist = (atan(p0.y, p0.x)/PI + 1.);
+    outPnt = vec4(p1, dist, 1.);
+
+}
+`;
+

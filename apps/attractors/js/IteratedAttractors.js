@@ -51,7 +51,7 @@ function IteratedAttractor(options){
 
     function setGroup(group) {
         
-      if(DEBUG)console.log(`${MYNAME}.setGroup()`, group );
+      if(false)console.log(`${MYNAME}.setGroup()`, group );
       mConfig.state.group = group;
       onRestart();
       
