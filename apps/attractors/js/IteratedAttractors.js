@@ -113,7 +113,7 @@ function IteratedAttractor(options){
             group:          null,
             attractor:      null, 
             renderedBuffer: null,  
-            bufferWidth:    1024, 
+            bufferWidth:    1 << 11, 
             needToClear:    true,
             needToRender:   true,
             needToIterate:  true,

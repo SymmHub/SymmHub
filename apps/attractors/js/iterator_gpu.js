@@ -92,7 +92,9 @@ export function IteratorGPU(gl){
     }
     
     
-    
+    //
+    //  called when new rendering is needed 
+    //
     function updateHistogram(){
         
         if(DEBUG)console.log(`${MYNAME}.updateHistogram()`);
@@ -117,16 +119,6 @@ export function IteratorGPU(gl){
         
         let batchSize = pointDataWidth*pointDataWidth;        
 
-        const accColoringUni = {
-          colorSpeed:   ccfg.colorSpeed,
-          colorPhase:   ccfg.colorPhase,
-          uPointSize:    ccfg.pointSize,
-          colorSign:    ccfg.colorSign,
-          jitter:       ccfg.jitter,
-          resolution:   [histogram.width, histogram.height],
-          uAttScale:    cfg.bufTrans.transScale,
-          uAttCenter:   cfg.bufTrans.transCenter,
-        };
 
         let iterUni2 = state.attractor.getUniforms();
         //iterProg.setUniforms(iterUni2);
@@ -135,15 +127,15 @@ export function IteratorGPU(gl){
         for(let k = 0; k < iterPerFrame; k++){
             
             // do iteration 
-            
+            gl.disable(gl.BLEND); 
             iterProg.bind();
             gl.viewport(0, 0, pointDataWidth, pointDataWidth);  
-            let iterUni = {uPointsData: pointsData.read};
-            iterProg.setUniforms(iterUni);
+            let iterUni1 = {uPointsData: pointsData.read};
+            iterProg.setUniforms(iterUni1);
             iterProg.setUniforms(iterUni2);
             iterProg.blit(pointsData.write);
             pointsData.swap();
-                           
+
             // render data into histogram 
             
             if(icfg.accumulate && (batchCount > startCount)){
@@ -158,23 +150,37 @@ export function IteratorGPU(gl){
                 gl.clear(gl.COLOR_BUFFER_BIT);
                 state.totalCount = batchSize;
             }
-            let accUni = {
+            let accUni1 = {
                 uPointsData: pointsData.read,
             };
             
-
+            const accUni2 = {
+              colorSpeed:   ccfg.colorSpeed,
+              colorPhase:   ccfg.colorPhase,
+              uPointSize:    ccfg.pointSize,
+              colorSign:    ccfg.colorSign,
+              jitter:       ccfg.jitter,
+              resolution:   [histogram.width, histogram.height],
+              uAttScale:    cfg.bufTrans.transScale,
+              uAttCenter:   cfg.bufTrans.transCenter,
+            };
+            
+            batchCount++;
             accProg.bind();
-            accProg.setUniforms(accUni);
-            accProg.setUniforms(accColoringUni);
+            accProg.setUniforms(accUni1);
+            accProg.setUniforms(accUni2);
             
             gl.viewport(0, 0, histogram.width, histogram.height);    
-                        
+
+            let posLoc = gl.getAttribLocation(accProg.program, "a_position");
+            
             gl.bindBuffer(gl.ARRAY_BUFFER, indexBuffer);
             gl.enableVertexAttribArray(posLoc);
             gl.vertexAttribPointer(posLoc, 2, gl.UNSIGNED_SHORT, false, 0, 0);
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, histogram.fbo);
             gl.drawArrays(gl.POINTS, 0, batchSize);
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         } // for(let k = 0; k < iterPerFrame; k++){    
     
@@ -192,7 +198,7 @@ export function IteratorGPU(gl){
 
 
 //
-// makes array of indices to be used for rendering points stored in a 2D sampler             
+// makes array of indexes to be used for rendering points stored in a 2D sampler             
 //
 function makeIndexBuffer(gl, width){
 
