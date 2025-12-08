@@ -20,17 +20,17 @@ export function IteratorGPU(gl){
         
         posLoc:    null,    // location of attribute to pass points to GPU   
         indexBuffer: null,  // points indices 
-        pointDataWidth: 256,//(1 << 10),
+        pointDataWidth: 300, //60, //125, //(1 << 8),
+        pointsPerIteration: 0,
+        poinsCoord: null,
     };
     let mGL = null;
-    let mConfig = null;
+    let mIterParams;
     
-    function init(gl, config){
+    function init(gl){
     
         if(DEBUG) console.log(`${MYNAME}.init()`);
-        mGL = gl;
-        mConfig = config;
-        
+        mGL = gl;       
         initBuffers(gl);
         
     }
@@ -39,9 +39,9 @@ export function IteratorGPU(gl){
     
         const {pointDataWidth} = mGpuConfig;
         
-        let accProg = AttPrograms.getProgram(gl, 'gpuAccumulator'); 
-        mGpuConfig.posLoc = gl.getAttribLocation(accProg.program, "a_position");
-        console.log('accProg: ', accProg); 
+        //let accProg = AttPrograms.getProgram(gl, 'gpuAccumulator'); 
+        //mGpuConfig.posLoc = gl.getAttribLocation(accProg.program, "a_position");
+        //console.log('accProg: ', accProg); 
         
         if(DEBUG)console.log('${MYNAME}.initBuffers() pointDataWidth:', pointDataWidth);
         mGpuConfig.indexBuffer = makeIndexBuffer(gl, pointDataWidth);
@@ -52,19 +52,21 @@ export function IteratorGPU(gl){
     }
     
     
-    function restart(){
-    
-        if(DEBUG) console.log(`${MYNAME}.restart() pointDataWidth: `, mGpuConfig.pointDataWidth);
+    function restart(iterParams){
+        
+        if(DEBUG) console.log(`${MYNAME}.restart() `, iterParams);
+        mIterParams = iterParams;
+        
         let gl = mGL;
         let gcfg = mGpuConfig;
         
         gcfg.iterProg = AttPrograms.getProgram(gl, 'gpuIterator');          
         gcfg.accProg = AttPrograms.getProgram(gl, 'gpuAccumulator'); 
-        gcfg.posLoc = gl.getAttribLocation(gcfg.accProg.program, "a_position");
+        //gcfg.posLoc = gl.getAttribLocation(gcfg.accProg.program, "a_position");
 
         const {pointsData} = mGpuConfig;
         
-        initPointsData(pointsData);
+        initPointsData2(pointsData);
         
         //printBufferData(mGL, pointsData.read);
         //printBufferData(mGL, pointsData.write);
@@ -90,6 +92,26 @@ export function IteratorGPU(gl){
         //gl.bindTexture(gl.TEXTURE_2D, null);
 
     }
+
+    function initPointsData2(pData){
+
+        if(DEBUG)console.log(`${MYNAME}.initPointsData()`, pData);
+        let gl = mGL;
+        // fill data array with random points 
+        let {pointDataWidth, pointsCoord} = mGpuConfig;
+        if(!pointsCoord) {
+            let pcount = pointDataWidth*pointDataWidth;
+            pointsCoord = getRandomPoints2D(pcount);
+            mGpuConfig.pointsCoord = pointsCoord;
+        }
+        gl.bindTexture(gl.TEXTURE_2D, pData.write.texture)
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, pointDataWidth, pointDataWidth, 
+                        0, gl.RGBA, gl.FLOAT, pointsCoord);
+
+        pData.swap();
+        //gl.bindTexture(gl.TEXTURE_2D, null);
+
+    }
     
     
     //
@@ -99,15 +121,16 @@ export function IteratorGPU(gl){
         
         if(DEBUG)console.log(`${MYNAME}.updateHistogram()`);
         let gl = mGL;
-        
-        const cfg = mConfig;
-        const {state} = cfg;
-        const icfg = cfg.iterations;
-        cfg.state.needToRender = icfg.isRunning;
-        let {iterPerFrame,batchCount, startCount} = icfg;         
-        const {histogram} = state;
-        let ccfg = cfg.coloring;
-        
+                
+        const {
+            histogram, 
+            attractor, 
+            groupData, 
+            coloring,
+            iterations,  
+            bufTrans,
+        } = mIterParams;
+                
         const {
             pointsData, 
             indexBuffer, 
@@ -116,73 +139,90 @@ export function IteratorGPU(gl){
             accProg,
             posLoc,
         } = mGpuConfig; 
-        
+        let{ batchCount} = iterations;     
         let batchSize = pointDataWidth*pointDataWidth;        
+        mGpuConfig.pointsPerIteration = 0;
 
-
-        let iterUni2 = state.attractor.getUniforms();
+        let iterUni2 = attractor.getUniforms();
         //iterProg.setUniforms(iterUni2);
-
-                
-        for(let k = 0; k < iterPerFrame; k++){
-            
-            // do iteration 
+        //if(false)console.log('bufTrans.transScale:', bufTrans.transScale, bufTrans.transCenter);
+        if(batchCount == 0) {
             gl.disable(gl.BLEND); 
             iterProg.bind();
             gl.viewport(0, 0, pointDataWidth, pointDataWidth);  
-            let iterUni1 = {uPointsData: pointsData.read};
-            iterProg.setUniforms(iterUni1);
-            iterProg.setUniforms(iterUni2);
-            iterProg.blit(pointsData.write);
-            pointsData.swap();
-
+            for(let k = 0; k  < iterations.startCount; k++){
+                let iterUni1 = {uPointsData: pointsData.read};
+                iterProg.setUniforms(iterUni1);
+                iterProg.setUniforms(iterUni2);
+                iterProg.blit(pointsData.write);
+                pointsData.swap();            
+            }
+        }
+        for(let k = 0; k <= iterations.iterPerFrame; k++){
+            if(k > 0) {
+                // skip first iteration to display initial state 
+                // do iteration 
+                gl.disable(gl.BLEND); 
+                iterProg.bind();
+                gl.viewport(0, 0, pointDataWidth, pointDataWidth);  
+                let iterUni1 = {uPointsData: pointsData.read};
+                iterProg.setUniforms(iterUni1);
+                iterProg.setUniforms(iterUni2);
+                iterProg.blit(pointsData.write);
+                pointsData.swap();
+                //console.log('iterUni1: ',iterUni1);
+                //console.log('iterUni2: ',iterUni2);
+            }
             // render data into histogram 
             
-            if(icfg.accumulate && (batchCount > startCount)){
+            if(iterations.accumulate){
                 // enable blend to accumulate histogram 
                 gl.enable(gl.BLEND);   
                 gl.blendFunc(gl.ONE, gl.ONE);        
                 gl.blendEquation(gl.FUNC_ADD);
-                state.totalCount += batchSize;
+                mGpuConfig.pointsPerIteration += batchSize;
             } else {
                 // discard previous histogram data 
                 gl.disable(gl.BLEND); 
                 gl.clear(gl.COLOR_BUFFER_BIT);
-                state.totalCount = batchSize;
+                mGpuConfig.pointsPerIteration = batchSize;
             }
             let accUni1 = {
                 uPointsData: pointsData.read,
             };
-            
             const accUni2 = {
-              colorSpeed:   ccfg.colorSpeed,
-              colorPhase:   ccfg.colorPhase,
-              uPointSize:    ccfg.pointSize,
-              colorSign:    ccfg.colorSign,
-              jitter:       ccfg.jitter,
+              colorSpeed:   coloring.colorSpeed,
+              colorPhase:   coloring.colorPhase,
+              uPointSize:   coloring.pointSize,
+              colorSign:    coloring.colorSign,
+              jitter:       coloring.jitter,
               resolution:   [histogram.width, histogram.height],
-              uAttScale:    cfg.bufTrans.transScale,
-              uAttCenter:   cfg.bufTrans.transCenter,
-            };
+              uAttScale:    bufTrans.transScale,
+              uAttCenter:   bufTrans.transCenter,
+            };            
             
             batchCount++;
             accProg.bind();
             accProg.setUniforms(accUni1);
             accProg.setUniforms(accUni2);
-            
+            //console.log('accUni1: ',accUni1);
+            //console.log('accUni2: ',accUni2);
             gl.viewport(0, 0, histogram.width, histogram.height);    
 
-            let posLoc = gl.getAttribLocation(accProg.program, "a_position");
+            let indexLoc = gl.getAttribLocation(accProg.program, "a_index");
             
             gl.bindBuffer(gl.ARRAY_BUFFER, indexBuffer);
-            gl.enableVertexAttribArray(posLoc);
-            gl.vertexAttribPointer(posLoc, 2, gl.UNSIGNED_SHORT, false, 0, 0);
+            gl.enableVertexAttribArray(indexLoc);
+            gl.vertexAttribPointer(indexLoc, 2, gl.UNSIGNED_SHORT, false, 0, 0);
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, histogram.fbo);
             gl.drawArrays(gl.POINTS, 0, batchSize);
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            //console.log('batchCount: ', batchCount);
         } // for(let k = 0; k < iterPerFrame; k++){    
+    
+    
     
     } // function updateHistogram()
 
@@ -192,7 +232,7 @@ export function IteratorGPU(gl){
         init:           init,
         restart:        restart,
         updateHistogram: updateHistogram,
-        
+        getPointsCount:  () => {return mGpuConfig.pointsPerIteration;}        
     }
 } 
 
@@ -239,4 +279,30 @@ function printBufferData(gl, buffer){
             console.log('',iy,':', line);
         }
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+
+// two dimensional case 
+const g2 = 1.32471795724474602596;
+const q0 = 1.0/ g2;
+const q1 = 1.0/(g2*g2);
+
+
+function qrand2x(n) {
+    return (0.5 + q0 * n) % 1.;
+}
+
+function qrand2y(n) {
+    return (0.5 + q1 * n) % 1;
+}
+
+
+function getRandomPoints2D(count){
+    let points = new Float32Array(4*count);
+    for(let k = 0, i = 0; k < count; k++){
+        points[i++] = (2*qrand2x(k)-1);
+        points[i++] = (2*qrand2y(k)-1);
+        points[i++] = 0;
+        points[i++] = 0;        
+    }
+    return points;
 }

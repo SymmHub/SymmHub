@@ -123,8 +123,7 @@ function test_random_points(rnd){
     
 }
 
-function test_qrand2(){
-    let n = 100000;
+function test_qrand2(n){
     const canvas = document.getElementById("canvas");
     let gc = canvas.getContext('2d');
     let width  = canvas.width;
@@ -140,11 +139,49 @@ function test_qrand2(){
     
 }
 
+// two dimensional case 
+//const g2_SP = 1.32471795724474602596;
+//const q0_SP = 1.0/ g2;
+//const q1_SP = 1.0/(g2*g2);
+
+function toSP(x) {
+    const float32Array = new Float32Array(1);    
+    float32Array[0] = x;    
+    return float32Array[0];
+}
+
+function qrand2x_SP(n) {
+    return toSP((0.5 + toSP(toSP(q0) * toSP(n)))) % 1;
+}
+
+function qrand2y_SP(n) {
+    return toSP((0.5 + toSP(toSP(q1) * toSP(n)))) % 1
+}
+
+
+
+function test_qrand2_SP(n){
+    const canvas = document.getElementById("canvas");
+    let gc = canvas.getContext('2d');
+    let width  = canvas.width;
+    let height  = canvas.height;
+
+    gc.clearRect(0,0, width, height);
+    
+    for(let i = 0;i < n; i++){
+        let x = qrand2x_SP(i);
+        let y = qrand2y_SP(i);
+        gc.fillRect(x*width, y*height, 2, 2);
+    }
+    
+}
+
 
 let seed = Date.now();//1234567;
-test_random_points(lcg(seed));
+//test_random_points(lcg(seed));
 //test_random_points(mulberry32(seed));
 //test_random_points(antti(seed)); 
 //test_random_points(antti2(seed));
 //test_random_points(splitmix32(seed));
-//test_qrand2();
+test_qrand2(1 << 14);
+//test_qrand2_SP( 1 << 15);

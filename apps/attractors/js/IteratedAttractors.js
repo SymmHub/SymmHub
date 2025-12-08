@@ -51,9 +51,12 @@ function IteratedAttractor(options){
 
     function setGroup(group) {
         
-      if(false)console.log(`${MYNAME}.setGroup()`, group );
-      mConfig.state.group = group;
-      onRestart();
+        if(false)console.log(`${MYNAME}.setGroup()`, group );
+        mConfig.state.group = group;
+        // TODO update sampler 
+        mConfig.state.groupSampler = null; 
+
+        onRestart();
       
     };
             
@@ -113,7 +116,7 @@ function IteratedAttractor(options){
             group:          null,
             attractor:      null, 
             renderedBuffer: null,  
-            bufferWidth:    1 << 11, 
+            bufferWidth:    (1 << 11), 
             needToClear:    true,
             needToRender:   true,
             needToIterate:  true,
@@ -131,7 +134,7 @@ function IteratedAttractor(options){
     
     let mIteratorGPU = null;
     let mIteratorCPU = null;
-        
+    let mIterator = null;    
     //
     //  data for CPU calculations 
     //
@@ -184,16 +187,28 @@ function IteratedAttractor(options){
     function restart(){
         
         if(DEBUG) console.log(`${MYNAME}.restart()`);
+        const {state} = mConfig;
+        const iterParams = {
+            histogram:      state.histogram,
+            attractor:      state.attractor,
+            groupSampler:   state.groupSampler,
+            coloring:       mConfig.coloring,
+            iterations:     mConfig.iterations,
+            bufTrans:       mConfig.bufTrans,
+        }
         
         if(mConfig.iterations.useGPU){
-            mIteratorGPU.restart();
+            mIterator =  mIteratorGPU;
         } else {
-            mIteratorCPU.restart();
+            mIterator =  mIteratorCPU;
         }
+        
+        mIterator.restart(iterParams);        
         
         mConfig.iterations.batchCount = 0;
         mParams.iterations.batchCount.updateDisplay();
         mConfig.state.hasNewPoints = true;
+        
     }
     
     
@@ -280,12 +295,8 @@ function IteratedAttractor(options){
         
         if(iterations.batchCount < iterations.maxBatchCount){
         
-            if(mConfig.iterations.useGPU)
-                mIteratorGPU.updateHistogram();
-            else 
-                mIteratorCPU.updateHistogram();
-            //updateHistogram_cpu();
-            
+            mIterator.updateHistogram();
+            state.totalCount += mIterator.getPointsCount();            
             iterations.batchCount += iterations.iterPerFrame;        
             mParams.iterations.batchCount.updateDisplay();
             

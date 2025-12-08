@@ -26,7 +26,8 @@ export function IteratorCPU(){
         iterationsArray:    null, // array to perform iterations 
         float32Array:       null, // array to pass points to rendering
         posBuffer: null,    // buffer to pass points array to to GPU 
-        posLoc:    null,    // location of attribute to pass points to GPU        
+        posLoc:    null,    // location of attribute to pass points to GPU  
+        pointsPerIteration: 0, 
     };
 
 
@@ -128,7 +129,8 @@ export function IteratorCPU(){
         const {histogram} = state;
          
         let ccfg = cfg.coloring;
-        
+        mCpuConfig.pointsPerIteration = 0;
+       
         const cpuAccUni = {
           colorSpeed:   ccfg.colorSpeed,
           colorPhase:   ccfg.colorPhase,
@@ -169,12 +171,12 @@ export function IteratorCPU(){
                     gl.enable(gl.BLEND);   
                     gl.blendFunc(gl.ONE, gl.ONE);        
                     gl.blendEquation(gl.FUNC_ADD);
-                    state.totalCount += icfg.batchSize;
+                    mCpuConfig.pointsPerIteration += icfg.batchSize;
                 } else {
                     // discard previous histogram data 
                     gl.disable(gl.BLEND); 
                     gl.clear(gl.COLOR_BUFFER_BIT);
-                    state.totalCount = icfg.batchSize;
+                    mCpuConfig.pointsPerIteration = icfg.batchSize;
                 }
                 gl.drawArrays(gl.POINTS, 0, icfg.batchSize);
             }
@@ -255,6 +257,7 @@ export function IteratorCPU(){
         init:           init,
         restart:        restart,
         updateHistogram: updateHistogram,
-        
+        getPointsCount:  () => {return mCpuConfig.pointsPerIteration;}
+
     }
 }

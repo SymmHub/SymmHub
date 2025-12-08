@@ -8,9 +8,9 @@ uniform float u_resolution;
 
 void main () {
     
-   vec2 coord = gl_FragCoord.xy;
-   float b = floor(coord.y) * u_resolution + floor(coord.x);
-   outColor = vec4(qrand2(b)*2. - 1., 0., 1.);    
+   ivec2 coord = ivec2(gl_FragCoord.xy);
+   int b = (coord.y) * int(u_resolution) + coord.x;
+   outColor = vec4(qrand2i(int(b))*2. - 1., 0., 1.);    
    
 }
 `;

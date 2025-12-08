@@ -53,7 +53,7 @@ const gpuIterator = {
 
 const gpuAccumulator = {
     name: 'gpuAccumulator',
-    vs: {frags:[complexFrag, gpuAccumulatorVert]},
+    vs: {frags:[complexFrag, attUtils, gpuAccumulatorVert]},
     //vs: {frags:[blitVert]},
     fs: {frags:[gpuAccumulatorFrag]},
 }

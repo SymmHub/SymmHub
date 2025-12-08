@@ -10,7 +10,7 @@ export const  gpu_accumulator_vert =
 #endif
 
 
-in vec2 a_position;  // used as 2D indices of points ([0,0], [0,1], etc)
+in vec2 a_index;  // used as 2D indices of points ([0,0], [0,1], etc)
 
 uniform sampler2D uPointsData;  /// XY of points stored in texels
 
@@ -36,8 +36,9 @@ vec3 colorscale (float t) {
 
 
 void main() {
-
-  vec4 data = texelFetch(uPointsData, ivec2(a_position), 0);
+  
+  ivec2 dataDim = textureSize(uPointsData,0);
+  vec4 data = texelFetch(uPointsData, ivec2(a_index), 0);
   vec2 pnt = data.xy;
   float dist = data.z;
 
@@ -47,7 +48,8 @@ void main() {
   gl_Position = vec4(xy, 0, 1);
   gl_PointSize = uPointSize;
 
-  //gl_Position.xy += jitter * (qrand2(a_position.w) - 0.5) / resolution;  
+  float pointIndex = a_index.y * float(dataDim.x) + a_index.x;
+  gl_Position.xy += jitter * (qrand2(pointIndex) - 0.5) / resolution;  
   
 }
 `;
