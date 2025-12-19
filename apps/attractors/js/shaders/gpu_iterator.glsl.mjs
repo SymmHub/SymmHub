@@ -32,6 +32,14 @@ vec2 iterate(vec2 p){
         sin(u_a * p.y) + u_c * cos(u_a * p.x),
         sin(u_b * p.x) + u_d * cos(u_b * p.y));    
 }
+
+vec2 iterate_1(vec2 p){
+   
+   return vec2(
+        (1.-u_c)*sin(u_a * p.y) + u_c * cos(u_a * p.x),
+        (1.-u_d)*sin(u_b * p.x) + u_d * cos(u_b * p.y));    
+}
+
 void main () {
 
     vec2 p0 = texelFetch(uPointsData, ivec2(gl_FragCoord.xy), 0).xy;

@@ -33,6 +33,8 @@ import {
     IteratorCPU,
     IteratorGPU,
     
+    ParamsAnimator,
+    
 } from './modules.js';
 
 
@@ -114,7 +116,8 @@ function IteratedAttractor(options){
         state: { // current state data
             histogram:      null,
             group:          null,
-            attractor:      null, 
+            attractor:      null,
+            attAnimator:    null,
             renderedBuffer: null,  
             bufferWidth:    (1 << 11), 
             needToClear:    true,
@@ -135,18 +138,7 @@ function IteratedAttractor(options){
     let mIteratorGPU = null;
     let mIteratorCPU = null;
     let mIterator = null;    
-    //
-    //  data for CPU calculations 
-    //
-    const mCpuConfig = {
-        
-        histogramBuilder:  'cpuHistogramBuilder',
-        iterationsArray:    null, // array to perform iterations 
-        float32Array:       null, // array to pass points to rendering
-        posBuffer: null,    // buffer to pass points array to to GPU 
-        posLoc:    null,    // location of attribute to pass points to GPU        
-    };
-    
+
     function init(glContext) {
 
         
@@ -157,6 +149,7 @@ function IteratedAttractor(options){
         
         scfg.attractor = CliffordAttractor(); 
         scfg.attractor.addEventListener('attractorChanged', onAttractorChanged);
+        scfg.attAnimator = ParamsAnimator({count: 4, onChange: onAnimatorChanged});
                 
         scfg.renderedBuffer = createImageBuffer(gl, scfg.bufferWidth);
         scfg.histogram = createHistogramBuffer(gl, scfg.bufferWidth);
@@ -203,7 +196,7 @@ function IteratedAttractor(options){
             mIterator =  mIteratorCPU;
         }
         
-        mIterator.restart(iterParams);        
+        mIterator.restart                                    (iterParams);        
         
         mConfig.iterations.batchCount = 0;
         mParams.iterations.batchCount.updateDisplay();
@@ -220,8 +213,20 @@ function IteratedAttractor(options){
         gl.clear(gl.COLOR_BUFFER_BIT);
     }
 
+    function render(arg){
+        console.log(`${MYNAME}.render()`, arg);
+        const {state} = mConfig;
+        if(state.attAnimator.enabled){
+        
+            state.attAnimator.setTime(arg.animationTime);
+            let values = mConfig.state.attAnimator.getValues();
+            state.attractor.setParamValues(values);
+        }
+    }
+
     function getSimBuffer(options){
         
+
         if(options.simTransConfig){
         
             // buffer was possible moved 
@@ -232,6 +237,7 @@ function IteratedAttractor(options){
                 simTrans.simCenterY != bufTrans.centerY ||
                 simTrans.simScale   != bufTrans.scale ||
                 simTrans.simAngle   != bufTrans.angle) {
+                
                 // buffer moved, need to re-render 
                 bufTrans.centerX    = simTrans.simCenterX;
                 bufTrans.centerY    = simTrans.simCenterY;
@@ -252,29 +258,22 @@ function IteratedAttractor(options){
         return mConfig.state.renderedBuffer;
     }
      
-    //
-    //  render the image buffer 
-    //
-    function _renderBuffer(options){
     
-        if(mConfig.iterations.useGPU){
-            renderBuffer_gpu(options);
-        } else {
-            renderBuffer_cpu(options);        
-        }
-    }
-
+    let debugCount = 100;
     
     function renderBuffer(options){
         
-        //if(true)console.log(`${MYNAME}.renderBuffer()`, options);
-        //if(DEBUG)console.trace(`${MYNAME}.render()`);
+        if(debugCount -- > 0) console.log(`${MYNAME}.renderBuffer()`, options);
+
         let gl = mGL;
-        
-        if(false)console.log(`${MYNAME}.render()`);
-            
+                    
         const {state} = mConfig;
         
+        if(state.attAnimator.enabled && state.attAnimator.isModified){        
+            let values = mConfig.state.attAnimator.getValues();
+            state.attractor.setParamValues(values);
+        }
+
         if(state.needToClear){
             
             if(DEBUG)console.log(`${MYNAME}.clearHistogram()`);
@@ -302,6 +301,8 @@ function IteratedAttractor(options){
             
             mParams.iterations.batchCount.updateDisplay();
             mParams.iterations.avgDist.updateDisplay();
+         } else {
+            state.needToRender = false;
          }
         
         let ccfg = cfg.coloring;
@@ -377,7 +378,13 @@ function IteratedAttractor(options){
         informListeners();
 
     }
-         
+
+    function onAnimatorChanged(){
+        if(true)console.log(`${MYNAME}.onAnimatorChanged()`); 
+        mConfig.state.needToRender = true;
+        informListeners();
+    }
+    
     function onAttractorChanged(){
         
         if(DEBUG)console.log(`${MYNAME}.onAttractorChanged()`); 
@@ -471,6 +478,7 @@ function IteratedAttractor(options){
         
         let params = {
             attractor:      ParamObj({name:'attractor params', obj: cfg.state.attractor}),
+            animation:      ParamObj({name:'attractor animation', obj: cfg.state.attAnimator}),
             attTrans:       makeAttTransParams(cfg.attTrans, onres),
             iterations:     makeIterationsParams(cfg.iterations, onres),
             symmetry:       makeSymmetryParams(cfg.symmetry, onres),            
@@ -626,13 +634,16 @@ function IteratedAttractor(options){
         setGroup        : setGroup, 
         init            : init,
         getParams:  ()=>{return mParams;},
+        render:         render,
         getSimBuffer    : getSimBuffer,
         setParamsMap    : setParamsMap,
-        //render          : render,
-        //get canAnimate() {return true;},
+        get canAnimate() {return true;},
     };
     return myself;
-}
+    
+} // function IteratedAttractor 
+    
+    
     
 function createHistogramBuffer(gl, width){
         

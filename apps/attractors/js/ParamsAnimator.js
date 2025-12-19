@@ -1,0 +1,147 @@
+import {
+
+    ParamFloat,
+    ParamGroup,
+    ParamBool, 
+} from './modules.js';
+
+const PI = Math.PI;
+const MYNAME = 'ParamsAnimator';
+const DEBUG = true;
+const initialOffsets = [-1.85, -2.5, -1.05, 0.585];
+
+export function ParamsAnimator(arg){
+
+    
+    let mParams;
+    
+    let mConfig = {
+        isModified: true,
+        count:      4,
+        enabled:    false,
+        period:     10., // animation period in seconds 
+        fraction:   0,  // current fraction of period 
+        
+        values: [
+        ],
+        
+    };
+    
+    init(arg);
+    
+    function init(arg = {}){
+    
+       mConfig.onChange = (arg.onChange)? arg.onChange: null;
+       
+       mConfig.count = (arg.count)? arg.count: 4;
+       mConfig.values = initValues(mConfig.count);
+       
+       mParams = makeParams(mConfig);       
+    }
+
+    function initValues(count){
+    
+        let values = [];
+        
+        for(let i = 0; i < count; i++){
+        
+            values[i] = {
+                offset: initialOffsets[i], 
+                freq: 1,
+                phase: 0,
+                amplitude: 0, 
+                
+            }
+        }
+        return values;
+    }
+        
+    function makeParams(config){
+        let onc = onParamChanged;
+        let params = {
+            enabled:    ParamBool({obj: config, key: 'enabled', onChange: onc}),
+            period:     ParamFloat({obj: config, key: 'period', onChange: onc}), 
+            fraction:   ParamFloat({obj: config, key: 'fraction', onChange: onc}), 
+            //values: {},
+        };
+        
+        let Acode = 'A'.charCodeAt(0);
+        if(DEBUG)console.log(`${MYNAME} paramsCount: `, config.count); 
+        let pargroup = {                               
+        };
+        for(let i=0; i < config.count; i++){        
+            let groupName = String.fromCharCode(Acode + i);
+            if(DEBUG)console.log(`${MYNAME} groupName:  `, groupName); 
+            pargroup[groupName] = makeValueParams(groupName, config.values[i], onc);
+        }
+
+        params.params = ParamGroup({name:'animParams', params:pargroup}) 
+        return params;
+    }
+    
+    function makeValueParams(name, value, onchange){
+    
+        return ParamGroup({
+            name: name,
+            params: {
+                offset:     ParamFloat({obj: value, key: 'offset', onChange:onchange}),
+                amplitude:  ParamFloat({obj: value, key: 'amplitude',onChange:onchange}),
+                freq:       ParamFloat({obj: value, key: 'freq',onChange:onchange}),
+                phase:      ParamFloat({obj: value, key: 'phase',onChange:onchange}),
+            }
+        });        
+    }
+
+    function onParamChanged(){
+       mConfig.isModified = true;
+       if(mConfig.onChange) mConfig.onChange();
+    }
+
+    function setTime(time){
+    
+        const t = time;
+        const config = mConfig;
+        let fraction = (time/config.period) % 1.;
+        config.fraction = fraction;
+        mConfig.isModified = true;
+        mParams.fraction.updateDisplay();
+    }
+
+    //
+    // calculate and return array of values of this animator 
+    // 
+    function getValues(){
+
+        let config = mConfig;
+        if(!config.isModified) return config.lastValues;
+        
+        let values = [];
+        
+        let t = config.fraction;//* config.period;
+        
+        for(let i = 0; i < config.count; i++){
+            let v = config.values[i];
+            values[i] = v.offset + v.amplitude * Math.sin(2*PI*(t*v.freq + v.phase));
+        }
+        config.isModified = false;
+        config.lastValues = values;
+        return values;            
+    }
+    
+    function getParams(){
+        return mParams;
+    }
+    
+    const myself = {
+        init: init,
+        getParams:  getParams,
+        setTime:    setTime, 
+        getValues:  getValues, 
+        get enabled() {return mConfig.enabled}, 
+        get isModified() {return mConfig.isModified},
+        getName:        () => MYNAME,
+    };
+
+    return myself;
+    
+}

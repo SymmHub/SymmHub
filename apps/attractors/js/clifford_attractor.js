@@ -10,6 +10,9 @@ const MYNAME = 'CliffordAttractor';
 
 const DEBUG = true;
 
+
+const paramNames = ['a','b', 'c', 'd'];
+
 function CliffordAttractor(){
 
     let mEventDispatcher = new EventDispatcher();
@@ -109,6 +112,14 @@ function CliffordAttractor(){
         
     }
  
+    function setParamValues(values){        
+        for(let i =0; i < values.length; i++){
+            let pname = paramNames[i];
+            mConfig[pname] = values[i];
+            mParams[pname].updateDisplay();            
+        }        
+        onParamChanged();
+    }
     
     myself = {
         getParams:          ()=>mParams,
@@ -116,6 +127,7 @@ function CliffordAttractor(){
         addEventListener:   addEventListener,
         cpuIteratePoint:    cpuIteratePoint,
         getUniforms:        getUniforms,
+        setParamValues:     setParamValues,
     }
     return myself;
 }

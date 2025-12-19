@@ -83,3 +83,7 @@ export {
 export {
     IteratorGPU
 } from './iterator_gpu.js';
+
+export {
+    ParamsAnimator
+    } from './ParamsAnimator.js';
