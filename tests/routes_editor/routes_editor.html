@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetry Hub | Endpoint Mapper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/routes_editor.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Symmetry Hub</h1>
+        <div class="subtitle">Producer & Consumer Registry</div>
+    </header>
+
+    <div class="container">
+        <div class="builder-grid">
+            <div style="width: 30px;"></div> <!-- Delete col spacer -->
+            <div class="column-header">
+                <i class="producer-color"></i>
+                Producer (Outputs)
+            </div>
+            <div></div> <!-- Spacer -->
+            <div class="column-header">
+                <i class="consumer-color"></i>
+                Consumer (Inputs)
+            </div>
+        </div>
+
+        <div id="rowList" class="row-list">
+            <!-- Rows will be injected here -->
+        </div>
+
+        <button class="add-row-btn" id="addRowBtn">
+            <span>+</span> Add New Connection
+        </button>
+    </div>
+
+    <script src="js/routes_editor.js"></script>
+</body>
+
+</html>
