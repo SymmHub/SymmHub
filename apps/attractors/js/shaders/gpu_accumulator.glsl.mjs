@@ -44,12 +44,13 @@ void main() {
 
   v_color = colorscale(dist * colorSpeed * colorSign);
   
-  vec2 xy = cMul(uAttScale,pnt) + uAttCenter;   
-  gl_Position = vec4(xy, 0, 1);
-  gl_PointSize = uPointSize;
 
   float pointIndex = a_index.y * float(dataDim.x) + a_index.x;
-  gl_Position.xy += jitter * (qrand2(pointIndex) - 0.5) / resolution;  
+  vec2 randomShift = jitter * (qrand2(pointIndex) - 0.5) / resolution;  
+
+  vec2 histPnt = cMul(uAttScale,pnt) + uAttCenter + randomShift;   
+  gl_Position = vec4(histPnt, 0, 1);
+  gl_PointSize = uPointSize;
   
 }
 `;
