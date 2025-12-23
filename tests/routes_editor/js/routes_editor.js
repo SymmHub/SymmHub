@@ -1,39 +1,4 @@
-// --- DATA DOMAIN ---
-
-class OutputObject {
-    constructor(name, properties) {
-        this.name = name;
-        this.properties = properties;
-    }
-    getOutputProperties() {
-        return this.properties;
-    }
-}
-
-class InputObject {
-    constructor(name, properties) {
-        this.name = name;
-        this.properties = properties;
-    }
-    getInputProperties() {
-        return this.properties;
-    }
-}
-
-// Mock Data
-const producerLibrary = [
-    new OutputObject("TelemSrv_01", ["speed", "altitude", "fuel_level", "heading"]),
-    new OutputObject("EnvSensor_A", ["temp_c", "humidity_pct", "pressure_hpa"]),
-    new OutputObject("PowerGrid_Main", ["voltage", "current_draw", "freq_hz"]),
-    new OutputObject("Camera_Entry", ["motion_score", "lux_level", "is_recording"])
-];
-
-const consumerLibrary = [
-    new InputObject("Status_Dash", ["slot1_val", "slot2_val", "alert_msg"]),
-    new InputObject("BrakingSys", ["control_input", "safety_override"]),
-    new InputObject("DataLogger", ["log_payload", "priority_level"]),
-    new InputObject("LightControl", ["dim_target", "switch_state"])
-];
+import { producerLibrary, consumerLibrary } from './models.js';
 
 // --- UI LOGIC ---
 
@@ -88,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         rowList.appendChild(rowDiv);
     }
 
+    // Attach to window so inline HTML handlers work with modules
     window.removeRow = function (id) {
         const element = document.getElementById(`row-${id}`);
         element.style.transition = 'all 0.3s ease';
