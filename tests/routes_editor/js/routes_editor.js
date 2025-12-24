@@ -5,7 +5,7 @@ import {
 
 // --- UI LOGIC ---
 
-function createRoutesEditor(producerLibrary, consumerLibrary, onChange) {
+export function createRoutesEditor(producerLibrary, consumerLibrary, onChange) {
     const container = document.createElement('div');
 
     // Create Header Grid

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetry Hub | Editor Test Runner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/routes_editor.css">
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #eee;
+            padding: 40px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .test-header {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .test-header h1 {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            color: #fff;
+        }
+
+        .status-box {
+            background: #252525;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4a9eff;
+        }
+
+        #test-results {
+            background: #000;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+        }
+
+        .log-group {
+            margin-left: 20px;
+            border-left: 1px solid #333;
+            padding-left: 15px;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .error {
+            color: #f44336;
+        }
+
+        .info {
+            color: #4a9eff;
+        }
+
+        .editor-preview {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid #333;
+        }
+
+        .preview-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 20px;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="test-header">
+        <h1>Routes Editor Test Runner</h1>
+        <p>Validating UI logic, event hooks, and DOM manipulation.</p>
+    </div>
+
+    <div class="status-box">
+        Check the browser console (F12) for detailed assertion logs.
+    </div>
+
+    <div id="test-results">
+        <div class="log-entry info">Initializing test suite...</div>
+    </div>
+
+    <div class="editor-preview">
+        <span class="preview-label">Live Test Environment</span>
+        <div id="test-editor-container"></div>
+    </div>
+
+    <!-- Override console.log to show results on page -->
+    <script>
+        const resultsDiv = document.getElementById('test-results');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalGroup = console.group;
+        const originalGroupEnd = console.groupEnd;
+
+        function appendLog(msg, type = 'log') {
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.textContent = msg;
+            resultsDiv.appendChild(div);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        console.log = (...args) => {
+            originalLog(...args);
+            const msg = args.join(' ');
+            if (msg.startsWith('✓')) appendLog(msg, 'success');
+            else appendLog(msg);
+        };
+
+        console.error = (...args) => {
+            originalError(...args);
+            appendLog('ERROR: ' + args.join(' '), 'error');
+        };
+
+        console.group = (name) => {
+            originalGroup(name);
+            appendLog('▶ ' + name, 'info');
+        };
+    </script>
+
+    <script type="module" src="js/routes_editor_test.js"></script>
+</body>
+
+</html>
