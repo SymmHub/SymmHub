@@ -2,7 +2,7 @@ import {
     ParamGui,
     InstantHelp,
 }
-from "../modules.js";
+from "../../../lib/uilib/modules.js";
 
 const gui = new ParamGui({
     name: "gui with new api",
@@ -78,3 +78,6 @@ gui.add({
 	min:0,
 	labelText:'particle spin'
 });
+
+
+

@@ -5,7 +5,7 @@ import {
     InstantHelp,
     BooleanButton
 }
-from "../modules.js";
+from "../../../lib/uilib/modules.js";
 
 const gui = new ParamGui({
     name: "gui with new api",
@@ -185,3 +185,5 @@ sele.addOption("zeta");
 
 gui.setActive(false);
 gui.setActive(true);
+
+

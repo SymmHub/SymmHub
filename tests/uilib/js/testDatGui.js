@@ -2,7 +2,7 @@ import {
     DatGUI,
     InstantHelp
 }
-from "../modules.js";
+from "../../../lib/uilib/modules.js";
 
 //ParamGui.logConversion = true;
 
@@ -156,3 +156,6 @@ function modifyDG(gui){
 }
 
 testDatGui();
+
+
+

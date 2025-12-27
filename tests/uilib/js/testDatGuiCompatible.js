@@ -2,7 +2,7 @@ import {
     ParamGui,
     InstantHelp
 }
-from "../modules.js";
+from "../../../lib/uilib/modules.js";
 
 //ParamGui.logConversion = true;
 
@@ -95,3 +95,6 @@ gui.add(parameters, "say hello").setLabelText("button");
 
 parameters.selection = "beta";
 gui.add(parameters, "selection", ["alpha", "beta", "gamma", "delta", "epsilon"]);
+
+
+

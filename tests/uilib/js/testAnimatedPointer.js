@@ -1,11 +1,11 @@
 
 import {
   AnimatedPointer 
-} from '../modules.js';
+} from '../../../lib/uilib/modules.js';
 
 import {
     Chart, registerables, 
-} from '../../extlib/chart.js.lib/chart.js';
+} from '../../../lib/extlib/chart.js.lib/chart.js';
 
 
 //Chart.register(...registerables);
@@ -172,4 +172,7 @@ function test3(){
 //test1();
 //test2();
 test3();
+
+
+
 

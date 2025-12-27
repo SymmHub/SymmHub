@@ -3,7 +3,7 @@ import {
     createInternalWindow,
     TreeNode, 
     createTreeView,
-} from '../modules.js';
+} from '../../../lib/uilib/modules.js';
 
 
 
@@ -88,3 +88,6 @@ function testTree(){
 
 testTree();
 //testTreeNode();
+
+
+
