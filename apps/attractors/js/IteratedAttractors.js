@@ -196,7 +196,7 @@ function IteratedAttractor(options){
             mIterator =  mIteratorCPU;
         }
         
-        mIterator.restart                                    (iterParams);        
+        mIterator.restart(iterParams);
         
         mConfig.iterations.batchCount = 0;
         mParams.iterations.batchCount.updateDisplay();
@@ -208,8 +208,8 @@ function IteratedAttractor(options){
     function clearHistogram(gl, buffer){
         
         gl.bindFramebuffer(gl.FRAMEBUFFER, buffer.fbo);
-        gl.disable(gl.BLEND);        
-        gl.clearColor(0.0, 0.0, 0.0, 0.0);    
+        gl.disable(gl.BLEND);
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
     }
 
@@ -277,7 +277,8 @@ function IteratedAttractor(options){
         if(state.needToClear){
             
             if(DEBUG)console.log(`${MYNAME}.clearHistogram()`);
-            clearHistogram(gl, state.histogram);
+            clearHistogram(gl, state.histogram.write);
+            state.histogram.swap();
             restart();
             state.needToClear = false;
             state.totalCount = 0;
@@ -317,7 +318,7 @@ function IteratedAttractor(options){
             const bufWidth = cfg.state.bufferWidth;
             
             let histUni = {
-                src:            cfg.state.histogram,
+                src:            cfg.state.histogram.read,
                 scale:          state.totalCount/ (bufWidth*bufWidth),
                 gamma:          ccfg.gamma,
                 contrast:       ccfg.contrast,
@@ -649,7 +650,7 @@ function createHistogramBuffer(gl, width){
         
     const filtering = gl.NEAREST;
     const format = gl.RGBA, intFormat = gl.RGBA32F, texType = gl.FLOAT;        
-    return createFBO( gl, width, width, intFormat, format, texType, filtering );
+    return createDoubleFBO( gl, width, width, intFormat, format, texType, filtering );
 
 }
 

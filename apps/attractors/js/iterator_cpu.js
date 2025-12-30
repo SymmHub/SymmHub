@@ -141,7 +141,7 @@ export function IteratorCPU(){
           uAttScale:    cfg.bufTrans.transScale,
           uAttCenter:   cfg.bufTrans.transCenter,
         };
-        
+        console.log('trans: ', cfg.bufTrans.transScale, cfg.bufTrans.transCenter);
         cpuAcc.bind();
         cpuAcc.setUniforms(cpuAccUni);
 
@@ -164,13 +164,17 @@ export function IteratorCPU(){
                 gl.vertexAttribPointer(mCpuConfig.posLoc, 4, gl.FLOAT, false, 0, 0);        
                                                             
                 gl.viewport(0, 0, histogram.width, histogram.height);              
-                gl.bindFramebuffer(gl.FRAMEBUFFER, histogram.fbo);
+                gl.bindFramebuffer(gl.FRAMEBUFFER, histogram.write.fbo);
                 
                 if(icfg.accumulate && (batchCount > startCount)){
                     // enable blend to accumulate histogram 
-                    gl.enable(gl.BLEND);   
-                    gl.blendFunc(gl.ONE, gl.ONE);        
-                    gl.blendEquation(gl.FUNC_ADD);
+                    gl.disable(gl.BLEND);   
+                    //gl.enable(gl.BLEND);   
+                    //gl.blendFunc(gl.ONE, gl.ONE);        
+                    //gl.blendEquation(gl.FUNC_ADD);
+                    // pass histogram data to the renderer
+                    let histUni = {uHistogram: histogram.read};
+                    cpuAcc.setUniforms(histUni);                    
                     mCpuConfig.pointsPerIteration += icfg.batchSize;
                 } else {
                     // discard previous histogram data 
@@ -179,6 +183,7 @@ export function IteratorCPU(){
                     mCpuConfig.pointsPerIteration = icfg.batchSize;
                 }
                 gl.drawArrays(gl.POINTS, 0, icfg.batchSize);
+                histogram.swap();
             }
         }
     } // renderHistogram_cpu()
