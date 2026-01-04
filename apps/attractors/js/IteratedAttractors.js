@@ -34,6 +34,7 @@ import {
     IteratorGPU,
     
     ParamsAnimator,
+    printBufferData,
     
 } from './modules.js';
 
@@ -76,6 +77,7 @@ function IteratedAttractor(options){
             maxBatchCount: 100,
             avgDist:    0,
             batchCount: 0,
+            accumThreshold: 1000,
         },
         
         attTrans: {
@@ -119,12 +121,11 @@ function IteratedAttractor(options){
             attractor:      null,
             attAnimator:    null,
             renderedBuffer: null,  
-            bufferWidth:    (1 << 11), 
+            bufferWidth:    (1 << 10), // 20 
             needToClear:    true,
             needToRender:   true,
             needToIterate:  true,
             totalCount:     0,
-            hasNewPoints:   false,
         }
         
         
@@ -177,6 +178,9 @@ function IteratedAttractor(options){
         
     }
 
+    //
+    //  it is called when we need to restart iterations 
+    //
     function restart(){
         
         if(DEBUG) console.log(`${MYNAME}.restart()`);
@@ -185,9 +189,12 @@ function IteratedAttractor(options){
             histogram:      state.histogram,
             attractor:      state.attractor,
             groupSampler:   state.groupSampler,
+            group:          state.group,
             coloring:       mConfig.coloring,
             iterations:     mConfig.iterations,
             bufTrans:       mConfig.bufTrans,
+            symmetry:       mConfig.symmetry,
+            
         }
         
         if(mConfig.iterations.useGPU){
@@ -196,11 +203,9 @@ function IteratedAttractor(options){
             mIterator =  mIteratorCPU;
         }
         
-        mIterator.restart(iterParams);
-        
         mConfig.iterations.batchCount = 0;
         mParams.iterations.batchCount.updateDisplay();
-        mConfig.state.hasNewPoints = true;
+        mIterator.restart(iterParams);
         
     }
     
@@ -233,6 +238,7 @@ function IteratedAttractor(options){
             
             let bufTrans = mConfig.bufTrans;
             let simTrans = options.simTransConfig;
+            
             if( simTrans.simCenterX != bufTrans.centerX || 
                 simTrans.simCenterY != bufTrans.centerY ||
                 simTrans.simScale   != bufTrans.scale ||
@@ -259,7 +265,7 @@ function IteratedAttractor(options){
     }
      
     
-    let debugCount = 100;
+    let debugCount = 0;
     
     function renderBuffer(options){
         
@@ -267,7 +273,7 @@ function IteratedAttractor(options){
 
         let gl = mGL;
                     
-        const {state} = mConfig;
+        const {state, coloring} = mConfig;
         
         if(state.attAnimator.enabled && state.attAnimator.isModified){        
             let values = mConfig.state.attAnimator.getValues();
@@ -279,6 +285,7 @@ function IteratedAttractor(options){
             if(DEBUG)console.log(`${MYNAME}.clearHistogram()`);
             clearHistogram(gl, state.histogram.write);
             state.histogram.swap();
+            clearHistogram(gl, state.histogram.write);
             restart();
             state.needToClear = false;
             state.totalCount = 0;
@@ -293,39 +300,37 @@ function IteratedAttractor(options){
         let cfg = mConfig;
         let {iterations} = mConfig;
         
-        if(iterations.batchCount < iterations.maxBatchCount){
+        if(state.totalCount == 0 || iterations.batchCount < iterations.maxBatchCount){
         
             mIterator.updateHistogram();
-            state.totalCount += mIterator.getPointsCount();            
-            iterations.batchCount += iterations.iterPerFrame;        
-            mParams.iterations.batchCount.updateDisplay();
+            state.totalCount = mIterator.getPointsCount();
             
+            //iterations.batchCount is updated by mIterator
             mParams.iterations.batchCount.updateDisplay();
             mParams.iterations.avgDist.updateDisplay();
          } else {
             state.needToRender = false;
          }
         
-        let ccfg = cfg.coloring;
         
         if(true){
         
-            let buffer = cfg.state.renderedBuffer.read;
+            let buffer = state.renderedBuffer.read;
             let histRenderer = AttPrograms.getProgram(gl, 'histogramRenderer');        
             gl.viewport(0, 0, buffer.width, buffer.height);  
                     
             histRenderer.bind();
-            const bufWidth = cfg.state.bufferWidth;
-            
+            const {bufferWidth} = state;
+            const {gamma,contrast,brightness,saturation,dynamicRange,invert, pointSize} = coloring;
             let histUni = {
-                src:            cfg.state.histogram.read,
-                scale:          state.totalCount/ (bufWidth*bufWidth),
-                gamma:          ccfg.gamma,
-                contrast:       ccfg.contrast,
-                brightness:     ccfg.brightness,
-                saturation:     ccfg.saturation,
-                dynamicRange:   ccfg.dynamicRange,
-                invert:         ccfg.invert,            
+                src:            state.histogram.read,
+                scale:          state.totalCount / (bufferWidth*bufferWidth),
+                gamma:          gamma,
+                contrast:       contrast,
+                brightness:     brightness,
+                saturation:     saturation,
+                dynamicRange:   dynamicRange,
+                invert:         invert, 
             };
             
             histRenderer.setUniforms(histUni);
@@ -396,11 +401,22 @@ function IteratedAttractor(options){
         mConfig.state.needToIterate = true;
         scheduleRepaint();
     }
+
+    function onPrintHistogram(){
+        let hist = mConfig.state.histogram.read;        
+        printBufferData(mGL, hist);
+    }
+
+    function onPrintBuffer(){
+        let buf = mConfig.state.renderedBuffer.read;        
+        printBufferData(mGL, buf);
+    }
+    
     
     //
     //  convert on user request between absolute and relative transform
     //
-    function onConvertTransformAbsRel(){
+    function onConvertTransformAbs2Rel(){
     
         // Ca - absolute center 
         // Sa - absolute scale 
@@ -521,7 +537,7 @@ function IteratedAttractor(options){
             name:   'attractor transform',
             params: {        
                 absolute:       ParamBool({obj:tcfg, key: 'absolute', onChange: onc}),
-                abs2rel:        ParamFunc({func: onConvertTransformAbsRel,name: 'ans<->rel'}),
+                abs2rel:        ParamFunc({func: onConvertTransformAbs2Rel,name: 'ans<->rel'}),
                 centerX:        ParamFloat({obj:tcfg, key: 'centerX', onChange: onc}),
                 centerY:        ParamFloat({obj:tcfg, key: 'centerY', onChange: onc}),
                 scale:          ParamFloat({obj:tcfg, key: 'scale', onChange: onc}),
@@ -540,15 +556,17 @@ function IteratedAttractor(options){
                 isRunning:      ParamBool({obj:icfg,key:'isRunning', onChange:onc}),   
                 //iterate:        ParamBool({obj:icfg,key:'iterate', onChange:onc}),   
                 accumulate:     ParamBool({obj:icfg,key:'accumulate', onChange:onc}),   
-
-                makeStep:       ParamFunc({func:onSingleStep, name:'single step!'}),            
                 startCount:     ParamInt({obj:icfg, key:'startCount', onChange: onc}), 
                 seed:           ParamInt({obj:icfg, key:'seed', onChange: onc}), 
                 iterPerFrame:   ParamInt({obj:icfg, key:'iterPerFrame', onChange:onc}),
                 batchSize:      ParamInt({obj:icfg, key:'batchSize', onChange:onc}),
-                maxBatchCount:  ParamInt({obj:icfg, key:'maxBatchCount', onChange:onc}),            
+                maxBatchCount:  ParamInt({obj:icfg, key:'maxBatchCount', onChange:onc}),
                 batchCount:     ParamInt({obj:icfg, key:'batchCount'}),
+                accumThreshold: ParamFloat({obj:icfg, key:'accumThreshold', onChange:onc}),
                 avgDist:        ParamFloat({obj:icfg, key:'avgDist'}), 
+                makeStep:       ParamFunc({func:onSingleStep, name:'single step!'}),
+                printHist:      ParamFunc({func:onPrintHistogram, name:'Print Histogram!'}),
+                printBufer:     ParamFunc({func:onPrintBuffer, name:'Print Buffer!'}),
             }
             
             

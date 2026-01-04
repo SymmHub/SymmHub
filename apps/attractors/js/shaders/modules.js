@@ -18,6 +18,10 @@ import {
     gpu_iterator_vert,
     gpu_iterator_frag
 }   from './gpu_iterator.glsl.mjs';
+import {
+    gpu_copy_vert,
+    gpu_copy_frag
+}   from './gpu_copy.glsl.mjs';
 
 
 
@@ -43,6 +47,6 @@ export const Shaders = {
     gpu_accumulator_frag:   gpu_accumulator_frag,
     gpu_iterator_vert:      gpu_iterator_vert,
     gpu_iterator_frag:      gpu_iterator_frag,
-    
-    
-}
+    gpu_copy_vert:          gpu_copy_vert,
+    gpu_copy_frag:          gpu_copy_frag,
+};

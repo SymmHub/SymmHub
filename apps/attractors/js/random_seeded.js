@@ -12,6 +12,18 @@ export function qrand2y(n) {
     return (0.5 + q1 * n) % 1;
 }
 
+export function qrand2(count){
+    
+    function nextPoint(pnt){
+        pnt[0] = qrand2x(count);
+        pnt[1] = qrand2y(count);
+        count++;
+    }
+    return {
+        nextPoint: nextPoint
+    }
+}
+
 //
 // https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
 //
@@ -23,6 +35,8 @@ export function mulberry32(a) {
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   }
 }
+
+
 
 export function splitmix32(a) {
  return function() {

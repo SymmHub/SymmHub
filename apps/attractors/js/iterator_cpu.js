@@ -1,6 +1,7 @@
 import {
     AttPrograms,
     splitmix32,
+    qrand2,
     cAdd, 
     cSub, 
     cDiv, 
@@ -8,7 +9,7 @@ import {
     iPoint,
 } from './modules.js';
 
-const DEBUG = false;
+const DEBUG = true;
 
 const MYNAME = 'IteratorCPU';
 
@@ -16,7 +17,8 @@ export function IteratorCPU(){
 
     let mGL = null;
     
-    let mConfig = null; // pointer to IteratedAttractors mConfig
+    //let mConfig = null; // pointer to IteratedAttractors mConfig
+    let mIterParams = null;
     //
     //  data for CPU calculations 
     //
@@ -28,58 +30,65 @@ export function IteratorCPU(){
         posBuffer: null,    // buffer to pass points array to to GPU 
         posLoc:    null,    // location of attribute to pass points to GPU  
         pointsPerIteration: 0, 
+        needRestart: true,
     };
 
 
     function init(gl, config){
         if(DEBUG) console.log(`${MYNAME}.init()`);
         mGL = gl;
-        mConfig = config;
+        //mConfig = config;
         
         mCpuConfig.posBuffer = gl.createBuffer();
 
         let prg = AttPrograms.getProgram(gl, mCpuConfig.histogramBuilder);
         
         mCpuConfig.posLoc = gl.getAttribLocation(prg.program, "a_position");
-        if(true) console.log(`${MYNAME} histogramBuilder: `, prg);
-        if(true) console.log(`${MYNAME}mCpuConfig.posLoc: `, mCpuConfig.posLoc);
-        cpuInitArrays();
+        //if(true) console.log(`${MYNAME} histogramBuilder: `, prg);
+        //if(true) console.log(`${MYNAME}mCpuConfig.posLoc: `, mCpuConfig.posLoc);
+        //cpuInitArrays();
     }
 
     function cpuInitArrays(){
-    
-        let asize = 4 * mConfig.iterations.batchSize;
-        mCpuConfig.iterationsArray = new Float32Array(asize);
-        mCpuConfig.float32Array = new Float32Array(asize);        
+       
+        
+        if(mIterParams && mCpuConfig.iterationsArray){
+            if(mCpuConfig.iterationsArray.length != mIterParams.iterations.batchSize * 4){
+                let asize = (4*mIterParams.iterations.batchSize);            
+                mCpuConfig.iterationsArray = new Float32Array(asize);
+                mCpuConfig.float32Array = new Float32Array(asize);        
+            }
+        } else {
+                mCpuConfig.iterationsArray = new Float32Array(4);
+                mCpuConfig.float32Array = new Float32Array(4);                        
+        }
     }
 
-    function restart(){
+    function restart(iterParams){
 
-        if(DEBUG) console.log(`${MYNAME}.restart()`);
+        if(DEBUG) console.log(`${MYNAME}.restart() `, iterParams);
+        mIterParams = iterParams;
         
-        if(mCpuConfig.iterationsArray.length != mConfig.iterations.batchSize * 4) {
-            cpuInitArrays();
-        }
-        initRandomPoints(mCpuConfig.iterationsArray);    
+        cpuInitArrays();        
+        initRandomPoints(mCpuConfig.iterationsArray); 
+        mCpuConfig.needRestart = true;
     
     }
 
     function cpuIteratePoint(pnt0, pnt1){
         
-        mConfig.state.attractor.cpuIteratePoint(pnt0, pnt1);
+        mIterParams.attractor.cpuIteratePoint(pnt0, pnt1);
         
-        if(mConfig.symmetry.enabled){
+        if(mIterParams.symmetry.enabled){
             // map point to FD 
-            cpuPnt2fd(mConfig.state.group, pnt1);
+            cpuPnt2fd(mIterParams.group, pnt1);
         }
         
     }
 
     function iterate(array) {
     
-        if(DEBUG) console.log(`${MYNAME}.iterate()`);
-        let cfg = mConfig.iterations;
-        const {state} = mConfig;
+        //if(DEBUG) console.log(`${MYNAME}.iterate()`);
         
         let avgDist = 0;
         let pnt0 = {x:0, y:0};
@@ -105,95 +114,125 @@ export function IteratorCPU(){
         }
         
         avgDist /= (array.length/4);
-        cfg.avgDist = avgDist;
-        state.hasNewPoints = true;
+        mIterParams.iterations.avgDist = avgDist;
         
     }
 
 
     //
-    //
+    // is called by IteratedAttractor 
     //
     function updateHistogram(){
         
-        if(DEBUG)console.log(`${MYNAME} updateHistogram()`);
+        // if(DEBUG)console.log(`${MYNAME}.updateHistogram()`);
         const gl = mGL;
 
-        let cpuAcc = AttPrograms.getProgram(gl, mCpuConfig.histogramBuilder);
-
-        const cfg = mConfig;
-        const {state} = cfg;
-        const icfg = cfg.iterations;
-        cfg.state.needToRender = icfg.isRunning;
-        let {iterPerFrame,batchCount, startCount} = icfg;
-        const {histogram} = state;
-         
-        let ccfg = cfg.coloring;
-        mCpuConfig.pointsPerIteration = 0;
-       
-        const cpuAccUni = {
-          colorSpeed:   ccfg.colorSpeed,
-          colorPhase:   ccfg.colorPhase,
-          pointSize:    ccfg.pointSize,
-          colorSign:    ccfg.colorSign,
-          jitter:       ccfg.jitter,
-          resolution:   [histogram.width, histogram.height],
-          uAttScale:    cfg.bufTrans.transScale,
-          uAttCenter:   cfg.bufTrans.transCenter,
-        };
-        console.log('trans: ', cfg.bufTrans.transScale, cfg.bufTrans.transCenter);
-        cpuAcc.bind();
-        cpuAcc.setUniforms(cpuAccUni);
-
         
+
+        const {histogram, iterations, coloring, bufTrans} = mIterParams;        
+        const {iterPerFrame,batchCount, startCount, batchSize, accumulate, accumThreshold} = iterations;
+        const {pointSize, colorSpeed, colorPhase,colorSign,jitter} = coloring;  
+        const {transScale, transCenter} = bufTrans;
+
+        const cpuAccUni = {
+          colorSpeed:   colorSpeed,
+          colorPhase:   colorPhase,
+          uPointSize:    Math.max(pointSize, 1.),
+          colorSign:    colorSign,
+          jitter:       jitter,
+          resolution:   [histogram.width, histogram.height],
+          uAttScale:    transScale,
+          uAttCenter:   transCenter,
+          uHistThreshold: accumThreshold,  
+          uPixelSizeFactor: (pointSize > 1.) ? (1./(pointSize*pointSize)): 1., 
+        };
+        
+        if(mCpuConfig.needRestart){
+            
+            if(DEBUG)console.log(`${MYNAME} initialIterations`);
+            mCpuConfig.needRestart = false;
+
+            for(let k = 0; k < startCount; k++){
+                iterate(mCpuConfig.iterationsArray);
+            }
+            
+            appendPointToHistogram(histogram, accumulate, batchSize, cpuAccUni);
+            mCpuConfig.pointsPerIteration = iterations.batchSize;
+        }
+        
+
         for(let k = 0; k < iterPerFrame; k++){
             
-            iterate(mCpuConfig.iterationsArray);
-               
-           
-            if(state.hasNewPoints){
-                //
-                // append points to histogram 
-                //
-
-                prepareFloat32Array();
-                gl.bindBuffer(gl.ARRAY_BUFFER, mCpuConfig.posBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, mCpuConfig.float32Array, gl.STATIC_DRAW);
-                
-                gl.enableVertexAttribArray(mCpuConfig.posLoc);
-                gl.vertexAttribPointer(mCpuConfig.posLoc, 4, gl.FLOAT, false, 0, 0);        
-                                                            
-                gl.viewport(0, 0, histogram.width, histogram.height);              
-                gl.bindFramebuffer(gl.FRAMEBUFFER, histogram.write.fbo);
-                
-                if(icfg.accumulate && (batchCount > startCount)){
-                    // enable blend to accumulate histogram 
-                    gl.disable(gl.BLEND);   
-                    //gl.enable(gl.BLEND);   
-                    //gl.blendFunc(gl.ONE, gl.ONE);        
-                    //gl.blendEquation(gl.FUNC_ADD);
-                    // pass histogram data to the renderer
-                    let histUni = {uHistogram: histogram.read};
-                    cpuAcc.setUniforms(histUni);                    
-                    mCpuConfig.pointsPerIteration += icfg.batchSize;
-                } else {
-                    // discard previous histogram data 
-                    gl.disable(gl.BLEND); 
-                    gl.clear(gl.COLOR_BUFFER_BIT);
-                    mCpuConfig.pointsPerIteration = icfg.batchSize;
-                }
-                gl.drawArrays(gl.POINTS, 0, icfg.batchSize);
-                histogram.swap();
+            if(iterations.batchCount >=  iterations.maxBatchCount) {
+                return;
             }
+            
+            //if(DEBUG) console.log(`${MYNAME} iteration: ${k}`);
+            iterate(mCpuConfig.iterationsArray);
+            appendPointToHistogram(histogram, accumulate, batchSize, cpuAccUni);
+            iterations.batchCount++;
+            
         }
-    } // renderHistogram_cpu()
+    } // updateHistogram()
+
+    //
+    //  
+    //
+    function appendPointToHistogram(histogram, accumulate, batchSize, cpuAccUni){
+        
+        //if(DEBUG)console.log(`${MYNAME}.addPointsToHistogram()`);
+        const gl = mGL;
+        prepareFloat32Array();
+        let cpuAcc = AttPrograms.getProgram(gl, mCpuConfig.histogramBuilder);
+        cpuAcc.bind();
+        cpuAcc.setUniforms(cpuAccUni);
+        //console.log('cpuAccUni: ', cpuAccUni);
+        gl.bindBuffer(gl.ARRAY_BUFFER, mCpuConfig.posBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, mCpuConfig.float32Array, gl.STATIC_DRAW);
+        
+        gl.enableVertexAttribArray(mCpuConfig.posLoc);
+        gl.vertexAttribPointer(mCpuConfig.posLoc, 4, gl.FLOAT, false, 0, 0);        
+                                                    
+        gl.viewport(0, 0, histogram.width, histogram.height);              
+        gl.bindFramebuffer(gl.FRAMEBUFFER, histogram.write.fbo);
+        
+        if(accumulate ){
+            // enable blend to accumulate histogram 
+            // need blendi8ng to accumulate historghram data 
+            gl.enable(gl.BLEND);   
+            gl.blendFunc(gl.ONE, gl.ONE);
+            gl.blendEquation(gl.FUNC_ADD); 
+            // pass histogram data to the renderer                    
+            cpuAcc.setUniforms({uHistogram: histogram.read});                    
+            mCpuConfig.pointsPerIteration += batchSize;
+        } else {
+            // discard previous histogram data 
+            gl.disable(gl.BLEND); 
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            // enable blending to accumulate histogram 
+            gl.enable(gl.BLEND);   
+            gl.blendFunc(gl.ONE, gl.ONE);
+            gl.blendEquation(gl.FUNC_ADD); 
+            mCpuConfig.pointsPerIteration = batchSize;
+        }
+        gl.drawArrays(gl.POINTS, 0, batchSize);
+        histogram.swap();
+        let copyProg = AttPrograms.getProgram(gl, 'gpuCopy');
+        
+        copyProg.bind();                
+        copyProg.setUniforms({uSrc: histogram.read})
+        gl.viewport(0, 0, 1.1*histogram.width, 1.1*histogram.height);              
+        gl.disable(gl.BLEND);
+        copyProg.blit(histogram.write);
+        histogram.swap();
+    } // function appendHistogram()
     
     //
     //  transform point into fundamental domain 
     //
     function cpuPnt2fd(group, pnt){
         
-        let {transScale, transCenter} = mConfig.bufTrans;
+        let {transScale, transCenter} = mIterParams.bufTrans;
         
         //
         // transform point into group coordinates
@@ -202,7 +241,7 @@ export function IteratorCPU(){
         
         // transform to FD 
         let ipnt = iPoint(pb);
-        let res = group.toFundDomain({pnt: ipnt, maxIterations: mConfig.symmetry.maxIter});
+        let res = group.toFundDomain({pnt: ipnt, maxIterations: mIterParams.symmetry.maxIter});
         //
         // transform point back 
         //
@@ -213,49 +252,39 @@ export function IteratorCPU(){
     }
 
     function prepareFloat32Array(){
-        if(mConfig.state.hasNewPoints){
-            mConfig.state.hasNewPoints = false;
-            mCpuConfig.float32Array.set(mCpuConfig.iterationsArray); 
-        }            
+        mCpuConfig.float32Array.set(mCpuConfig.iterationsArray);                 
     }
  
     function initRandomPoints(array) {
     
-        console.log(`${MYNAME}.initRandomPoints(array)`);
-        let cfg = mConfig.iterations;
+        if(DEBUG)console.log(`${MYNAME}.initRandomPoints(array)`);
+        let {iterations} = mIterParams;
         //let par = mParams.iterations;
-        let {startCount, seed} = cfg;
+        let {startCount, seed} = iterations;
 
         //let seed = 12345;
         //let rnd = mulberry32(seed);
-        let rnd = splitmix32(seed);
-        //lcg,
+        //let rnd = splitmix32(seed);
         //let rnd = antti2(123);
-                
-        let w = Math.floor(Math.sqrt(cfg.batchSize)) | 0;
+        let rnd = qrand2(seed);
         
-        let pnt = {x:0, y:0};
-   
-        for (let i = 0; i < array.length; i += 4) {
+        let pnt = [0,0];
+        for (let i = 0, j = 0; i < array.length; i++, j+=4) {
             
-            let ii = i/4;
-
-            let x = 2*rnd()-1;
-            let y = 2*rnd()-1;
+            //let x = 2*rnd()-1;
+            //let y = 2*rnd()-1;
+            rnd.nextPoint(pnt);
+            let x = 2*pnt[0] - 1;
+            let y = 2*pnt[1] - 1;
             
             //console.log('ii: ', ii, ' x:', x, ' y:', y);
-            pnt.x = x;
-            pnt.y = y;
-           // for (let j = 0; j < startCount; j++) {
-           //     cpuIteratePoint(pnt, pnt);
-           // }
-            array[i]   = pnt.x;
-            array[i+1] = pnt.y;
-            array[i+2] = 0.;
-            array[i+3] = 0.;
-            
+            //pnt.x = x;
+            //pnt.y = y;
+            array[j]   = x;
+            array[j+1] = y;
+            array[j+2] = Math.atan2(y,x)/Math.PI;// initial coloring 
+            array[j+3] = i >> 2;
         }
-                
     }
  
     return {

@@ -23,6 +23,8 @@ const gpuAccumulatorVert  = {obj:AttShaders, id:'gpu_accumulator_vert' };
 const gpuAccumulatorFrag  = {obj:AttShaders, id:'gpu_accumulator_frag' };
 const gpuIteratorVert     = {obj:AttShaders, id:'gpu_iterator_vert' };
 const gpuIteratorFrag     = {obj:AttShaders, id:'gpu_iterator_frag' };
+const gpuCopyVert         = {obj:AttShaders, id:'gpu_copy_vert' };
+const gpuCopyFrag         = {obj:AttShaders, id:'gpu_copy_frag' };
 
 
 
@@ -51,6 +53,12 @@ const gpuIterator = {
     fs: {frags:[gpuIteratorFrag]},
 }
 
+const gpuCopy = {
+    name: 'gpuCopy',
+    vs: {frags:[gpuCopyVert]},
+    fs: {frags:[gpuCopyFrag]},
+}
+
 const gpuAccumulator = {
     name: 'gpuAccumulator',
     vs: {frags:[complexFrag, attUtils, gpuAccumulatorVert]},
@@ -67,6 +75,7 @@ function programBuilder(){
         gpuAccumulator,
         gpuInitializer,
         gpuIterator,
+        gpuCopy,
     };
  
     

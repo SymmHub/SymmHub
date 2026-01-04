@@ -267,7 +267,7 @@ function printBufferData(gl, buffer){
         let data = readPixelsFromBuffer(gl, att, x, y, width, height);
         let length = data.length/4;
         
-        for(let iy = 0; iy < width; iy++){
+        for(let iy = 0; iy < heigtht; iy++){
             let line = '';
             for(let ix = 0; ix < width; ix++){
                 let ind = 4*(ix + iy*width);

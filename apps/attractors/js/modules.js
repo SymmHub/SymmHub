@@ -42,6 +42,7 @@ export {
     buildProgramsCached,
     makeSamplesArray,    
     readPixelsFromBuffer,
+    printBufferData,
 } from "../../../lib/symhublib/symhublib.js";
 
 export { 
@@ -73,7 +74,7 @@ export {
     antti2,
     qrand2x,
     qrand2y,
-    
+    qrand2,
 } from './random_seeded.js';
 
 export {
