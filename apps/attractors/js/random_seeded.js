@@ -12,17 +12,6 @@ export function qrand2y(n) {
     return (0.5 + q1 * n) % 1;
 }
 
-export function qrand2(count){
-    
-    function nextPoint(pnt){
-        pnt[0] = qrand2x(count);
-        pnt[1] = qrand2y(count);
-        count++;
-    }
-    return {
-        nextPoint: nextPoint
-    }
-}
 
 //
 // https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
@@ -36,8 +25,6 @@ export function mulberry32(a) {
   }
 }
 
-
-
 export function splitmix32(a) {
  return function() {
    a |= 0;
@@ -49,6 +36,7 @@ export function splitmix32(a) {
    return ((t = t ^ t >>> 15) >>> 0) / 4294967296;
   }
 }
+
 
 export function lcg(s) {
     
@@ -62,4 +50,48 @@ export function antti2(seed) {
     var x = Math.sin(seed++) * 10000;
     return (x - Math.floor(x));
   }
+}
+
+//
+// wrapper for random number which returns 2D points
+// 
+function rnd_2d(rnd){
+    function nextPoint(pnt){
+        pnt[0] = rnd();
+        pnt[1] = rnd();
+    }
+    return {
+        nextPoint: nextPoint
+    }
+}
+
+//
+//  functions returning 2d points 
+//
+export function qrand2(seed){
+    
+    function nextPoint(pnt){
+        pnt[0] = qrand2x(seed);
+        pnt[1] = qrand2y(seed);
+        seed++;
+    }
+    return {
+        nextPoint: nextPoint
+    }
+}
+
+export function mulberry32_2d(seed) {
+    return rnd_2d(mulberry32(seed));
+}
+
+export function splitmix32_2d(seed) {
+    return rnd_2d(splitmix32(seed));
+}
+
+export function lcg_2d(seed){
+    return rnd_2d(lcg(seed));
+}
+
+export function antti2_2d(seed){
+    return rnd_2d(antti2(seed));
 }

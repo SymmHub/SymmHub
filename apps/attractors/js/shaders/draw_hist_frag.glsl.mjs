@@ -45,7 +45,7 @@ void main () {
     vec4 state = texture(src, texCoord);
     float density = state.r / scale;
 
-    float v = density == 0.0 ? -20.0 : log(density)/log(1000.0);
+    float v = (density == 0.0) ? (-20.0) : (log(density)/log(1000.0));
     float value = contrast * v + brightness;
     value = smoothLimit(value, dynamicRange);
     if (!invert) value = 1.0 - value;
@@ -57,7 +57,8 @@ void main () {
     yuv.x = value;
 
     // Fade the saturation to zero at white and black:
-    yuv.yz *= saturation * value * (1.0 - value) * 4.0;
+    //yuv.yz *= saturation * value * (1.0 - value) * 4.0;
+    yuv.yz *= saturation;
 
     rgb = yuv2rgb(yuv);
     

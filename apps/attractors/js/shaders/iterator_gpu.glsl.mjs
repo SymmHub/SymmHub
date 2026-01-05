@@ -1,5 +1,5 @@
 
-export const gpu_iterator_vert = 
+export const iterator_gpu_vert = 
 `
 in vec2 position;
 
@@ -10,7 +10,7 @@ void main () {
 }`;
 
 
-export const  gpu_iterator_frag = 
+export const  iterator_gpu_frag = 
 
 `
 #ifndef PI

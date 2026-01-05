@@ -1,5 +1,5 @@
 
-export const gpu_copy_vert = 
+export const copy_vert = 
 `
 in vec2 position;
 
@@ -9,7 +9,7 @@ void main () {
     
 }`;
 
-export const  gpu_copy_frag = 
+export const  copy_frag = 
 `
 uniform sampler2D uSrc;
 out vec4 outPnt;

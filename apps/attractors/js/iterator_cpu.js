@@ -9,9 +9,9 @@ import {
     iPoint,
 } from './modules.js';
 
-const DEBUG = true;
-
 const MYNAME = 'IteratorCPU';
+const DEBUG = false;
+
 
 export function IteratorCPU(){
 
@@ -24,13 +24,13 @@ export function IteratorCPU(){
     //
     const mCpuConfig = {
         
-        histogramBuilder:  'cpuHistogramBuilder',
+        accumulator:  'cpuAccumulator',
         iterationsArray:    null, // array to perform iterations 
         float32Array:       null, // array to pass points to rendering
         posBuffer: null,    // buffer to pass points array to to GPU 
         posLoc:    null,    // location of attribute to pass points to GPU  
         pointsPerIteration: 0, 
-        needRestart: true,
+        needRestart: true,  // flag to restart iterations 
     };
 
 
@@ -41,10 +41,10 @@ export function IteratorCPU(){
         
         mCpuConfig.posBuffer = gl.createBuffer();
 
-        let prg = AttPrograms.getProgram(gl, mCpuConfig.histogramBuilder);
+        let prg = AttPrograms.getProgram(gl, mCpuConfig.accumulator);
         
         mCpuConfig.posLoc = gl.getAttribLocation(prg.program, "a_position");
-        //if(true) console.log(`${MYNAME} histogramBuilder: `, prg);
+        //if(true) console.log(`${MYNAME} accumulator: `, prg);
         //if(true) console.log(`${MYNAME}mCpuConfig.posLoc: `, mCpuConfig.posLoc);
         //cpuInitArrays();
     }
@@ -75,18 +75,7 @@ export function IteratorCPU(){
     
     }
 
-    function cpuIteratePoint(pnt0, pnt1){
-        
-        mIterParams.attractor.cpuIteratePoint(pnt0, pnt1);
-        
-        if(mIterParams.symmetry.enabled){
-            // map point to FD 
-            cpuPnt2fd(mIterParams.group, pnt1);
-        }
-        
-    }
-
-    function iterate(array) {
+    function iterate(attractor, group, symmetry, array) {
     
         //if(DEBUG) console.log(`${MYNAME}.iterate()`);
         
@@ -96,7 +85,8 @@ export function IteratorCPU(){
         for (let i = 0; i < array.length; i += 4) {
             pnt0.x = array[i];
             pnt0.y = array[i+1];
-            cpuIteratePoint(pnt0, pnt1);
+            attractor.cpuIteratePoint(pnt0, pnt1);
+            if(symmetry.enabled) cpuPnt2fd(group, pnt1);
             //let x = array[i];
             //let y = array[i + 1];
             //calculate(xy, xy1);
@@ -105,7 +95,7 @@ export function IteratorCPU(){
             let dx = x1 - pnt0.x;
             let dy = y1 - pnt0.y;
             //let dist = Math.sqrt(dx * dx + dy * dy);
-            let dist = (Math.atan2(pnt0.y, pnt0.x)/Math.PI+1.);
+            let dist = (Math.atan2(pnt0.y, pnt0.x)/Math.PI + 1.);
             avgDist += dist;
             array[i    ] = x1;
             array[i + 1] = y1;
@@ -126,38 +116,39 @@ export function IteratorCPU(){
         
         // if(DEBUG)console.log(`${MYNAME}.updateHistogram()`);
         const gl = mGL;
-
-        
-
-        const {histogram, iterations, coloring, bufTrans} = mIterParams;        
-        const {iterPerFrame,batchCount, startCount, batchSize, accumulate, accumThreshold} = iterations;
+        let config = mCpuConfig;             
+        const {histogram, attractor, iterations, coloring, bufTrans, symmetry, group} = mIterParams;        
         const {pointSize, colorSpeed, colorPhase,colorSign,jitter} = coloring;  
+        const {iterPerFrame,batchCount, startCount, batchSize, accumulate, accumThreshold} = iterations;
         const {transScale, transCenter} = bufTrans;
 
-        const cpuAccUni = {
-          colorSpeed:   colorSpeed,
-          colorPhase:   colorPhase,
-          uPointSize:    Math.max(pointSize, 1.),
-          colorSign:    colorSign,
-          jitter:       jitter,
-          resolution:   [histogram.width, histogram.height],
-          uAttScale:    transScale,
-          uAttCenter:   transCenter,
-          uHistThreshold: accumThreshold,  
-          uPixelSizeFactor: (pointSize > 1.) ? (1./(pointSize*pointSize)): 1., 
+        const accUni = {
+            uUseGpu: false, 
+
+            colorSpeed:     colorSpeed,
+            colorPhase:     colorPhase,
+            uPointSize:     Math.max(pointSize, 1.),
+            colorSign:      colorSign,
+            jitter:         jitter,
+            resolution:     [histogram.width, histogram.height],
+            uAttScale:      transScale,
+            uAttCenter:     transCenter,
+            uHistThreshold: accumThreshold,  
+            uPixelSizeFactor: (pointSize > 1.) ? (1./(pointSize*pointSize)): 1., 
         };
         
-        if(mCpuConfig.needRestart){
+        if(config.needRestart){
             
-            if(DEBUG)console.log(`${MYNAME} initialIterations`);
-            mCpuConfig.needRestart = false;
-
+            //if(DEBUG)console.log(`${MYNAME} initialIterations`);
+            config.needRestart = false;
+            config.pointsPerIteration = 0;
+            
             for(let k = 0; k < startCount; k++){
-                iterate(mCpuConfig.iterationsArray);
+                iterate(attractor, group, symmetry, config.iterationsArray);
             }
             
-            appendPointToHistogram(histogram, accumulate, batchSize, cpuAccUni);
-            mCpuConfig.pointsPerIteration = iterations.batchSize;
+            appendPointToHistogram(histogram, accumulate, batchSize, accUni);
+            config.pointsPerIteration = batchSize;
         }
         
 
@@ -168,8 +159,8 @@ export function IteratorCPU(){
             }
             
             //if(DEBUG) console.log(`${MYNAME} iteration: ${k}`);
-            iterate(mCpuConfig.iterationsArray);
-            appendPointToHistogram(histogram, accumulate, batchSize, cpuAccUni);
+            iterate(attractor, group, symmetry, config.iterationsArray);
+            appendPointToHistogram(histogram, accumulate, batchSize, accUni);
             iterations.batchCount++;
             
         }
@@ -178,15 +169,15 @@ export function IteratorCPU(){
     //
     //  
     //
-    function appendPointToHistogram(histogram, accumulate, batchSize, cpuAccUni){
+    function appendPointToHistogram(histogram, accumulate, batchSize, accUni){
         
         //if(DEBUG)console.log(`${MYNAME}.addPointsToHistogram()`);
         const gl = mGL;
         prepareFloat32Array();
-        let cpuAcc = AttPrograms.getProgram(gl, mCpuConfig.histogramBuilder);
+        let cpuAcc = AttPrograms.getProgram(gl, mCpuConfig.accumulator);
         cpuAcc.bind();
-        cpuAcc.setUniforms(cpuAccUni);
-        //console.log('cpuAccUni: ', cpuAccUni);
+        cpuAcc.setUniforms(accUni);
+        //console.log('accUni: ', accUni);
         gl.bindBuffer(gl.ARRAY_BUFFER, mCpuConfig.posBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, mCpuConfig.float32Array, gl.STATIC_DRAW);
         
@@ -217,11 +208,11 @@ export function IteratorCPU(){
         }
         gl.drawArrays(gl.POINTS, 0, batchSize);
         histogram.swap();
-        let copyProg = AttPrograms.getProgram(gl, 'gpuCopy');
         
+        let copyProg = AttPrograms.getProgram(gl, 'gpuCopy');        
         copyProg.bind();                
         copyProg.setUniforms({uSrc: histogram.read})
-        gl.viewport(0, 0, 1.1*histogram.width, 1.1*histogram.height);              
+        gl.viewport(0, 0, histogram.width, histogram.height);              
         gl.disable(gl.BLEND);
         copyProg.blit(histogram.write);
         histogram.swap();

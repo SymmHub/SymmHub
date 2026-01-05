@@ -40,7 +40,7 @@ import {
 
 
 const MYNAME = 'IteratedAttractor';
-const DEBUG = true;
+const DEBUG = false;
 
 function IteratedAttractor(options){
     

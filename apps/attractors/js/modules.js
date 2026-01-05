@@ -69,9 +69,13 @@ export {
 
 export {
     mulberry32,
+    mulberry32_2d,
     splitmix32,
+    splitmix32_2d,
     lcg,
+    lcg_2d,
     antti2,
+    antti2_2d,
     qrand2x,
     qrand2y,
     qrand2,

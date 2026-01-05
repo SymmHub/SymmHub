@@ -8,7 +8,7 @@ import {
 
 const MYNAME = 'CliffordAttractor';
 
-const DEBUG = true;
+const DEBUG = false;
 
 
 const paramNames = ['a','b', 'c', 'd'];
