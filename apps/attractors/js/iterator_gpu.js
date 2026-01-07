@@ -23,9 +23,9 @@ export function IteratorGPU(gl){
         indexBuffer: null,  // points indices 
         pointsPerIteration: 0,  // points in the current iteration 
         pointDataWidth:     0,  // initial data width 
-        batchSize:          0,  // ititial batcvh size
         poinsData:          null, // doublke FBO used for iterations
         initialData:        null, // FBO used to store initial random data 
+        oldBatchSize:          0,  // ititial batcvh size
         oldSeed:            -1,   // seed for initialization 
     };
     let mGL = null;
@@ -55,8 +55,8 @@ export function IteratorGPU(gl){
     
     function initBuffers(gl){
     
-        const {pointDataWidth} = mGpuConfig;
-        const { batchSize } = mIterParams.iterations;
+        const {pointDataWidth, oldBatchSize, oldSeed} = mGpuConfig;
+        const { batchSize, seed } = mIterParams.iterations;
         
         let newWidth = Math.ceil(Math.sqrt(batchSize)) | 0;
         if(DEBUG) console.log(`${MYNAME}.initBuffers() batchSize: `, batchSize, ` newWidth:`, newWidth);
@@ -68,14 +68,15 @@ export function IteratorGPU(gl){
             mGpuConfig.initialData = createFBO( gl, newWidth, newWidth, gl.RGBA32F, gl.RGBA, gl.FLOAT, gl.NEAREST);            
             mGpuConfig.pointDataWidth = newWidth;
         }
-        
-        if(mGpuConfig.batchSize != batchSize || mGpuConfig.oldSeed != mIterParams.iterations.seed){
+
+        if(oldBatchSize != batchSize || oldSeed != seed){
             let indexArray = makeIndexArray(newWidth, batchSize);
             mGpuConfig.indexBuffer = makeIndexBuffer(gl, indexArray);
-            if(DEBUG)console.log('${MYNAME}.makeIndexBuffer() batchSize:', batchSize);
-            mGpuConfig.batchSize = batchSize;
+            if(false)console.log('${MYNAME}.makeIndexBuffer() batchSize:', batchSize, '', oldBatchSize, seed, oldSeed);
+            if(false)console.log('${MYNAME}.makeIndexBuffer() indexArray:', indexArray);
             initPointsData2(mGpuConfig.initialData ); 
-            mGpuConfig.oldSeed == mIterParams.iterations.seed;
+            mGpuConfig.oldSeed = seed;
+            mGpuConfig.oldBatchSize = batchSize;
             
         }
         //if(DEBUG) console.log(`${MYNAME}.initBuffers() indexArray: `, indexArray);                
@@ -104,7 +105,7 @@ export function IteratorGPU(gl){
     function initPointsData2(pData){
                 
         // TODO make initialization only if needed 
-        if(DEBUG)console.log(`${MYNAME}.initPointsData2()`, pData);
+        if(true)console.log(`${MYNAME}.initPointsData2()`, pData);
         let gl = mGL;
         // fill data array with random points 
         let {pointDataWidth} = mGpuConfig;
@@ -143,7 +144,7 @@ export function IteratorGPU(gl){
         let config = mGpuConfig;        
         const {histogram, attractor, groupData, coloring, iterations, bufTrans} = mIterParams;
         const {pointSize, colorSpeed, colorPhase,colorSign,jitter} = coloring; 
-        let{ accumulate, startCount, iterPerFrame, accumThreshold} = iterations;  
+        let{ accumulate, startCount, iterPerFrame, accumThreshold, batchSize} = iterations;  
         const {transScale, transCenter} = bufTrans;
 
         let iterUni = attractor.getUniforms();
@@ -177,7 +178,7 @@ export function IteratorGPU(gl){
             for(let k = 0; k  < iterations.startCount; k++){
                 iterate(iterProg, pointsData, iterUni);
             }
-            appendPointsToHistogram(accProg, histogram, pointsData, accumulate, accUni, indexBuffer);
+            appendPointsToHistogram(accProg, histogram, pointsData, accumulate, accUni, indexBuffer, batchSize);
         }
         
         for(let k = 0; k < iterPerFrame; k++){
@@ -188,7 +189,7 @@ export function IteratorGPU(gl){
             // do iteration
             iterate(iterProg, pointsData, iterUni)
             // render histogram 
-            appendPointsToHistogram(accProg, histogram, pointsData, accumulate, accUni, indexBuffer);
+            appendPointsToHistogram(accProg, histogram, pointsData, accumulate, accUni, indexBuffer, batchSize);
 
             iterations.batchCount++;
             
@@ -219,11 +220,11 @@ export function IteratorGPU(gl){
     //
     //  append points to histogram 
     //
-    function appendPointsToHistogram(accProg, histogram, pointsData, accumulate, accUni, indexBuffer){
+    function appendPointsToHistogram(accProg, histogram, pointsData, accumulate, accUni, indexBuffer, batchSize){
         
         if(DEBUG)console.log(`${MYNAME}.appendPointsToHistogram()`);
         let gl = mGL;
-        let batchSize = pointsData.width*pointsData.height;        
+        //let batchSize = pointsData.width*pointsData.height;        
         if(accumulate){
             // enable blend to accumulate histogram 
             gl.enable(gl.BLEND);   
