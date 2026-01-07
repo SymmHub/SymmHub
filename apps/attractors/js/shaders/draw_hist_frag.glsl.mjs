@@ -56,9 +56,9 @@ void main () {
     // Use the lightness from the overall density
     yuv.x = value;
 
-    // Fade the saturation to zero at white and black:
-    //yuv.yz *= saturation * value * (1.0 - value) * 4.0;
     yuv.yz *= saturation;
+    // Fade the saturation to zero at white and black:
+    yuv.yz *= value * (1.0 - value) * 4.;
 
     rgb = yuv2rgb(yuv);
     

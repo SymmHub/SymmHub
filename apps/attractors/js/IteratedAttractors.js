@@ -41,6 +41,7 @@ import {
 
 const MYNAME = 'IteratedAttractor';
 const DEBUG = false;
+const PRINT_TIME = true;
 
 function IteratedAttractor(options){
     
@@ -219,7 +220,7 @@ function IteratedAttractor(options){
     }
 
     function render(arg){
-        console.log(`${MYNAME}.render()`, arg);
+        if(DEBUG)console.log(`${MYNAME}.render()`, arg);
         const {state} = mConfig;
         if(state.attAnimator.enabled){
         
@@ -301,8 +302,11 @@ function IteratedAttractor(options){
         let {iterations} = mConfig;
         
         if(state.totalCount == 0 || iterations.batchCount < iterations.maxBatchCount){
-        
+            
+            const start = performance.now();
             mIterator.updateHistogram();
+            const duration = performance.now() - start;
+            if(PRINT_TIME) console.log(`updateHistogram() time: ${duration.toFixed(4)} ms`);
             state.totalCount = mIterator.getPointsCount();
             
             //iterations.batchCount is updated by mIterator

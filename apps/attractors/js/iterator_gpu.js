@@ -2,6 +2,7 @@ import {
 
    AttPrograms,
    createDoubleFBO,
+   createFBO,
    readPixelsFromBuffer,
    qrand2, 
    mulberry32_2d,
@@ -20,9 +21,12 @@ export function IteratorGPU(gl){
         needRestart: true,
         posLoc:    null,    // location of attribute to pass points to GPU   
         indexBuffer: null,  // points indices 
-        pointDataWidth: 300, //60, //125, //(1 << 8),
-        pointsPerIteration: 0,
-        poinsCoord: null,
+        pointsPerIteration: 0,  // points in the current iteration 
+        pointDataWidth:     0,  // initial data width 
+        batchSize:          0,  // ititial batcvh size
+        poinsData:          null, // doublke FBO used for iterations
+        initialData:        null, // FBO used to store initial random data 
+        oldSeed:            -1,   // seed for initialization 
     };
     let mGL = null;
     let mIterParams;
@@ -33,6 +37,21 @@ export function IteratorGPU(gl){
         mGL = gl;       
         
     }
+        
+    function restart(iterParams){
+        
+        if(DEBUG) console.log(`${MYNAME}.restart() `, iterParams);
+        mIterParams = iterParams;
+        
+        let gl = mGL;
+                       
+        mGpuConfig.needRestart = true;
+
+        
+        //printBufferData(mGL, pointsData.read);
+        //printBufferData(mGL, pointsData.write);
+            
+    }
     
     function initBuffers(gl){
     
@@ -41,37 +60,28 @@ export function IteratorGPU(gl){
         
         let newWidth = Math.ceil(Math.sqrt(batchSize)) | 0;
         if(DEBUG) console.log(`${MYNAME}.initBuffers() batchSize: `, batchSize, ` newWidth:`, newWidth);
+
+        if(newWidth != mGpuConfig.pointDataWidth ) {
+            
+            if(DEBUG)console.log('${MYNAME}.initBuffers() newWidth:', newWidth);
+            mGpuConfig.pointsData = createDoubleFBO( gl, newWidth, newWidth, gl.RGBA32F, gl.RGBA, gl.FLOAT, gl.NEAREST);
+            mGpuConfig.initialData = createFBO( gl, newWidth, newWidth, gl.RGBA32F, gl.RGBA, gl.FLOAT, gl.NEAREST);            
+            mGpuConfig.pointDataWidth = newWidth;
+        }
         
-        let indexArray = makeIndexArray(newWidth, batchSize);
-        if(DEBUG) console.log(`${MYNAME}.initBuffers() indexArray: `, indexArray);
-                
-        if(DEBUG)console.log('${MYNAME}.initBuffers() newWidth:', newWidth);
-        mGpuConfig.indexBuffer = makeIndexBuffer(gl, indexArray);
-                
-        mGpuConfig.pointsData = createDoubleFBO( gl, newWidth, newWidth, gl.RGBA32F, gl.RGBA, gl.FLOAT, gl.NEAREST);
-        mGpuConfig.pointDataWidth = newWidth;
+        if(mGpuConfig.batchSize != batchSize || mGpuConfig.oldSeed != mIterParams.iterations.seed){
+            let indexArray = makeIndexArray(newWidth, batchSize);
+            mGpuConfig.indexBuffer = makeIndexBuffer(gl, indexArray);
+            if(DEBUG)console.log('${MYNAME}.makeIndexBuffer() batchSize:', batchSize);
+            mGpuConfig.batchSize = batchSize;
+            initPointsData2(mGpuConfig.initialData ); 
+            mGpuConfig.oldSeed == mIterParams.iterations.seed;
+            
+        }
+        //if(DEBUG) console.log(`${MYNAME}.initBuffers() indexArray: `, indexArray);                
                                         
     }
     
-    
-    function restart(iterParams){
-        
-        if(DEBUG) console.log(`${MYNAME}.restart() `, iterParams);
-        mIterParams = iterParams;
-        
-        let gl = mGL;
-        
-        initBuffers(gl);
-               
-        mGpuConfig.needRestart = true;
-
-        
-        //printBufferData(mGL, pointsData.read);
-        //printBufferData(mGL, pointsData.write);
-        
-        
-
-    }
     
     function initPointsData(pData){
 
@@ -92,28 +102,36 @@ export function IteratorGPU(gl){
     }
 
     function initPointsData2(pData){
-
+                
+        // TODO make initialization only if needed 
         if(DEBUG)console.log(`${MYNAME}.initPointsData2()`, pData);
         let gl = mGL;
         // fill data array with random points 
-        let {pointDataWidth, pointsCoord} = mGpuConfig;
-        let {iterations} = mIterParams;
-        let {startCount, seed} = iterations;
+        let {pointDataWidth} = mGpuConfig;
 
         let pcount = pointDataWidth*pointDataWidth;
-        pointsCoord = getRandomPoints2D(pcount, seed);            
-        mGpuConfig.pointsCoord = pointsCoord;
+        let coord = getRandomPoints2D(pcount, mIterParams.iterations.seed);            
         //console.log('pointsCoord: ', pointsCoord);
-        gl.bindTexture(gl.TEXTURE_2D, pData.write.texture);
+        gl.bindTexture(gl.TEXTURE_2D, pData.texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, pointDataWidth, pointDataWidth,0, gl.RGBA, gl.FLOAT, pointsCoord);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); 
-        
-        pData.swap();
-        //gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, pointDataWidth, pointDataWidth,0, gl.RGBA, gl.FLOAT, coord);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);         
+        gl.bindTexture(gl.TEXTURE_2D, null);
 
     }
-    
+
+    function initPointsData(initialData, pointsData){
+        
+        const gl = mGL;
+        let copyProg = AttPrograms.getProgram(gl, 'gpuCopy');        
+        copyProg.bind();                
+        copyProg.setUniforms({uSrc: initialData})
+        gl.viewport(0, 0, pointsData.width, pointsData.height);              
+        gl.disable(gl.BLEND);
+        copyProg.blit(pointsData.write);
+        pointsData.swap();
+        
+    }
     
     //
     //  called for updated rendering  
@@ -124,7 +142,6 @@ export function IteratorGPU(gl){
         let gl = mGL;
         let config = mGpuConfig;        
         const {histogram, attractor, groupData, coloring, iterations, bufTrans} = mIterParams;
-        const {pointsData, indexBuffer} = config; 
         const {pointSize, colorSpeed, colorPhase,colorSign,jitter} = coloring; 
         let{ accumulate, startCount, iterPerFrame, accumThreshold} = iterations;  
         const {transScale, transCenter} = bufTrans;
@@ -132,7 +149,13 @@ export function IteratorGPU(gl){
         let iterUni = attractor.getUniforms();
         let accProg = AttPrograms.getProgram(gl, 'cpuAccumulator'); 
         let iterProg = AttPrograms.getProgram(gl, 'gpuIterator');          
- 
+
+        if(config.needRestart) {            
+            initBuffers(gl);
+        }
+
+        const {initialData, pointsData, indexBuffer} = mGpuConfig; 
+        
         const accUni = {
             uUseGpu: true, 
             colorSpeed:   colorSpeed,
@@ -147,13 +170,10 @@ export function IteratorGPU(gl){
             uPixelSizeFactor: (pointSize > 1.) ? (1./(pointSize*pointSize)): 1.,           
         };            
 
-        if(config.needRestart) {
-            
+        if(config.needRestart) {            
             config.needRestart = false;
             config.pointsPerIteration = 0;
-            initPointsData2(pointsData);            
-            //iterProg.setUniforms(iterUni);
-            
+            initPointsData(initialData, pointsData);            
             for(let k = 0; k  < iterations.startCount; k++){
                 iterate(iterProg, pointsData, iterUni);
             }
