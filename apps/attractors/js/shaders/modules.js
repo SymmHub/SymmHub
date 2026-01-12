@@ -16,13 +16,18 @@ import {
 }  from './accumulator.glsl.mjs';
 
 import {
-    iterator_gpu_vert,
-    iterator_gpu_frag
-}   from './iterator_gpu.glsl.mjs';
+    iterator_vert,
+    iterator_frag
+}   from './iterator.glsl.mjs';
 import {
     copy_vert,
     copy_frag
 }   from './copy.glsl.mjs';
+
+import {
+    symmetrization_vert,
+    symmetrization_frag
+}   from './symmetrization.glsl.mjs';
 
 
 
@@ -45,8 +50,11 @@ export const Shaders = {
     accumulator_cpu_vert:   accumulator_cpu_vert,
     accumulator_gpu_vert:   accumulator_gpu_vert,
     accumulator_frag:       accumulator_frag,
-    iterator_gpu_vert:      iterator_gpu_vert,
-    iterator_gpu_frag:      iterator_gpu_frag,
+    iterator_vert:          iterator_vert,
+    iterator_frag:          iterator_frag,
     copy_vert:              copy_vert,
     copy_frag:              copy_frag,
+    symmetrization_vert:    symmetrization_vert,
+    symmetrization_frag:    symmetrization_frag,
+    symmetrization_frag:    symmetrization_frag,
 };

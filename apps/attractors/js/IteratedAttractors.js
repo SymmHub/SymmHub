@@ -79,6 +79,7 @@ function IteratedAttractor(options){
             avgDist:    0,
             batchCount: 0,
             accumThreshold: 1000,
+            printTime:      false,
         },
         
         attTrans: {
@@ -305,8 +306,10 @@ function IteratedAttractor(options){
             
             const start = performance.now();
             mIterator.updateHistogram();
-            const duration = performance.now() - start;
-            if(PRINT_TIME) console.log(`updateHistogram() time: ${duration.toFixed(4)} ms`);
+            if(cfg.iterations.printTime) {
+                const duration = performance.now() - start;
+                console.log(`updateHistogram() time: ${duration.toFixed(4)} ms`);
+            }
             state.totalCount = mIterator.getPointsCount();
             
             //iterations.batchCount is updated by mIterator
@@ -571,6 +574,7 @@ function IteratedAttractor(options){
                 makeStep:       ParamFunc({func:onSingleStep, name:'single step!'}),
                 printHist:      ParamFunc({func:onPrintHistogram, name:'Print Histogram!'}),
                 printBufer:     ParamFunc({func:onPrintBuffer, name:'Print Buffer!'}),
+                printTime:      ParamBool({obj:icfg, key:'printTime'}),
             }
             
             

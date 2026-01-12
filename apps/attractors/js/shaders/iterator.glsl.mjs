@@ -1,5 +1,5 @@
 
-export const iterator_gpu_vert = 
+export const iterator_vert = 
 `
 in vec2 position;
 
@@ -10,7 +10,7 @@ void main () {
 }`;
 
 
-export const  iterator_gpu_frag = 
+export const  iterator_frag = 
 
 `
 #ifndef PI
@@ -42,9 +42,10 @@ vec2 iterate_1(vec2 p){
 
 void main () {
 
-    vec2 p0 = texelFetch(uPointsData, ivec2(gl_FragCoord.xy), 0).xy;
-    vec2 p1 = iterate(p0);
+    vec4 p0 = texelFetch(uPointsData, ivec2(gl_FragCoord.xy), 0);
+    vec2 p1 = iterate(p0.xy);
     float dist = (atan(p0.y, p0.x)/PI + 1.);
+    
     outPnt = vec4(p1, dist, 1.);
 
 }

@@ -21,8 +21,8 @@ const accumulatorCpuVert =  {obj:AttShaders, id:'accumulator_cpu_vert'};
 //const accumulatorCpuFrag =  {obj:AttShaders, id:'accumulator_cpu_frag'};
 const accumulatorGpuVert  = {obj:AttShaders, id:'accumulator_gpu_vert' };
 const accumulatorFrag  = {obj:AttShaders, id:'accumulator_frag' };
-const iteratorGpuVert     = {obj:AttShaders, id:'iterator_gpu_vert' };
-const iteratorGpuFrag     = {obj:AttShaders, id:'iterator_gpu_frag' };
+const iteratorVert     = {obj:AttShaders, id:'iterator_vert' };
+const iteratorFrag     = {obj:AttShaders, id:'iterator_frag' };
 const copyVert            = {obj:AttShaders, id:'copy_vert' };
 const copyFrag            = {obj:AttShaders, id:'copy_frag' };
 
@@ -49,8 +49,8 @@ const gpuInitializer = {
 
 const gpuIterator = {
     name: 'gpuIterator',
-    vs: {frags:[iteratorGpuVert]},
-    fs: {frags:[iteratorGpuFrag]},
+    vs: {frags:[iteratorVert]},
+    fs: {frags:[iteratorFrag]},
 }
 
 const gpuCopy = {
