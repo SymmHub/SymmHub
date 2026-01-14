@@ -56,5 +56,4 @@ export const Shaders = {
     copy_frag:              copy_frag,
     symmetrization_vert:    symmetrization_vert,
     symmetrization_frag:    symmetrization_frag,
-    symmetrization_frag:    symmetrization_frag,
 };

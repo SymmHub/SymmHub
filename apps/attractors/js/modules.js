@@ -22,6 +22,8 @@ export {
     cPolar,
     cAbs, 
     cArg,
+    DataPacking,
+
 } from '../../../lib/invlib/invlib.js';
 
 export {

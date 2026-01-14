@@ -35,6 +35,7 @@ import {
     
     ParamsAnimator,
     printBufferData,
+    DataPacking, 
     
 } from './modules.js';
 
@@ -52,14 +53,19 @@ function IteratedAttractor(options){
         if(DEBUG)console.log(`${MYNAME}.addEventListener()`, evtType);
         mEventDispatcher.addEventListener( evtType, listener );      
     };
-
+    
+    //
+    //  called when group was changed 
+    //
     function setGroup(group) {
         
         if(false)console.log(`${MYNAME}.setGroup()`, group );
-        mConfig.state.group = group;
-        // TODO update sampler 
-        mConfig.state.groupSampler = null; 
-
+        const {state} = mConfig;
+        
+        state.group = group;
+        // update sampler 
+        DataPacking.packGroupToSampler(mGL, state.groupSampler, group); 
+        
         onRestart();
       
     };
@@ -148,15 +154,15 @@ function IteratedAttractor(options){
         mGL = glContext.gl;
         let gl = mGL;
         
-        const scfg = mConfig.state;
+        const {state} = mConfig;
         
-        scfg.attractor = CliffordAttractor(); 
-        scfg.attractor.addEventListener('attractorChanged', onAttractorChanged);
-        scfg.attAnimator = ParamsAnimator({count: 4, onChange: onAnimatorChanged});
+        state.attractor = CliffordAttractor(); 
+        state.attractor.addEventListener('attractorChanged', onAttractorChanged);
+        state.attAnimator = ParamsAnimator({count: 4, onChange: onAnimatorChanged});
                 
-        scfg.renderedBuffer = createImageBuffer(gl, scfg.bufferWidth);
-        scfg.histogram = createHistogramBuffer(gl, scfg.bufferWidth);
-        
+        state.renderedBuffer = createImageBuffer(gl, state.bufferWidth);
+        state.histogram = createHistogramBuffer(gl, state.bufferWidth);
+        state.groupSampler = DataPacking.createGroupDataSampler(gl);
         mParams = makeParams(mConfig);
 
         if(DEBUG)console.log(`${MYNAME}.init() gl:`,gl);
@@ -253,7 +259,7 @@ function IteratedAttractor(options){
                 bufTrans.angle      = simTrans.simAngle;
                 mConfig.state.needToRender = true;
                 mConfig.state.needToClear = true;
-                console.log(`${MYNAME} sim trans changed`);
+                if(DEBUG)console.log(`${MYNAME} simTrans changed`);
             }
         }
         

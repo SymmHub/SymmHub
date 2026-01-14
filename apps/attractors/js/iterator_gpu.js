@@ -142,14 +142,13 @@ export function IteratorGPU(gl){
         //if(DEBUG)console.log(`${MYNAME}.updateHistogram()`);
         let gl = mGL;
         let config = mGpuConfig;        
-        const {histogram, attractor, groupData, coloring, iterations, bufTrans} = mIterParams;
+        const {histogram, attractor, groupSampler, coloring, iterations, bufTrans, symmetry} = mIterParams;
         const {pointSize, colorSpeed, colorPhase,colorSign,jitter} = coloring; 
-        let{ accumulate, startCount, iterPerFrame, accumThreshold, batchSize} = iterations;  
+        const { accumulate, startCount, iterPerFrame, accumThreshold, batchSize} = iterations;  
         const {transScale, transCenter} = bufTrans;
 
-        let iterUni = attractor.getUniforms();
-        let accProg = AttPrograms.getProgram(gl, 'cpuAccumulator'); 
-        let iterProg = AttPrograms.getProgram(gl, 'gpuIterator');          
+        const iterUni = attractor.getUniforms();
+        const accProg = AttPrograms.getProgram(gl, 'cpuAccumulator'); 
 
         if(config.needRestart) {            
             initBuffers(gl);
@@ -165,18 +164,24 @@ export function IteratorGPU(gl){
             colorSign:    colorSign,
             jitter:       jitter,
             resolution:   [histogram.width, histogram.height],
-            uAttScale:    bufTrans.transScale,
-            uAttCenter:   bufTrans.transCenter,
+            uAttScale:    transScale,
+            uAttCenter:   transCenter,
             uHistThreshold: accumThreshold,  
             uPixelSizeFactor: (pointSize > 1.) ? (1./(pointSize*pointSize)): 1.,           
         };            
+        const symUni = {
+            uGroupData:     groupSampler,  
+            uTransScale:    transScale,
+            uTransCenter:   transCenter,
+            uMaxIter:       symmetry.maxIter,       
+        }
 
         if(config.needRestart) {            
             config.needRestart = false;
             config.pointsPerIteration = 0;
             initPointsData(initialData, pointsData);            
             for(let k = 0; k  < iterations.startCount; k++){
-                iterate(iterProg, pointsData, iterUni);
+                iterate(pointsData, iterUni, symUni);
             }
             appendPointsToHistogram(accProg, histogram, pointsData, accumulate, accUni, indexBuffer, batchSize);
         }
@@ -187,7 +192,7 @@ export function IteratorGPU(gl){
                 return;
             }
             // do iteration
-            iterate(iterProg, pointsData, iterUni)
+            iterate(pointsData, iterUni, symUni)
             // render histogram 
             appendPointsToHistogram(accProg, histogram, pointsData, accumulate, accUni, indexBuffer, batchSize);
 
@@ -200,21 +205,29 @@ export function IteratorGPU(gl){
     //
     // perform single iteration 
     //
-    function iterate(iterProg, pointsData, iterUni){
+    function iterate(pointsData, iterUni, symUni){
     
         if(DEBUG)console.log(`${MYNAME}.iterate()`);
         let gl = mGL;
-        
-        gl.disable(gl.BLEND); 
-        
+        if(false)console.log('symUni: ', symUni);
+        gl.disable(gl.BLEND);         
         gl.viewport(0, 0, pointsData.width, pointsData.height);  
+
+        const iterProg = AttPrograms.getProgram(gl, 'gpuIterator');          
         iterProg.bind();
 
         iterProg.setUniforms(iterUni);
         iterProg.setUniforms({uPointsData: pointsData.read});
         iterProg.blit(pointsData.write);
         pointsData.swap();            
-        
+        if(mIterParams.symmetry.enabled){
+            const symProg =  AttPrograms.getProgram(gl, 'symmetrization'); 
+            symProg.bind();
+            symProg.setUniforms(symUni);
+            symProg.setUniforms({uPointsData: pointsData.read});
+            symProg.blit(pointsData.write);
+            pointsData.swap();                        
+        }
     }
     
     //
