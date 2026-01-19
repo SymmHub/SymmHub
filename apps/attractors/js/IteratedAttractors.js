@@ -127,6 +127,7 @@ function IteratedAttractor(options){
             enabled:    false,        
             maxIter:    5, 
             useCrown:   false, 
+            shellThickness: 0.01, 
         },
         
         state: { // current state data
@@ -319,6 +320,7 @@ function IteratedAttractor(options){
             const start = performance.now();
             mIterator.updateHistogram();
             if(cfg.iterations.printTime) {
+                if(false) mGL.finish(); 
                 const duration = performance.now() - start;
                 console.log(`updateHistogram() time: ${duration.toFixed(4)} ms`);
             }
@@ -603,6 +605,7 @@ function IteratedAttractor(options){
                 enabled:    ParamBool({obj: cfg, key: 'enabled', onChange: onchange}),
                 maxIter:    ParamInt({obj: cfg, key: 'maxIter', onChange: onchange}),
                 useCrown:   ParamBool({obj: cfg, key: 'useCrown', onChange: onchange}),
+                shellThickness: ParamFloat({obj: cfg, key: 'shellThickness', onChange: onchange}),
                 testSymm:   ParamFunc({func:onTestSymm, name:'test symm!'}),
             }
         });

@@ -27,15 +27,30 @@ uniform bool uUsePointsAA;     // whether to render antialised points
   
 uniform sampler2D uGroupData;
 uniform int uTransformIndex;
+uniform float uShellThickness;
 
 
-vec2 applyCrownTransform2D(vec2 pnt, sampler2D groupData, int groupOffset, int crownIndex){
+vec2 applyCrownTransform2D(vec2 pnt, sampler2D groupData, int groupOffset, int crownIndex, float shellThickness){
 
     vec3 pp = vec3(pnt, 0.);
     float scale = 1.;
-    //int domainOffset = fetchInt(groupData, groupOffset);
+    int domainOffset = fetchInt(groupData, groupOffset);
     int transformsOffset = fetchInt(groupData, groupOffset+1);
+
+    //int domainSize = fetchInt(groupData, domainOffset);
+
+    if(shellThickness > 0.){ // use thin shell only         
+        // location of splanes array 
+        int domainSplanesOffset = domainOffset+1;    
+        iSPlane sp = fetchSplane(groupData,domainSplanesOffset + crownIndex*2);
+        float ip = iDistance(sp, pp);
+        if(ip < -shellThickness) {
+            // move point outside clip area 
+            return vec2(-2., -2.);
+        }
+    }        
     int transformOffset = fetchInt(groupData, transformsOffset + crownIndex + 1);
+
     int refCount = fetchInt(groupData, transformOffset);
     int transformSplanesOffset = transformOffset+1;
     for(int r = 0; r  < refCount; r++){      
@@ -63,7 +78,14 @@ void main () {
     
     // point in clip coordinates (-1,1)
     vec2 pntClip = cMul(uTransScale,pndAtt) + uTransCenter;     
-    vec2 pntCrown = applyCrownTransform2D(pntClip, uGroupData, 0, uTransformIndex);
+    vec2 pntCrown = applyCrownTransform2D(pntClip, uGroupData, 0, uTransformIndex, uShellThickness);
+    if(pntCrown.x <= -2.){
+        // point is outsiode of clip area 
+        gl_Position = vec4(-2,-2,0,0);
+        gl_PointSize = 1.;
+        return;
+    }
+    
     pntClip = pntCrown;
     
     gl_Position = vec4(pntClip, 0, 1);
@@ -77,6 +99,7 @@ void main () {
         // move point outside of screen 
         gl_Position = vec4(-2,-2,0,0);
         gl_PointSize = 1.;
+        return;
     } else {    
         if(uUsePointsAA) {
             // draw larger point and use Signed Distance Function in fragment shader 

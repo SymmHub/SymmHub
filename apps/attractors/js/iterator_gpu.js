@@ -306,6 +306,7 @@ export function IteratorGPU(gl){
             uGroupData: mIterParams.groupSampler,
             uPointsData: pointsData.read, 
             uHistogram:  histogram.read,
+            uShellThickness: mIterParams.symmetry.shellThickness,
         }
         prog.setUniforms(cUni);
         
