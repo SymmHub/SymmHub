@@ -1,14 +1,17 @@
 //
-// accumulation of iterated points 
-//
+// accumulation of points with additional crown transform 
+// it render only one transform per call 
+// group data are passed via uGroupData;
+// transform index is passed as uTransformIndex 
 
 
-export const accumulator_vert = 
+export const accumulator_crown_vert = 
 `
 
 in vec4 a_position; // point in attractor coordinates   
 out vec3 vertColor;
 out float actualPointSize;
+
 
 // parameters to transfform attractor point into world coordinates 
 uniform vec2 uTransScale;
@@ -22,6 +25,28 @@ uniform bool uUseGpu;          // flag to use pointsData stored in  uPointsData
 uniform float uHistThreshold;  // max accumulation threshold 
 uniform bool uUsePointsAA;     // whether to render antialised points 
   
+uniform sampler2D uGroupData;
+uniform int uTransformIndex;
+
+
+vec2 applyCrownTransform2D(vec2 pnt, sampler2D groupData, int groupOffset, int crownIndex){
+
+    vec3 pp = vec3(pnt, 0.);
+    float scale = 1.;
+    //int domainOffset = fetchInt(groupData, groupOffset);
+    int transformsOffset = fetchInt(groupData, groupOffset+1);
+    int transformOffset = fetchInt(groupData, transformsOffset + crownIndex + 1);
+    int refCount = fetchInt(groupData, transformOffset);
+    int transformSplanesOffset = transformOffset+1;
+    for(int r = 0; r  < refCount; r++){      
+      iSPlane rsp = fetchSplane(groupData,transformSplanesOffset + r*2); 
+      iReflect(rsp, pp, scale);
+    }
+    
+    //int domainSize = int(getValueFromTex(groupData, texScale, domainOffset).x);
+
+    return pp.xy;
+}
 
 void main () {    
 
@@ -38,6 +63,9 @@ void main () {
     
     // point in clip coordinates (-1,1)
     vec2 pntClip = cMul(uTransScale,pndAtt) + uTransCenter;     
+    vec2 pntCrown = applyCrownTransform2D(pntClip, uGroupData, 0, uTransformIndex);
+    pntClip = pntCrown;
+    
     gl_Position = vec4(pntClip, 0, 1);
     // point in histogram coordinates (0,1)
     vec2 pntHist = 0.5*(pntClip + 1.); 
@@ -49,7 +77,7 @@ void main () {
         // move point outside of screen 
         gl_Position = vec4(-2,-2,0,0);
         gl_PointSize = 1.;
-    } else {
+    } else {    
         if(uUsePointsAA) {
             // draw larger point and use Signed Distance Function in fragment shader 
             actualPointSize = (ceil(uPointSize) + 2.);
@@ -57,47 +85,7 @@ void main () {
             actualPointSize = uPointSize;
         }
         gl_PointSize = actualPointSize; 
-       // gl_Position.xy += uJitter * (qrand2(pntId) - 0.5) / res;
+        //gl_Position.xy += uJitter * (qrand2(pntId) - 0.5) / res;
     }
 }
 `;
-
-
-
-export const accumulator_frag = 
-`
-in vec3 vertColor;
-in float actualPointSize;
-out vec4 outColor;
-
-uniform float uPixelSizeFactor;
-uniform float uPointSize;
-uniform bool uUsePointsAA;
-
-void main () {
-
-    // 1. Calculate distance from the center (0.5, 0.5)
-    float dist = distance(gl_PointCoord, vec2(0.5));
-    // fwidth(dist) calculates how much 'dist' changes between pixels.
-    //float delta = fwidth(dist);
-    float delta = 0.25;
-    // Create a smooth alpha ramp.
-    // This maps the edge of the circle (0.5) to a smooth transition.
-    // calculate effective circle radius here 
-    // because we increased gl_PointSize in vertex shader 
-    float radius = uPointSize/(2.*actualPointSize);
-    float alpha = 2.*(1. - smoothstep(0., radius, dist));
-    
-    // smooth cap 
-    //float alpha = 1.*(1.0 - smoothstep(0., radius, dist));    
-    
-    //float alpha = 1.;// solid square 
-    
-    // Discard fully transparent pixels to save performance
-    //if (alpha <= 0.) {
-    //    discard;
-    //}
-    outColor = alpha * vec4(1., vertColor)* uPixelSizeFactor;
-}
-`;
-

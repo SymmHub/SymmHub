@@ -24,7 +24,7 @@ export function IteratorCPU(){
     //
     const mCpuConfig = {
         
-        accumulator:  'cpuAccumulator',
+        accumulator:  'accumulator',
         iterationsArray:    null, // array to perform iterations 
         float32Array:       null, // array to pass points to rendering
         posBuffer: null,    // buffer to pass points array to to GPU 
@@ -125,14 +125,13 @@ export function IteratorCPU(){
         const accUni = {
             uUseGpu: false, 
 
-            colorSpeed:     colorSpeed,
-            colorPhase:     colorPhase,
-            uPointSize:     Math.max(pointSize, 1.),
-            colorSign:      colorSign,
-            jitter:         jitter,
-            resolution:     [histogram.width, histogram.height],
-            uAttScale:      transScale,
-            uAttCenter:     transCenter,
+            uColorSpeed:    colorSpeed,
+            uColorPhase:    colorPhase,
+            uPointSize:     pointSize,
+            uColorSign:     colorSign,
+            uJitter:        jitter,
+            uTransScale:    transScale,
+            uTransCenter:   transCenter,
             uHistThreshold: accumThreshold,  
             uPixelSizeFactor: (pointSize > 1.) ? (1./(pointSize*pointSize)): 1., 
         };

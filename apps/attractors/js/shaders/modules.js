@@ -8,12 +8,17 @@ import {utils}                  from './utils.glsl.mjs';
 import {extract_overlay}        from './extract_overlay.glsl.mjs';
 import {blit_vert}              from './blit_vert.glsl.mjs';
 import {init_qrand2_frag}       from './init_qrand2_frag.glsl.mjs';
+import {coloring_hue}           from './coloring.glsl.mjs';
 
 import {
-    accumulator_cpu_vert,
-    accumulator_gpu_vert,
+    accumulator_vert,
     accumulator_frag
 }  from './accumulator.glsl.mjs';
+
+import {
+    accumulator_crown_vert,
+}  from './accumulator_crown.glsl.mjs';
+
 
 import {
     iterator_vert,
@@ -47,13 +52,15 @@ export const Shaders = {
     drawPointsFrag:         draw_points_frag,     
     draw_hist_vert:         draw_hist_vert,
     draw_hist_frag:         draw_hist_frag,
-    accumulator_cpu_vert:   accumulator_cpu_vert,
-    accumulator_gpu_vert:   accumulator_gpu_vert,
+    accumulator_vert:       accumulator_vert,
     accumulator_frag:       accumulator_frag,
+    accumulator_crown_vert: accumulator_crown_vert,
+    
     iterator_vert:          iterator_vert,
     iterator_frag:          iterator_frag,
     copy_vert:              copy_vert,
     copy_frag:              copy_frag,
     symmetrization_vert:    symmetrization_vert,
     symmetrization_frag:    symmetrization_frag,
+    coloring_hue:           coloring_hue,
 };

@@ -20,8 +20,8 @@ const drawHistVert          = {obj:AttShaders, id:'draw_hist_vert'};
 const drawHistFrag          = {obj:AttShaders, id:'draw_hist_frag'};
 const blitVert              = {obj:AttShaders, id:'blit_vert'};
 const initQrand2Frag        = {obj:AttShaders, id:'init_qrand2_frag'};
-const accumulatorCpuVert    = {obj:AttShaders, id:'accumulator_cpu_vert'};
-const accumulatorGpuVert    = {obj:AttShaders, id:'accumulator_gpu_vert' };
+const accumulatorCrownVert  = {obj:AttShaders, id:'accumulator_crown_vert'};
+const accumulatorVert       = {obj:AttShaders, id:'accumulator_vert'};
 const accumulatorFrag       = {obj:AttShaders, id:'accumulator_frag' };
 const iteratorVert          = {obj:AttShaders, id:'iterator_vert' };
 const iteratorFrag          = {obj:AttShaders, id:'iterator_frag' };
@@ -29,12 +29,18 @@ const copyVert              = {obj:AttShaders, id:'copy_vert' };
 const copyFrag              = {obj:AttShaders, id:'copy_frag' };
 const symmetrizationVert    = {obj:AttShaders, id:'symmetrization_vert' };
 const symmetrizationFrag    = {obj:AttShaders, id:'symmetrization_frag' };
+const coloring_hue          = {obj:AttShaders, id:'coloring_hue' };
 
 
+const accumulator = {
+    name: 'accumulator', 
+    vs: {frags:[complexFrag, attUtils, coloring_hue, accumulatorVert]}, 
+    fs: {frags: [accumulatorFrag]},
+};
 
-const cpuAccumulator = {
-    name: 'cpuAccumulator', 
-    vs: {frags:[complexFrag, attUtils, accumulatorCpuVert]}, 
+const accumulator_crown = {
+    name: 'accumulator_crown', 
+    vs: {frags:[complexFrag, attUtils, coloring_hue, isplaneFrag, inversiveSamplerFrag, accumulatorCrownVert]}, 
     fs: {frags: [accumulatorFrag]},
 };
 
@@ -63,13 +69,6 @@ const gpuCopy = {
     fs: {frags:[copyFrag]},
 }
 
-const gpuAccumulator = {
-    name: 'gpuAccumulator',
-    vs: {frags:[complexFrag, attUtils, accumulatorGpuVert]},
-    //vs: {frags:[blitVert]},
-    fs: {frags:[accumulatorFrag]},
-}
-
 
 const symmetrization = {
     name: 'symmetrization',
@@ -82,9 +81,9 @@ const symmetrization = {
 function programBuilder(){
 
     const programs = {
-        cpuAccumulator:  cpuAccumulator,
-        histogramRenderer: histogramRenderer, 
-        gpuAccumulator,
+        accumulator_crown:  accumulator_crown,
+        accumulator:        accumulator,
+        histogramRenderer:  histogramRenderer, 
         gpuInitializer,
         gpuIterator,
         gpuCopy,

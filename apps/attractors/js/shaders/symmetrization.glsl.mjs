@@ -21,13 +21,16 @@ uniform int uMaxIter;
 
 out vec4 outPnt;  // result of iteration 
 
-vec2 symmetrization(vec2 p){
+
+
+
+vec2 symmetrization2d(vec2 p){
 
     int groupOffset = 0;
     int inDomain = 0;
     int refcount = 0;
     float scale = 1.;
-    //    let res = group.toFundDomain({pnt: ipnt, maxIterations: mIterParams.symmetry.maxIter});
+
     vec3 wpnt = vec3(p, 0.);
     
     iToFundamentalDomainSampler(wpnt, uGroupData, groupOffset, inDomain, refcount, scale, uMaxIter);
@@ -45,17 +48,16 @@ void main(){
     // point in group coordinates
     vec2 pb =  cMul(uTransScale, p0.xy) + uTransCenter;
         
-        // transform to FD 
+    // transform to FD 
         
-    vec2 ps = symmetrization(pb);
+    vec2 pfd = symmetrization2d(pb);
 
     //
     // transform point back into attractor coordinates  
     //
-    vec2 pw = cDiv(ps - uTransCenter, uTransScale);
+    vec2 pw = cDiv(pfd - uTransCenter, uTransScale);
 
-    
-    outPnt = vec4(pw, p0.z, p0.w);
+    outPnt = vec4(pw, p0.zw);
 
 }
 `;

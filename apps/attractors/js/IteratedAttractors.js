@@ -65,7 +65,9 @@ function IteratedAttractor(options){
         state.group = group;
         // update sampler 
         DataPacking.packGroupToSampler(mGL, state.groupSampler, group); 
-        
+        let groupData = DataPacking.packGroupToArray(group);
+        let str = DataPacking.groupDataToString(groupData);
+        console.log('groupData: ', str);
         onRestart();
       
     };
@@ -117,10 +119,12 @@ function IteratedAttractor(options){
             pointSize:    1,
             colorSign:    1.,
             jitter:       1.25,
+            pointsAA:     false, 
         },
         symmetry: {
             enabled:    false,        
-            maxIter: 5, 
+            maxIter:    5, 
+            useCrown:   false, 
         },
         
         state: { // current state data
@@ -129,7 +133,7 @@ function IteratedAttractor(options){
             attractor:      null,
             attAnimator:    null,
             renderedBuffer: null,  
-            bufferWidth:    (1 << 10), // 20 
+            bufferWidth:    1000, //(1 << 10), // 20 
             needToClear:    true,
             needToRender:   true,
             needToIterate:  true,
@@ -538,7 +542,8 @@ function IteratedAttractor(options){
                 colorPhase:     ParamFloat({obj:ccfg,key:'colorPhase', onChange:onres}),
                 pointSize:      ParamFloat({obj:ccfg,key:'pointSize', onChange:onres}),
                 colorSign:      ParamFloat({obj:ccfg,key:'colorSign', onChange:onres}),
-                jitter:         ParamFloat({obj:ccfg,key:'jitter', onChange:onres}),
+                jitter:         ParamFloat({obj:ccfg,key:'jitter',   onChange:onres}),
+                pointsAA:       ParamFloat({obj:ccfg,key:'pointsAA', onChange:onres}),
             },            
         });
     
@@ -593,9 +598,10 @@ function IteratedAttractor(options){
         return ParamGroup({
             name: 'symmetry',
             params: {
-                enabled:     ParamBool({obj: cfg, key: 'enabled', onChange: onchange}),
+                enabled:    ParamBool({obj: cfg, key: 'enabled', onChange: onchange}),
                 maxIter:    ParamInt({obj: cfg, key: 'maxIter', onChange: onchange}),
-                testSymm:    ParamFunc({func:onTestSymm, name:'test symm!'}),
+                useCrown:   ParamBool({obj: cfg, key: 'useCrown', onChange: onchange}),
+                testSymm:   ParamFunc({func:onTestSymm, name:'test symm!'}),
             }
         });
         

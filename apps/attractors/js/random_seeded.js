@@ -95,3 +95,19 @@ export function lcg_2d(seed){
 export function antti2_2d(seed){
     return rnd_2d(antti2(seed));
 }
+
+export function grid_2d(origin, step, width){
+    let ix = 0, iy = 0;
+    
+    function nextPoint(pnt){
+        pnt[0] = origin[0] + step[0] * ix;
+        pnt[1] = origin[1] + step[1] * iy;
+        ix++;
+        if(ix == width){
+            ix = 0; iy++;
+        }
+    }
+    return {
+        nextPoint,
+    }
+}

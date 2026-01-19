@@ -46,6 +46,8 @@ void main () {
     float density = state.r / scale;
 
     float v = (density == 0.0) ? (-20.0) : (log(density)/log(1000.0));
+    //float v = density;//state.r;  // experiment 
+    
     float value = contrast * v + brightness;
     value = smoothLimit(value, dynamicRange);
     if (!invert) value = 1.0 - value;

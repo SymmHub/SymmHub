@@ -81,6 +81,7 @@ export {
     qrand2x,
     qrand2y,
     qrand2,
+    grid_2d,
 } from './random_seeded.js';
 
 export {
