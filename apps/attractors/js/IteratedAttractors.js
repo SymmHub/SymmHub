@@ -65,9 +65,11 @@ function IteratedAttractor(options){
         state.group = group;
         // update sampler 
         DataPacking.packGroupToSampler(mGL, state.groupSampler, group); 
-        let groupData = DataPacking.packGroupToArray(group);
-        let str = DataPacking.groupDataToString(groupData);
-        console.log('groupData: ', str);
+        if(false){
+            let groupData = DataPacking.packGroupToArray(group);
+            let str = DataPacking.groupDataToString(groupData);
+            console.log('groupData: ', str);
+        }
         onRestart();
       
     };
