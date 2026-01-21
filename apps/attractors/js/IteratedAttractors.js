@@ -167,8 +167,6 @@ function IteratedAttractor(options){
         state.attractor.addEventListener('attractorChanged', onAttractorChanged);
         state.attAnimator = ParamsAnimator({count: 4, onChange: onAnimatorChanged});
                 
-        state.renderedBuffer = createImageBuffer(gl, state.bufferWidth);
-        state.histogram = createHistogramBuffer(gl, state.bufferWidth);
         state.groupSampler = DataPacking.createGroupDataSampler(gl);
         mParams = makeParams(mConfig);
 
@@ -181,6 +179,7 @@ function IteratedAttractor(options){
             mIteratorGPU = IteratorGPU();
         }
         
+        initBuffers();
         
         initIterators();
                     
@@ -191,6 +190,15 @@ function IteratedAttractor(options){
         mIteratorCPU.init(mGL, mConfig);
         mIteratorGPU.init(mGL, mConfig);        
         
+    }
+
+    function initBuffers(){
+        
+        const {state} = mConfig;
+        let gl = mGL;
+        state.renderedBuffer = createImageBuffer(gl, state.bufferWidth);
+        state.histogram = createHistogramBuffer(gl, state.bufferWidth);
+        state.oldBufferWidth = state.bufferWidth;
     }
 
     //
@@ -249,8 +257,7 @@ function IteratedAttractor(options){
 
         if(options.simTransConfig){
         
-            // buffer was possible moved 
-            
+            // buffer was possible moved         
             let bufTrans = mConfig.bufTrans;
             let simTrans = options.simTransConfig;
             
@@ -269,6 +276,10 @@ function IteratedAttractor(options){
                 if(DEBUG)console.log(`${MYNAME} simTrans changed`);
             }
         }
+        
+        
+        if(mConfig.state.oldBufferWidth != mConfig.state.bufferWidth)
+            initBuffers();
         
         if(mConfig.state.needToRender) {
             renderBuffer(options);            
@@ -570,10 +581,11 @@ function IteratedAttractor(options){
     }
     
     function makeIterationsParams(icfg, onc){
-        
+        let sconfig = mConfig.state;
         return ParamGroup({
             name: 'iterations',
             params: {
+                bufferWidth:    ParamInt({obj:sconfig, key:'bufferWidth', onChange:onc}),
                 useGPU:         ParamBool({obj:icfg,key:'useGPU', onChange:onc}),   
                 isRunning:      ParamBool({obj:icfg,key:'isRunning', onChange:onc}),   
                 //iterate:        ParamBool({obj:icfg,key:'iterate', onChange:onc}),   

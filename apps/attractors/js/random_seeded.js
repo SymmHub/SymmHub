@@ -111,3 +111,23 @@ export function grid_2d(origin, step, width){
         nextPoint,
     }
 }
+
+
+export function getRandomPoints2D(points, pointMaker, count){
+        
+   // let points = new Float32Array(4*count);
+    let pnt = [0,0];
+    
+    for(let k = 0, i = 0; k < count; k++){
+            
+        pointMaker.nextPoint(pnt)
+        let x = (2*pnt[0] - 1);
+        let y = (2*pnt[1] - 1);
+        points[i++] = x;
+        points[i++] = y;
+        points[i++] = Math.atan2(y,x)/Math.PI;//;
+        points[i++] = k;        
+    }
+    return points;
+}
+

@@ -19,6 +19,7 @@ export function IteratorCPU(){
     
     //let mConfig = null; // pointer to IteratedAttractors mConfig
     let mIterParams = null;
+    const iterArrayType = Float64Array;
     //
     //  data for CPU calculations 
     //
@@ -55,11 +56,11 @@ export function IteratorCPU(){
         if(mIterParams && mCpuConfig.iterationsArray){
             if(mCpuConfig.iterationsArray.length != mIterParams.iterations.batchSize * 4){
                 let asize = (4*mIterParams.iterations.batchSize);            
-                mCpuConfig.iterationsArray = new Float32Array(asize);
+                mCpuConfig.iterationsArray = new iterArrayType(asize);
                 mCpuConfig.float32Array = new Float32Array(asize);        
             }
         } else {
-                mCpuConfig.iterationsArray = new Float32Array(4);
+                mCpuConfig.iterationsArray = new iterArrayType(4);
                 mCpuConfig.float32Array = new Float32Array(4);                        
         }
     }

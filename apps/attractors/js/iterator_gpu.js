@@ -7,6 +7,7 @@ import {
    qrand2, 
    mulberry32_2d,
    grid_2d,
+   getRandomPoints2D,
 } from './modules.js';
 
 
@@ -116,7 +117,7 @@ export function IteratorGPU(gl){
         const pointsDataCount = pointDataWidth*pointDataWidth;
         //const pointMaker = mulberry32_2d(seed);
         //const pointMaker = grid_2d([0,0], [0.1, 0.1], 11);
-        let coord = getRandomPoints2D(pointMaker, pointsDataCount);            
+        let coord = getRandomPoints2D(new Float32Array(4*pointsDataCount), pointMaker, pointsDataCount);            
         
         //console.log('pointsCoord: ', pointsCoord);
         gl.bindTexture(gl.TEXTURE_2D, pData.texture);
@@ -315,8 +316,9 @@ export function IteratorGPU(gl){
         gl.enableVertexAttribArray(indexLoc);
         gl.vertexAttribPointer(indexLoc, 4, gl.UNSIGNED_SHORT, false, 0, 0);
         gl.bindFramebuffer(gl.FRAMEBUFFER, histogram.write.fbo);
-
-        for(let i = 0; i < 2; i++){
+        const genCount = mIterParams.group.getGeneratorsCount();
+        
+        for(let i = 0; i < genCount; i++){
             prog.setUniforms({uTransformIndex:i})
             gl.drawArrays(gl.POINTS, 0, batchSize);        
         }
@@ -399,23 +401,4 @@ function printBufferData(gl, buffer){
             console.log('',iy,':', line);
         }
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-}
-
-
-function getRandomPoints2D(pointMaker, count){
-        
-    let points = new Float32Array(4*count);
-    let pnt = [0,0];
-    
-    for(let k = 0, i = 0; k < count; k++){
-            
-        pointMaker.nextPoint(pnt)
-        let x = (2*pnt[0] - 1);
-        let y = (2*pnt[1] - 1);
-        points[i++] = x;
-        points[i++] = y;
-        points[i++] = Math.atan2(y,x)/Math.PI;//;
-        points[i++] = k;        
-    }
-    return points;
 }

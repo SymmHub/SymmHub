@@ -103,7 +103,7 @@ void main () {
     } else {    
         if(uUsePointsAA) {
             // draw larger point and use Signed Distance Function in fragment shader 
-            actualPointSize = (ceil(uPointSize) + 2.);
+            actualPointSize = (ceil(uPointSize) + 1.);
         } else {
             actualPointSize = uPointSize;
         }

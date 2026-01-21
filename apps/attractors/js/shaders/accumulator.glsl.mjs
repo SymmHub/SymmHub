@@ -52,7 +52,7 @@ void main () {
     } else {
         if(uUsePointsAA) {
             // draw larger point and use Signed Distance Function in fragment shader 
-            actualPointSize = (ceil(uPointSize) + 2.);
+            actualPointSize = (ceil(uPointSize) + 1.);
         } else {
             actualPointSize = uPointSize;
         }
@@ -73,6 +73,45 @@ out vec4 outColor;
 uniform float uPixelSizeFactor;
 uniform float uPointSize;
 uniform bool uUsePointsAA;
+#define POINT_SQUARE 0
+#define POINT_CIRCLE 1
+#define POINT_CAP 2
+#define POINT_GRADIENT_X 3
+#define POINT_GRADIENT_Y 4
+#define POINT_GRADIENT_XY 5
+
+//uniform 
+int uPointShape = POINT_GRADIENT_XY;
+
+
+float getPointShape(int shape, vec2 pnt){
+
+    switch(shape){
+        default: 
+        case POINT_SQUARE: 
+            return 1.;
+        case POINT_CIRCLE: {
+            float dist = distance(pnt, vec2(0.5));
+            float radius = uPointSize/(2.*actualPointSize);
+            float delta = 0.1;
+            return (1.-smoothstep(radius-delta, radius, dist));            
+        }        
+        case POINT_CAP: {
+            float dist = distance(pnt, vec2(0.5));
+            float radius = uPointSize/(2.*actualPointSize);
+            return (1.-smoothstep(0., radius, dist));                    
+        }        
+        case POINT_GRADIENT_X: {
+            return 1.-2.*abs(pnt.x-0.5);
+        }        
+        case POINT_GRADIENT_Y: {
+            return 1.-2.*abs(pnt.y-0.5);
+        }        
+        case POINT_GRADIENT_XY: {
+            return (1.-2.*abs(pnt.y-0.5))*(1.-2.*abs(pnt.x-0.5));
+        }        
+    }
+}
 
 void main () {
 
@@ -85,18 +124,10 @@ void main () {
     // This maps the edge of the circle (0.5) to a smooth transition.
     // calculate effective circle radius here 
     // because we increased gl_PointSize in vertex shader 
-    float radius = uPointSize/(2.*actualPointSize);
-    float alpha = 2.*(1. - smoothstep(0., radius, dist));
-    
-    // smooth cap 
-    //float alpha = 1.*(1.0 - smoothstep(0., radius, dist));    
-    
-    //float alpha = 1.;// solid square 
-    
-    // Discard fully transparent pixels to save performance
-    //if (alpha <= 0.) {
-    //    discard;
-    //}
+    // float radius = uPointSize/(2.*actualPointSize);
+
+    float alpha = getPointShape(uPointShape, gl_PointCoord);
+
     outColor = alpha * vec4(1., vertColor)* uPixelSizeFactor;
 }
 `;
