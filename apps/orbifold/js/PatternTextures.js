@@ -284,6 +284,23 @@ export class TextureManager {
 /*
   pattern formed by several layered textures 
 */
+
+/////////////////////////
+  // parameters
+  //
+ 
+     /// In math coordinates, we are now assuming that
+    // a texture is always at the origin, from ±scale/2
+    // In whatever geometry, there is an image transform
+    // (named imagetransform)
+    // taking this box to one centered at center, rotated by angle.
+
+    // the "source of truth" is the texture params; the texture image is
+    // updated from these. 
+
+    // This class is mainly responsible for packaging up the crown transforms
+    // in the uniforms.
+
 export class PatternTextures {
 		
 	constructor(options){
@@ -311,12 +328,11 @@ export class PatternTextures {
     this.extension = getParam(opt.extension,'.png');
     this.editPoints = [];
     this.dragging = false;
-   
-
-
-   // this.imageGluedToOriginQ = true; 
 
     this.angleAdjustment = 0;
+
+    this.defaulttransform = [ new iSplane({v:[0,1,0,0],type:2}),
+          new iSplane({v:[0,1,0,0],type:2})];
 
     this.imagetransform = [];
 
@@ -335,6 +351,7 @@ export class PatternTextures {
 
   /**
       return params map to save
+      Not used during normal rendering.
   */
   getParamsMap(){
     
@@ -367,12 +384,11 @@ export class PatternTextures {
     
     
     this.setTexParamsMap(pm.textures[0]);
-      //*******//
       // the parameters upstream still are using arrays.
 
-    
-    //inspectProperties(p);
+  
   }
+
 
   /**
     return params map for specific texture 
@@ -394,40 +410,39 @@ export class PatternTextures {
     
   }
 
-/////////////////////////
-  // parameters
-  //
-  /**
+
+     /**
     set params of specific texture from map 
   */
-
-     /// In math coordinates, we are now assuming that
-    // a texture is always at the origin, from ±scale/2
-    // In whatever geometry, there is an image transform
-    // (named imagetransform)
-    // taking this box to one centered at center, rotated by angle.
-    // All of this is handled elsewhere -- this class is currently more of 
-    // a wrapper than a renderer. However, we do call on 
-    // grouprenderer for a transform t back to the FD; 
-    // with which we follow imagetransform.
 
   setTexParamsMap(pm){
     
     var c = this.controllers;
     
+    this.updatetransformfromcenter=false;
     c['active'].setValue(pm.active);
+    this.updatetransformfromcenter=false;
     c['tex'].setValue(pm.name);
+    this.updatetransformfromcenter=false;
     c['alpha'].setValue(pm.alpha);
+    this.updatetransformfromcenter=false;
     c['scale'].setValue(pm.scale);//scalar 
+    this.updatetransformfromcenter=false;
     c['angle'].setValue(pm.angle);
-    c['cx'].setValue(pm.center);
-    c['cy'].setValue(pm.center);
+    this.updatetransformfromcenter=false;
+    c['cx'].setValue(pm.center[0]);
+    // now this.updatetransformfromcenter=true;
+    c['cy'].setValue(pm.center[1]);
+
+    //changing imagetransform string should not trigger an update
     c['imagetransformstring'].setValue(pm.imagetransformstring)
+
+  
 
     console.log('updating imagetransform from setTexParamsMap')
   // an update of this.imagetransform is triggered by the change to the controller.
 
-
+    //NEED TO CALCULATE THE CROWN
 
     
   }
@@ -486,20 +501,24 @@ export class PatternTextures {
       console.log("calculating uniforms from ", 
         paramcenter,paramangle,paramscale, this.imagetransform);
 
+        // attach the crown transforms to the group data,
+        // and have it available to us here. 
+
+
+        /* this should be calculated from the imagetransform ONLY */
+
      this.crowntransforms = this.groupHandler.calcCrownTransformsData(
       paramcenter, paramangle, paramscale
       );
 
-     console.log("crown transform registry", toString(this.crowntransforms.crowntransformregistry))
-
+      this.crowntransforms = this.groupHandler.calcCrownTransformsDataFromTransform(
+        this.imagetransform
+      );
+      
+      console.log("crown transforms", this.crowntransforms);
 
      this.crowntransforms = this.crowntransforms.crowntransformregistry
       // send in the current transform, remove references back to PT
-
-    /*  var whatsup;  
-     if(!this.imagetransform){console.log('n')} else{console.log('y');
-	   whatsup = this.groupHandler.calcCrownTransformsDataFromTransform(this.imagetransform);
-		}*/
     
     let debug = this.debug;
     var par = this.params;
@@ -508,8 +527,6 @@ export class PatternTextures {
     // soon these will be initiated on load and updated with the dragging.
     
     var samplers;
-    var centers;
-    var scales;
     var alphas;
     
     //var tcount = 0;
@@ -529,19 +546,14 @@ export class PatternTextures {
         // The texture unit sized at the origin, then transformed by imagetransform, 
         // and then crowntransforms, some of the left imagetransform coset.
 
-   
-/* #### */     
-        
-       
         samplers=tex.texture;
         if(tex.isAnimation){
           hasAnimation = true;
         }          
         alphas=par['alpha'];
 
-/* #### */ 
-        
       }
+
     //}
 
     
@@ -554,20 +566,13 @@ export class PatternTextures {
     un.u_imagetransformslength = this.imagetransform.length;
     console.log("image transform", this.imagetransform,un.u_imagetransforms);
 
-    var ctrans
-    if(this.groupHandler.getGroup().c){
-      //var ctrans = this.crowntransforms//
-      ctrans = this.groupHandler.getGroup().c.crowntransformregistry;}
-    else ctrans = [];
-
-    ctrans = [[new iSplane({v:[0,1,0,0],type:2}),new iSplane({v:[0,1,0,0],type:2})]];
-
-    ctrans = this.groupHandler.getGroup().c.crowntransformregistry;
-   
-   
+    var ctrans=this.crowntransforms;
     un.u_cTransCumRefCount=iPackRefCumulativeCount(ctrans, this.MAX_CROWN_COUNT);
     un.u_cTransformsData=iCumPackTransforms(ctrans,  this.MAX_TOTAL_CROWN_COUNT);
     un.u_crownCount =  ctrans.length;
+
+    console.log("crown transform", ctrans,un.u_cTransformsData);
+
 
     
     if(hasAnimation)
@@ -627,10 +632,12 @@ export class PatternTextures {
     ctrls['cy'] = folder.add(par, 'cy', -10, 10,  eps).name('cy').onChange(onModified);	
 
     par['imagetransformstring']='';
-    ctrls['imagetransformstring']=folder.add(par, 'imagetransformstring',"hi").name('trans').onChange(onModified); 
+    ctrls['imagetransformstring']=folder.add(par, 'imagetransformstring',"hi").name('trans')//.onChange(onModified); 
     
     console.log('updating image transforms from initGUI')
     this.onModified()   
+
+    
      
   }
 
@@ -673,8 +680,10 @@ export class PatternTextures {
      
     // this is called any time that the image transform 
     // needs to be calculated from the center, scale and angle, all from scratch. 
-    // We hit this when the controls are changed, etc. 
-    // We could call this while dragging the mouse
+    // (recall that the center etc is the "source of truth")
+    // We hit this when the controls are changed, etc.
+    
+    // We could (and do?) call this while dragging the mouse
     
       if(!this.updatetransformfromcenter){
           this.updatetransformfromcenter=true;
@@ -702,15 +711,14 @@ export class PatternTextures {
         this.imagetransform = transformFromCenterToPoint(complexcenter,complexscale);
         
 	  }
-      else this.imagetransform = 
-        [ new iSplane({v:[0,1,0,0],type:2}),
-          new iSplane({v:[0,1,0,0],type:2})];
+      else this.imagetransform = this.defaulttransform;
 
      
     // update the image transform
         this.updatetransformfromcenter=false;
+        this.params['imagetransform']=this.imagetransform;
         this.params['imagetransformstring']=objectToString(this.imagetransform);
-        this.controllers['imagetransformstring'].setValue(this.params['imagetransformstring']);
+        this.controllers['imagetransformstring'].updateDisplay(this.params['imagetransformstring']);
         this.updatetransformfromcenter=true;
 
 
@@ -724,6 +732,8 @@ export class PatternTextures {
 
   }
 
+// render the overlay and work out the control points.
+// this.imagetransform is presumed to be worked out. 
 
   render(context, transform){
     
@@ -762,12 +772,11 @@ export class PatternTextures {
     
     
      
-      // draw a little circle at the center of the various image transforms
+      // draw a little circle at the center of the the image transforms
       // use the inversive library to do this because many functions in complexTransforms
       // presume that the unit disk is preserved. 
 
       
-
       var newpoint = iTransformU4(this.imagetransform, new iSplane({v:[0,0,0,0],type:3})).v;
     
      
@@ -787,14 +796,6 @@ export class PatternTextures {
 
         
         centerpnt = [newpoint[0],newpoint[1]];
-        this.params['cx'] = centerpnt[0];
-        this.params['cy'] = centerpnt[1];
-
-
-      // we're going to need some help from Complex.js to figure out how scale changes. 
-
-
-
 
         var corners = [];
 
@@ -817,7 +818,7 @@ export class PatternTextures {
           
           iDrawPoint(corners[k], context, transform, opt1a);
 
-// need to fix!!
+// need to fix!! This should be an appropriately deformed arc.
           iDrawSegment(corners[k],corners[(k+1)%4], context, transform, opt2a);  
         }
 
@@ -901,7 +902,9 @@ export class PatternTextures {
     
 
 
-    if(!this.dragging && !evt.shiftKey){
+    if(!this.dragging && !evt.shiftKey ){
+
+      /* WHY DO THIS?*/
       // given wpt, find the nearest image of the center point-- and call that the center,
       // adjusting the scale. In other words, among the crown images of the tex center, 
       // which c is closest to the FD image f(w) of wpt?
@@ -909,7 +912,7 @@ export class PatternTextures {
       
      var resetdata = this.groupHandler.resetTransformfromPtAndTransform(wpnt,this.imagetransform);
       
-      if(!!resetdata){
+      if(!!resetdata && false){
 
         this.imagetransform = resetdata.imagetransform;
    
@@ -956,6 +959,20 @@ export class PatternTextures {
           this.params['cx']= wpnt[0];
           this.params['cy']= wpnt[1];
           
+          var resetdata = this.groupHandler.resetTransformfromPtAndTransform(wpnt,this.imagetransform);
+      
+      if(!!resetdata){
+
+        this.imagetransform = resetdata.imagetransform;
+   
+        this.params['imagetransform']=this.imagetransform;
+ 
+        /* WHY??*/
+        this.controllers['scale'].updateDisplay(this.params['scale']);
+        this.params['scale']=resetdata.scale;
+      }
+
+
          // var angledata = this.groupHandler.getAngleOfTransform(this.imagetransform);
 
          // this.params['angle']=angledata['angle'];
@@ -963,15 +980,9 @@ export class PatternTextures {
 
           this.updatetransformfromcenter=false;
           this.controllers['cx'].setValue(this.params['cx']);
-         // this.updatetransformfromcenter=false;
+         // this.updatetransformfromcenter is now set to true
           this.controllers['cy'].setValue(this.params['cy']);
-         /* this.updatetransformfromcenter=false;
-          this.controllers['angle'].setValue(this.params['angle']);
-          //now this.updatetransformfromcenter=true;
-          this.controllers['scale'].setValue(this.params['scale']);
-*/
-
-          // and so triggers updatePatternData
+         // and so triggers updatePatternData which then recalculates the imagetransform.
 
         break;        
         // corners 
@@ -979,13 +990,15 @@ export class PatternTextures {
         case 2:
         case 3:
         case 4:
-          var angledata = this.groupHandler.getAngleOfTransform(this.imagetransform);
+          /*var angledata = this.groupHandler.getAngleOfTransform(this.imagetransform);
 
           this.params['angle']=angledata['angle'];
           this.params['scale']=angledata['scale'];
-
+*/
           var turndata = this.groupHandler.getAngleOfTurn(this.imagetransform, wpnt)
-          turndata.angle = turndata.angle + 3.141592/4 - type*3.1415926/2;
+          // adjust depending on which corner we are dragging
+          turndata.angle =turndata.angle //+ 3.141592/4 
+                - type*3.1415926/2;
 
           this.params['angle']=turndata['angle'];
           this.params['scale']=turndata['scale'];

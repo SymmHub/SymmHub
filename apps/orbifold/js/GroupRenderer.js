@@ -658,6 +658,7 @@ export class GroupRenderer {
         let starttime = 0;
         //if(DEBUG) starttime = Date.now();
 
+        console.log("rendering");
         this.renderGL(timestamp);
         this.renderOverlay(timestamp);
 

@@ -157,13 +157,6 @@ export class SymmetryUIController{
     this.onChanged = options.onChanged;
   }
   
-  updateSymmetryUI()
-  {
-    // this will all be fleshed out later; the task now is to try to get 
-    // the parameter controllers drawn and working.
-    
-  }
-  
   resetWheel(){
     this.midDist=-1000;
     this.activeFDPart = -1;
