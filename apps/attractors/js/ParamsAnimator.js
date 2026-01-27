@@ -3,12 +3,16 @@ import {
     ParamFloat,
     ParamGroup,
     ParamBool, 
+    ParamFunc, 
 } from './modules.js';
 
 const PI = Math.PI;
 const MYNAME = 'ParamsAnimator';
 const DEBUG = true;
 const initialOffsets = [-1.85, -2.5, -1.05, 0.585];
+
+const CODE_a = 'a'.charCodeAt(0);
+const CODE_A = 'A'.charCodeAt(0);
 
 export function ParamsAnimator(arg){
 
@@ -31,12 +35,13 @@ export function ParamsAnimator(arg){
     
     function init(arg = {}){
     
-       mConfig.onChange = (arg.onChange)? arg.onChange: null;
+        console.log(`${MYNAME}.init() `, arg);
+        mConfig.onChange = (arg.onChange)? arg.onChange: null;
        
-       mConfig.count = (arg.count)? arg.count: 4;
-       mConfig.values = initValues(mConfig.count);
-       
-       mParams = makeParams(mConfig);       
+        mConfig.count = (arg.count)? arg.count: 4;
+        mConfig.values = initValues(mConfig.count);
+        mConfig.attractor = arg.attractor;
+        mParams = makeParams(mConfig);       
     }
 
     function initValues(count){
@@ -62,15 +67,15 @@ export function ParamsAnimator(arg){
             enabled:    ParamBool({obj: config, key: 'enabled', onChange: onc}),
             period:     ParamFloat({obj: config, key: 'period', onChange: onc}), 
             fraction:   ParamFloat({obj: config, key: 'fraction', onChange: onc}), 
+            copyOffsets: ParamFunc({func: onCopyOffsets, name:'copy offsets'}), 
             //values: {},
         };
         
-        let Acode = 'A'.charCodeAt(0);
         if(DEBUG)console.log(`${MYNAME} paramsCount: `, config.count); 
         let pargroup = {                               
         };
         for(let i=0; i < config.count; i++){        
-            let groupName = String.fromCharCode(Acode + i);
+            let groupName = String.fromCharCode(CODE_A + i);
             if(DEBUG)console.log(`${MYNAME} groupName:  `, groupName); 
             pargroup[groupName] = makeValueParams(groupName, config.values[i], onc);
         }
@@ -78,7 +83,26 @@ export function ParamsAnimator(arg){
         params.params = ParamGroup({name:'animParams', params:pargroup}) 
         return params;
     }
-    
+  
+    function onCopyOffsets(){
+        
+        console.log(`${MYNAME}.onCopyOffsets() `, mConfig);
+        const {attractor} = mConfig;
+        console.log(`${MYNAME} attractor: `, attractor);
+        const params = attractor.getParams();
+        const {count} = mConfig;
+        for(let i = 0; i < count; i++){
+            let pkey = String.fromCharCode(CODE_a+i);
+            let value = params[pkey].getValue();
+            let gkey = String.fromCharCode(CODE_A+i);
+            console.log(`${MYNAME}  ${pkey}: ${value}`);
+            let valuesGroup = mParams.params[gkey];
+            mConfig.values[i]['offset'] = value;
+            valuesGroup['offset'].updateDisplay();
+            console.log(`${MYNAME}  ${gkey}:`,valuesGroup);
+        }            
+    }
+  
     function makeValueParams(name, value, onchange){
     
         return ParamGroup({

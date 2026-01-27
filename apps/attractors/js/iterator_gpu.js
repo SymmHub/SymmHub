@@ -113,8 +113,8 @@ export function IteratorGPU(gl){
         let {pointDataWidth} = mGpuConfig;
         const {batchSize, seed} = mIterParams.iterations;        
         //let pcount = pointDataWidth*pointDataWidth;
-        const pointMaker = qrand2(seed);
         const pointsDataCount = pointDataWidth*pointDataWidth;
+        const pointMaker = qrand2(seed);
         //const pointMaker = mulberry32_2d(seed);
         //const pointMaker = grid_2d([0,0], [0.1, 0.1], 11);
         let coord = getRandomPoints2D(new Float32Array(4*pointsDataCount), pointMaker, pointsDataCount);            

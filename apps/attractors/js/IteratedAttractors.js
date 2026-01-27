@@ -165,7 +165,7 @@ function IteratedAttractor(options){
         
         state.attractor = CliffordAttractor(); 
         state.attractor.addEventListener('attractorChanged', onAttractorChanged);
-        state.attAnimator = ParamsAnimator({count: 4, onChange: onAnimatorChanged});
+        state.attAnimator = ParamsAnimator({count: 4, onChange: onAnimatorChanged, attractor:state.attractor});
                 
         state.groupSampler = DataPacking.createGroupDataSampler(gl);
         mParams = makeParams(mConfig);

@@ -78,11 +78,15 @@ uniform bool uUsePointsAA;
 #define POINT_CAP 2
 #define POINT_GRADIENT_X 3
 #define POINT_GRADIENT_Y 4
-#define POINT_GRADIENT_XY 5
+#define POINT_PYRAMID 5
+#define POINT_AA_SQUARE 6
 
 //uniform 
-int uPointShape = POINT_GRADIENT_XY;
+int uPointShape = POINT_AA_SQUARE;
 
+float linearstep(float edge0, float edge1, float x){
+    return  clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+}
 
 float getPointShape(int shape, vec2 pnt){
 
@@ -107,8 +111,21 @@ float getPointShape(int shape, vec2 pnt){
         case POINT_GRADIENT_Y: {
             return 1.-2.*abs(pnt.y-0.5);
         }        
-        case POINT_GRADIENT_XY: {
-            return (1.-2.*abs(pnt.y-0.5))*(1.-2.*abs(pnt.x-0.5));
+        case POINT_PYRAMID: {
+            float ratio = (actualPointSize/uPointSize);
+            vec2 p = ratio*abs(pnt-vec2(0.5));
+            return clamp((1.- p.y),0.,1.)*clamp((1.- p.x),0.,1.);
+        }        
+        case POINT_AA_SQUARE: {
+            //float ratio = (actualPointSize/uPointSize);
+            // p is in range (0, actualPointSize/2);
+            float ps2 = uPointSize/2.+0.5;
+            vec2 p = actualPointSize * abs(pnt-vec2(0.5));
+            return min(clamp((ps2-p.x), 0., 1.),clamp((ps2-p.y), 0., 1.));
+
+            //float ratio = (actualPointSize/uPointSize);
+            //vec2 p = 2.*(pnt-vec2(0.5));//ratio*abs(pnt-vec2(0.5));
+            //return clamp((1.-p.x),0.,1.)*clamp((1.-p.y), 0., 1.) ;
         }        
     }
 }
@@ -128,7 +145,7 @@ void main () {
 
     float alpha = getPointShape(uPointShape, gl_PointCoord);
 
-    outColor = alpha * vec4(1., vertColor)* uPixelSizeFactor;
+    outColor = alpha * vec4(1., vertColor);//* uPixelSizeFactor;
 }
 `;
 
