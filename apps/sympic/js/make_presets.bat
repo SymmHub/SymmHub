@@ -7,6 +7,7 @@ call make_preset ..\presets\klmn\*.json presets_klmn.js
 call make_preset ..\presets\5splanes\*.json presets_5splanes.js
 call make_preset ..\presets\frieze\*.json presets_frieze.js
 call make_preset ..\presets\spherical\*.json presets_spherical.js
+call make_preset ..\presets\klx\*.json presets_klx.js
 
 pause
 

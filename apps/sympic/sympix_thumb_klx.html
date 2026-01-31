@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Cache-Control" content="no-cache">
+        <link rel="icon" type="image/x-icon" href="./css/icon_sympix.svg">
+        <title>SymPix KLx</title>
+        <meta name="description" content="Sympix LKx Symmetry">
+        <link rel="stylesheet" href="css/thumbnails.css"/>
+        <link rel="stylesheet" href="css/index.css"/>
+    </head>
+<body>   
+
+    <header>
+    <h1>SymPix with KLx Symmetry</h1>
+    </header>
+    <div class="container">
+        <div id='thumbnails'>
+        </div>
+    </div>
+    <footer>
+   <a href='./index.html'>SymPix</a>
+   <a href='../../index.html'>SymmHub</a>
+    </footer>
+</body>
+<script type='module'>
+    import {
+        appendThumbnails
+    } from './js/appendThumbnails.js';
+    import {
+        presets 
+    } from './js/presets_klx.js';
+    
+     let list = document.getElementById('thumbnails');
+     let appPage = 'sympix_klx.html';
+     let presetsFolder = 'presets/klx/';
+     appendThumbnails(list, appPage, presetsFolder, presets);
+     
+    </script>              
+</html>
