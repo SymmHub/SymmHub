@@ -1,6 +1,8 @@
 import {
     CliffordAttractor,
     DeJongAttractor, 
+    ConradiAttractor, 
+    FieldIconsAttractor
 } from './attractors.js';
 
 const DEBUG = true;
@@ -9,11 +11,12 @@ const MYNAME = 'AttractorCreator';
 
 function AttractorCreator(){
     
-    const names = ['Clifford', 'DeJong'];
+    const names = ['Clifford', 'DeJong', 'Conradi', 'Field Icons'];
     const objects = {
         Clifford: CliffordAttractor, 
-        DeJong: DeJongAttractor
-        //Field: FieldAttractor,
+        DeJong: DeJongAttractor, 
+        Conradi: ConradiAttractor, 
+        'Field Icons': FieldIconsAttractor,
     }
     const defName = names[0];
     function getObject(name){
@@ -29,8 +32,8 @@ function AttractorCreator(){
     }
     
     return {
-        getNames: ()=>names,
-        getObject: getObject,
+        getNames:       ()=>names,
+        getObject:      getObject,
         getDefaultName: ()=>names[0],
     }
 }

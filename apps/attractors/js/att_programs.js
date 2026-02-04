@@ -26,6 +26,8 @@ const accumulatorFrag       = {obj:AttShaders, id:'accumulator_frag' };
 const iteratorVert          = {obj:AttShaders, id:'iterator_vert' };
 const iteratorCliffordFrag  = {obj:AttShaders, id:'iterator_clifford_frag' };
 const iteratorDeJongFrag    = {obj:AttShaders, id:'iterator_dejong_frag' };
+const iteratorConradiFrag   = {obj:AttShaders, id:'iterator_conradi_frag' };
+const iteratorFieldIconsFrag   = {obj:AttShaders, id:'iterator_field_icons_frag' };
 const copyVert              = {obj:AttShaders, id:'copy_vert' };
 const copyFrag              = {obj:AttShaders, id:'copy_frag' };
 const symmetrizationVert    = {obj:AttShaders, id:'symmetrization_vert' };
@@ -70,6 +72,18 @@ const iteratorDeJong = {
     fs: {frags:[iteratorDeJongFrag]},
 }
 
+const iteratorConradi = {
+    name: 'iteratorDeJong',
+    vs: {frags:[iteratorVert]},
+    fs: {frags:[iteratorConradiFrag]},
+}
+
+const iteratorFieldIcons = {
+    name: 'iteratorDeJong',
+    vs: {frags:[iteratorVert]},
+    fs: {frags:[complexFrag, iteratorFieldIconsFrag]},
+}
+
 const gpuCopy = {
     name: 'gpuCopy',
     vs: {frags:[copyVert]},
@@ -94,6 +108,8 @@ function programBuilder(){
         gpuInitializer,
         iteratorClifford,
         iteratorDeJong,
+        iteratorConradi,
+        iteratorFieldIcons,
         gpuCopy,
         symmetrization,
     };

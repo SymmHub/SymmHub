@@ -9,7 +9,7 @@ import {
 const PI = Math.PI;
 const MYNAME = 'ParamsAnimator';
 const DEBUG = true;
-const initialOffsets = [-1.85, -2.5, -1.05, 0.585];
+const initialOffsets = [-1.85, -2.5, -1.05, 0.585, 0.5];
 
 const CODE_a = 'a'.charCodeAt(0);
 const CODE_A = 'A'.charCodeAt(0);

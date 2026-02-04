@@ -33,6 +33,14 @@ import {
 }   from './iterator_dejong.glsl.mjs';
 
 import {
+    iterator_conradi_frag,
+}   from './iterator_conradi.glsl.mjs';
+
+import {
+    iterator_field_icons_frag,
+}   from './iterator_field_icons.glsl.mjs';
+
+import {
     copy_vert,
     copy_frag
 }   from './copy.glsl.mjs';
@@ -67,6 +75,8 @@ export const Shaders = {
     iterator_vert:          iterator_vert,
     iterator_dejong_frag:   iterator_dejong_frag, 
     iterator_clifford_frag: iterator_clifford_frag, 
+    iterator_conradi_frag:  iterator_conradi_frag,
+    iterator_field_icons_frag: iterator_field_icons_frag,
     copy_vert:              copy_vert,
     copy_frag:              copy_frag,
     symmetrization_vert:    symmetrization_vert,

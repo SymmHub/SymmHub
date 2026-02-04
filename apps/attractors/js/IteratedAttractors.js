@@ -173,7 +173,7 @@ function IteratedAttractor(options){
         state.attType = state.attCreator.getDefaultName();
         state.attractor = state.attCreator.getObject(state.attType);
         state.attractor.addEventListener('attractorChanged', onAttractorChanged);
-        state.attAnimator = ParamsAnimator({count: 4, onChange: onAnimatorChanged, paramSource:state.attractor});
+        state.attAnimator = ParamsAnimator({count: 5, onChange: onAnimatorChanged, paramSource:state.attractor});
                 
         state.groupSampler = DataPacking.createGroupDataSampler(gl);
         mParams = makeParams(mConfig);

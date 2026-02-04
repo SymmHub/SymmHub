@@ -22,7 +22,13 @@ export {
     cAdd,
     cPolar,
     cAbs, 
+    cAbs2, 
     cArg,
+    cLog,
+    cExp,
+    cPow, 
+    conj,    
+    mul,
     DataPacking,
 
 } from '../../../lib/invlib/invlib.js';
