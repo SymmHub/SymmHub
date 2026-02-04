@@ -8,6 +8,7 @@ import {
    mulberry32_2d,
    grid_2d,
    getRandomPoints2D,
+   PointShapes,
 } from './modules.js';
 
 
@@ -150,7 +151,7 @@ export function IteratorGPU(gl){
         let gl = mGL;
         let config = mGpuConfig;        
         const {histogram, attractor, groupSampler, coloring, iterations, bufTrans, symmetry} = mIterParams;
-        const {pointSize, colorSpeed, colorPhase,colorSign,jitter, pointsAA} = coloring; 
+        const {pointSize, colorSpeed, colorPhase,colorSign,jitter, pointsAA, pointShape} = coloring; 
         const {accumulate, startCount, iterPerFrame, accumThreshold, batchSize} = iterations;  
         const {transScale, transCenter} = bufTrans;
 
@@ -170,6 +171,7 @@ export function IteratorGPU(gl){
             uColorSign:     colorSign,
             uJitter:        jitter,
             uUsePointsAA:   pointsAA, 
+            uPointShape:    PointShapes.getIndex(pointShape),
             uTransScale:    transScale,
             uTransCenter:   transCenter,
             uHistThreshold: accumThreshold,  
@@ -214,12 +216,13 @@ export function IteratorGPU(gl){
     function iterate(pointsData, iterUni, symUni){
     
         if(DEBUG)console.log(`${MYNAME}.iterate()`);
-        let gl = mGL;
+        const gl = mGL;
+        const {attractor} = mIterParams;
         if(false)console.log('symUni: ', symUni);
         gl.disable(gl.BLEND);         
         gl.viewport(0, 0, pointsData.width, pointsData.height);  
 
-        const iterProg = AttPrograms.getProgram(gl, 'gpuIterator');          
+        const iterProg = attractor.getIteratorProgram(gl);          
         iterProg.bind();
 
         iterProg.setUniforms(iterUni);

@@ -7,6 +7,7 @@ export {
     ParamBool,
     ParamObj,
     ParamGroup,
+    ParamChoice,
     setParamValues,
     
 } from '../../../lib/uilib/uilib.js';
@@ -57,8 +58,8 @@ export {
    
 
 export {
-    CliffordAttractor
-} from './clifford_attractor.js';
+    AttractorCreator
+} from './AttractorCreator.js';
 
 export {
     IteratedAttractorCreator
@@ -96,3 +97,7 @@ export {
 export {
     ParamsAnimator
     } from './ParamsAnimator.js';
+
+export {
+    PointShapes 
+} from './PointShapes.js';

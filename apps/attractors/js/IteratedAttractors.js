@@ -2,7 +2,7 @@ import {
     EventDispatcher,
     createDoubleFBO, 
     createFBO, 
-    CliffordAttractor,
+    AttractorCreator, 
     AttPrograms,
     ParamFloat, 
     ParamBool, 
@@ -10,6 +10,7 @@ import {
     ParamGroup,
     ParamFunc,
     ParamInt,
+    ParamChoice,
 
     iPoint, 
     
@@ -36,6 +37,7 @@ import {
     ParamsAnimator,
     printBufferData,
     DataPacking, 
+    PointShapes, 
     
 } from './modules.js';
 
@@ -121,7 +123,8 @@ function IteratedAttractor(options){
             pointSize:    1,
             colorSign:    1.,
             jitter:       1.25,
-            pointsAA:     false, 
+            pointsAA:     false,
+            pointShape:   PointShapes.getDefault(),
         },
         symmetry: {
             enabled:    false,        
@@ -133,7 +136,9 @@ function IteratedAttractor(options){
         state: { // current state data
             histogram:      null,
             group:          null,
+            attType:        null,   
             attractor:      null,
+            attCreator:     null,
             attAnimator:    null,
             renderedBuffer: null,  
             bufferWidth:    1000, //(1 << 10), // 20 
@@ -141,7 +146,8 @@ function IteratedAttractor(options){
             needToRender:   true,
             needToIterate:  true,
             totalCount:     0,
-        }
+        },
+        
         
         
     };
@@ -163,9 +169,11 @@ function IteratedAttractor(options){
         
         const {state} = mConfig;
         
-        state.attractor = CliffordAttractor(); 
+        state.attCreator = AttractorCreator();
+        state.attType = state.attCreator.getDefaultName();
+        state.attractor = state.attCreator.getObject(state.attType);
         state.attractor.addEventListener('attractorChanged', onAttractorChanged);
-        state.attAnimator = ParamsAnimator({count: 4, onChange: onAnimatorChanged, attractor:state.attractor});
+        state.attAnimator = ParamsAnimator({count: 4, onChange: onAnimatorChanged, paramSource:state.attractor});
                 
         state.groupSampler = DataPacking.createGroupDataSampler(gl);
         mParams = makeParams(mConfig);
@@ -426,6 +434,7 @@ function IteratedAttractor(options){
     function onAttractorChanged(){
         
         if(DEBUG)console.log(`${MYNAME}.onAttractorChanged()`); 
+        scheduleRepaint();
         onRestart();
     }
     
@@ -524,10 +533,11 @@ function IteratedAttractor(options){
         if(DEBUG)console.log(`${MYNAME}.makeParams() `);
         let onc = onRerender;
         let onres = onRestart;
-        
+        let {state} = cfg;
         let params = {
-            attractor:      ParamObj({name:'attractor params', obj: cfg.state.attractor}),
-            animation:      ParamObj({name:'attractor animation', obj: cfg.state.attAnimator}),
+            attType:        ParamChoice({obj: state, key: 'attType', choice: state.attCreator.getNames(), onChange: onAttTypeChanged}),
+            attractor:      ParamObj({name:'attractor params', obj: state.attractor}),
+            animation:      ParamObj({name:'attractor animation', obj: state.attAnimator}),
             attTrans:       makeAttTransParams(cfg.attTrans, onres),
             iterations:     makeIterationsParams(cfg.iterations, onres),
             symmetry:       makeSymmetryParams(cfg.symmetry, onres),            
@@ -559,6 +569,7 @@ function IteratedAttractor(options){
                 colorSign:      ParamFloat({obj:ccfg,key:'colorSign', onChange:onres}),
                 jitter:         ParamFloat({obj:ccfg,key:'jitter',   onChange:onres}),
                 pointsAA:       ParamFloat({obj:ccfg,key:'pointsAA', onChange:onres}),
+                pointShape:    ParamChoice({obj: ccfg, key:'pointShape', choice:PointShapes.getNames(), onChange: onres}),
             },            
         });
     
@@ -624,6 +635,20 @@ function IteratedAttractor(options){
         
     }  // makeSymmetryParams()
     
+    function onAttTypeChanged(){
+        if(DEBUG)console.log(`${MYNAME}.onAttTypeChanged()`, mConfig.state.attType);
+        const {state} = mConfig; 
+        let newAtt = state.attCreator.getObject(mConfig.state.attType);
+        if(DEBUG)console.log(`${MYNAME}.onAttTypeChanged() new attractor: `, newAtt);
+        
+        
+        mParams.attractor.replaceObj(newAtt);
+        state.attractor = newAtt;
+        state.attAnimator.setParamSource(newAtt);
+        state.attractor.addEventListener('attractorChanged', onAttractorChanged);        
+        
+        
+    }
     function onTestSymm(){
         console.log('onTestSymm()', mConfig.state.group);
         for(let i = 0; i < 10; i++){
@@ -649,7 +674,7 @@ function IteratedAttractor(options){
     
     function setParamsMap(pmap, initialize=false) {
     
-        if(false) console.log(`${MYNAME}.setParamsMap()`, pmap); 
+        if(false) console.log(`${MYNAME}.setParamsMap()`, pmap, initialize); 
         
         if(pmap.attTransform) {
             // rename wrong key
@@ -660,6 +685,13 @@ function IteratedAttractor(options){
         if(!pmap.attTrans) {
             updateAttTransform(pmap);
         } 
+        
+        //upgrade attractor type param 
+        //if(!pmap.attType){
+        //    pmap.attType = mConfig.state.attCreator.getDefaultName();
+        //    console.warn(`${MYNAME} adding missing pmap.attType: `, pmap.attType, 'mConfig.state.attType: ', mConfig.state.attType);
+        //}
+        
         setParamValues(mParams, pmap, initialize);
         
     }

@@ -24,7 +24,8 @@ const accumulatorCrownVert  = {obj:AttShaders, id:'accumulator_crown_vert'};
 const accumulatorVert       = {obj:AttShaders, id:'accumulator_vert'};
 const accumulatorFrag       = {obj:AttShaders, id:'accumulator_frag' };
 const iteratorVert          = {obj:AttShaders, id:'iterator_vert' };
-const iteratorFrag          = {obj:AttShaders, id:'iterator_frag' };
+const iteratorCliffordFrag  = {obj:AttShaders, id:'iterator_clifford_frag' };
+const iteratorDeJongFrag    = {obj:AttShaders, id:'iterator_dejong_frag' };
 const copyVert              = {obj:AttShaders, id:'copy_vert' };
 const copyFrag              = {obj:AttShaders, id:'copy_frag' };
 const symmetrizationVert    = {obj:AttShaders, id:'symmetrization_vert' };
@@ -57,10 +58,16 @@ const gpuInitializer = {
     fs: {frags:[attUtils,initQrand2Frag]},
 }
 
-const gpuIterator = {
-    name: 'gpuIterator',
+const iteratorClifford = {
+    name: 'iteratorClifford',
     vs: {frags:[iteratorVert]},
-    fs: {frags:[iteratorFrag]},
+    fs: {frags:[iteratorCliffordFrag]},
+}
+
+const iteratorDeJong = {
+    name: 'iteratorDeJong',
+    vs: {frags:[iteratorVert]},
+    fs: {frags:[iteratorDeJongFrag]},
 }
 
 const gpuCopy = {
@@ -85,7 +92,8 @@ function programBuilder(){
         accumulator:        accumulator,
         histogramRenderer:  histogramRenderer, 
         gpuInitializer,
-        gpuIterator,
+        iteratorClifford,
+        iteratorDeJong,
         gpuCopy,
         symmetrization,
     };

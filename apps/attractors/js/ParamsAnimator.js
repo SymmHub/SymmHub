@@ -40,8 +40,12 @@ export function ParamsAnimator(arg){
        
         mConfig.count = (arg.count)? arg.count: 4;
         mConfig.values = initValues(mConfig.count);
-        mConfig.attractor = arg.attractor;
+        mConfig.paramSource = arg.paramSource;
         mParams = makeParams(mConfig);       
+    }
+    
+    function setParamSource(paramSource){
+        mConfig.paramSource = paramSource;
     }
 
     function initValues(count){
@@ -87,9 +91,9 @@ export function ParamsAnimator(arg){
     function onCopyOffsets(){
         
         console.log(`${MYNAME}.onCopyOffsets() `, mConfig);
-        const {attractor} = mConfig;
-        console.log(`${MYNAME} attractor: `, attractor);
-        const params = attractor.getParams();
+        const {paramSource} = mConfig;
+        console.log(`${MYNAME} paramSource: `, paramSource);
+        const params = paramSource.getParams();
         const {count} = mConfig;
         for(let i = 0; i < count; i++){
             let pkey = String.fromCharCode(CODE_a+i);
@@ -157,11 +161,12 @@ export function ParamsAnimator(arg){
     }
     
     const myself = {
-        init: init,
-        getParams:  getParams,
-        setTime:    setTime, 
-        getValues:  getValues, 
-        get enabled() {return mConfig.enabled}, 
+        init:           init,
+        setParamSource: setParamSource,
+        getParams:      getParams,
+        setTime:        setTime, 
+        getValues:      getValues, 
+        get enabled()   {return mConfig.enabled}, 
         get isModified() {return mConfig.isModified},
         getName:        () => MYNAME,
     };

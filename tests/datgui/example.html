@@ -25,7 +25,15 @@
         explode: function () {
           alert('Bang!');
         },
-
+        remove:  onRemove, 
+        removeColors:  onRemoveColors, 
+        removeColorsFolder:  onRemoveColorsFolder, 
+        removeC0:   onRemoveC0,
+        removeC1:   onRemoveC1,
+        removeC2:   onRemoveC2,
+        removeC3:   onRemoveC3,
+        addC0:      onAddC0, 
+        
         color0: "#ffae23FF", // CSS string
         color1: [ 0, 128, 255, 255 ], // RGB array
         color2: [ 0, 128, 255, 0.3 ], // RGB with alpha
@@ -39,7 +47,15 @@
     gui.add(obj, 'message');
     gui.add(obj, 'displayOutline');
     gui.add(obj, 'explode');
-
+    gui.add(obj, 'remove').name('remove speed!');
+    gui.add(obj, 'removeColors').name('remove colors!');
+    gui.add(obj, 'removeColorsFolder').name('remove colors folder!');
+    gui.add(obj, 'removeC0').name('remove C0');
+    gui.add(obj, 'removeC1').name('remove C1');
+    gui.add(obj, 'removeC2').name('remove C2');
+    gui.add(obj, 'removeC3').name('remove C3');
+    gui.add(obj, 'addC0').name('Add C0');
+    
     gui.add(obj, 'maxSize').min(-10).max(10).step(0.25);
     gui.add(obj, 'height').step(5); // Increment amount
 
@@ -47,20 +63,54 @@
     gui.add(obj, 'type', [ 'one', 'two', 'three' ] );
 
     // Choose from named values
-    gui.add(obj, 'speed', { Stopped: 0, Slow: 0.1, Fast: 5 } );
+    let speed = gui.add(obj, 'speed', { Stopped: 0, Slow: 0.1, Fast: 5 } );
+    console.log('speed: ', speed);
 
     var f1 = gui.addFolder('Colors');
-    f1.addColor(obj, 'color0');
-    f1.addColor(obj, 'color1');
-    f1.addColor(obj, 'color2');
-    f1.addColor(obj, 'color3');
+    let c0 = f1.addColor(obj, 'color0');
+    let c1 = f1.addColor(obj, 'color1');
+    let c2 = f1.addColor(obj, 'color2');
+    let c3 = f1.addColor(obj, 'color3');
 
     var f2 = gui.addFolder('Another Folder');
-    f2.add(obj, 'noiseStrength');
+    console.log('folder f2: ', f2);
 
+    f2.add(obj, 'noiseStrength');
     var f3 = f2.addFolder('Nested Folder');
     f3.add(obj, 'growthSpeed');
 
+    function onRemove(){
+        speed.remove();
+    }
+    
+    function onRemoveColorsFolder(){
+        console.log(' onRemoveColorsFolder() f1: ', f1); 
+        f1.parent.removeFolder(f1);
+    }
+    function onRemoveColors(){
+        console.log('       f1: ', f1);
+        let cont = f1.__controllers;
+        console.log('       controllers: ', cont);
+        cont[cont.length-1].remove();
+    }
+    function onRemoveC0(){
+        f1.remove(c0);
+    }
+    function onRemoveC1(){
+        f1.remove(c1);
+    }
+    function onRemoveC2(){
+        f1.remove(c2);
+    }
+    function onRemoveC3(){
+        f1.remove(c3);
+    }
+    
+    function onAddC0(){
+        console.log('       f1: ', f1);
+        c0 = f1.addColor(obj, 'color0');
+    }
+    
   </script>
 </body>
 </html>

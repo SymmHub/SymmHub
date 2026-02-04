@@ -4,6 +4,7 @@ import {
     ParamInt,
     ParamFunc,
     EventDispatcher,
+    AttPrograms, 
 } from './modules.js';
 
 const MYNAME = 'CliffordAttractor';
@@ -121,13 +122,18 @@ function CliffordAttractor(){
         onParamChanged();
     }
     
+    function getIteratorProgram(gl){
+        return AttPrograms.getProgram(gl, 'iteratorClifford');
+    }
+    
     myself = {
         getParams:          ()=>mParams,
-        getClassName:       ()=>{return MYNAME+'-class';},
+        getClassName:       ()=>MYNAME,
         addEventListener:   addEventListener,
         cpuIteratePoint:    cpuIteratePoint,
         getUniforms:        getUniforms,
         setParamValues:     setParamValues,
+        getIteratorProgram: getIteratorProgram,
     }
     return myself;
 }

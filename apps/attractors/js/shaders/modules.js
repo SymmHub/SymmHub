@@ -22,8 +22,16 @@ import {
 
 import {
     iterator_vert,
-    iterator_frag
 }   from './iterator.glsl.mjs';
+
+import {
+    iterator_clifford_frag,
+}   from './iterator_clifford.glsl.mjs';
+
+import {
+    iterator_dejong_frag,
+}   from './iterator_dejong.glsl.mjs';
+
 import {
     copy_vert,
     copy_frag
@@ -57,7 +65,8 @@ export const Shaders = {
     accumulator_crown_vert: accumulator_crown_vert,
     
     iterator_vert:          iterator_vert,
-    iterator_frag:          iterator_frag,
+    iterator_dejong_frag:   iterator_dejong_frag, 
+    iterator_clifford_frag: iterator_clifford_frag, 
     copy_vert:              copy_vert,
     copy_frag:              copy_frag,
     symmetrization_vert:    symmetrization_vert,
