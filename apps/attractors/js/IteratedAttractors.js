@@ -83,13 +83,17 @@ function IteratedAttractor(options){
             isRunning:    true,
             //iterate:        true,         
             accumulate:     true,
-            startCount: 15,
-            seed:       12345,
-            batchSize:  100000,
-            iterPerFrame: 1,
-            maxBatchCount: 100,
-            avgDist:    0,
-            batchCount: 0,
+            startCount:     15,
+            seed:           12345,
+            cloudCenterX:   0.,
+            cloudCenterY:   0.,
+            cloudSizeX:     2.,
+            cloudSizeY:     2.,
+            batchSize:      100000,
+            iterPerFrame:   1,
+            maxBatchCount:  100,
+            avgDist:        0,
+            batchCount:     0,
             accumThreshold: 1000,
             printTime:      false,
         },
@@ -603,6 +607,10 @@ function IteratedAttractor(options){
                 accumulate:     ParamBool({obj:icfg,key:'accumulate', onChange:onc}),   
                 startCount:     ParamInt({obj:icfg, key:'startCount', onChange: onc}), 
                 seed:           ParamInt({obj:icfg, key:'seed', onChange: onc}), 
+                cloudCenterX:   ParamFloat({obj:icfg, key:'cloudCenterX', onChange: onc}), 
+                cloudCenterY:   ParamFloat({obj:icfg, key:'cloudCenterY', onChange: onc}), 
+                cloudSizeX:     ParamFloat({obj:icfg, key:'cloudSizeX', onChange: onc}), 
+                cloudSizeY:     ParamFloat({obj:icfg, key:'cloudSizeY', onChange: onc}),                 
                 iterPerFrame:   ParamInt({obj:icfg, key:'iterPerFrame', onChange:onc}),
                 batchSize:      ParamInt({obj:icfg, key:'batchSize', onChange:onc}),
                 maxBatchCount:  ParamInt({obj:icfg, key:'maxBatchCount', onChange:onc}),
@@ -629,7 +637,7 @@ function IteratedAttractor(options){
                 maxIter:    ParamInt({obj: cfg, key: 'maxIter', onChange: onchange}),
                 useCrown:   ParamBool({obj: cfg, key: 'useCrown', onChange: onchange}),
                 shellThickness: ParamFloat({obj: cfg, key: 'shellThickness', onChange: onchange}),
-                testSymm:   ParamFunc({func:onTestSymm, name:'test symm!'}),
+                //testSymm:   ParamFunc({func:onTestSymm, name:'test symm!'}),
             }
         });
         
@@ -644,22 +652,13 @@ function IteratedAttractor(options){
         
         mParams.attractor.replaceObj(newAtt);
         state.attractor = newAtt;
-        state.attAnimator.setParamSource(newAtt);
+        state.attAnimator.setParamSource(newAtt);        
         state.attractor.addEventListener('attractorChanged', onAttractorChanged);        
-        
+        onRestart();
+
         
     }
-    function onTestSymm(){
-        console.log('onTestSymm()', mConfig.state.group);
-        for(let i = 0; i < 10; i++){
-            let x = 5.*i - 25;
-            let y = 50;
-            let pnt = {x:x, y:y};
-            pnt2fd_test(mCOnfig.state.group, pnt);
-            console.log(' ', x, y, '-> , ',pnt.x, pnt.y);
-        }
-    }
-    
+        
     function onRerender(){
         mConfig.state.needToRender = true;
         scheduleRepaint();
@@ -674,7 +673,7 @@ function IteratedAttractor(options){
     
     function setParamsMap(pmap, initialize=false) {
     
-        if(false) console.log(`${MYNAME}.setParamsMap()`, pmap, initialize); 
+        if(true) console.log(`${MYNAME}.setParamsMap()`, pmap, initialize); 
         
         if(pmap.attTransform) {
             // rename wrong key
@@ -687,10 +686,13 @@ function IteratedAttractor(options){
         } 
         
         //upgrade attractor type param 
-        //if(!pmap.attType){
-        //    pmap.attType = mConfig.state.attCreator.getDefaultName();
-        //    console.warn(`${MYNAME} adding missing pmap.attType: `, pmap.attType, 'mConfig.state.attType: ', mConfig.state.attType);
-        //}
+        if(!pmap.attType){
+            let defType = mConfig.state.attCreator.getDefaultName();
+            // insert attType in the beginning
+            let mapUpd = {attType: defType, ...pmap};
+            pmap = mapUpd;
+            console.warn(`${MYNAME}.setParamsMap() adding missing attType: ` + pmap.attType + ', current attType: ' + mConfig.state.attType);
+        }
         
         setParamValues(mParams, pmap, initialize);
         

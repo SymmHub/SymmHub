@@ -97,13 +97,15 @@ export function ParamsAnimator(arg){
         const {count} = mConfig;
         for(let i = 0; i < count; i++){
             let pkey = String.fromCharCode(CODE_a+i);
-            let value = params[pkey].getValue();
-            let gkey = String.fromCharCode(CODE_A+i);
-            console.log(`${MYNAME}  ${pkey}: ${value}`);
-            let valuesGroup = mParams.params[gkey];
-            mConfig.values[i]['offset'] = value;
-            valuesGroup['offset'].updateDisplay();
-            console.log(`${MYNAME}  ${gkey}:`,valuesGroup);
+            if(params[pkey]){
+                let value = params[pkey].getValue();
+                let gkey = String.fromCharCode(CODE_A+i);
+                console.log(`${MYNAME}  ${pkey}: ${value}`);
+                let valuesGroup = mParams.params[gkey];
+                mConfig.values[i]['offset'] = value;
+                valuesGroup['offset'].updateDisplay();
+                console.log(`${MYNAME}  ${gkey}:`,valuesGroup);
+            }
         }            
     }
   

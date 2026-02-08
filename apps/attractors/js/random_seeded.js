@@ -1,3 +1,8 @@
+import {
+    getParam
+} from './modules.js';
+
+
 // two dimensional case 
 const g = 1.32471795724474602596;
 const q0 = 1.0/ g;
@@ -113,16 +118,21 @@ export function grid_2d(origin, step, width){
 }
 
 
-export function getRandomPoints2D(points, pointMaker, count){
-        
+export function getRandomPoints2D(points, pointMaker, count, options={}){
+    
+    let cloudCenterX = getParam(options.cloudCenterX, 0.);
+    let cloudCenterY = getParam(options.cloudCenterY, 0.);
+    let cloudSizeX = getParam(options.cloudSizeX, 2.);
+    let cloudSizeY = getParam(options.cloudSizeY, 2.);
+    console.log('getRandomPoints2D: ', options);
    // let points = new Float32Array(4*count);
     let pnt = [0,0];
     
     for(let k = 0, i = 0; k < count; k++){
             
         pointMaker.nextPoint(pnt)
-        let x = (2*pnt[0] - 1);
-        let y = (2*pnt[1] - 1);
+        let x = (pnt[0] - 0.5)*cloudSizeX + cloudCenterX;
+        let y = (pnt[1] - 0.5)*cloudSizeY + cloudCenterY;
         points[i++] = x;
         points[i++] = y;
         points[i++] = Math.atan2(y,x)/Math.PI;//;

@@ -33,8 +33,16 @@ import {
 }   from './iterator_dejong.glsl.mjs';
 
 import {
+    iterator_tinkerbell_frag,
+}   from './iterator_tinkerbell.glsl.mjs';
+
+import {
     iterator_conradi_frag,
 }   from './iterator_conradi.glsl.mjs';
+
+import {
+    iterator_mandelbrot_frag,
+}   from './iterator_mandelbrot.glsl.mjs';
 
 import {
     iterator_field_icons_frag,
@@ -76,7 +84,10 @@ export const Shaders = {
     iterator_dejong_frag:   iterator_dejong_frag, 
     iterator_clifford_frag: iterator_clifford_frag, 
     iterator_conradi_frag:  iterator_conradi_frag,
+    iterator_tinkerbell_frag:  iterator_tinkerbell_frag,
+    iterator_mandelbrot_frag:  iterator_mandelbrot_frag,
     iterator_field_icons_frag: iterator_field_icons_frag,
+    
     copy_vert:              copy_vert,
     copy_frag:              copy_frag,
     symmetrization_vert:    symmetrization_vert,

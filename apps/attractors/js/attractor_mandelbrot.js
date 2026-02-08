@@ -7,14 +7,14 @@ import {
     AttPrograms,
 } from './modules.js';
 
-const MYNAME = 'ConradiAttractor';
+const MYNAME = 'MandelbrotAttractor';
 
 const DEBUG = false;
 
 
 const paramNames = ['a','b'];
 
-function ConradiAttractor(){
+function MandelbrotAttractor(){
 
     let mEventDispatcher = new EventDispatcher();
 
@@ -22,6 +22,7 @@ function ConradiAttractor(){
     const mConfig = {
         a: 3.69, 
         b: 4.51, 
+        type: 0, 
     };
     
     let mParams;
@@ -36,8 +37,8 @@ function ConradiAttractor(){
     
         
     function onRandomParams(){
-       mConfig.a = 6*(2*Math.random()-1);
-       mConfig.b = 6*(2*Math.random()-1);
+       mConfig.a = 2*(2*Math.random()-1);
+       mConfig.b = 2*(2*Math.random()-1);
        mParams.a.updateDisplay();
        mParams.b.updateDisplay();
        onParamChanged();
@@ -48,6 +49,7 @@ function ConradiAttractor(){
         let params = {
             a: ParamFloat({obj:cfg, key:'a', onChange: onc}),
             b: ParamFloat({obj:cfg, key:'b', onChange: onc}),
+            type: ParamInt({obj:cfg, key:'type', onChange: onc}),
 
             random:     ParamFunc({func: onRandomParams, name: 'Random!'}),
         }
@@ -55,10 +57,11 @@ function ConradiAttractor(){
     }
     
     function getUniforms(){
-        let {a,b,c,d} = mConfig;        
+        let {a,b,type} = mConfig;        
         return {
             u_a: a,
             u_b: b,
+            u_type: type,
         };
     }
     function cpuIteratePoint(pnt0, pnt1){
@@ -67,8 +70,8 @@ function ConradiAttractor(){
         let x = pnt0.x;
         let y = pnt0.y;     
         
-        let x1 = Math.sin(x*x - y*y + a);
-        let y1 = Math.cos(2.*x*y + b);
+        let x1 = (x*x - y*y + a);
+        let y1 = (2.*x*y + b);
         
         pnt1.x = x1;
         pnt1.y = y1;
@@ -109,7 +112,7 @@ function ConradiAttractor(){
     }
     
     function getIteratorProgram(gl){
-        return AttPrograms.getProgram(gl, 'iteratorConradi');
+        return AttPrograms.getProgram(gl, 'iteratorMandelbrot');
     }
     
     myself = {
@@ -126,5 +129,5 @@ function ConradiAttractor(){
 
 
 export {
-    ConradiAttractor
+    MandelbrotAttractor
 }

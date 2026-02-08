@@ -13,3 +13,11 @@ export {
 export {
     FieldIconsAttractor,
 } from './attractor_field_icons.js';
+
+export {
+    MandelbrotAttractor,
+} from './attractor_mandelbrot.js';
+
+export {
+    TinkerbellAttractor,
+} from './attractor_tinkerbell.js';

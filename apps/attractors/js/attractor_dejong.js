@@ -110,8 +110,10 @@ function DeJongAttractor(){
     function setParamValues(values){        
         for(let i =0; i < values.length; i++){
             let pname = paramNames[i];
-            mConfig[pname] = values[i];
-            mParams[pname].updateDisplay();            
+            if(mParams[pname]){
+                mConfig[pname] = values[i];
+                mParams[pname].updateDisplay();            
+            }
         }        
         onParamChanged();
     }

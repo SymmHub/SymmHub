@@ -7,21 +7,23 @@ import {
     AttPrograms,
 } from './modules.js';
 
-const MYNAME = 'ConradiAttractor';
+const MYNAME = 'TinkerbellAttractor';
 
 const DEBUG = false;
 
 
-const paramNames = ['a','b'];
+const paramNames = ['a','b', 'c', 'd'];
 
-function ConradiAttractor(){
+function TinkerbellAttractor(){
 
     let mEventDispatcher = new EventDispatcher();
 
     //const pcount = 100000;
     const mConfig = {
-        a: 3.69, 
-        b: 4.51, 
+        a: 0.9, 
+        b: -0.6013, 
+        c: 2.,
+        d: 0.5,
     };
     
     let mParams;
@@ -36,10 +38,14 @@ function ConradiAttractor(){
     
         
     function onRandomParams(){
-       mConfig.a = 6*(2*Math.random()-1);
-       mConfig.b = 6*(2*Math.random()-1);
+       mConfig.a = (2*Math.random()-1);
+       mConfig.b = (2*Math.random()-1);
+       mConfig.c = 2.+(2*Math.random()-1);
+       mConfig.d = (2*Math.random()-1);
        mParams.a.updateDisplay();
        mParams.b.updateDisplay();
+       mParams.c.updateDisplay();
+       mParams.d.updateDisplay();
        onParamChanged();
        
     }
@@ -48,6 +54,8 @@ function ConradiAttractor(){
         let params = {
             a: ParamFloat({obj:cfg, key:'a', onChange: onc}),
             b: ParamFloat({obj:cfg, key:'b', onChange: onc}),
+            c: ParamFloat({obj:cfg, key:'c', onChange: onc}),
+            d: ParamFloat({obj:cfg, key:'d', onChange: onc}),
 
             random:     ParamFunc({func: onRandomParams, name: 'Random!'}),
         }
@@ -59,16 +67,18 @@ function ConradiAttractor(){
         return {
             u_a: a,
             u_b: b,
+            u_c: c,
+            u_d: d,
         };
     }
     function cpuIteratePoint(pnt0, pnt1){
         
-        let {a,b} = mConfig;        
+        let {a,b, c, d } = mConfig;        
         let x = pnt0.x;
         let y = pnt0.y;     
         
-        let x1 = Math.sin(x*x - y*y + a);
-        let y1 = Math.cos(2.*x*y + b);
+        let x1 = x*x - y*y + a*x + b*y;
+        let y1 = 2*x*y + c*x + d*y;
         
         pnt1.x = x1;
         pnt1.y = y1;
@@ -99,17 +109,17 @@ function ConradiAttractor(){
  
     function setParamValues(values){        
         for(let i =0; i < values.length; i++){
-            let pname = paramNames[i];
-            if(mParams[pname]){
+            let pname = paramNames[i];            
+            if(mParams[pname]) {
                 mConfig[pname] = values[i];
-                mParams[pname].updateDisplay();            
+                mParams[pname].updateDisplay(); 
             }
         }        
         onParamChanged();
     }
     
     function getIteratorProgram(gl){
-        return AttPrograms.getProgram(gl, 'iteratorConradi');
+        return AttPrograms.getProgram(gl, 'iteratorTinkerbell');
     }
     
     myself = {
@@ -126,5 +136,5 @@ function ConradiAttractor(){
 
 
 export {
-    ConradiAttractor
+    TinkerbellAttractor
 }

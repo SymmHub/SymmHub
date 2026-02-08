@@ -27,7 +27,10 @@ const iteratorVert          = {obj:AttShaders, id:'iterator_vert' };
 const iteratorCliffordFrag  = {obj:AttShaders, id:'iterator_clifford_frag' };
 const iteratorDeJongFrag    = {obj:AttShaders, id:'iterator_dejong_frag' };
 const iteratorConradiFrag   = {obj:AttShaders, id:'iterator_conradi_frag' };
+const iteratorTinkerbellFrag   = {obj:AttShaders, id:'iterator_tinkerbell_frag' };
+const iteratorMandelbrotFrag   = {obj:AttShaders, id:'iterator_mandelbrot_frag' };
 const iteratorFieldIconsFrag   = {obj:AttShaders, id:'iterator_field_icons_frag' };
+
 const copyVert              = {obj:AttShaders, id:'copy_vert' };
 const copyFrag              = {obj:AttShaders, id:'copy_frag' };
 const symmetrizationVert    = {obj:AttShaders, id:'symmetrization_vert' };
@@ -73,9 +76,22 @@ const iteratorDeJong = {
 }
 
 const iteratorConradi = {
-    name: 'iteratorDeJong',
+    name: 'iteratorConradi',
     vs: {frags:[iteratorVert]},
     fs: {frags:[iteratorConradiFrag]},
+}
+
+const iteratorTinkerbell = {
+    name: 'iteratorTinkerbell',
+    vs: {frags:[iteratorVert]},
+    fs: {frags:[iteratorTinkerbellFrag]},
+}
+
+
+const iteratorMandelbrot = {
+    name: 'iteratorMandelbrot',
+    vs: {frags:[iteratorVert]},
+    fs: {frags:[iteratorMandelbrotFrag]},
 }
 
 const iteratorFieldIcons = {
@@ -109,6 +125,8 @@ function programBuilder(){
         iteratorClifford,
         iteratorDeJong,
         iteratorConradi,
+        iteratorTinkerbell,
+        iteratorMandelbrot,
         iteratorFieldIcons,
         gpuCopy,
         symmetrization,

@@ -28,8 +28,11 @@ export function IteratorGPU(gl){
         pointDataWidth:     0,  // initial data width 
         poinsData:          null, // doublke FBO used for iterations
         initialData:        null, // FBO used to store initial random data 
-        oldBatchSize:          0,  // ititial batcvh size
-        oldSeed:            -1,   // seed for initialization 
+        //oldBatchSize:          0,  // ititial batcvh size
+        //oldSeed:            -1,   // seed for initialization 
+        oldData:      {
+            
+        }
     };
     let mGL = null;
     let mIterParams;
@@ -58,11 +61,10 @@ export function IteratorGPU(gl){
     
     function initBuffers(gl){
     
-        const {pointDataWidth, oldBatchSize, oldSeed} = mGpuConfig;
-        const { batchSize, seed } = mIterParams.iterations;
-        
-        let newWidth = Math.ceil(Math.sqrt(batchSize)) | 0;
-        if(DEBUG) console.log(`${MYNAME}.initBuffers() batchSize: `, batchSize, ` newWidth:`, newWidth);
+        const {pointDataWidth, oldData} = mGpuConfig;
+        const {iterations} = mIterParams;
+        let newWidth = Math.ceil(Math.sqrt(iterations.batchSize)) | 0;
+        if(DEBUG) console.log(`${MYNAME}.initBuffers() batchSize: `, iterations.batchSize, ` newWidth:`, newWidth);
 
         if(newWidth != mGpuConfig.pointDataWidth ) {
             
@@ -72,14 +74,25 @@ export function IteratorGPU(gl){
             mGpuConfig.pointDataWidth = newWidth;
         }
 
-        if(oldBatchSize != batchSize || oldSeed != seed){
-            let indexArray = makeIndexArray(newWidth, batchSize);
+        if(oldData.batchSize   != iterations.batchSize || 
+            oldData.seed       != iterations.seed || 
+            oldData.cloudSizeX != iterations.cloudSizeX ||
+            oldData.cloudSizeY != iterations.cloudSizeY ||
+            oldData.cloudCenterX != iterations.cloudCenterX ||
+            oldData.cloudCenterY != iterations.cloudCenterY
+            
+            ){
+            let indexArray = makeIndexArray(newWidth, iterations.batchSize);
             mGpuConfig.indexBuffer = makeIndexBuffer(gl, indexArray);
-            if(false)console.log('${MYNAME}.makeIndexBuffer() batchSize:', batchSize, '', oldBatchSize, seed, oldSeed);
+            if(false)console.log('${MYNAME}.makeIndexBuffer() batchSize:', iterations, oldData);
             if(false)console.log('${MYNAME}.makeIndexBuffer() indexArray:', indexArray);
             initPointsData2(mGpuConfig.initialData ); 
-            mGpuConfig.oldSeed = seed;
-            mGpuConfig.oldBatchSize = batchSize;
+            oldData.seed =         iterations.seed;
+            oldData.cloudCenterX = iterations.cloudCenterX;
+            oldData.cloudCenterY = iterations.cloudCenterY;
+            oldData.cloudSizeX   = iterations.cloudSizeX;
+            oldData.cloudSizeY   = iterations.cloudSizeY;
+            oldData.batchSize    = iterations.batchSize;
             
         }
         //if(DEBUG) console.log(`${MYNAME}.initBuffers() indexArray: `, indexArray);                
@@ -112,13 +125,18 @@ export function IteratorGPU(gl){
         let gl = mGL;
         // fill data array with random points 
         let {pointDataWidth} = mGpuConfig;
-        const {batchSize, seed} = mIterParams.iterations;        
+        const {
+            batchSize, seed, 
+            cloudSizeX, cloudSizeY, 
+            cloudCenterX, cloudCenterY
+            } = mIterParams.iterations;        
         //let pcount = pointDataWidth*pointDataWidth;
         const pointsDataCount = pointDataWidth*pointDataWidth;
         const pointMaker = qrand2(seed);
+        const options = {cloudSizeX, cloudSizeY, cloudCenterX, cloudCenterY};        
         //const pointMaker = mulberry32_2d(seed);
         //const pointMaker = grid_2d([0,0], [0.1, 0.1], 11);
-        let coord = getRandomPoints2D(new Float32Array(4*pointsDataCount), pointMaker, pointsDataCount);            
+        let coord = getRandomPoints2D(new Float32Array(4*pointsDataCount), pointMaker, pointsDataCount, options);            
         
         //console.log('pointsCoord: ', pointsCoord);
         gl.bindTexture(gl.TEXTURE_2D, pData.texture);

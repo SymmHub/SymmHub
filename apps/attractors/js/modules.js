@@ -9,7 +9,7 @@ export {
     ParamGroup,
     ParamChoice,
     setParamValues,
-    
+    getParam,
 } from '../../../lib/uilib/uilib.js';
 
 export {
