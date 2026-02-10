@@ -22,6 +22,7 @@ function ConradiAttractor(){
     const mConfig = {
         a: 3.69, 
         b: 4.51, 
+        coloring: 0, 
     };
     
     let mParams;
@@ -48,17 +49,17 @@ function ConradiAttractor(){
         let params = {
             a: ParamFloat({obj:cfg, key:'a', onChange: onc}),
             b: ParamFloat({obj:cfg, key:'b', onChange: onc}),
-
             random:     ParamFunc({func: onRandomParams, name: 'Random!'}),
         }
         return params;
     }
     
     function getUniforms(){
-        let {a,b,c,d} = mConfig;        
+        let {a,b,coloring} = mConfig;        
         return {
             u_a: a,
             u_b: b,
+            //u_coloring: coloring,
         };
     }
     function cpuIteratePoint(pnt0, pnt1){

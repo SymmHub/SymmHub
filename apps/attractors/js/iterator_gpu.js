@@ -169,7 +169,8 @@ export function IteratorGPU(gl){
         let gl = mGL;
         let config = mGpuConfig;        
         const {histogram, attractor, groupSampler, coloring, iterations, bufTrans, symmetry} = mIterParams;
-        const {pointSize, colorSpeed, colorPhase,colorSign,jitter, pointsAA, pointShape} = coloring; 
+        const {pointSize, coloringType, colorSpeed, colorPhase,colorSign,jitter, pointsAA, pointShape} 
+              = coloring; 
         const {accumulate, startCount, iterPerFrame, accumThreshold, batchSize} = iterations;  
         const {transScale, transCenter} = bufTrans;
 
@@ -201,13 +202,16 @@ export function IteratorGPU(gl){
             uTransCenter:   transCenter,
             uMaxIter:       symmetry.maxIter,       
         }
+        const coloringUni = {
+            u_coloringType: coloringType,
+        };
 
         if(config.needRestart) {            
             config.needRestart = false;
             config.pointsPerIteration = 0;
             initPointsData(initialData, pointsData);            
             for(let k = 0; k  < iterations.startCount; k++){
-                iterate(pointsData, iterUni, symUni);
+                iterate(pointsData, iterUni, symUni, coloringUni);
             }
             appendPointsToHistogram(histogram, pointsData, accumulate, accUni, indexBuffer, batchSize);
         }
@@ -218,7 +222,7 @@ export function IteratorGPU(gl){
                 return;
             }
             // do iteration
-            iterate(pointsData, iterUni, symUni)
+            iterate(pointsData, iterUni, symUni, coloringUni)
             // render histogram 
             appendPointsToHistogram(histogram, pointsData, accumulate, accUni, indexBuffer, batchSize);
 
@@ -231,7 +235,7 @@ export function IteratorGPU(gl){
     //
     // perform single iteration 
     //
-    function iterate(pointsData, iterUni, symUni){
+    function iterate(pointsData, iterUni, symUni, coloringUni){
     
         if(DEBUG)console.log(`${MYNAME}.iterate()`);
         const gl = mGL;
@@ -245,6 +249,7 @@ export function IteratorGPU(gl){
 
         iterProg.setUniforms(iterUni);
         iterProg.setUniforms({uPointsData: pointsData.read});
+        iterProg.setUniforms(coloringUni);
         iterProg.blit(pointsData.write);
         pointsData.swap();            
         if(mIterParams.symmetry.enabled){

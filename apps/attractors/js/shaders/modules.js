@@ -58,7 +58,9 @@ import {
     symmetrization_frag
 }   from './symmetrization.glsl.mjs';
 
-
+import {
+    colorize_frag
+} from './colorize.glsl.mjs';
 
 const MYNAME = import.meta.url;
 
@@ -87,6 +89,8 @@ export const Shaders = {
     iterator_tinkerbell_frag:  iterator_tinkerbell_frag,
     iterator_mandelbrot_frag:  iterator_mandelbrot_frag,
     iterator_field_icons_frag: iterator_field_icons_frag,
+    
+    colorize_frag:      colorize_frag,
     
     copy_vert:              copy_vert,
     copy_frag:              copy_frag,

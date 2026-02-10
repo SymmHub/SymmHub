@@ -2,28 +2,18 @@
 export const  iterator_conradi_frag = 
 
 `
-#ifndef PI
-#define PI 3.14159265358979323846
-#endif
-
 uniform sampler2D uPointsData;
 
 out vec4 outPnt;  // result of iteration 
 
 uniform float u_a;
 uniform float u_b;
-
 vec2 iterate(vec2 p){
    
    return vec2(
         sin(p.x*p.x - p.y*p.y + u_a),
         cos(2.* p.x*p.y + u_b));
 }
-
-float colorize(vec2 p0, vec2 p1){
-    return (atan(p0.y, p0.x)/PI + 1.);
-}
-
 
 void main () {
 

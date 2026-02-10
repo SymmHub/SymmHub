@@ -7,39 +7,25 @@ import {
     TinkerbellAttractor,
 } from './attractors.js';
 
+import {
+    ObjectsCreator
+} from './modules.js';
+
 const DEBUG = true;
 const MYNAME = 'AttractorCreator';
 
-
-function AttractorCreator(){
+const attInfo = [
+    {name: 'Clifford', creator: CliffordAttractor},
+    {name: 'DeJong', creator: DeJongAttractor},
+    {name: 'Conradi', creator: ConradiAttractor},
+    {name: 'Field Icons', creator: FieldIconsAttractor},
+    {name: 'Mandelbrot', creator: MandelbrotAttractor},
+    {name: 'Tinkerbell', creator: TinkerbellAttractor},
+]
     
-    const names = ['Clifford', 'DeJong', 'Conradi', 'Field Icons', 'Mandelbrot', 'Tinkerbell'];
-    const objects = {
-        Clifford: CliffordAttractor, 
-        DeJong: DeJongAttractor, 
-        Conradi: ConradiAttractor, 
-        'Field Icons': FieldIconsAttractor,
-        Mandelbrot:    MandelbrotAttractor,
-        Tinkerbell:    TinkerbellAttractor,
-    }
-    const defName = names[0];
-    function getObject(name){
-        console.log(`${MYNAME}.getObject()`, name);
-        let obj = objects[name];
-        if(!obj) {
-            console.warn(`${MYNAME}.getObject(), ounknow name: ${name}, returning default: ${defName}`)
-            obj = objects[defName];
-        }
-        let o = obj();
-        console.log(`${MYNAME}.getObject() returning `, o);        
-        return o;
-    }
     
-    return {
-        getNames:       ()=>names,
-        getObject:      getObject,
-        getDefaultName: ()=>names[0],
-    }
+function AttractorCreator(){    
+    return ObjectsCreator(attInfo);
 }
 
 

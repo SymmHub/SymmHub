@@ -52,6 +52,7 @@ export {
     makeSamplesArray,    
     readPixelsFromBuffer,
     printBufferData,
+    ObjectsCreator,
 } from "../../../lib/symhublib/symhublib.js";
 
 export { 
@@ -107,3 +108,4 @@ export {
 export {
     PointShapes 
 } from './PointShapes.js';
+

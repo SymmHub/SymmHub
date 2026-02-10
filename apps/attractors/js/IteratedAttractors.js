@@ -121,9 +121,9 @@ function IteratedAttractor(options){
             saturation: 0.8,
             dynamicRange:0.1,
             invert:         false,  
-
-            colorSpeed:   0.22,
-            colorPhase:   Math.PI,
+            coloringType: 0, 
+            colorSpeed:   1,
+            colorPhase:   0,
             pointSize:    1,
             colorSign:    1.,
             jitter:       1.25,
@@ -567,6 +567,7 @@ function IteratedAttractor(options){
                 dynamicRange:   ParamFloat({obj:ccfg,key:'dynamicRange', onChange:onc}),
                 invert:         ParamBool({obj:ccfg,key:'invert', onChange:onc}),   
                             
+                coloringType:   ParamInt({obj:ccfg,key:'coloringType', onChange:onres}),
                 colorSpeed:     ParamFloat({obj:ccfg,key:'colorSpeed', onChange:onres}),
                 colorPhase:     ParamFloat({obj:ccfg,key:'colorPhase', onChange:onres}),
                 pointSize:      ParamFloat({obj:ccfg,key:'pointSize', onChange:onres}),
@@ -688,7 +689,7 @@ function IteratedAttractor(options){
         //upgrade attractor type param 
         if(!pmap.attType){
             let defType = mConfig.state.attCreator.getDefaultName();
-            // insert attType in the beginning
+            // insert attType before attractor parameters 
             let mapUpd = {attType: defType, ...pmap};
             pmap = mapUpd;
             console.warn(`${MYNAME}.setParamsMap() adding missing attType: ` + pmap.attType + ', current attType: ' + mConfig.state.attType);

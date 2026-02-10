@@ -22,11 +22,6 @@ vec2 iterate(vec2 p){
         sin(u_c * p.x) - cos(u_d * p.y));
 }
 
-float colorize(vec2 p0, vec2 p1){
-    return (atan(p0.y, p0.x)/PI + 1.);
-}
-
-
 void main () {
 
     vec4 p0 = texelFetch(uPointsData, ivec2(gl_FragCoord.xy), 0);

@@ -2,10 +2,6 @@
 export const  iterator_mandelbrot_frag = 
 
 `
-#ifndef PI
-#define PI 3.14159265358979323846
-#endif
-
 uniform sampler2D uPointsData;
 
 out vec4 outPnt;  // result of iteration 
@@ -55,10 +51,6 @@ vec2 iterate(vec2 p){
         case 2: return scale(p);        
         case 3: return shift(p);        
    }
-}
-
-float colorize(vec2 p0, vec2 p1){
-    return (atan(p0.y, p0.x)/PI + 1.);
 }
 
 

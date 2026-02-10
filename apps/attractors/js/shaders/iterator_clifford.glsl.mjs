@@ -2,10 +2,6 @@
 export const  iterator_clifford_frag = 
 
 `
-#ifndef PI
-#define PI 3.14159265358979323846
-#endif
-
 uniform sampler2D uPointsData;
 
 out vec4 outPnt;  // result of iteration 
@@ -28,10 +24,6 @@ vec2 iterate_1(vec2 p){
    return vec2(
         (1.-u_c)*sin(u_a * p.y) + u_c * cos(u_a * p.x),
         (1.-u_d)*sin(u_b * p.x) + u_d * cos(u_b * p.y));    
-}
-
-float colorize(vec2 p0, vec2 p1){
-    return (atan(p0.y, p0.x)/PI + 1.);
 }
 
 void main () {
