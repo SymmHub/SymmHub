@@ -3,13 +3,9 @@ import {
     GinzburgLandauSimulationCreator,
     makeSamplesArray,    
     InversiveNavigator,
+    GroupMakerFactory,
 }
 from './modules.js';
-
-import {
-    Group_5splanes as GroupMaker,
-} from './modules.js';
-
 
 import {
     presets
@@ -21,7 +17,7 @@ try {
     let ss = SymRenderer({
         simCreator: GinzburgLandauSimulationCreator,
         samples: makeSamplesArray(presets, presets_dir),
-        groupMaker:  new GroupMaker(), // maker of the groups
+        groupMakerFactory: GroupMakerFactory({defaultName: '5 Splanes'}),         
         navigator: new InversiveNavigator(),
     });
     ss.run();

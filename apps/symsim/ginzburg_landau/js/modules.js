@@ -54,10 +54,7 @@ export {
 } from '../../../../lib/invlib/invlib.js';
 
 export {
-    Group_WP,
-    Group_KLM,
-    Group_KLMN,
-    Group_5splanes,
+    GroupMakerFactory,
 }
 from '../../../../lib/grouplib/grouplib.js';
 

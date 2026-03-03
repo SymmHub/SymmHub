@@ -1,10 +1,9 @@
 import {
     SymRenderer,
     GinzburgLandauSimulationCreator,
-    Group_KLMN,
     makeSamplesArray,
-    InversiveNavigator
-    
+    InversiveNavigator,
+    GroupMakerFactory,
 }
 from './modules.js';
 
@@ -17,7 +16,7 @@ try {
     let ss = SymRenderer({
         simCreator: GinzburgLandauSimulationCreator,
         samples: makeSamplesArray(presets, 'presets/klmn/'),
-        groupMaker:  new Group_KLMN(), // maker of the groups
+        groupMakerFactory: GroupMakerFactory({defaultName: 'KLMN'}),         
         navigator: new InversiveNavigator(),
     });
     ss.run();

@@ -1,6 +1,5 @@
 
 import { 
-    Group_Frieze, 
     InversiveNavigator,
     VisualizationManager,
     VisualizationImage,
@@ -8,6 +7,7 @@ import {
     SymRenderer,
     makeSamplesArray,
     IteratedAttractorCreator,
+    GroupMakerFactory,
 } from "./modules.js";
 
 import {
@@ -30,7 +30,8 @@ const visManager = VisualizationManager({
 const app = SymRenderer({
       simCreator: IteratedAttractorCreator,
       visualization: visManager, 
-      groupMaker: new Group_Frieze({type: '*22∞',a: 0.4}), // maker of the groups
+      //groupMaker: new Group_Frieze({type: '*22∞',a: 0.4}), // maker of the groups
+      groupMakerFactory: GroupMakerFactory({defaultName: 'Frieze'}), 
       navigator:  new InversiveNavigator(),
       samples:    makeSamplesArray(presets, 'presets/frieze/'),
 });

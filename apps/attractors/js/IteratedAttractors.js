@@ -2,7 +2,7 @@ import {
     EventDispatcher,
     createDoubleFBO, 
     createFBO, 
-    AttractorCreator, 
+    AttractorsFactory, 
     AttPrograms,
     ParamFloat, 
     ParamBool, 
@@ -173,7 +173,7 @@ function IteratedAttractor(options){
         
         const {state} = mConfig;
         
-        state.attCreator = AttractorCreator();
+        state.attCreator = AttractorsFactory();
         state.attType = state.attCreator.getDefaultName();
         state.attractor = state.attCreator.getObject(state.attType);
         state.attractor.addEventListener('attractorChanged', onAttractorChanged);
@@ -656,7 +656,6 @@ function IteratedAttractor(options){
         state.attAnimator.setParamSource(newAtt);        
         state.attractor.addEventListener('attractorChanged', onAttractorChanged);        
         onRestart();
-
         
     }
         

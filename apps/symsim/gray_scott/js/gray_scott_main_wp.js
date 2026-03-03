@@ -5,6 +5,7 @@ import {
     PlaneNavigator, 
     makeSamplesArray,
     InversiveNavigator,
+    GroupMakerFactory, 
 }
 from './modules.js';
 
@@ -16,7 +17,7 @@ import {
     let ss = SymRenderer({
         simCreator: GrayScottSimulationCreator,
         samples: makeSamplesArray(presets_wp, 'presets/wp/'),
-        groupMaker:  new Group_WP({type: '333',a: 0.4}), // maker of the groups
+        groupMakerFactory: GroupMakerFactory({defaultName: 'Wallpaper'}), 
         navigator:   new InversiveNavigator(),
     });
     ss.run();

@@ -51,6 +51,7 @@ export {
     Group_WP,
     Group_KLM,
     Group_KLMN,
+    GroupMakerFactory, 
 }
 from '../../../../lib/grouplib/grouplib.js';
 

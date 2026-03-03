@@ -1,6 +1,5 @@
 
 import { 
-    Group_Spherical, 
     InversiveNavigator,
     VisualizationManager,
     VisualizationImage,
@@ -8,6 +7,7 @@ import {
     SymRenderer,
     makeSamplesArray,
     IteratedAttractorCreator,
+    GroupMakerFactory,
 } from "./modules.js";
 
 import {
@@ -30,7 +30,7 @@ const visManager = VisualizationManager({
 const app = SymRenderer({
       simCreator: IteratedAttractorCreator,
       visualization: visManager, 
-      groupMaker: new Group_Spherical({type: 'nn',n: 2}), // maker of the groups
+      groupMakerFactory: GroupMakerFactory({defaultName: 'Spherical'}), 
       navigator:  new InversiveNavigator(),
       samples:    makeSamplesArray(presets, 'presets/spherical/'),
 });

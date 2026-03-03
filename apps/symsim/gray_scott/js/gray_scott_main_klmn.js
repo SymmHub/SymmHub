@@ -4,7 +4,7 @@ import {
     Group_KLMN,
     makeSamplesArray,
     InversiveNavigator,
-
+    GroupMakerFactory,
 }
 from './modules.js';
 
@@ -17,7 +17,7 @@ try {
     let ss = SymRenderer({
         simCreator: GrayScottSimulationCreator,
         samples: makeSamplesArray(presets_klmn, 'presets/klmn/'),
-        groupMaker:  new Group_KLMN({}), // maker of the groups
+        groupMakerFactory: GroupMakerFactory({defaultName: 'KLMN'}),       
         navigator:   new InversiveNavigator(),
     });
     ss.run();

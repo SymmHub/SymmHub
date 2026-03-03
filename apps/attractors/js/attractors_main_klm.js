@@ -1,6 +1,5 @@
 
 import { 
-    Group_KLM, 
     InversiveNavigator,
     VisualizationManager,
     VisualizationImage,
@@ -8,6 +7,7 @@ import {
     SymRenderer,
     makeSamplesArray,
     IteratedAttractorCreator,
+    GroupMakerFactory,
 } from "./modules.js";
 
 import {
@@ -30,7 +30,7 @@ const visManager = VisualizationManager({
 const app = SymRenderer({
       simCreator: IteratedAttractorCreator,
       visualization: visManager, 
-      groupMaker: new Group_KLM({k:2, l:3, m:3, s:true}), // maker of the groups
+      groupMakerFactory: GroupMakerFactory({defaultName: 'KLM'}),       
       navigator:  new InversiveNavigator(),
       samples:    makeSamplesArray(presets, 'presets/klm/'),
 });

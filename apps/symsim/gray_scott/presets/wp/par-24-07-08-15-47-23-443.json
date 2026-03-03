@@ -12,13 +12,14 @@
             "customHeight": 1000,
             "sizeMultiplier": 1,
             "backgroundColor": "#00000000",
-            "frameTime": 16.6
+            "frameTime": 16.7
         },
         "recording": {
             "animTime": 0,
             "animSpeed": 1,
             "startFrame": 0,
-            "endFrame": 3600
+            "endFrame": 3600,
+            "currentFrame": 0
         },
         "simulation": {
             "preset": "Moving loops with pushing lines",
@@ -151,6 +152,17 @@
                         "shadowsColor": "#0000FFAA"
                     }
                 },
+                "buffer": {
+                    "fill": {
+                        "enabled": false,
+                        "color": "#00FF0022"
+                    },
+                    "outline": {
+                        "enabled": false,
+                        "width": 1,
+                        "color": "#00AA00AA"
+                    }
+                },
                 "isolines": {
                     "enabled": false,
                     "type": "u",
@@ -244,6 +256,7 @@
             }
         },
         "symmetry": {
+            "groupType": "Wallpaper",
             "group": {
                 "className": "Group_WP",
                 "params": {
@@ -319,8 +332,8 @@
                                 "a2y": 1,
                                 "n1": 10,
                                 "n2": 0,
-                                "x0": 0,
-                                "y0": 0
+                                "shift1": 0,
+                                "shift2": 0
                             },
                             "expMap": {
                                 "enabled": false

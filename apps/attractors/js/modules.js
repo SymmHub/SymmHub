@@ -10,6 +10,7 @@ export {
     ParamChoice,
     setParamValues,
     getParam,
+    ObjectFactory,
 } from '../../../lib/uilib/uilib.js';
 
 export {
@@ -52,21 +53,17 @@ export {
     makeSamplesArray,    
     readPixelsFromBuffer,
     printBufferData,
-    ObjectsCreator,
 } from "../../../lib/symhublib/symhublib.js";
 
 export { 
-    Group_WP,
-    Group_Frieze,
-    Group_Spherical,
-    Group_KLM,
+    GroupMakerFactory, 
 } from "../../../lib/grouplib/grouplib.js";
 
    
 
 export {
-    AttractorCreator
-} from './AttractorCreator.js';
+    AttractorsFactory
+} from './AttractorsFactory.js';
 
 export {
     IteratedAttractorCreator
@@ -108,4 +105,3 @@ export {
 export {
     PointShapes 
 } from './PointShapes.js';
-

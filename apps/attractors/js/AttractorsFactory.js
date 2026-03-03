@@ -8,27 +8,26 @@ import {
 } from './attractors.js';
 
 import {
-    ObjectsCreator
+    ObjectFactory
 } from './modules.js';
 
-const DEBUG = true;
-const MYNAME = 'AttractorCreator';
+const MYNAME = 'AttractorsFactory';
 
 const attInfo = [
-    {name: 'Clifford', creator: CliffordAttractor},
-    {name: 'DeJong', creator: DeJongAttractor},
-    {name: 'Conradi', creator: ConradiAttractor},
+    {name: 'Clifford',  creator: CliffordAttractor},
+    {name: 'DeJong',    creator: DeJongAttractor},
+    {name: 'Conradi',   creator: ConradiAttractor},
     {name: 'Field Icons', creator: FieldIconsAttractor},
     {name: 'Mandelbrot', creator: MandelbrotAttractor},
     {name: 'Tinkerbell', creator: TinkerbellAttractor},
 ]
     
     
-function AttractorCreator(){    
-    return ObjectsCreator(attInfo);
+function AttractorsFactory(){    
+    return ObjectFactory({infoArray: attInfo, defaultName: 'Clifford'});
 }
 
 
 export {
-    AttractorCreator
+    AttractorsFactory
 }

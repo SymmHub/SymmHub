@@ -1,9 +1,9 @@
 import {
     SymRenderer,
     GinzburgLandauSimulationCreator,
-    Group_WP,
     makeSamplesArray,
     InversiveNavigator,
+    GroupMakerFactory,
 }
 from './modules.js';
 
@@ -16,7 +16,7 @@ from './presets_wp.js';
     let ss = SymRenderer({
         simCreator: GinzburgLandauSimulationCreator,
         samples: makeSamplesArray(presets, 'presets/wp/'),
-        groupMaker:  new Group_WP({type: '2222',a: 0.4}), // maker of the groups
+        groupMakerFactory: GroupMakerFactory({defaultName: 'Wallpaper'}),         
         navigator:  new InversiveNavigator(),
     });
     ss.run();
