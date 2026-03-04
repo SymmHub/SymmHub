@@ -1,6 +1,6 @@
 
 import { 
-    Group_5splanes, 
+    GroupMakerFactory, 
     EventDispatcher,
     InversiveNavigator,
     SymRenderer,
@@ -57,36 +57,41 @@ const SymmHubApp = options =>
     };
 
     let buffer;
-    const init = glContext => buffer = options.initBuffer( glContext );
-    
     let bufferRenderer = null;
+    let glContext;
     
-    function renderBuffer(opt){
-        let gl = opt.gl;
+    function init(context) {
+        
+        glContext = context;
+        buffer = options.initBuffer( glContext );
+        bufferRenderer = makeBufferRenderer(glContext.gl);
+        renderBuffer({animationTime:0});
+    }
+    
+    
+    function renderBuffer(opt={}){
+        
+        let gl = glContext.gl;
         let time = (opt.animationTime)? opt.animationTime: 0;
         
         //console.log('renderBuffer(), time:', time);
-        
-        if(!bufferRenderer){
-            // prepare program 
-            bufferRenderer = makeBufferRenderer(gl);
-        } else {
-            gl.viewport(0, 0, buffer.width, buffer.height);          
-            bufferRenderer.bind();                        
-            let uni = {
-                uTime: time, 
-            }                    
-            bufferRenderer.setUniforms(uni);            
-            gl.disable(gl.BLEND);        
+                
+        gl.viewport(0, 0, buffer.width, buffer.height);          
+        bufferRenderer.bind();                        
+        let uni = {
+            uTime: time, 
+        }                    
+        bufferRenderer.setUniforms(uni);            
+        gl.disable(gl.BLEND);        
+        bufferRenderer.blit(buffer.read);  
 
-            bufferRenderer.blit(buffer.read);  
-            //buffer.swap();           
-        }                
     }
 
     return {
       getName         : () => options.name,
-      addEventListener, setGroup, init,
+      addEventListener, 
+      setGroup, 
+      init,
       getSimBuffer    : () => buffer,
       render          : renderBuffer,
       get canAnimate() {return true;},
@@ -94,12 +99,12 @@ const SymmHubApp = options =>
   }
   const simCreator = {
     create,
-    getName: () => `${options.name}-factory`,
-    getClassName: () => `${options.name}-class`,
+    getName: () => `${options.name}`,
+    getClassName: () => `${options.name}`,
   }
   const app = SymRenderer({
       simCreator,
-      groupMaker: options.groupMaker,
+      groupMakerFactory: options.groupMakerFactory,
       navigator: options.navigator,
       preset:    options.preset,
       samples:   options.samples,
@@ -112,9 +117,10 @@ try {
   const app = SymmHubApp( {
     initBuffer,
     name: 'SampleApp',
-    groupMaker: new Group_5splanes(),
+    //groupMaker: new Group_5splanes(),
+    groupMakerFactory: GroupMakerFactory({defaultName:'Wallpaper'}),
     navigator: new InversiveNavigator(),
-    preset: 'presets/par-25-07-28-12-43-10-651.json',
+    preset: 'presets/par-26-03-04-09-46-44-345.json',
     samples: makeSamplesArray(presets, 'presets/'),
 
   } );

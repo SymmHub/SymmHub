@@ -41,13 +41,7 @@ export {
 
 
 export { 
-    Group_WP,
-    Group_Frieze,
-    Group_Spherical,
-    Group_KLM,
-    Group_KLMN,
-    Group_KLx,
-    Group_5splanes,
+    GroupMakerFactory, 
 } from "../../../lib/grouplib/grouplib.js";
 
    

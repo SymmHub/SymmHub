@@ -1,6 +1,6 @@
 export { 
-    Group_5splanes 
-} from "../../../lib/grouplib/Group_5splanes.js";
+    GroupMakerFactory
+} from "../../../lib/grouplib/grouplib.js";
 
 
 export { 
@@ -15,4 +15,4 @@ export {
 
 export {
     makeBufferRenderer
-} from './gpu_programs.js';
+} from './sample_gpu_programs.js';

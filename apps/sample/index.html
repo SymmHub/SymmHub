@@ -3,15 +3,37 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="Cache-Control" content="no-cache">
-        <link rel="icon" type="image/x-icon" href="./css/icon_sample.svg">
-        <title>SymmHub sample</title>
-        <meta name="description" content="SymmHub Sample App">
-        <link rel="stylesheet" href="css/main.css"/>
+        <link rel="icon" type="image/x-icon" href="./css/icon_sympix.svg">
+        <title>SymmHub Sample</title>
+        <meta name="description" content="SymmHub Sample">
+        <link rel="stylesheet" href="css/thumbnails.css"/>
+        <link rel="stylesheet" href="css/index.css"/>
     </head>
-    <body>   
+<body>   
 
-      <script type="module" src="js/main.js">       
-      </script>              
-  
-    </body>
+    <header>
+    <h1>SymmHub Example Application</h1>
+    </header>
+    <div class="container">
+        <div id='thumbnails'>
+        </div>
+    </div>
+    <footer>
+   <a href='../../index.html'>SymmHub</a>
+    </footer>
+</body>
+<script type='module'>
+    import {
+        appendThumbnails
+    } from './js/appendThumbnails.js';
+    import {
+        presets 
+    } from './js/presets.js';
+    
+     let list = document.getElementById('thumbnails');
+     let appPage = 'sample.html';
+     let presetsFolder = 'presets/';
+     appendThumbnails(list, appPage, presetsFolder, presets);
+     
+    </script>              
 </html>

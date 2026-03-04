@@ -1,6 +1,6 @@
 
 import { 
-    Group_5splanes, 
+    GroupMakerFactory, 
     InversiveNavigator,
     VisualizationManager,
     VisualizationImage,
@@ -30,7 +30,7 @@ const visManager = VisualizationManager({
 const app = SymRenderer({
       simCreator:       PatternImageCreator,
       visualization:    visManager, 
-      groupMaker:       new Group_5splanes(), // maker of the groups
+      groupMakerFactory: GroupMakerFactory({defaultName:'5 Splanes'}),
       navigator:        new InversiveNavigator(),
       samples:          makeSamplesArray(presets, 'presets/5splanes/'),
 });

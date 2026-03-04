@@ -1,6 +1,6 @@
 
 import { 
-    Group_KLx, 
+    GroupMakerFactory, 
     InversiveNavigator,
     VisualizationManager,
     VisualizationImage,
@@ -30,7 +30,7 @@ const visManager = VisualizationManager({
 const app = SymRenderer({
       simCreator:       PatternImageCreator,
       visualization:    visManager, 
-      groupMaker:       new Group_KLx(), // maker of the groups
+      groupMakerFactory: GroupMakerFactory({defaultName:'KLx'}),
       navigator:        new InversiveNavigator(),
       samples:          makeSamplesArray(presets, 'presets/klx/'),
 });

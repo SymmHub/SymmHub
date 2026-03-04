@@ -49,6 +49,9 @@ void main(){
 }
 `;
 
+const DEBUG = true;
+const MYNAME='gpu_programs';
+
 const textChunks = {
     getName:  () => {return 'textChunks'},
     vertexShaderMain: vertexShaderMainText,
@@ -71,7 +74,7 @@ const gPrograms = {
 }
 
 export function makeBufferRenderer(gl){
-    console.log('makeBufferRenderer()');
+    if(DEBUG)console.log(`${MYNAME}.makeBufferRenderer()`);
     let result = buildProgramsCached(gl, gPrograms);
     if (!result) {
         throw new Error(`buildProgram() failed,  result: ${result}`);

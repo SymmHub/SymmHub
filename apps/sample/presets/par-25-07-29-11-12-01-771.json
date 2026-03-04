@@ -5,20 +5,23 @@
         "fileFormatRelease": 1
     },
     "params": {
-        "simulation": {},
         "files": {},
         "display": {
-            "frameTime": 16.5,
+            "canvasSize": "Fit To Window",
             "customWidth": 1000,
             "customHeight": 1000,
             "sizeMultiplier": 1,
-            "canvasSize": "Fit To Window",
-            "backgroundColor": "#FFFFFF00"
+            "backgroundColor": "#FFFFFF00",
+            "frameTime": 16.9
         },
         "recording": {
+            "animTime": 0,
+            "animSpeed": 1,
             "startFrame": 0,
-            "endFrame": 100
+            "endFrame": 100,
+            "currentFrame": 0
         },
+        "simulation": {},
         "simTransform": {
             "simCenterX": 0,
             "simCenterY": 0,
@@ -93,6 +96,17 @@
                         "shadowsColor": "#0000FFAA"
                     }
                 },
+                "buffer": {
+                    "fill": {
+                        "enabled": false,
+                        "color": "#00FF0022"
+                    },
+                    "outline": {
+                        "enabled": false,
+                        "width": 1,
+                        "color": "#00AA00AA"
+                    }
+                },
                 "isolines": {
                     "enabled": false,
                     "type": "u",
@@ -141,7 +155,7 @@
                 },
                 "screenGrid": {
                     "enabled": true,
-                    "step": 0.05,
+                    "step": 0.02,
                     "stepAuto": true,
                     "color": "#000000ff",
                     "width": 1
@@ -186,6 +200,7 @@
             }
         },
         "symmetry": {
+            "groupType": "5 Splanes",
             "group": {
                 "className": "Group_5splanes",
                 "params": {
@@ -216,7 +231,7 @@
                 "scale": 1
             },
             "options": {
-                "useSymm": false,
+                "useSymm": true,
                 "iterations": 140
             }
         },
@@ -273,8 +288,8 @@
                                 "a2y": 1,
                                 "n1": 10,
                                 "n2": 0,
-                                "x0": 0,
-                                "y0": 0
+                                "shift1": 0,
+                                "shift2": 0
                             },
                             "expMap": {
                                 "enabled": false
@@ -310,10 +325,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": -0.2055178988656433,
-                        "centerY": -0.08658248991882105,
+                        "centerX": 0.009450964728987793,
+                        "centerY": -0.05900813438894001,
                         "zoom": [
-                            0.3182443100515677
+                            0.988782773371241
                         ]
                     },
                     "options": {

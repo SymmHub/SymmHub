@@ -1,6 +1,6 @@
 
 import { 
-    Group_WP, 
+    GroupMakerFactory,
     InversiveNavigator,
     VisualizationManager,
     VisualizationImage,
@@ -30,7 +30,7 @@ const visManager = VisualizationManager({
 const app = SymRenderer({
       simCreator:       PatternImageCreator,
       visualization:    visManager, 
-      groupMaker:       new Group_WP({type: '2222',a: 0.4}), // maker of the groups
+      groupMakerFactory: GroupMakerFactory({defaultName:'Wallpaper'}),
       navigator:        new InversiveNavigator(),
       samples:          makeSamplesArray(presets, 'presets/wp/'),
 });
