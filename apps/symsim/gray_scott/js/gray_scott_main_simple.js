@@ -18,7 +18,7 @@ console.log('samples[0]: ', samples[0]);
 try {
 
     let ss = SymRenderer({
-        simCreator: GrayScottSimulationCreator,
+        patternCreator: GrayScottSimulationCreator,
         samples: samples, 
         groupMakerFactory: GroupMakerFactory({defaultName: 'Wallpaper'}), 
         navigator:   new InversiveNavigator(),

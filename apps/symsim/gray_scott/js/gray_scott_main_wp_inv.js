@@ -16,7 +16,7 @@ from './presets_wp_inv.js';
 
 //try {
     let ss = SymRenderer({
-        simCreator:  GrayScottSimulationCreator,
+        patternCreator:  GrayScottSimulationCreator,
         samples:     makeSamplesArray(presets, 'presets/wp_inv/'),
         groupMakerFactory: GroupMakerFactory({defaultName: 'Wallpaper'}), 
         navigator:   new InversiveNavigator(),

@@ -28,7 +28,7 @@ const visManager = VisualizationManager({
 });
 
 const app = SymRenderer({
-      simCreator: PatternsCreator,
+      patternCreator: PatternsCreator,
       visualization: visManager, 
       groupMaker: new Group_WP({type: '2222',a: 0.4}), // maker of the groups
       navigator:  new InversiveNavigator(),

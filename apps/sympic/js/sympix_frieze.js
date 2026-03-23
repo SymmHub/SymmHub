@@ -28,7 +28,7 @@ const visManager = VisualizationManager({
 });
 
 const app = SymRenderer({
-      simCreator:       PatternImageCreator,
+      patternCreator:       PatternImageCreator,
       visualization:    visManager, 
       groupMakerFactory: GroupMakerFactory({defaultName:'Frieze'}),
       navigator:        new InversiveNavigator(),
