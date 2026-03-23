@@ -15,7 +15,7 @@ from './presets_klmn.js';
 
 try {
     let ss = SymRenderer({
-        simCreator: GrayScottSimulationCreator,
+        patternCreator: GrayScottSimulationCreator,
         samples: makeSamplesArray(presets_klmn, 'presets/klmn/'),
         groupMakerFactory: GroupMakerFactory({defaultName: 'KLMN'}),       
         navigator:   new InversiveNavigator(),

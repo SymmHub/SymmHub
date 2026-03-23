@@ -97,13 +97,13 @@ const SymmHubApp = options =>
       get canAnimate() {return true;},
     };
   }
-  const simCreator = {
+  const patternCreator = {
     create,
     getName: () => `${options.name}`,
     getClassName: () => `${options.name}`,
   }
   const app = SymRenderer({
-      simCreator,
+      patternCreator,
       groupMakerFactory: options.groupMakerFactory,
       navigator: options.navigator,
       preset:    options.preset,

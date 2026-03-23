@@ -29,7 +29,7 @@ const visManager = VisualizationManager({
 
 
 const app = SymRenderer({
-      simCreator: IteratedAttractorCreator,
+      patternCreator: IteratedAttractorCreator,
       visualization: visManager, 
       groupMakerFactory: GroupMakerFactory(), 
       navigator:  new InversiveNavigator(),

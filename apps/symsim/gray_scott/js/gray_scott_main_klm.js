@@ -17,7 +17,7 @@ import {
 try {
 
     let ss = SymRenderer({
-        simCreator: GrayScottSimulationCreator,
+        patternCreator: GrayScottSimulationCreator,
         samples: makeSamplesArray(presets, 'presets/klm/'),
         groupMakerFactory: GroupMakerFactory({defaultName: 'KLM'}), 
         navigator:   new InversiveNavigator(),

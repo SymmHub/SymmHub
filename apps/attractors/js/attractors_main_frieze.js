@@ -28,7 +28,7 @@ const visManager = VisualizationManager({
 });
 
 const app = SymRenderer({
-      simCreator: IteratedAttractorCreator,
+      patternCreator: IteratedAttractorCreator,
       visualization: visManager, 
       //groupMaker: new Group_Frieze({type: '*22∞',a: 0.4}), // maker of the groups
       groupMakerFactory: GroupMakerFactory({defaultName: 'Frieze'}), 

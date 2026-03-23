@@ -14,7 +14,7 @@ from './presets_klmn.js';
 
 try {
     let ss = SymRenderer({
-        simCreator: GinzburgLandauSimulationCreator,
+        patternCreator: GinzburgLandauSimulationCreator,
         samples: makeSamplesArray(presets, 'presets/klmn/'),
         groupMakerFactory: GroupMakerFactory({defaultName: 'KLMN'}),         
         navigator: new InversiveNavigator(),

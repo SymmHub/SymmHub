@@ -15,7 +15,7 @@ import {
 
 //try {
     let ss = SymRenderer({
-        simCreator: GrayScottSimulationCreator,
+        patternCreator: GrayScottSimulationCreator,
         samples: makeSamplesArray(presets_wp, 'presets/wp/'),
         groupMakerFactory: GroupMakerFactory({defaultName: 'Wallpaper'}), 
         navigator:   new InversiveNavigator(),

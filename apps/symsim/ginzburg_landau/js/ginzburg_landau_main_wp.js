@@ -14,7 +14,7 @@ from './presets_wp.js';
 
 //try {
     let ss = SymRenderer({
-        simCreator: GinzburgLandauSimulationCreator,
+        patternCreator: GinzburgLandauSimulationCreator,
         samples: makeSamplesArray(presets, 'presets/wp/'),
         groupMakerFactory: GroupMakerFactory({defaultName: 'Wallpaper'}),         
         navigator:  new InversiveNavigator(),

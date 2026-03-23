@@ -14,7 +14,7 @@ from './presets_klm.js';
 
 try {
     let ss = SymRenderer({
-        simCreator: GinzburgLandauSimulationCreator,
+        patternCreator: GinzburgLandauSimulationCreator,
         samples: makeSamplesArray(presets, 'presets/klm/'),
         groupMakerFactory: GroupMakerFactory({defaultName: 'KLM'}),         
         navigator: new InversiveNavigator(),
