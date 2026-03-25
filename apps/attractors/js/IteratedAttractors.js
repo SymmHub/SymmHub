@@ -267,25 +267,25 @@ function IteratedAttractor(options){
     function getSimBuffer(options){
         
 
-        if(options.simTransConfig){
+        if(options.patternTransConfig){
         
             // buffer was possible moved         
             let bufTrans = mConfig.bufTrans;
-            let simTrans = options.simTransConfig;
+            let patTrans = options.patternTransConfig;
             
-            if( simTrans.simCenterX != bufTrans.centerX || 
-                simTrans.simCenterY != bufTrans.centerY ||
-                simTrans.simScale   != bufTrans.scale ||
-                simTrans.simAngle   != bufTrans.angle) {
+            if( patTrans.centerX != bufTrans.centerX || 
+                patTrans.centerY != bufTrans.centerY ||
+                patTrans.scale   != bufTrans.scale ||
+                patTrans.angle   != bufTrans.angle) {
                 
                 // buffer moved, need to re-render 
-                bufTrans.centerX    = simTrans.simCenterX;
-                bufTrans.centerY    = simTrans.simCenterY;
-                bufTrans.scale      = simTrans.simScale;
-                bufTrans.angle      = simTrans.simAngle;
+                bufTrans.centerX    = patTrans.centerX;
+                bufTrans.centerY    = patTrans.centerY;
+                bufTrans.scale      = patTrans.scale;
+                bufTrans.angle      = patTrans.angle;
                 mConfig.state.needToRender = true;
                 mConfig.state.needToClear = true;
-                if(DEBUG)console.log(`${MYNAME} simTrans changed`);
+                if(DEBUG)console.log(`${MYNAME} patTrans changed`);
             }
         }
         
