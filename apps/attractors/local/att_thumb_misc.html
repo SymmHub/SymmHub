@@ -4,14 +4,14 @@
         <meta charset="utf-8">
         <meta http-equiv="Cache-Control" content="no-cache">
         <link rel="icon" type="image/x-icon" href="../css/icon_att.svg">
-        <title>SymChaos klm Symmetry(local)</title>
-        <meta name="description" content="SymChaos klm Symmetry">
+        <title>SymChaos Misc Symmetry(local)</title>
+        <meta name="description" content="SymChaos Misc Symmetry">
         <link rel="stylesheet" href="../css/thumbnails.css"/>
         <link rel="stylesheet" href="../css/index.css"/>
     </head>
     <body>   
     <header>
-    <h1>SymChaos with klm Symmetry (local)</h1>
+    <h1>SymChaos with Misc Symmetry (local)</h1>
     </header>
     <div class="container">
         <div id='thumbnails'>
@@ -20,7 +20,7 @@
     <footer>
     <a href='../../../index.html'>SymmHub</a> |
     <a href='../index.html'>SymChaos</a> | 
-    <a href='./index.html'>Local</a>
+    <a href='./index.html'>SymChaos Local</a>
     </footer>
     </body>
     <script type='module'>
@@ -31,13 +31,13 @@
         
     import {
         presets
-    } from './js/presets_klm.js';
+    } from './js/presets_misc.js';
     
     function init(){
         let pFolder = new URL('presets',import.meta.url).pathname;        
         const thumbDiv = document.getElementById('thumbnails');
         const appPage = '../att_klm.html';
-        const presetsFolder = pFolder + '/klm/';   
+        const presetsFolder = pFolder + '/misc/';   
         appendThumbnails(thumbDiv, appPage, presetsFolder, presets);    
    } 
    init();     
