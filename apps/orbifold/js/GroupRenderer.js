@@ -1087,7 +1087,6 @@ export class GroupRenderer {
     } // onStartAnimationExport()
     
     getGroup(){
-        this.groupMaker.updateTheGroupGeometry();
         return this.groupMaker.getGroup();
     }
 

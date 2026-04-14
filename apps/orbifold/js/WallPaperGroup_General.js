@@ -1,3 +1,33 @@
+/* WallPaperGroup_General.js  
+
+provides generators for a general wallpaper group, whether in the plane,
+sphere, or hyperbolic plane. 
+
+This version of the code is based off the 5/14/25 commit; 
+updated 4/13/26. 
+
+The main class is WallPaperGroupGeneral; 
+an instance of this serves as groupHandler:myGroupHandler 
+An instance thisGroupHandler exposes:
+
+initGUI() Among other things, initGUI takes in the folder containing our
+group and saves this as this.paramGui = options.folder; 
+rebuildGUI()
+
+handleEvent() triggers groupParamsChanged(), which updates the generators and
+fundamental domain, making it available for getGroup
+or GroupNameChanged() triggered by the group name changing. 
+The number and kind of these parameters  change as well;  
+thisGroupHandler changes the folder and triggers an update.
+
+getParamsMap(), setParamsMap() for saving and loading.
+
+
+
+ */
+
+
+
 import {
     nonNegHashOrbifold,
     WallpaperGroups,
@@ -102,7 +132,7 @@ export class WallPaperGroup_General {
         this.defaultIncrement = DEFAULT_INCREMENT;
         this.randomOffsetRange = .001; // to put the group into general position by default
 
-        this.symmetryUIController = options.symmetryUI;
+        /*this.symmetryUIController = options.symmetryUI;*/
         this.fundamentalDomainPoints; // if the transform is not conformal, this is an
         // array of arrays of points; otherwise, a list of splanes.
         // If the fundamental domain is not being shown, it is empty.
@@ -129,16 +159,16 @@ export class WallPaperGroup_General {
 
         //this.gui.remember(this.guiParams);
 
-        this.symmetryUIController.init({
+      /*  this.symmetryUIController.init({
             renderer: this.renderer,
             transform: this.transform,
             onChanged: this.onChanged
-        });
+        });*/
 
     };
 
     handleEvent(evt) { //just pass these along...
-        this.symmetryUIController.handleEvent(evt);
+     //   this.symmetryUIController.handleEvent(evt);
     }
 
     groupParamsChanged() {
@@ -147,11 +177,11 @@ export class WallPaperGroup_General {
         // the first time we hit this is when the constructor is called,
         // before initGUI; consequently, onChanged will not yet be defined.
 
-        // some of the parameters changing require a shift which needs to be calculated
+      /*  // some of the parameters changing require a shift which needs to be calculated
         if (this.needsShiftQ) {
             this.symmetryUIController.setShift();
             // does not seem to force an update from InversiveNavigator
-        }
+        }*/
 
         if (isDefined(this.onChanged)) {
             this.onChanged();
@@ -469,16 +499,17 @@ export class WallPaperGroup_General {
     }
 
     getGroup() {
+        this.updateTheGroupGeometry();
         return this.FD // created in updateTheGroupGeometry(), right above
     }
 
     render(context, transform) {
-        this.fundamentalDomainPoints = this.symmetryUIController.render(context, transform)
-        // nothing really going on here. 
+     //   this.fundamentalDomainPoints = this.symmetryUIController.render(context, transform)
+      
     }
 
     getUniforms(uniforms) {
-        return this.symmetryUIController.getUniforms(uniforms)
+        // return this.symmetryUIController.getUniforms(uniforms)
         // but this is just passing the buck.
 
     }

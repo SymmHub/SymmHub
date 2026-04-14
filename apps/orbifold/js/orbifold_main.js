@@ -161,13 +161,13 @@ const myPatternMaker = new PatternTextures({textures: [MyTextures, MyTextures, M
 
 
 var myGroupHandler = new WallPaperGroup_General({
-    symmetryUI:
+   /* symmetryUI:
     new SymmetryUIController({
         domainShowingQ: false,
         overlayCanvas: document.getElementById('overlay'),
         styles: STYLES,
 
-    }),
+    }),*/
     patternMaker:       myPatternMaker
 })
 
