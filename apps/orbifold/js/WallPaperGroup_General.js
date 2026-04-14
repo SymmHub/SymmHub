@@ -10,17 +10,26 @@ The main class is WallPaperGroupGeneral;
 an instance of this serves as groupHandler:myGroupHandler 
 An instance thisGroupHandler exposes:
 
-initGUI() Among other things, initGUI takes in the folder containing our
-group and saves this as this.paramGui = options.folder; 
-rebuildGUI()
 
-handleEvent() triggers groupParamsChanged(), which updates the generators and
-fundamental domain, making it available for getGroup
-or GroupNameChanged() triggered by the group name changing. 
-The number and kind of these parameters  change as well;  
-thisGroupHandler changes the folder and triggers an update.
+updateTheGroup() When the name of the group changes, this rebuilds the 
+list of parameters and then calls updateTheGroupGeometry()
 
-getParamsMap(), setParamsMap() for saving and loading.
+updateTheGroupGeometry() is called whenever the parameters change.
+It readies the FD, which is then returned by 
+
+getGroup()
+
+The format of this.FD is 
+this.FD = {
+            s: bounds,  // These might be LISTS of splanes -- for those take only the first
+            t: transforms,
+            i: interiors, 
+            c: crowntransformsdata, // This is the list of crowntransforms.
+            // this uses the PatternMaker's center, scale and angle params.
+        }; 
+
+
+
 
 
 
@@ -250,10 +259,12 @@ export class WallPaperGroup_General {
         })
         // this.paramGui.__controllers[0].setValue(this.guiParams.name)
         this.paramGui.gpname.setValue(this.guiParams.name);
-        this.rebuildGui();
+        //this.rebuildGui();
         this.updateTheGroup();
 
     }
+
+    //called at the end of updateTheGroup, this reconstitutes the params folder
 
     rebuildGui(text = "") { // this.guiParams[name] is presumed defined
 
@@ -267,6 +278,10 @@ export class WallPaperGroup_General {
             this.paramGuiFolder = this.paramGui.addFolder(text)
         }
     }
+
+
+    /* This key function re-initializes the parameters 
+    when the group name has changed. */
 
     updateTheGroup() {
         // re-initialize these global variables
@@ -367,7 +382,7 @@ export class WallPaperGroup_General {
         var bounds = [];
         var transforms;
         var interiors = [];
-        var crowntransforms=[];
+       
 
         if (this.curvature < 0) {
 
@@ -501,6 +516,7 @@ export class WallPaperGroup_General {
     getGroup() {
         this.updateTheGroupGeometry();
         return this.FD // created in updateTheGroupGeometry(), right above
+        // this.FD comes back with quite a lot of information:
     }
 
     render(context, transform) {
