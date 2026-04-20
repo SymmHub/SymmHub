@@ -37,6 +37,7 @@ export {
     makeSamplesArray,    
     TextureFile, 
     Textures,
+    makePatternData,
 } from "../../../lib/symhublib/symhublib.js";
 
 

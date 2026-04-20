@@ -7,6 +7,7 @@ import {
     createDoubleFBO, 
     makeBufferRenderer, 
     makeSamplesArray,
+    makePatternData,
 } from "./modules.js";
 
 import {
@@ -93,6 +94,7 @@ const SymmHubApp = options =>
       setGroup, 
       init,
       getSimBuffer    : () => buffer,
+      getPatternData  : () => makePatternData({mainBuffer: buffer}),
       render          : renderBuffer,
       get canAnimate() {return true;},
     };

@@ -14,6 +14,7 @@ import {
     Textures,
     DataPacking,
     PatternImage_programs,
+    makePatternData,
 }
 from './modules.js';
 
@@ -138,6 +139,13 @@ function PatternImage(options){
         return mRenderedBuffer;
 
     }
+
+    function getPatternData(){
+
+        if(false)console.log(`${MYNAME}.getPatternData()`, mRenderedBuffer);
+        return makePatternData({mainBuffer: getSimBuffer()});
+
+    }
     
     //
     //  render buffer if needed 
@@ -202,6 +210,7 @@ function PatternImage(options){
         init            : init,
         getParams:  ()=>{return mParams;},
         getSimBuffer    : getSimBuffer,
+        getPatternData  : getPatternData,
     };
 
     return myself;

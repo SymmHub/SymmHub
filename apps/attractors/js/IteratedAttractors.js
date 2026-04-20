@@ -37,7 +37,8 @@ import {
     ParamsAnimator,
     printBufferData,
     DataPacking, 
-    PointShapes, 
+    PointShapes,
+    makePatternData,
     
 } from './modules.js';
 
@@ -300,6 +301,12 @@ function IteratedAttractor(options){
         if(mConfig.iterations.isRunning) 
             scheduleRepaint();
         return mConfig.state.renderedBuffer;
+    }
+     
+    function getPatternData(options){
+
+        return makePatternData({mainBuffer: getSimBuffer(options)});
+
     }
      
     
@@ -726,6 +733,7 @@ function IteratedAttractor(options){
         getParams:  ()=>{return mParams;},
         render:         render,
         getSimBuffer    : getSimBuffer,
+        getPatternData  : getPatternData,
         setParamsMap    : setParamsMap,
         get canAnimate() {return true;},
     };

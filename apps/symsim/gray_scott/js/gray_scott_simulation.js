@@ -9,6 +9,7 @@ import {
   createDoubleFBO,
   createFBO,
   DataPacking,
+  makePatternData,
   EventDispatcher,
   createDataPlot, 
   Colormaps,
@@ -632,6 +633,13 @@ function GrayScottSimulation(){
     
   }
 
+  function getPatternData(){
+    
+    if(debug)console.log(`${MYNAME}.getPatternData()`);            
+    return makePatternData({mainBuffer: gSimBuffer});
+    
+  }
+
   function initSimulation(){
       switch(config.initType){
           default: 
@@ -1025,6 +1033,7 @@ function GrayScottSimulation(){
         //getColormapName: getColormapName,
         getImage: getImage,
         getSimBuffer: getSimBuffer,
+        getPatternData: getPatternData,
         doStep: doStep,
         //repaint: repaint,
         getPlotData: getPlotData,

@@ -41,6 +41,7 @@ export {
     appendThumbnails,
     makeSamplesArray,    
     InversiveNavigator,
+    makePatternData,
 
 }
 from '../../../../lib/symhublib/symhublib.js';

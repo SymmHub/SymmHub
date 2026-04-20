@@ -53,6 +53,7 @@ export {
     makeSamplesArray,    
     readPixelsFromBuffer,
     printBufferData,
+    makePatternData,
 } from "../../../lib/symhublib/symhublib.js";
 
 export { 

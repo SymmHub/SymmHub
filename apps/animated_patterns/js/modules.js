@@ -14,6 +14,7 @@ export {
     createDoubleFBO, 
     buildProgramsCached,
     makeSamplesArray,    
+    makePatternData,
 
 } from "../../../lib/symhublib/symhublib.js";
 

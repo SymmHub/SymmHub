@@ -28,7 +28,8 @@ import {
   
   //GrayScottFragments as GS, 
   GinzburgLandauFragments as GLF, 
-  ShaderFragments as SF 
+  ShaderFragments as SF,
+  makePatternData,
   
 } from './modules.js';
 
@@ -769,6 +770,13 @@ function GinzburgLandauSimulation(){
     return gSimBuffer;
     
   }
+
+  function getPatternData(){
+    
+    if(false)console.log(`${MYNAME}.getPatternData()`);            
+    return makePatternData({mainBuffer: gSimBuffer});
+    
+  }
     
     //
     //
@@ -926,6 +934,7 @@ function GinzburgLandauSimulation(){
         //initGUI: initGUI,
         handleEvent:        handleEvent,
         getSimBuffer:       getSimBuffer,
+        getPatternData:     getPatternData,
         doStep:             doStep,
         //repaint: repaint,
         getPlotData:         getPlotData,

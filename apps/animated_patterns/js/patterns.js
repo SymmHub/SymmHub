@@ -1,7 +1,8 @@
 import {    
     makeBufferRenderer, 
     EventDispatcher,
-    createDoubleFBO, 
+    createDoubleFBO,
+    makePatternData,
     
 } from './modules.js';
 
@@ -90,6 +91,7 @@ function Patterns(options){
         setGroup        : setGroup, 
         init            : init,
         getSimBuffer    : () => buffer,
+        getPatternData  : () => makePatternData({mainBuffer: buffer}),
         render          : renderBuffer,
         get canAnimate() {return true;},
     };
