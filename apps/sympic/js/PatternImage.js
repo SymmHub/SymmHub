@@ -128,8 +128,12 @@ function PatternImage(options){
       
     }
 
+    /**
+     * @deprecated Use getPatternData().getMainBuffer() instead.
+     */
     function getSimBuffer(){
 
+        console.warn(`${MYNAME}.getSimBuffer() is deprecated. Use getPatternData().getMainBuffer() instead.`);
         if(false)console.log(`${MYNAME}.getSimBuffer()`, mRenderedBuffer);
         if(mNeedToRender){
             renderBuffer();
@@ -143,7 +147,11 @@ function PatternImage(options){
     function getPatternData(){
 
         if(false)console.log(`${MYNAME}.getPatternData()`, mRenderedBuffer);
-        return makePatternData({mainBuffer: getSimBuffer()});
+        if(mNeedToRender){
+            renderBuffer();
+            mNeedToRender = false;
+        }
+        return makePatternData({mainBuffer: mRenderedBuffer});
 
     }
     
@@ -227,3 +235,5 @@ export const PatternImageCreator = {
 };
 
     
+
+export { PatternImage };

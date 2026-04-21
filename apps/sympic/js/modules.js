@@ -38,6 +38,7 @@ export {
     TextureFile, 
     Textures,
     makePatternData,
+    makeMultiComponentPatternData,
 } from "../../../lib/symhublib/symhublib.js";
 
 
@@ -49,6 +50,10 @@ export {
 export {
     PatternImageCreator 
 } from './PatternImage.js';
+
+export {
+    PatternImageArrayCreator 
+} from './PatternImageArray.js';
 
 
 export {
