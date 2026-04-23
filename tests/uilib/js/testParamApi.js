@@ -7,12 +7,15 @@ import {
     ParamInt,
     ParamGroup,
     ParamObj,
+    ParamObjArray,
     ParamChoice, 
     createParamUI,
     getParamValues,
     setParamValues,
     saveFileAs,
     openFile,
+    Obj,
+    ObjArray,
 } from '../../../lib/uilib/modules.js';
 
 
@@ -94,6 +97,7 @@ function TestObj2(){
     }
     
     return {
+
         setValue: setValue,
         getValue: getValue,
         createUI: createUI
@@ -103,6 +107,17 @@ function TestObj2(){
 
 
 function TestApp(){
+
+    const arrayOfObj = ObjArray({
+        id: 'test_array',
+        children: [
+            TestObj1(),
+            TestObj2(),
+            TestObj1(),
+            Obj({ id: 'item-B', obj: TestObj2() }),
+            Obj({ id: 'item-C', obj: TestObj1() }),
+        ],
+    });
 
     const params = {
         
@@ -115,6 +130,7 @@ function TestApp(){
         obj1: TestObj1(),
         obj2: TestObj2(),
         objType: 'objAB',
+        array1: arrayOfObj,
     }
     
     const APP_NAME = 'TestApp';
@@ -149,6 +165,13 @@ function TestApp(){
                 }),
         obj1:    ParamObj({name: 'object 1', obj: params.obj1}),
         obj2:    ParamObj({name: 'object 2', obj: params.obj2}),
+
+        // ── ParamObjArray demo (using ObjArray + Obj) ──────────────────────
+        array1: ParamObjArray({
+            obj:  params,
+            key:  'array1',
+            name: 'Array of Objects',
+        }),
       };
     
     function makeObjParams(){
@@ -183,7 +206,7 @@ function TestApp(){
     function onObjTypeChanged(){
         let newObj = objCreator.getObject(params.objType);
         
-        uiparams.obj.replace(newObj);
+        uiparams.obj.replaceObj(newObj);
     }
     
     return {
@@ -222,14 +245,15 @@ function loadFile(file){
         console.log('onLoad()');
         const fileText = reader.result;
         if ( fileText ) {
+            let jsonObj = null;
             try {
-                let jsonObj = JSON.parse(fileText);
+                jsonObj = JSON.parse(fileText);
                 console.log('JSONobj: ', jsonObj);
-                app.setValue(jsonObj);
             } catch(e) {
                 console.error("Input file not in correct format. "); // error in the above string
                 console.error("Error reading file: " + e);
             }
+            app.setValue(jsonObj);
         }       
     }
     
