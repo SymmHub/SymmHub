@@ -18,7 +18,8 @@ import {
     Obj,
     ObjArray,
     ObjectFactory,
-} from '../../../lib/uilib/modules.js';
+    createInternalWindow,
+} from './modules.js';
 
 
 const APP_NAME = 'TestParamApi';
@@ -45,8 +46,9 @@ function TestObj1(args){
         w:  10,
         h:  30,
     }
+    let mOnIdChange = null;
     let uip = {
-        id: ParamString({obj: par, key: 'id'}),
+        id: ParamString({obj: par, key: 'id', onChange: () => { if (mOnIdChange) mOnIdChange(par.id); }}),
         w:  ParamInt({obj: par, key: 'w'}),    
         h:  ParamInt({obj: par, key: 'h'}),                
     }
@@ -71,8 +73,9 @@ function TestObj1(args){
     }
     
     return {
-        getId:       () => par.id,
-        getClassName:() => OBJ_NAME,
+        getId:          () => par.id,
+        getClassName:   () => OBJ_NAME,
+        setOnIdChange:  (cb) => { mOnIdChange = cb; },
         setValue,
         getValue,
         createUI,
@@ -88,8 +91,9 @@ function TestObj2(args){
         dd: 70.2,
         bb: false,
     }
+    let mOnIdChange = null;
     let uip = {
-        id: ParamString({obj: par, key: 'id'}),
+        id: ParamString({obj: par, key: 'id', onChange: () => { if (mOnIdChange) mOnIdChange(par.id); }}),
         gg: ParamInt  ({obj: par, key: 'gg'}),    
         dd: ParamFloat({obj: par, key: 'dd'}),   
         bb: ParamBool ({obj: par, key: 'bb'}),
@@ -115,8 +119,9 @@ function TestObj2(args){
     }
     
     return {
-        getId:       () => par.id,
-        getClassName:() => OBJ_NAME,
+        getId:          () => par.id,
+        getClassName:   () => OBJ_NAME,
+        setOnIdChange:  (cb) => { mOnIdChange = cb; },
         setValue,
         getValue,
         createUI,
@@ -298,11 +303,27 @@ function onReadParams(){
 
 let app = TestApp();
 
+// Create a draggable internal window and mount the GUI inside it.
+const iwin = createInternalWindow({
+    title:     'Test Param API',
+    width:     '300px',
+    height:    '80%',
+    left:      '10px',
+    top:       '10px',
+    canClose:  true,
+    canResize: true,
+    storageId: 'testParamApi_win',
+});
+
 let gui = new guiName({
-    width: 200,
-    name: "test app",
-    closed:false});
+    autoPlace: false,
+    width:     280,
+    name:      'test app',
+    closed:    false,
+});
+
+// Mount dat.GUI into the internal window's interior div.
+iwin.interior.appendChild(gui.domElement);
 
 app.createUI(gui);
-
 
