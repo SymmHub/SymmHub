@@ -8,6 +8,7 @@ import {
     ParamGroup,
     ParamObj,
     ParamObjArray,
+    ParamString,
     ParamChoice, 
     createParamUI,
     getParamValues,
@@ -16,6 +17,7 @@ import {
     openFile,
     Obj,
     ObjArray,
+    ObjectFactory,
 } from '../../../lib/uilib/modules.js';
 
 
@@ -23,16 +25,30 @@ const APP_NAME = 'TestParamApi';
 let guiName = DatGUI;
 //let guiName = ParamGui;
 
+// Objects factory — maps class name → constructor.
+// factory.getObject('TestObj1')  → new TestObj1 instance
+// factory.getObject('TestObj2')  → new TestObj2 instance
+const objFactory = ObjectFactory({
+    infoArray: [
+        { name: 'TestObj1', creator: TestObj1 },
+        { name: 'TestObj2', creator: TestObj2 },
+        { name: 'ObjArray', creator: ObjArray  },
+    ],
+    defaultName: 'TestObj1',
+});
 
-function TestObj1(){
-    const OBJ_NAME  = "TestObj1";
+
+function TestObj1(args){
+    const OBJ_NAME = "TestObj1";
     let par = {
-        w: 10,
-        h: 30,
+        id: (args && args.id) ? args.id : 'obj1',
+        w:  10,
+        h:  30,
     }
     let uip = {
-        w:  ParamInt ({obj:par, key:'w'}),    
-        h: ParamInt ({obj:par, key:'h'}),                
+        id: ParamString({obj: par, key: 'id'}),
+        w:  ParamInt({obj: par, key: 'w'}),    
+        h:  ParamInt({obj: par, key: 'h'}),                
     }
     function createUI(gui){
         createParamUI(gui, uip);
@@ -48,32 +64,35 @@ function TestObj1(){
     function setValue(value){
         console.log(`${OBJ_NAME}.setValue()`, value);
         if(OBJ_NAME === value.className){
-            let params = value.params;
-            setParamValues(uip, params);
+            setParamValues(uip, value.params);
         } else {
             console.error(`got wrong value.className: ${value.className}, expected ${OBJ_NAME} instead`);
         }
     }
     
     return {
-        setValue: setValue,
-        getValue: getValue,
-        createUI: createUI        
+        getId:       () => par.id,
+        getClassName:() => OBJ_NAME,
+        setValue,
+        getValue,
+        createUI,
     }
 }
 
-function TestObj2(){
+function TestObj2(args){
         
-    const OBJ_NAME  = "TestObj2";
+    const OBJ_NAME = "TestObj2";
     let par = {
+        id: (args && args.id) ? args.id : 'obj2',
         gg: 40,
         dd: 70.2,
         bb: false,
     }
     let uip = {
-        gg:  ParamInt ({obj:par, key:'gg'}),    
-        dd:  ParamFloat ({obj:par, key:'dd'}),   
-        bb:  ParamBool({obj: par, key:'bb'}),
+        id: ParamString({obj: par, key: 'id'}),
+        gg: ParamInt  ({obj: par, key: 'gg'}),    
+        dd: ParamFloat({obj: par, key: 'dd'}),   
+        bb: ParamBool ({obj: par, key: 'bb'}),
     }
     function createUI(gui){
         createParamUI(gui, uip);
@@ -89,18 +108,18 @@ function TestObj2(){
     function setValue(value){
         console.log(`${OBJ_NAME}.setValue()`, value);
         if(OBJ_NAME === value.className){
-            let params = value.params;
-            setParamValues(uip, params);
+            setParamValues(uip, value.params);
         } else {
             console.error(`got wrong value.className: ${value.className}, expected ${OBJ_NAME} instead`);
         }
     }
     
     return {
-
-        setValue: setValue,
-        getValue: getValue,
-        createUI: createUI
+        getId:       () => par.id,
+        getClassName:() => OBJ_NAME,
+        setValue,
+        getValue,
+        createUI,
     }
 }
 
@@ -108,19 +127,25 @@ function TestObj2(){
 
 function TestApp(){
 
-    const arrayOfObj = ObjArray({
-        id: 'test_array',
+    const array2 = ObjArray({
+        id: 'test_array2',
         children: [
-            TestObj1(),
-            TestObj2(),
-            TestObj1(),
-            Obj({ id: 'item-B', obj: TestObj2() }),
-            Obj({ id: 'item-C', obj: TestObj1() }),
+            TestObj1({id:'obj1.1'}),
+            TestObj2({id:'obj2.1'}),
+            TestObj1({id:'obj1.2'}),
+        ],
+    });
+
+    const array1 = ObjArray({
+        id: 'test_array1',
+        children: [
+            TestObj1({id:'obj1.3'}),
+            TestObj2({id:'obj2.2'}),
+            array2,
         ],
     });
 
     const params = {
-        
         heat: true,
         cold: false,
         width: 100,
@@ -129,14 +154,13 @@ function TestApp(){
         breadth: 5.765,
         obj1: TestObj1(),
         obj2: TestObj2(),
-        objType: 'objAB',
-        array1: arrayOfObj,
+        objType: 'TestObj1',
+        array1: array1,
     }
     
     const APP_NAME = 'TestApp';
-    const objCreator = ObjCreator();
-    const activeObject = objCreator.getObject(params.objType);
-    console.log(`${APP_NAME} activeObject: `,activeObject);    
+    const activeObject = objFactory.getObject(params.objType);
+    console.log(`${APP_NAME} activeObject: `, activeObject);
     let uiparams = {
         
         
@@ -147,7 +171,7 @@ function TestApp(){
         width:  ParamInt ({obj:params, key:'width', min: 10, max: 8000}),    
         height: ParamInt ({obj:params, key:'height'}),        
         action: ParamFunc ({func: onAction, name: 'perform action'}),   
-        objType:    ParamChoice({obj: params, key: 'objType', choice: objCreator.getNames(), onChange: onObjTypeChanged}), 
+        objType: ParamChoice({obj: params, key: 'objType', choice: objFactory.getNames(), onChange: onObjTypeChanged}), 
         obj:        ParamObj({name: 'object', obj:activeObject}),
         group2:  ParamGroup({
                     name:  'group 2',
@@ -168,16 +192,12 @@ function TestApp(){
 
         // ── ParamObjArray demo (using ObjArray + Obj) ──────────────────────
         array1: ParamObjArray({
-            obj:  params,
-            key:  'array1',
-            name: 'Array of Objects',
+            obj:     params,
+            key:     'array1',
+            name:    'array of obj',
+            factory: objFactory,
         }),
       };
-    
-    function makeObjParams(){
-        let obj = objCreator.getOject(params.objType);
-        
-    }
     
     function createUI(gui){
         console.log(`${APP_NAME}.createUI()`);
@@ -204,8 +224,7 @@ function TestApp(){
     }
     
     function onObjTypeChanged(){
-        let newObj = objCreator.getObject(params.objType);
-        
+        let newObj = objFactory.getObject(params.objType);
         uiparams.obj.replaceObj(newObj);
     }
     
@@ -220,7 +239,8 @@ function onAction(){
     console.log('onAction()');
 }
 
-const setName = 'set01';
+const setName = 'set';
+let filesCount = 0;
 const JSON_OFFSET = 4;
 
 function onSaveParams(){
@@ -228,11 +248,11 @@ function onSaveParams(){
     
     let pset = {name:setName, params: app.getValue()};
     var jsontxt = JSON.stringify(pset, null, JSON_OFFSET);        
-    console.log("json: ", jsontxt);
-    let fileName = setName + '.json';  
+    //console.log("json: ", jsontxt);
+    let fileName = setName + filesCount + '.json';  
     saveFileAs(fileName, new Blob([jsontxt]),  'text/plain');
-    
-    
+    filesCount++;
+        
 }
 
 function loadFile(file){
@@ -274,129 +294,6 @@ function onReadParams(){
     prom.then(file => loadFile( file ));
     
     
-}
-
-function ObjAB(){
-
-    let params = {
-        a: 0.3,
-        b: 0.5,
-    }
-    const myname = 'ObjAB';
-    
-    let mParams = createParams();
-    
-    function createParams(){
-        let p = {
-            a: ParamFloat({obj: params, 'key':'a'}),
-            b: ParamFloat({obj: params, 'key':'b'}),            
-        };
-        return p;
-    }
-
-    function getValue(){
-        return {
-            className: myname,
-            params: getParamValues(mParams),
-        };        
-    }
-    function setValue(value){
-        let params = value.params;
-        console.log(`${myname}.setValue()`, value);            
-        if(myname !== params.className){
-            console.error('wrong className: ', params.className, ' expecting: ', myname);
-        } else {
-            setParamValues(pParams, params.params);
-        }        
-    }
-    function createUI(gui){
-        createParamUI(gui, mParams); 
-    }
-    
-    return {
-        getClassName: ()=>myname,
-        //getParams: ()=>mParams,
-        getValue: getValue,
-        setValue: setValue,
-        createUI: createUI
-    }
-}
-
-function ObjCD(){
-
-    let params = {
-        c: 0.3,
-        d: 0.5,
-        e: 0.7, 
-    }
-    const myname = 'ObjCD';
-    
-    let mParams = createParams();
-    
-    function createParams(){
-        let p = {
-            c: ParamFloat({obj: params, 'key':'c'}),
-            d: ParamFloat({obj: params, 'key':'d'}),            
-            e: ParamFloat({obj: params, 'key':'e'}),            
-        };
-        return p;
-    }
-
-    function getValue(){
-        return {
-            className: myname,
-            params: getParamValues(mParams),
-        };        
-    }
-    function setValue(value){
-        let params = value.params;
-        console.log(`${myname}.setValue()`, value);            
-        if(myname !== params.className){
-            console.error('wrong className: ', params.className, ' expecting: ', myname);
-        } else {
-            setParamValues(pParams, params.params);
-        }        
-    }
-    function createUI(gui){
-        createParamUI(gui, mParams); 
-    }
-    
-    return {
-        getClassName: ()=>myname,
-        //getParams: ()=>mParams,
-        getValue: getValue,
-        setValue: setValue,
-        createUI: createUI
-    }
-}
-    
-    
-
-
-function ObjCreator(){
-    const myname = 'ObjCreator';
-    const names = ['objAB', 'objCD'];
-    const objects = {
-        objAB: ObjAB, 
-        objCD: ObjCD,
-    }
-    
-    function getObject(name){
-        console.log(`${myname}.getObject()`, name);
-        let obj = objects[name];
-        if(!obj) {
-            console.warn(`${myname}.getObject(), ounknow name: ${name}, returning defualt: {defName}`)
-            obj = objects[defName];
-        }
-        let o = obj();
-        console.log(`${myname}.getObject() returning `, o);        
-        return o;
-    }
-    
-    return {
-        getNames: ()=>names,
-        getObject: getObject,
-    }
 }
 
 let app = TestApp();
