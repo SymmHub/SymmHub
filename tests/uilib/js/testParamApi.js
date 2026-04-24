@@ -135,17 +135,17 @@ function TestApp(){
     const array2 = ObjArray({
         id: 'test_array2',
         children: [
-            TestObj1({id:'obj1.1'}),
-            TestObj2({id:'obj2.1'}),
-            TestObj1({id:'obj1.2'}),
+            TestObj1({id:'obj1_1'}),
+            TestObj2({id:'obj2_1'}),
+            TestObj1({id:'obj1_2'}),
         ],
     });
 
     const array1 = ObjArray({
         id: 'test_array1',
         children: [
-            TestObj1({id:'obj1.3'}),
-            TestObj2({id:'obj2.2'}),
+            TestObj1({id:'obj1_3'}),
+            TestObj2({id:'obj2_2'}),
             array2,
         ],
     });
