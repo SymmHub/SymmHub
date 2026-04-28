@@ -15,7 +15,12 @@ export {
     getParam,
     isDefined,
     isFunction,
-    
+    ObjArray,
+    ObjectFactory,
+    ParamObjArray,
+    ParamString,
+    setParamValues,
+    getParamValues,
 } from '../../../lib/uilib/uilib.js';
 
 export {
@@ -48,7 +53,8 @@ export {
 
    
 export {
-    PatternImageCreator 
+    PatternImage,
+    PatternImageCreator,
 } from './PatternImage.js';
 
 export {

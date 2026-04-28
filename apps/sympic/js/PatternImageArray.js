@@ -1,9 +1,15 @@
 import {
     EventDispatcher,
     makeMultiComponentPatternData,
+    ObjArray,
+    ObjectFactory,
+    ParamObjArray,
+    ParamString,
+    ParamBool,
+    ParamFloat,
+    PatternImage,
+    PatternImageCreator,
 } from './modules.js';
-
-import { PatternImage } from './PatternImage.js';
 
 const MYNAME = 'PatternImageArray';
 const DEBUG = false;
@@ -30,9 +36,45 @@ function PatternImageArray(options = {}) {
 
     const mEventDispatcher = new EventDispatcher();
 
-    // [{name: string, image: PatternImage}]
-    let mImages = [];
-    let mParams = null;
+    const mPatternFactory = ObjectFactory({
+        infoArray: [
+            { name: 'PatternImage', creator: PatternImage },
+        ],
+        defaultName: 'PatternImage',
+    });
+
+    let mConfig = {
+        id: 'imgarray',
+        active: true,
+        transparency: 0,
+        images: ObjArray({
+            children: [
+                PatternImage(),
+                PatternImage(),
+            ],
+        }),
+    }
+    let mParams  = null;
+    let mGLCtx   = null;
+
+    // Factory wrapper: initializes and subscribes each newly created child.
+    // Built lazily in init() once the GL context is available.
+    let mInitializingFactory = null;
+
+    function makeInitializingFactory(glContext) {
+        return {
+            getNames:         mPatternFactory.getNames,
+            getDefaultName:   mPatternFactory.getDefaultName,
+            getDefaultObject: mPatternFactory.getDefaultObject,
+            class2name:       mPatternFactory.class2name,
+            getObject: (name) => {
+                const image = mPatternFactory.getObject(name);
+                image.init(glContext);
+                image.addEventListener('imageChanged', onImageChanged);
+                return image;
+            },
+        };
+    }
 
     // ── event interface ──────────────────────────────────────────────────────
 
@@ -55,13 +97,14 @@ function PatternImageArray(options = {}) {
 
         if (DEBUG) console.log(`${MYNAME}.init()`, glContext);
 
-        const imageDescs = options.images || [];
+        mGLCtx = glContext;
+        mInitializingFactory = makeInitializingFactory(glContext);
 
-        mImages = imageDescs.map(desc => {
-            const img = PatternImage(desc);
-            img.addEventListener('imageChanged', onImageChanged);
-            img.init(glContext);
-            return { name: desc.name, image: img };
+        // Initialize every child PatternImage with the GL context
+        // and subscribe to its changes so we can propagate them upward.
+        mConfig.images.getChildren().forEach(image => {
+            image.init(glContext);
+            image.addEventListener('imageChanged', onImageChanged);
         });
 
         mParams = makeParams();
@@ -72,7 +115,7 @@ function PatternImageArray(options = {}) {
 
     function setGroup(group) {
         if (DEBUG) console.log(`${MYNAME}.setGroup()`, group);
-        mImages.forEach(({ image }) => image.setGroup(group));
+        mConfig.images.getChildren().forEach(image => image.setGroup(group));
         informListeners();
     }
 
@@ -80,12 +123,17 @@ function PatternImageArray(options = {}) {
     //
     //  Each PatternImage's params are nested under its component name.
 
+    function onParamChanged() {
+        informListeners();
+    }
+
     function makeParams() {
-        const params = {};
-        mImages.forEach(({ name, image }) => {
-            params[name] = image.getParams();
-        });
-        return params;
+            return {
+            id:             ParamString({ obj: mConfig, key: 'id', onChange: onParamChanged }),
+            active:         ParamBool({ obj: mConfig, key: 'active', onChange: onParamChanged }),
+            transparency:   ParamFloat({ obj: mConfig, key: 'transparency', onChange: onParamChanged }),
+            images:         ParamObjArray({obj: mConfig, key: 'images', onChange: onParamChanged, factory: mInitializingFactory}),
+        }
     }
 
     function getParams() {
@@ -98,8 +146,8 @@ function PatternImageArray(options = {}) {
 
         if (DEBUG) console.log(`${MYNAME}.getPatternData()`);
 
-        const components = mImages.map(({ name, image }) => ({
-            name,
+        const components = mConfig.images.getChildren().map((image, i) => ({
+            name:   image.getId ? image.getId() : `image_${i}`,
             buffer: image.getPatternData().getMainBuffer(),
         }));
 

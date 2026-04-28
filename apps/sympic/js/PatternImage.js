@@ -7,7 +7,11 @@ import {
     ParamInt,
     ParamBool,
     ParamFloat,
+    ParamGroup,
     ParamObj,
+    ParamString,
+    setParamValues,
+    getParamValues,
     EventDispatcher,
     createDoubleFBO,
     TextureFile,
@@ -36,28 +40,35 @@ if(false)console.log('Tex2:', Tex2);
 //
 function PatternImage(options){
 
+    let mConfig = {
+        id:           'image',
+        bufferWidth:  1024,
+        centerX:      0,
+        centerY:      0,
+        scale:        1,
+        angle:        0,
+        transparency: 0,
+        useCrown:     false,
+    };
+
+    let mOnIdChange = null;
+
     let mGL = null;
     let mRenderedBuffer = null;
-    let mParams = null;
     let mBufferWidth = 1024;
-    let mEventDispatcher = new EventDispatcher();    
-    let mTextureMaker = null;
+    let mEventDispatcher = new EventDispatcher();
     let mNeedToRender = true;
     let mPrograms = PatternImage_programs;
     let mGroupData = null;
-    let mGroup = null; 
+    let mGroup = null;
 
+    // Created eagerly; GL init is deferred to mTextureMaker.init(glContext).
+    const mTextureMaker = new TextureFile({
+        texInfo:   MyTextures,
+        onChanged: onTextureChange,
+    });
 
-    let mConfig = {
-        bufferWidth: 1024,
-        centerX: 0,
-        centerY: 0,
-        scale: 1,
-        angle: 0,
-        transparency: 0,
-        useCrown: false,
-        
-    };
+    let mParams = makeParams(mConfig);  // initialized eagerly so getParams() is never null
 
     function addEventListener( evtType, listener ){        
         if(DEBUG)console.log(`${MYNAME}.addEventListener()`, evtType);
@@ -69,20 +80,14 @@ function PatternImage(options){
         if(DEBUG)console.log(`${MYNAME}.init()`, glContext);
         mGL = glContext.gl;
         let gl = mGL;
-                        
+
         mRenderedBuffer = createImageBuffer(gl, mBufferWidth);
         clearImageBuffer(mRenderedBuffer, [0.5, 0.7, 0.8, 0.9]);
-        
-        mTextureMaker = new TextureFile({
-            texInfo: MyTextures,
-            gl: gl,
-            onChanged: onTextureChange
-        });
 
-        mParams = makeParams(mConfig);
+        mTextureMaker.init(glContext);
 
         mGroupData = DataPacking.createGroupDataSampler(mGL);
-                
+
     }
 
 
@@ -111,14 +116,47 @@ function PatternImage(options){
     function makeParams(cfg){
         let onc = onParamChanged;
         return {
-            centerX: ParamFloat({obj: cfg, key: 'centerX', onChange: onc}),
-            centerY: ParamFloat({obj: cfg, key: 'centerY', onChange: onc}),
-            scale:   ParamFloat({obj: cfg, key: 'scale', onChange: onc}),
-            angle:   ParamFloat({obj: cfg, key: 'angle', onChange: onc}),
-            transparency:   ParamFloat({obj: cfg, key: 'transparency', onChange: onc}),
-            useCrown:   ParamBool({obj: cfg, key: 'useCrown', onChange: onc}),
-            texture:    ParamObj({name: 'texture', obj: mTextureMaker }),
+            id:           ParamString({obj: cfg, key: 'id', onChange: () => { if (mOnIdChange) mOnIdChange(); }}),
+            transparency: ParamFloat ({obj: cfg, key: 'transparency', onChange: onc}),
+            useCrown:     ParamBool  ({obj: cfg, key: 'useCrown',     onChange: onc}),
+            transform:    ParamGroup ({
+                name:   'transform',
+                params: {
+                    centerX: ParamFloat({obj: cfg, key: 'centerX', onChange: onc}),
+                    centerY: ParamFloat({obj: cfg, key: 'centerY', onChange: onc}),
+                    scale:   ParamFloat({obj: cfg, key: 'scale',   onChange: onc}),
+                    angle:   ParamFloat({obj: cfg, key: 'angle',   onChange: onc}),
+                },
+            }),
+            texture:      ParamObj   ({name: 'texture', obj: mTextureMaker}),
+        };
+    }
+
+    //
+    // 
+    //
+    function setParamsMap(values, initialize = false) {
+        values = upgradeData(values);
+        setParamValues(mParams, values, initialize);
+    }
+
+    // ── backward-compat migration ─────────────────────────────────────────────
+    //
+    //  Old preset files store centerX/centerY/scale/angle flat at the top level.
+    //  New format nests them inside a 'transform' object.
+    //
+    function upgradeData(v) {
+        const TRANSFORM_KEYS = ['centerX', 'centerY', 'scale', 'angle'];
+        const hasOldFlat = !v.transform && TRANSFORM_KEYS.some(k => k in v);
+        if (hasOldFlat) {
+            if (DEBUG) console.log(`${MYNAME}.upgradeData(): migrating old transform format`);
+            const transform = {};
+            TRANSFORM_KEYS.forEach(k => {
+                if (k in v) { transform[k] = v[k]; delete v[k]; }
+            });
+            v.transform = transform;
         }
+        return v;
     }
 
     function informListeners(){
@@ -210,13 +248,37 @@ function PatternImage(options){
       return createDoubleFBO( gl, width, width, intFormat, format, texType, filtering );
 
     }
+
+    function getValue() {
+        return {
+            className: MYNAME,
+            params:    getParamValues(mParams),
+        };
+    }
+
+    function getParams(){
+        return mParams;
+    }
+
+    function getImage(){
+        if(mNeedToRender){
+            renderBuffer();
+            mNeedToRender = false;
+        }
+        return mRenderedBuffer;
+    }
         
     let myself = {
+        getClassName    : () => MYNAME,
         getName         : () => MYNAME,
+        getId           : () => mConfig.id,
+        setOnIdChange   : (cb) => { mOnIdChange = cb; },
         addEventListener: addEventListener, 
         setGroup        : setGroup, 
         init            : init,
-        getParams:  ()=>{return mParams;},
+        getValue        : getValue,
+        getParams       : getParams,
+        setParamsMap    : setParamsMap,
         getSimBuffer    : getSimBuffer,
         getPatternData  : getPatternData,
     };
