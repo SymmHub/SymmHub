@@ -12,7 +12,7 @@ import {
 
 import {
     presets
-} from './presets_wp.js';
+} from './presets_imageArray.js';
 
 const visManager = VisualizationManager({
       visLayers: [
@@ -32,7 +32,7 @@ const app = SymRenderer({
       visualization:    visManager, 
       groupMakerFactory: GroupMakerFactory({defaultName:'Wallpaper'}),
       navigator:        new InversiveNavigator(),
-      samples:          makeSamplesArray(presets, 'presets/wp/'),
+      samples:          makeSamplesArray(presets, 'presets/imageArray/'),
 });
 
 app.run();

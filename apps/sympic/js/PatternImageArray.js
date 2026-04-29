@@ -159,6 +159,7 @@ function PatternImageArray(options = {}) {
 
     const myself = {
         getName:        () => MYNAME,
+        getClassName:   () => MYNAME, 
         addEventListener,
         setGroup,
         init,

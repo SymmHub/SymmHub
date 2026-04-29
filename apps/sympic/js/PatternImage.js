@@ -35,13 +35,16 @@ const MyTextures = Textures.t2.concat(Tex2.haeckel_challenger).concat(Tex2.haeck
 
 if(false)console.log('Tex2:', Tex2);
 
+// Monotonically increasing counter — gives each new instance a unique default id.
+let _nextId = 1;
+
 //
 // PatternImage 
 //
 function PatternImage(options){
 
     let mConfig = {
-        id:           'image',
+        id:           `img${_nextId++}`,
         bufferWidth:  1024,
         centerX:      0,
         centerY:      0,
