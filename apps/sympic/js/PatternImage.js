@@ -17,7 +17,8 @@ import {
     TextureFile,
     Textures,
     DataPacking,
-    PatternImage_programs,
+    Sympix_programs,
+
     makePatternData,
 }
 from './modules.js';
@@ -61,7 +62,8 @@ function PatternImage(options){
     let mBufferWidth = 1024;
     let mEventDispatcher = new EventDispatcher();
     let mNeedToRender = true;
-    let mPrograms = PatternImage_programs;
+    let mPrograms = Sympix_programs;
+
     let mGroupData = null;
     let mGroup = null;
 

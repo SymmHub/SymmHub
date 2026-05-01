@@ -44,7 +44,15 @@ export {
     Textures,
     makePatternData,
     makeMultiComponentPatternData,
+    setViewport,
+    enableBlending,
+    VisualizationOptions,
+    SymRendererPrograms,
+    InterpolationNames,
+    getInterpolationId,
+    programBuilder,
 } from "../../../lib/symhublib/symhublib.js";
+
 
 
 export { 
@@ -71,5 +79,13 @@ export {
 } from './shaders/modules.js';
 
 export {
-    PatternImage_programs
-} from './PatternImage_programs.js';
+    Sympix_programs
+} from './Sympix_programs.js';
+
+
+
+
+
+export {
+    VisualizationColorSym
+} from './VisualizationColorSym.js';
