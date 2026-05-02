@@ -1,8 +1,7 @@
 import {
-    
-    buildProgramsCached
-    
+    programBuilder
 } from './modules.js';
+
 
 
 const vertexShaderMainText = 
@@ -71,15 +70,16 @@ const progRenderBuffer = {
 
 const gPrograms = {
     renderBuffer: progRenderBuffer,
-}
+};
+
+const gProgs = programBuilder(gPrograms);
+
 
 export function makeBufferRenderer(gl){
     if(DEBUG)console.log(`${MYNAME}.makeBufferRenderer()`);
-    let result = buildProgramsCached(gl, gPrograms);
-    if (!result) {
-        throw new Error(`buildProgram() failed,  result: ${result}`);
-    } else {
-        console.log('makeBufferRenderer() success');        
-    }
-    return gPrograms.renderBuffer.program;
-}
+    const prog = gProgs.getProgram(gl, 'renderBuffer');
+    if (!prog)
+        throw new Error(`makeBufferRenderer(): failed to compile renderBuffer program`);
+    console.log('makeBufferRenderer() success');
+    return prog;
+}

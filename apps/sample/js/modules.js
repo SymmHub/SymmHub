@@ -9,6 +9,7 @@ export {
     SymRenderer, 
     createDoubleFBO, 
     buildProgramsCached,
+    programBuilder,
     makeSamplesArray,    
     makePatternData,
 

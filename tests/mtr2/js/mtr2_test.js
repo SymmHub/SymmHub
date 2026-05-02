@@ -1,7 +1,8 @@
 
 import {
     Shaders,
-    buildProgramsCached,
+    programBuilder,
+
     createFBO,
     getWebGLContext,
 } from './modules.js';
@@ -41,9 +42,9 @@ function test_mtr2() {
         display:    progDisplay,
         drawBuff:   progDrawBuff,
     };
-    let res = buildProgramsCached(gl, programs);
-    console.log('build programs result: ', res);
-    console.log('programs: ', programs);
+    programBuilder(programs, true).getProgram(gl, 'mtr'); // compile all
+    console.log('programs built: ', programs);
+
     
     
     // Create framebuffer and textures

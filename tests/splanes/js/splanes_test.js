@@ -1,7 +1,8 @@
 
 import {
     Shaders,
-    buildProgramsCached,
+    programBuilder,
+
     createFBO,
     getWebGLContext,
     resizeCanvas,
@@ -60,9 +61,9 @@ function test_splanes() {
         splanes:      progSplanes, 
         drawBuffer:   progDrawBuffer,
     };
-    let res = buildProgramsCached(gl, programs);
-    console.log('build programs result: ', res);
-    console.log('programs: ', programs);
+    programBuilder(programs, true).getProgram(gl, 'isolines'); // compile all
+    console.log('programs built: ', programs);
+
     
     let config = {
         zoom: 1., 

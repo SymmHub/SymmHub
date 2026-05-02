@@ -13,6 +13,7 @@ export {
     VisualizationImage,     
     createDoubleFBO, 
     buildProgramsCached,
+    programBuilder,
     makeSamplesArray,    
     makePatternData,
 

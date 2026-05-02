@@ -31,6 +31,7 @@ export {
     PlaneNavigator,
     SymRenderer,
     buildProgramsCached,
+    programBuilder,
     initFragments,
     appendThumbnails,
     makeSamplesArray,

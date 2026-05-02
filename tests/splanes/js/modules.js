@@ -12,6 +12,7 @@ export {
 
 export {
     buildProgramsCached,
+    programBuilder,
     createFBO,
     getWebGLContext,
     getRulerStep,

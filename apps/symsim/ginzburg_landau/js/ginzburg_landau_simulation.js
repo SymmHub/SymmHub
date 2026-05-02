@@ -1,7 +1,8 @@
 import {
   isDefined, 
   initFragments, 
-  buildProgramsCached,
+  programBuilder,
+
   GroupUtils,
   getTime, 
   getBlitMaker,
@@ -114,12 +115,15 @@ const progSymNoise =  { name: 'SymNoise', vs: baseVertexShader,
       };
 
 //
-const gsPrograms = [
-    progGL_reset,
-    progGL_step,
-    progSymSampler,
-    progSymNoise,
-];
+const gsPrograms = {
+    glReset:    progGL_reset,
+    glStep:     progGL_step,
+    symSampler: progSymSampler,
+    symNoise:   progSymNoise,
+};
+
+const gsProgs = programBuilder(gsPrograms, true);
+
 
 
 
@@ -218,13 +222,10 @@ function GinzburgLandauSimulation(){
         }
 
         let t0 = getTime();
-        let result = buildProgramsCached(glCtx.gl, gsPrograms);
+        gsProgs.getProgram(glCtx.gl, 'glReset'); // triggers compileAll
         if (DEBUG)
-            console.log(`makeProgramsCached() ready: ${getTime()-t0} ms`);
-        if (!result) {
-            console.error(`GS_Simulation.buildProgramsCached() result: ${result}`);
-            return;
-        }
+            console.log(`programBuilder() ready: ${getTime()-t0} ms`);
+
         initBuffers();
         gBlitMaker = getBlitMaker(glCtx.gl);
 

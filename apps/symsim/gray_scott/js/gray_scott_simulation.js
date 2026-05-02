@@ -2,7 +2,8 @@ import {
   isDefined, 
   gs_uniformUV,
   initFragments, 
-  buildProgramsCached,
+  programBuilder,
+
   GroupUtils,
   getTime, 
   getBlitMaker,
@@ -86,12 +87,15 @@ const progSymNoise =  { name: 'SymNoise', vs: baseVertexShader,
       };
 
 //
-const gsPrograms = [
-  progGsSimulation,
-  progGsNoise1,  
-  progSymSampler,
-  progSymNoise,
-];
+const gsPrograms = {
+  gsSimulation: progGsSimulation,
+  gsNoise1:     progGsNoise1,  
+  symSampler:   progSymSampler,
+  symNoise:     progSymNoise,
+};
+
+const gsProgs = programBuilder(gsPrograms, true);
+
 
 
 const INIT_TYPE_UNIFORM = 'clear uniform';
@@ -190,13 +194,10 @@ function GrayScottSimulation(){
         }
 
         let t0 = getTime();
-        let result = buildProgramsCached(glCtx.gl, gsPrograms);
+        gsProgs.getProgram(glCtx.gl, 'gsSimulation'); // triggers compileAll
         if (debug)
-            console.log(`makeProgramsCached() ready: ${getTime()-t0} ms`);
-        if (!result) {
-            console.error(`GS_Simulation.buildProgramsCached() result: ${result}`);
-            return;
-        }
+            console.log(`programBuilder() ready: ${getTime()-t0} ms`);
+
         initBuffers();
         gBlitMaker = getBlitMaker(glCtx.gl);
 

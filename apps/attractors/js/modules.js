@@ -50,6 +50,7 @@ export {
     createDoubleFBO, 
     createFBO, 
     buildProgramsCached,
+    programBuilder,
     makeSamplesArray,    
     readPixelsFromBuffer,
     printBufferData,

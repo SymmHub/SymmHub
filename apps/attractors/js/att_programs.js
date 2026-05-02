@@ -3,9 +3,10 @@ import {
 } from './shaders/modules.js';
 
 import {
-    buildProgramsCached,
+    programBuilder,
     LibShaders,
 } from './modules.js';
+
 
 const MYNAME = 'att_programs';
 
@@ -117,43 +118,18 @@ const symmetrization = {
 }
 
 
-function programBuilder(){
+export const AttPrograms = programBuilder({
+    accumulator_crown,
+    accumulator,
+    histogramRenderer,
+    gpuInitializer,
+    iteratorClifford,
+    iteratorDeJong,
+    iteratorConradi,
+    iteratorTinkerbell,
+    iteratorMandelbrot,
+    iteratorFieldIcons,
+    gpuCopy,
+    symmetrization,
+}, true);
 
-    const programs = {
-        accumulator_crown:  accumulator_crown,
-        accumulator:        accumulator,
-        histogramRenderer:  histogramRenderer, 
-        gpuInitializer,
-        iteratorClifford,
-        iteratorDeJong,
-        iteratorConradi,
-        iteratorTinkerbell,
-        iteratorMandelbrot,
-        iteratorFieldIcons,
-        gpuCopy,
-        symmetrization,
-    };
- 
-    
-    function getProgram(gl, progName){
-        
-        if(false)console.log(`${MYNAME}.getProgram()`, gl, progName);
-        
-        if(!programs.isReady){
-            
-            let result = buildProgramsCached(gl, programs);            
-            console.log('ready: ', programs);
-            programs.isReady = true;            
-        }
-        let pr = programs[progName];
-        if(pr) return pr.program;
-        else throw new Error(`program ${progName} not found`);
-    }
-    
-    return  {
-        getProgram: getProgram,
-    }
-} // programBuilder
-
-
-export const AttPrograms = programBuilder();
