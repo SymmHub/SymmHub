@@ -1,6 +1,7 @@
 import {renderImage} from './renderImage.glsl.mjs';
 import {colorImageArray} from './colorImageArray.glsl.mjs';
 import {permutations} from './permutations.glsl.mjs';
+import {permutations24} from './permutations24.glsl.mjs';
 
 
 const MYNAME = import.meta.url;
@@ -10,4 +11,5 @@ export const Shaders = {
     renderImage:        renderImage,
     colorImageArray:    colorImageArray,
     permutations:       permutations,
+    permutations24:     permutations24, 
 };

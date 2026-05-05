@@ -20,7 +20,7 @@ const fragBufferToScreenImageArray = {obj:LibShaders, id: 'bufferToScreenImageAr
 
 const renderImageFragMain   = {obj:LocalShaders, id:'renderImage'};
 const fragBaseVertex        = {obj:LocalShaders, id: 'canvasVertexShader'};
-const fragPermutations      = {obj:LocalShaders, id: 'permutations'};
+const fragPermutations24    = {obj:LocalShaders, id: 'permutations24'};
 const colorImageArrayFrag   = {obj:LocalShaders, id: 'colorImageArray'};
 
 
@@ -46,7 +46,7 @@ const colorImageArrayProgram = {
     name: 'ColorImageArray',
     vs: {frags: [renderImageVertMain]}, 
     fs: {
-        frags: [fragIsplane, inversiveFrag, fragComplex, utilsFrag, fragTexUtils, fragProjection, fragPermutations, colorImageArrayFrag]
+        frags: [fragIsplane, inversiveFrag, fragComplex, utilsFrag, fragTexUtils, fragProjection, fragPermutations24, colorImageArrayFrag]
     }
 };
 

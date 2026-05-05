@@ -19,6 +19,10 @@ uniform bool uSymmetry;
 uniform int uInterpolation;
 uniform float uTransparency;
 
+uniform uvec4 uPermData[MAX_GEN_COUNT];
+//iform 
+uint uPermSize = 3u;
+
 void main() {
 
     int groupOffset = 0;
@@ -44,9 +48,10 @@ void main() {
     #endif
 
     vec3 wpnt = vec3(pp, 0.);
+    uvec4 currentPerm = perm_identity(uPermSize);
 
     if(uSymmetry){
-        iToFundamentalDomainSampler(wpnt, uGroupData, groupOffset, inDomain, refcount, scale, uIterations);
+        iToFundamentalDomainSamplerPerm24(wpnt, uGroupData, groupOffset, uPermData, uPermSize, currentPerm, inDomain, refcount, scale, uIterations);
     }
     if(uSymmetry && inDomain == 0) {
         outColor = vec4(0,0,0,0);
@@ -61,13 +66,12 @@ void main() {
     float blurWidth = u_pixelSize * 0.5;
     float mask = 1. - smoothstep(-blurWidth, blurWidth, sdb);
 
-    // Composite all layers using Porter-Duff "over" (premultiplied).
-    // sampler2DArray allows real loop indexing — no unrolling needed.
+    // Composite layers using "over" blending (premultiplied).
     vec4 color = vec4(0.0);
-    for (int i = 0; i < uNumImages; i++) {
-        vec4 layer = texture(uImageArray, vec3(tpnt, float(i)));
-        color = overlayColor(color, layer);
-    }
+    uint imageIndex = get_perm_val(currentPerm, uint(refcount) % 2u);
+    vec4 layer = texture(uImageArray, vec3(tpnt, float(imageIndex)));
+    color = overlayColor(color, layer);
+    
 
     outColor = color * mask * (1. - uTransparency);
     //outColor = vec4(1.,0,0,1.)*mask;

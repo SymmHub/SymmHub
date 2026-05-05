@@ -80,7 +80,7 @@ export {
 
 export {
     Sympix_programs
-} from './Sympix_programs.js';
+} from './sympix_programs.js';
 
 
 
