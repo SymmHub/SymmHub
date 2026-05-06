@@ -99,7 +99,7 @@ void iToFundamentalDomainSamplerPerm24(inout vec3 pnt,
                     iReflect(rsp, pnt, scale);
                 }
                 // accumulate the permutation
-                currentPerm = compose_perms(permData[g], currentPerm, permSize);
+                currentPerm = compose_perms(currentPerm, permData[g], permSize);
                 refcount++;	
                 found = 1;
                 break;        
