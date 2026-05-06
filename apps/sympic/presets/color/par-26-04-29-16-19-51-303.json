@@ -105,9 +105,9 @@
                 }
             },
             "patternTransform": {
-                "centerX": 0,
-                "centerY": 0,
-                "scale": 0.5,
+                "centerX": 0.14500000000000002,
+                "centerY": 0.1,
+                "scale": 0.09000000000000001,
                 "angle": 34
             }
         },
@@ -115,17 +115,19 @@
             "image": {
                 "enabled": true,
                 "opacity": 1,
+                "imageId": "im3 im1 im2",
+                "permutations": "ba ba ba ",
+                "texPermIndex": 0,
                 "interpolation": "linear",
-                "useMipmap": false,
-                "imageId": "im3 im1 im2"
+                "useMipmap": false
             },
             "overlay": {
                 "enabled": true,
                 "opacity": 1,
                 "fundDomain": {
                     "fill": {
-                        "enabled": false,
-                        "color": "#FF0000AA"
+                        "enabled": true,
+                        "color": "#ff000032"
                     },
                     "outline": {
                         "enabled": false,
@@ -239,16 +241,15 @@
             }
         },
         "symmetry": {
-            "groupType": "Wallpaper",
+            "groupType": "KLM",
             "group": {
-                "className": "Group_WP",
+                "className": "Group_KLM",
                 "params": {
-                    "type": "333",
-                    "a": 0.5,
-                    "b": 0.5,
-                    "c": 0,
-                    "angle_a": 0,
-                    "angle_b": 90
+                    "s": true,
+                    "K": 3,
+                    "L": 3,
+                    "M": 3,
+                    "hasR": false
                 }
             },
             "transform": {
@@ -258,7 +259,7 @@
                 "scale": 1
             },
             "options": {
-                "useSymm": false,
+                "useSymm": true,
                 "iterations": 10
             }
         },
@@ -352,12 +353,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": -0.003712701731236575,
-                        "centerY": 0.005029741045696368,
+                        "centerX": 0.15194379550567888,
+                        "centerY": 0.11747358935076116,
                         "zoom": [
-                            [
-                                1.699157601104899
-                            ]
+                            2.3367122203370045
                         ]
                     },
                     "options": {

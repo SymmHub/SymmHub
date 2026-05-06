@@ -5,7 +5,7 @@ export const permutations24 =
 /*glsl*/`
 
 #ifndef MAX_GEN_COUNT
-#define MAX_GEN_COUNT 10
+#define MAX_GEN_COUNT 6
 #endif 
 
 uvec4 perm_identity(uint permSize){
@@ -46,7 +46,16 @@ uvec4 compose_perms(uvec4 outer_perm, uvec4 inner_perm, uint permSize){
 //  transform point into fundamental domain of the group
 //  group data is stored in sampler2D  
 //
-void iToFundamentalDomainSamplerPerm24(inout vec3 pnt, sampler2D groupData, int groupOffset, uvec4 permData[MAX_GEN_COUNT], uint permSize, inout uvec4 currentPerm, inout int inDomain, inout int refcount, inout float scale, int iterations){
+void iToFundamentalDomainSamplerPerm24(inout vec3 pnt, 
+                                      sampler2D groupData, 
+                                      int groupOffset, 
+                                      uvec4 permData[MAX_GEN_COUNT], 
+                                      uint permSize, 
+                                      inout uvec4 currentPerm, 
+                                      inout int inDomain, 
+                                      inout int refcount, 
+                                      inout float scale, 
+                                      int maxIterations){
 
     float EPS = 1.e-7;
     vec2 texScale = getTexScale(groupData);
@@ -61,8 +70,8 @@ void iToFundamentalDomainSamplerPerm24(inout vec3 pnt, sampler2D groupData, int 
   
     refcount = 0;
     inDomain = 0;
-
-    for(int count = 0; count <  iterations; count++){
+    
+    for(int count = 0; count < maxIterations; count++){
     
         int found = 0;
         // we try to move the point into the interior of the fundamental domain, 
@@ -89,6 +98,8 @@ void iToFundamentalDomainSamplerPerm24(inout vec3 pnt, sampler2D groupData, int 
                     iSPlane rsp = fetchSplane(groupData,transformSplanesOffset + r*2); 
                     iReflect(rsp, pnt, scale);
                 }
+                // accumulate the permutation
+                currentPerm = compose_perms(permData[g], currentPerm, permSize);
                 refcount++;	
                 found = 1;
                 break;        

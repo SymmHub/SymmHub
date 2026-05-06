@@ -1,8 +1,10 @@
 import {    
     ParamBool,
     ParamFloat,
+    ParamInt,
     ParamChoice,
     ParamString,
+
     setViewport,
     enableBlending,
     VisualizationOptions,
@@ -12,7 +14,7 @@ import {
     getInterpolationId, 
 } from './modules.js';
 
-const DEBUG = false;
+const DEBUG = true;
 const MYNAME = 'VisualizationColorSym';
 const DataSourceNames = VisualizationOptions.dataSourceNames;
 const DataSourceValues = VisualizationOptions.dataSourceValues;
@@ -33,7 +35,10 @@ function VisualizationColorSym(par={}){
         dataSource: DataSourceNames[0],
         useMipmap: false,
         imageId: '',
+        permutations: '',
+        texPermIndex: 0,
     };
+
     if(par.config){
         Object.assign(mConfig, par.config);
     }
@@ -44,6 +49,13 @@ function VisualizationColorSym(par={}){
     let mPrograms = null;
     // Cache for the TEXTURE_2D_ARRAY used in multi-image compositing.
     let mArrayTexCache = { tex: null, count: 0, size: 0 };
+
+    // Parsed permutation data ready to upload as uPermData / uPermSize.
+    // mPermData: flat Uint32Array(MAX_GEN_COUNT * 4) with packed uvec4 values.
+    const MAX_GEN_COUNT = 6;
+    let mPermData = new Uint32Array(MAX_GEN_COUNT * 4); // zeroed = all identity-like
+    let mPermSize = 0;
+
     
     function onChange(param){
         
@@ -52,18 +64,72 @@ function VisualizationColorSym(par={}){
         
     }
 
+    //
+    //  Pack a plain integer array (values 0-23) into a uvec4 using 5-bit packing:
+    //  6 values per uint32 component (6 * 5 = 30 bits used, 2 spare).
+    //  Mirrors perm_identity / compose_perms in the shader.
+    //
+    function packPerm(perm) {
+        const result = new Uint32Array(4);
+        for (let i = 0; i < perm.length; i++) {
+            const comp  = Math.floor(i / 6);
+            const shift = (i % 6) * 5;
+            result[comp] |= (perm[i] << shift);
+        }
+        return result;
+    }
+
+    //
+    //  Parse mConfig.permutations into packed GPU data.
+    //
+    //  Format: space-separated words, each word encodes one permutation.
+    //  Each character maps its position: 'a'->0, 'b'->1, ..., 'z'->25.
+    //  Identity of size n is "abcde..." (first n letters in order).
+    //
+    function onPermChanged() {
+
+        const str   = mConfig.permutations;
+        const words = str ? str.trim().split(/\s+/).filter(Boolean) : [];
+
+        mPermData = new Uint32Array(MAX_GEN_COUNT * 4);
+        mPermSize = 0;
+
+        if (words.length === 0) {
+            if(DEBUG) console.log(`${MYNAME}.onPermChanged(): empty — using identity`);
+            onChange(null);
+            return;
+        }
+
+        mPermSize = words[0].length;
+
+        for (let k = 0; k < Math.min(words.length, MAX_GEN_COUNT); k++) {
+            const word = words[k];
+            const perm = Array.from(word).map(c => c.charCodeAt(0) - 97); // 'a'=0
+            const packed = packPerm(perm);
+            // Write the 4 uint32s into the flat buffer at slot k.
+            mPermData.set(packed, k * 4);
+        }
+
+        if(DEBUG) console.log(`${MYNAME}.onPermChanged(): ${words.length} perms, size=${mPermSize}`, mPermData);
+        onChange(null);
+    }
+
+
     function makeParams(cf) {
 
         let oc = onChange;
 
         return {
-            enabled:    ParamBool({obj: cf, key:'enabled', onChange: oc}),
-            opacity:    ParamFloat({obj: cf, key: 'opacity', min: 0, max: 1, step: 0.001, onChange: oc}),
+            enabled:       ParamBool({obj: cf, key:'enabled', onChange: oc}),
+            opacity:       ParamFloat({obj: cf, key: 'opacity', min: 0, max: 1, step: 0.001, onChange: oc}),
+            imageId:       ParamString({obj: cf, key: 'imageId', onChange: oc}),
+            permutations:  ParamString({obj: cf, key: 'permutations', onChange: onPermChanged}),
+            texPermIndex:  ParamInt({obj: cf, key: 'texPermIndex', min: 0, max: 23, step: 1, onChange: oc}),
+
             interpolation: ParamChoice({obj: cf, key: 'interpolation', choice: InterpolationNames, onChange: oc}),
-            //dataSource: ParamChoice({obj: cf, key: 'dataSource', choice: DataSourceNames, onChange: oc}),
-            useMipmap:  ParamBool({obj: cf, key: 'useMipmap', onChange: oc}),
-            imageId:    ParamString({obj: cf, key: 'imageId', onChange: oc}),
+            useMipmap:     ParamBool({obj: cf, key: 'useMipmap', onChange: oc}),
         }
+
     } // function makeParams()
 
     
@@ -129,10 +195,13 @@ function VisualizationColorSym(par={}){
         const imageUni = {
             uImageArray:    arrayTex,
             uNumImages:     buffers.length,
-            // uDataSource:    DataSourceValues[cmCfg.dataSource],
             uTransparency:  (1. - cmCfg.opacity),
             uInterpolation: getInterpolationId(cmCfg.interpolation),
+            uPermData:      mPermData,
+            uPermSize:      mPermSize,
+            uTexPermIndex:  cmCfg.texPermIndex,
         };
+
 
         //
         // render the complete image 

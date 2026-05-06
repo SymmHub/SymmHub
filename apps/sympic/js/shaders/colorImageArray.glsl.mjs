@@ -19,9 +19,17 @@ uniform bool uSymmetry;
 uniform int uInterpolation;
 uniform float uTransparency;
 
+// array of permutations, 
+// each permutation may have up to 24 integer elements (0-23) 
+// each of 4 components of uvec4 are packing 6 integers each (0-23)
+// 5 bits are enough for each integer (2^5 = 32 > 24)
+// 6 * 5 = 30 bits are packed into each uvec4 component
+// 
 uniform uvec4 uPermData[MAX_GEN_COUNT];
-//iform 
-uint uPermSize = 3u;
+// size of permutation,  
+uniform uint uPermSize;
+
+uniform uint uTexPermIndex;
 
 void main() {
 
@@ -68,7 +76,7 @@ void main() {
 
     // Composite layers using "over" blending (premultiplied).
     vec4 color = vec4(0.0);
-    uint imageIndex = get_perm_val(currentPerm, uint(refcount) % 2u);
+    uint imageIndex = get_perm_val(currentPerm, uTexPermIndex);
     vec4 layer = texture(uImageArray, vec3(tpnt, float(imageIndex)));
     color = overlayColor(color, layer);
     

@@ -12,7 +12,7 @@
             "customHeight": 1000,
             "sizeMultiplier": 1,
             "backgroundColor": "#FFFFFF00",
-            "frameTime": 16.9
+            "frameTime": 16.5
         },
         "recording": {
             "animTime": 0,
@@ -347,18 +347,20 @@
                 }
             },
             "patternTransform": {
-                "centerX": 0,
-                "centerY": 0,
-                "scale": 0.5,
-                "angle": -45.00000000000001
+                "centerX": 0.14,
+                "centerY": 0.04,
+                "scale": 0.16,
+                "angle": 0
             }
         },
         "visualization": {
             "image": {
                 "enabled": true,
                 "opacity": 1,
+                "imageId": "im1 im2 im3",
+                "permutations": "ba ba ba ",
+                "texPermIndex": 0,
                 "interpolation": "linear",
-                "dataSource": "u",
                 "useMipmap": false
             },
             "overlay": {
@@ -366,8 +368,8 @@
                 "opacity": 1,
                 "fundDomain": {
                     "fill": {
-                        "enabled": false,
-                        "color": "#FF0000AA"
+                        "enabled": true,
+                        "color": "#ff000079"
                     },
                     "outline": {
                         "enabled": false,
@@ -481,16 +483,15 @@
             }
         },
         "symmetry": {
-            "groupType": "Wallpaper",
+            "groupType": "KLM",
             "group": {
-                "className": "Group_WP",
+                "className": "Group_KLM",
                 "params": {
-                    "type": "333",
-                    "a": 0.5,
-                    "b": 0.5,
-                    "c": 0,
-                    "angle_a": 0,
-                    "angle_b": 90
+                    "s": true,
+                    "K": 4,
+                    "L": 4,
+                    "M": 2,
+                    "hasR": false
                 }
             },
             "transform": {
@@ -500,7 +501,7 @@
                 "scale": 1
             },
             "options": {
-                "useSymm": false,
+                "useSymm": true,
                 "iterations": 10
             }
         },
@@ -594,10 +595,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0.027785170956476132,
-                        "centerY": -0.0020475431492117035,
+                        "centerX": 0.013159270863975605,
+                        "centerY": 0.09947588889044154,
                         "zoom": [
-                            2.285059118334527
+                            2.0260736201436575
                         ]
                     },
                     "options": {
