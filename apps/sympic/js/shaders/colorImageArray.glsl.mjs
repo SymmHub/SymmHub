@@ -6,7 +6,7 @@ layout(location = 0) out vec4 outColor;
 
 uniform float u_pixelSize;
 
-uniform lowp sampler2DArray uImageArray;
+uniform highp sampler2DArray uImageArray;
 uniform int uNumImages;
 
 uniform vec2 uBufCenter;
@@ -29,14 +29,22 @@ uniform uvec4 uPermData[MAX_GEN_COUNT];
 // size of permutation,  
 uniform uint uPermSize;
 
+// 
+uniform bool uFillCells;
+uniform vec4 uCellColors[MAX_COLORS_COUNT];
+uniform uint uCellColorPermIndex;
 uniform uint uTexPermIndex;
 uniform bool uUseCrown;
 
-vec4 getImageComponentData(vec2 pnt, lowp sampler2DArray imageArray, vec2 imgScale,  vec2 imgCenter, uint componentIndex, float blurRadius){
-    vec2 tc = cMul(imgScale, (pnt - imgCenter));
-    vec2 tpnt = tc + vec2(0.5, 0.5);
+vec4 getImageComponentData(vec2 wpnt, highp sampler2DArray imageArray, vec2 imgScale,  vec2 imgCenter, uint componentIndex, float blurRadius){
+    // Map world point into texture coordinates.
+    vec2 tc = cMul(imgScale, (wpnt - imgCenter));
+    // coordinates in [0,1] to feed to texture 
+    vec2 tpnt = tc + vec2(0.5, 0.5); 
     tc = abs(tc);
+    // signed distance to texture box, negative inside, zero at edge, positive outside 
     float sdb = max(tc.x, tc.y) - 0.5;
+    // edge mask
     float mask = 1. - smoothstep(-blurRadius, blurRadius, sdb);
     return texture(imageArray, vec3(tpnt, float(componentIndex))) * mask;
 }
@@ -46,9 +54,12 @@ vec4 getImageComponentData(vec2 pnt, lowp sampler2DArray imageArray, vec2 imgSca
 // Crown rendering for image arrays with color permutations.
 // For each pairing transform g of the fundamental domain, maps the screen point
 // into the adjacent copy, then blends all images cycling through permuted indices.
-// permData[g] gives the color permutation for that reflected copy.
+// permData[g] gives the color permutation which needs to be pre-composed with currentPerm for that reflected copy.
 //
-vec4 getColorArrayCrown(vec3 pnt, 
+vec4 getImageArrayCrown(vec3 pnt, 
+                        highp sampler2DArray imageArray, 
+                        vec2 imgScale, 
+                        vec2 imgCenter,     
                         sampler2D groupData, 
                         int groupOffset, 
                         float scale, 
@@ -82,7 +93,7 @@ vec4 getColorArrayCrown(vec3 pnt,
         // Blend all images using generator g's permutation row.
         uvec4 perm = compose_perms(currentPerm, gperm, permSize);
         uint imgIdx = get_perm_val(perm, texIndex);
-        vec4 cellColor = getImageComponentData(v.xy, uImageArray, uBufScale, uBufCenter, imgIdx, blurWidth);      
+        vec4 cellColor = getImageComponentData(v.xy, imageArray, imgScale, imgCenter, imgIdx, blurWidth);      
         color = overlayColor(color, cellColor);
     }
 
@@ -123,21 +134,17 @@ void main() {
         return;
     }
 
-    // Map world point into sampler coordinates.
-    /*
-    vec2 tc = cMul(uBufScale, (wpnt.xy - uBufCenter));
-    vec2 tpnt = tc + vec2(0.5, 0.5);
-    tc = abs(tc);
-    float sdb = max(tc.x, tc.y) - 0.5;
-    float blurWidth = u_pixelSize * 0.5;
-    float mask = 1. - smoothstep(-blurWidth, blurWidth, sdb);
-*/
-    // Crown: accumulate neighbour-cell contributions.
+
     vec4 color = vec4(0.0);
+    if(uFillCells) {
+        color = uCellColors[get_perm_val(currentPerm, uCellColorPermIndex)];
+    }
     float blurWidth = u_pixelSize * 0.5;
     if(uUseCrown){
+        // Crown: accumulate neighbour-cell contributions.
         // append images from neighbours
-        color = getColorArrayCrown(wpnt, uGroupData, groupOffset, scale, uPermData, uPermSize, currentPerm, uTexPermIndex, blurWidth); 
+        vec4 crownColor = getImageArrayCrown(wpnt, uImageArray, uBufScale, uBufCenter, uGroupData, groupOffset, scale, uPermData, uPermSize, currentPerm, uTexPermIndex, blurWidth); 
+        color = overlayColor(color, crownColor);
     }
 
     // Main tile: single image selected via currentPerm + uTexPermIndex.

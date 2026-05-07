@@ -4,7 +4,7 @@ import {
     ParamInt,
     ParamChoice,
     ParamString,
-
+    ParamObj,
     setViewport,
     enableBlending,
     VisualizationOptions,
@@ -13,6 +13,9 @@ import {
     InterpolationNames, 
     getInterpolationId, 
 } from './modules.js';
+
+import { ColorTiles } from './ColorTiles.js';
+
 
 const DEBUG = true;
 const MYNAME = 'VisualizationColorSym';
@@ -51,6 +54,9 @@ function VisualizationColorSym(par={}){
     let mPrograms = null;
     // Cache for the TEXTURE_2D_ARRAY used in multi-image compositing.
     let mArrayTexCache = { tex: null, count: 0, size: 0 };
+
+    // Cell color generator (cosine palette → uCellColors uniform).
+    const mColorTiles = ColorTiles();
 
     // Parsed permutation data ready to upload as uPermData / uPermSize.
     // mPermData: flat Uint32Array(MAX_GEN_COUNT * 4) with packed uvec4 values.
@@ -132,6 +138,7 @@ function VisualizationColorSym(par={}){
 
             interpolation: ParamChoice({obj: cf, key: 'interpolation', choice: InterpolationNames, onChange: oc}),
             useMipmap:     ParamBool({obj: cf, key: 'useMipmap', onChange: oc}),
+            colorTiles:    ParamObj({name: 'cell colors', obj: mColorTiles}),
         }
 
     } // function makeParams()
@@ -205,6 +212,11 @@ function VisualizationColorSym(par={}){
             uPermSize:      mPermSize,
             uTexPermIndex:  cmCfg.texPermIndex,
             uUseCrown:      cmCfg.useCrown,
+            // cell color uniforms from ColorTiles
+            uFillCells:          mColorTiles.enabled,
+            uCellColors:         mColorTiles.getColors(),
+            uCellColorPermIndex: mColorTiles.getPermIndex(),
+
 
         };
 
@@ -234,8 +246,10 @@ function VisualizationColorSym(par={}){
         mGLCtx = par.glCtx;        
         mOnChange = par.onChange;        
         mPrograms = Sympix_programs;
+        mColorTiles.setOnChange(() => onChange(null));
 
         
+
     }
     
     //

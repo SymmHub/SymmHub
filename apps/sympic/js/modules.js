@@ -89,3 +89,7 @@ export {
 export {
     VisualizationColorSym
 } from './VisualizationColorSym.js';
+
+export {
+    ColorTiles
+} from './ColorTiles.js';

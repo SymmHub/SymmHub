@@ -8,6 +8,8 @@ export const permutations24 =
 #define MAX_GEN_COUNT 6
 #endif 
 
+#define MAX_COLORS_COUNT 24
+
 uvec4 perm_identity(uint permSize){
   uvec4 perm = uvec4(0u);
   for(uint i = 0u; i < permSize; i++){
@@ -99,6 +101,12 @@ void iToFundamentalDomainSamplerPerm24(inout vec3 pnt,
                     iReflect(rsp, pnt, scale);
                 }
                 // accumulate the permutation
+                // the permutation composition is done in reverse order.
+                // We work from point on screen toward the fundamental domain composing the
+                // sequence of transformations in the process.
+                // To get the final color permutation we need to find the permutation which corresponds 
+                // to the sequence of _inverse_ transformations applied in _opposite_ order. 
+                // The reverse composition of permutations does exactly that
                 currentPerm = compose_perms(currentPerm, permData[g], permSize);
                 refcount++;	
                 found = 1;
