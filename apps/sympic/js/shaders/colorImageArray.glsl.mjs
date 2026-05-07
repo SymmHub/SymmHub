@@ -32,7 +32,16 @@ uniform uint uPermSize;
 uniform uint uTexPermIndex;
 uniform bool uUseCrown;
 
+vec4 getImageComponentData(vec2 pnt, lowp sampler2DArray imageArray, vec2 imgScale,  vec2 imgCenter, uint componentIndex, float blurRadius){
+    vec2 tc = cMul(imgScale, (pnt - imgCenter));
+    vec2 tpnt = tc + vec2(0.5, 0.5);
+    tc = abs(tc);
+    float sdb = max(tc.x, tc.y) - 0.5;
+    float mask = 1. - smoothstep(-blurRadius, blurRadius, sdb);
+    return texture(imageArray, vec3(tpnt, float(componentIndex))) * mask;
+}
 
+//
 //
 // Crown rendering for image arrays with color permutations.
 // For each pairing transform g of the fundamental domain, maps the screen point
@@ -46,7 +55,8 @@ vec4 getColorArrayCrown(vec3 pnt,
                         uvec4 permData[MAX_GEN_COUNT], 
                         uint permSize, 
                         uvec4 currentPerm, 
-                        uint texIndex) { 
+                        uint texIndex, 
+                        float blurWidth) { 
 
     vec4 color = vec4(0.0);
 
@@ -68,19 +78,12 @@ vec4 getColorArrayCrown(vec3 pnt,
             iSPlane rsp = fetchSplane(uGroupData, transformSplanesOffset + r * 2);
             iReflect(rsp, v, ss);
         }
-
-        // Buffer coordinates for the transformed point.
-        vec2 tc2   = cMul(uBufScale, v.xy - uBufCenter);
-        vec2 tpnt2 = tc2 + vec2(0.5);
-        float sdb2 = max(abs(tc2.x), abs(tc2.y)) - 0.5;
-        float msk  = 1.0 - smoothstep(-0.001, 0.001, sdb2);
-        if (msk <= 0.0) continue;
         uvec4 gperm = permData[g];
         // Blend all images using generator g's permutation row.
         uvec4 perm = compose_perms(currentPerm, gperm, permSize);
         uint imgIdx = get_perm_val(perm, texIndex);
-        vec4 cellColor = texture(uImageArray, vec3(tpnt2, float(imgIdx)));        
-        color = overlayColor(color, cellColor * msk);
+        vec4 cellColor = getImageComponentData(v.xy, uImageArray, uBufScale, uBufCenter, imgIdx, blurWidth);      
+        color = overlayColor(color, cellColor);
     }
 
     return color;
@@ -121,27 +124,31 @@ void main() {
     }
 
     // Map world point into sampler coordinates.
+    /*
     vec2 tc = cMul(uBufScale, (wpnt.xy - uBufCenter));
     vec2 tpnt = tc + vec2(0.5, 0.5);
     tc = abs(tc);
     float sdb = max(tc.x, tc.y) - 0.5;
     float blurWidth = u_pixelSize * 0.5;
     float mask = 1. - smoothstep(-blurWidth, blurWidth, sdb);
-
+*/
     // Crown: accumulate neighbour-cell contributions.
     vec4 color = vec4(0.0);
+    float blurWidth = u_pixelSize * 0.5;
     if(uUseCrown){
         // append images from neighbours
-        color = getColorArrayCrown(wpnt, uGroupData, groupOffset, scale, uPermData, uPermSize, currentPerm, uTexPermIndex); 
+        color = getColorArrayCrown(wpnt, uGroupData, groupOffset, scale, uPermData, uPermSize, currentPerm, uTexPermIndex, blurWidth); 
     }
 
     // Main tile: single image selected via currentPerm + uTexPermIndex.
     uint imageIndex = get_perm_val(currentPerm, uTexPermIndex);
-    vec4 layer = texture(uImageArray, vec3(tpnt, float(imageIndex)));
-    color = overlayColor(color, layer * mask);
+    //vec4 layer = texture(uImageArray, vec3(tpnt, float(imageIndex)));
+    vec4 layer = getImageComponentData(wpnt.xy, uImageArray, uBufScale, uBufCenter, imageIndex, blurWidth);
+    color = overlayColor(color, layer);
 
     outColor = color * (1. - uTransparency);
     //outColor = vec4(1.,0,0,1.)*mask;
+    
 }
 `;
 
