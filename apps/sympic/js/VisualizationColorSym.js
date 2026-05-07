@@ -37,6 +37,8 @@ function VisualizationColorSym(par={}){
         imageId: '',
         permutations: '',
         texPermIndex: 0,
+        useCrown: false,
+
     };
 
     if(par.config){
@@ -125,6 +127,8 @@ function VisualizationColorSym(par={}){
             imageId:       ParamString({obj: cf, key: 'imageId', onChange: oc}),
             permutations:  ParamString({obj: cf, key: 'permutations', onChange: onPermChanged}),
             texPermIndex:  ParamInt({obj: cf, key: 'texPermIndex', min: 0, max: 23, step: 1, onChange: oc}),
+            useCrown:      ParamBool({obj: cf, key: 'useCrown', onChange: oc}),
+
 
             interpolation: ParamChoice({obj: cf, key: 'interpolation', choice: InterpolationNames, onChange: oc}),
             useMipmap:     ParamBool({obj: cf, key: 'useMipmap', onChange: oc}),
@@ -200,6 +204,8 @@ function VisualizationColorSym(par={}){
             uPermData:      mPermData,
             uPermSize:      mPermSize,
             uTexPermIndex:  cmCfg.texPermIndex,
+            uUseCrown:      cmCfg.useCrown,
+
         };
 
 
