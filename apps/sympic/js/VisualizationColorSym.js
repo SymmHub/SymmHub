@@ -41,6 +41,7 @@ function VisualizationColorSym(par={}){
         permutations: '',
         texPermIndex: 0,
         useCrown: false,
+        leftCoset: false,
 
     };
 
@@ -134,6 +135,7 @@ function VisualizationColorSym(par={}){
             permutations:  ParamString({obj: cf, key: 'permutations', onChange: onPermChanged}),
             texPermIndex:  ParamInt({obj: cf, key: 'texPermIndex', min: 0, max: 23, step: 1, onChange: oc}),
             useCrown:      ParamBool({obj: cf, key: 'useCrown', onChange: oc}),
+            leftCoset:     ParamBool({obj: cf, key: 'leftCoset', onChange: oc}),
 
 
             interpolation: ParamChoice({obj: cf, key: 'interpolation', choice: InterpolationNames, onChange: oc}),
@@ -212,6 +214,8 @@ function VisualizationColorSym(par={}){
             uPermSize:      mPermSize,
             uTexPermIndex:  cmCfg.texPermIndex,
             uUseCrown:      cmCfg.useCrown,
+            uLeftCoset:     cmCfg.leftCoset,
+
             // cell color uniforms from ColorTiles
             uFillCells:          mColorTiles.enabled,
             uCellColors:         mColorTiles.getColors(),

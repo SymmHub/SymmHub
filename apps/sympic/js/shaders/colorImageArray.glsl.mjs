@@ -35,6 +35,7 @@ uniform vec4 uCellColors[MAX_COLORS_COUNT];
 uniform uint uCellColorPermIndex;
 uniform uint uTexPermIndex;
 uniform bool uUseCrown;
+uniform bool uLeftCoset;
 
 vec4 getImageComponentData(vec2 wpnt, highp sampler2DArray imageArray, vec2 imgScale,  vec2 imgCenter, uint componentIndex, float blurRadius){
     // Map world point into texture coordinates.
@@ -66,6 +67,7 @@ vec4 getImageArrayCrown(vec3 pnt,
                         uvec4 permData[MAX_GEN_COUNT], 
                         uint permSize, 
                         uvec4 currentPerm, 
+                        bool leftCoset,
                         uint texIndex, 
                         float blurWidth) { 
 
@@ -91,7 +93,12 @@ vec4 getImageArrayCrown(vec3 pnt,
         }
         uvec4 gperm = permData[g];
         // Blend all images using generator g's permutation row.
-        uvec4 perm = compose_perms(currentPerm, gperm, permSize);
+        uvec4 perm;
+        if(leftCoset) 
+            perm = compose_perms(gperm, currentPerm, permSize);
+        else 
+            perm = compose_perms(currentPerm, gperm, permSize);
+
         uint imgIdx = get_perm_val(perm, texIndex);
         vec4 cellColor = getImageComponentData(v.xy, imageArray, imgScale, imgCenter, imgIdx, blurWidth);      
         color = overlayColor(color, cellColor);
@@ -127,7 +134,8 @@ void main() {
     uvec4 currentPerm = perm_identity(uPermSize);
 
     if(uSymmetry){
-        iToFundamentalDomainSamplerPerm24(wpnt, uGroupData, groupOffset, uPermData, uPermSize, currentPerm, inDomain, refcount, scale, uIterations);
+        iToFundamentalDomainSamplerPerm24(wpnt, uGroupData, groupOffset, uPermData, uPermSize, currentPerm, uLeftCoset, inDomain, refcount, scale, uIterations);
+
     }
     if(uSymmetry && inDomain == 0) {
         outColor = vec4(0,0,0,0);
@@ -143,7 +151,8 @@ void main() {
     if(uUseCrown){
         // Crown: accumulate neighbour-cell contributions.
         // append images from neighbours
-        vec4 crownColor = getImageArrayCrown(wpnt, uImageArray, uBufScale, uBufCenter, uGroupData, groupOffset, scale, uPermData, uPermSize, currentPerm, uTexPermIndex, blurWidth); 
+        vec4 crownColor = getImageArrayCrown(wpnt, uImageArray, uBufScale, uBufCenter, uGroupData, groupOffset, scale, uPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth); 
+
         color = overlayColor(color, crownColor);
     }
 
