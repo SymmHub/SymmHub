@@ -42,6 +42,7 @@ function VisualizationColorSym(par={}){
         texPermIndex: 0,
         useCrown: false,
         leftCoset: false,
+        mask: '',
 
     };
 
@@ -65,7 +66,11 @@ function VisualizationColorSym(par={}){
     let mPermData = new Uint32Array(MAX_GEN_COUNT * 4); // zeroed = all identity-like
     let mPermSize = 0;
 
-    
+    // Per-texture-layer alpha mask (0.0 = hidden, 1.0 = visible), padded with 1s.
+    const MAX_TEX_COUNT = 24;
+    let mTexAlpha = new Float32Array(MAX_TEX_COUNT).fill(1.0);
+
+
     function onChange(param){
         
       if(DEBUG)console.log(`${MYNAME}.onChange()`, param);
@@ -123,6 +128,19 @@ function VisualizationColorSym(par={}){
         onChange(null);
     }
 
+    //
+    //  Parse mConfig.mask into mTexAlpha.
+    //  Each character: '0' → 0.0, anything else → 1.0.
+    //  Positions beyond the string length are filled with 1.0.
+    //
+    function onMaskChanged() {
+        const str = mConfig.mask || '';
+        for (let i = 0; i < MAX_TEX_COUNT; i++) {
+            mTexAlpha[i] = (i < str.length && str[i] === '0') ? 0.0 : 1.0;
+        }
+        if(DEBUG) console.log(`${MYNAME}.onMaskChanged(): "${str}"`, mTexAlpha.slice(0, 8));
+        onChange(null);
+    }
 
     function makeParams(cf) {
 
@@ -136,6 +154,7 @@ function VisualizationColorSym(par={}){
             texPermIndex:  ParamInt({obj: cf, key: 'texPermIndex', min: 0, max: 23, step: 1, onChange: oc}),
             useCrown:      ParamBool({obj: cf, key: 'useCrown', onChange: oc}),
             leftCoset:     ParamBool({obj: cf, key: 'leftCoset', onChange: oc}),
+            mask:          ParamString({obj: cf, key: 'mask', onChange: onMaskChanged}),
 
 
             interpolation: ParamChoice({obj: cf, key: 'interpolation', choice: InterpolationNames, onChange: oc}),
@@ -215,6 +234,7 @@ function VisualizationColorSym(par={}){
             uTexPermIndex:  cmCfg.texPermIndex,
             uUseCrown:      cmCfg.useCrown,
             uLeftCoset:     cmCfg.leftCoset,
+            uTexAlpha:      mTexAlpha,
 
             // cell color uniforms from ColorTiles
             uFillCells:          mColorTiles.enabled,

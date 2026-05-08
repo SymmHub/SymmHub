@@ -36,6 +36,8 @@ uniform uint uCellColorPermIndex;
 uniform uint uTexPermIndex;
 uniform bool uUseCrown;
 uniform bool uLeftCoset;
+// alpha factor per texture layer (0.0 = hidden, 1.0 = visible), padded with 1s.
+uniform float uTexAlpha[MAX_COLORS_COUNT];
 
 vec4 getImageComponentData(vec2 wpnt, highp sampler2DArray imageArray, vec2 imgScale,  vec2 imgCenter, uint componentIndex, float blurRadius){
     // Map world point into texture coordinates.
@@ -58,7 +60,8 @@ vec4 getImageComponentData(vec2 wpnt, highp sampler2DArray imageArray, vec2 imgS
 // permData[g] gives the color permutation which needs to be pre-composed with currentPerm for that reflected copy.
 //
 vec4 getImageArrayCrown(vec3 pnt, 
-                        highp sampler2DArray imageArray, 
+                        highp sampler2DArray imageArray,
+                        float texAlpha[MAX_COLORS_COUNT],
                         vec2 imgScale, 
                         vec2 imgCenter,     
                         sampler2D groupData, 
@@ -100,8 +103,10 @@ vec4 getImageArrayCrown(vec3 pnt,
             perm = compose_perms(currentPerm, gperm, permSize);
 
         uint imgIdx = get_perm_val(perm, texIndex);
-        vec4 cellColor = getImageComponentData(v.xy, imageArray, imgScale, imgCenter, imgIdx, blurWidth);      
-        color = overlayColor(color, cellColor);
+        if(texAlpha[imgIdx] > 0.0) {
+            vec4 cellColor = texAlpha[imgIdx]*getImageComponentData(v.xy, imageArray, imgScale, imgCenter, imgIdx, blurWidth);      
+            color = overlayColor(color, cellColor);
+        }
     }
 
     return color;
@@ -151,16 +156,18 @@ void main() {
     if(uUseCrown){
         // Crown: accumulate neighbour-cell contributions.
         // append images from neighbours
-        vec4 crownColor = getImageArrayCrown(wpnt, uImageArray, uBufScale, uBufCenter, uGroupData, groupOffset, scale, uPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth); 
+        vec4 crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uGroupData, groupOffset, scale, uPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth); 
 
         color = overlayColor(color, crownColor);
     }
 
     // Main tile: single image selected via currentPerm + uTexPermIndex.
     uint imageIndex = get_perm_val(currentPerm, uTexPermIndex);
-    //vec4 layer = texture(uImageArray, vec3(tpnt, float(imageIndex)));
-    vec4 layer = getImageComponentData(wpnt.xy, uImageArray, uBufScale, uBufCenter, imageIndex, blurWidth);
-    color = overlayColor(color, layer);
+
+    if(uTexAlpha[imageIndex] > 0.0) {
+        vec4 layer = uTexAlpha[imageIndex]*getImageComponentData(wpnt.xy, uImageArray, uBufScale, uBufCenter, imageIndex, blurWidth);
+        color = overlayColor(color, layer);
+    }
 
     outColor = color * (1. - uTransparency);
     //outColor = vec4(1.,0,0,1.)*mask;
