@@ -7,7 +7,7 @@ import {
 } from './modules.js';
 
 
-
+const MYNAME = 'ColorTiles';
 
 const DEBUG = true;
 
@@ -199,8 +199,10 @@ function ColorTiles(options = {}) {
         getCount,
         getPermIndex,
         setOnChange,
+        getClassName:    () => MYNAME,
         get enabled() { return mConfig.enabled; },
     };
+
 
 } // ColorTiles
 

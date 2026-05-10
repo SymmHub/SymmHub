@@ -288,6 +288,7 @@ function VisualizationColorSym(par={}){
     
     return {
         getParams:  getParams, 
+        getClassName: (() => MYNAME),
         init:           init,
         render:         render,
         get enabled(){return mConfig.enabled;},

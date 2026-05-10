@@ -943,6 +943,7 @@ function GinzburgLandauSimulation(){
         applySymmetry:      applySymmetry,
         initSimulation:     initSimulation,
         getParams:          getParams,
+        getClassName:       () => MYNAME,
     };
   
     return myself;

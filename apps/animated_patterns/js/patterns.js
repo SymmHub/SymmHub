@@ -104,7 +104,7 @@ const PatternsCreator = {
     //
     create:         ()=> {return Patterns();},
     getName:        () => {return `${MYNAME}-factory`;},
-    getClassName:   ()=>{return `${MYNAME}-class`;}
+    getClassName:   ()=>{return MYNAME;}
     
 }
 

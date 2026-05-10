@@ -171,6 +171,8 @@ export function ParamsAnimator(arg){
         get enabled()   {return mConfig.enabled}, 
         get isModified() {return mConfig.isModified},
         getName:        () => MYNAME,
+        getClassName:   () => MYNAME,
+
     };
 
     return myself;

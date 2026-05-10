@@ -767,7 +767,7 @@ const IteratedAttractorCreator = {
     //
     create:         ()=> {return IteratedAttractor();},
     getName:        () => {return `${MYNAME}-factory`;},
-    getClassName:   ()=>{return `${MYNAME}-class`;}
+    getClassName:   ()=>{return MYNAME;}
     
 }
     

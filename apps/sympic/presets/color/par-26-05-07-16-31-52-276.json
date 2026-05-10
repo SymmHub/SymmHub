@@ -12,7 +12,7 @@
             "customHeight": 1000,
             "sizeMultiplier": 1,
             "backgroundColor": "#FFFFFF00",
-            "frameTime": 16.8
+            "frameTime": 16.9
         },
         "recording": {
             "animTime": 0,
@@ -113,127 +113,134 @@
         },
         "visualization": {
             "image": {
-                "enabled": true,
-                "opacity": 1,
-                "imageId": "im1 im2 im3",
-                "permutations": "acb bac acb bac  ",
-                "texPermIndex": 1,
-                "useCrown": true,
-                "interpolation": "linear",
-                "useMipmap": false,
-                "colorTiles": {
+                "className": "VisualizationColorSym",
+                "params": {
                     "enabled": true,
-                    "count": 6,
-                    "palette": "pastel",
-                    "permIndex": 0,
-                    "alpha": 0.3,
-                    "colorMask": "",
-                    "aR": 0.5,
-                    "aG": 0.5,
-                    "aB": 0.5,
-                    "bR": 0.5,
-                    "bG": 0.5,
-                    "bB": 0.5,
-                    "cR": 1,
-                    "cG": 1,
-                    "cB": 1,
-                    "dR": 0,
-                    "dG": 0.33,
-                    "dB": 0.67
+                    "opacity": 1,
+                    "imageId": "im1 im2 im3",
+                    "permutations": "acb bac acb bac  ",
+                    "texPermIndex": 1,
+                    "useCrown": true,
+                    "leftCoset": false,
+                    "mask": "",
+                    "interpolation": "linear",
+                    "useMipmap": false,
+                    "colorTiles": {
+                        "enabled": true,
+                        "count": 6,
+                        "palette": "pastel",
+                        "permIndex": 0,
+                        "alpha": 0.3,
+                        "colorMask": "",
+                        "aR": 0.5,
+                        "aG": 0.5,
+                        "aB": 0.5,
+                        "bR": 0.5,
+                        "bG": 0.5,
+                        "bB": 0.5,
+                        "cR": 1,
+                        "cG": 1,
+                        "cB": 1,
+                        "dR": 0,
+                        "dG": 0.33,
+                        "dB": 0.67
+                    }
                 }
             },
             "overlay": {
-                "enabled": true,
-                "opacity": 1,
-                "fundDomain": {
-                    "fill": {
-                        "enabled": true,
-                        "color": "#ff000014"
+                "className": "VisualizationOverlay",
+                "params": {
+                    "enabled": true,
+                    "opacity": 1,
+                    "fundDomain": {
+                        "fill": {
+                            "enabled": true,
+                            "color": "#ff000014"
+                        },
+                        "outline": {
+                            "enabled": false,
+                            "width": 1,
+                            "color": "#000000AA",
+                            "shadowsWidth": 10,
+                            "shadowsColor": "#0000FFAA"
+                        }
                     },
-                    "outline": {
-                        "enabled": false,
-                        "width": 1,
-                        "color": "#000000AA",
-                        "shadowsWidth": 10,
-                        "shadowsColor": "#0000FFAA"
-                    }
-                },
-                "buffer": {
-                    "fill": {
-                        "enabled": true,
-                        "color": "#00FF0022"
+                    "buffer": {
+                        "fill": {
+                            "enabled": true,
+                            "color": "#00FF0022"
+                        },
+                        "outline": {
+                            "enabled": false,
+                            "width": 1,
+                            "color": "#00AA00AA"
+                        }
                     },
-                    "outline": {
+                    "isolines": {
                         "enabled": false,
+                        "type": "u",
+                        "step": 0.1,
+                        "offset": 0,
                         "width": 1,
-                        "color": "#00AA00AA"
-                    }
-                },
-                "isolines": {
-                    "enabled": false,
-                    "type": "u",
-                    "step": 0.1,
-                    "offset": 0,
-                    "width": 1,
-                    "levels": 1,
-                    "color": "#000000ff"
-                },
-                "tiling": {
-                    "fill": {
-                        "enabled": false,
-                        "color": "#FFFF0055"
+                        "levels": 1,
+                        "color": "#000000ff"
                     },
-                    "outline": {
+                    "tiling": {
+                        "fill": {
+                            "enabled": false,
+                            "color": "#FFFF0055"
+                        },
+                        "outline": {
+                            "enabled": false,
+                            "width": 1,
+                            "color": "#000000FF"
+                        }
+                    },
+                    "limitset": {
                         "enabled": false,
-                        "width": 1,
-                        "color": "#000000FF"
+                        "color": "#000000ff",
+                        "width": 1
+                    },
+                    "generators": {
+                        "enabled": false,
+                        "width": 2,
+                        "color": "#0000AAAA",
+                        "shadow": {
+                            "enabled": true,
+                            "color": "#0000AA55",
+                            "width": 10
+                        }
+                    },
+                    "worldGrid": {
+                        "enabled": false,
+                        "type": "cartesian",
+                        "stepx": 0.1,
+                        "stepy": 0.1,
+                        "offsetx": 0,
+                        "offsety": 0,
+                        "levels": 1,
+                        "color": "#000000ff",
+                        "width": 1
+                    },
+                    "screenGrid": {
+                        "enabled": false,
+                        "step": 0.01,
+                        "stepAuto": true,
+                        "color": "#000000ff",
+                        "width": 1
+                    },
+                    "ruler": {
+                        "enabled": false,
+                        "color": "#000000ff",
+                        "background": "#AAAAAAAA",
+                        "width": 20
                     }
-                },
-                "limitset": {
-                    "enabled": false,
-                    "color": "#000000ff",
-                    "width": 1
-                },
-                "generators": {
-                    "enabled": false,
-                    "width": 2,
-                    "color": "#0000AAAA",
-                    "shadow": {
-                        "enabled": true,
-                        "color": "#0000AA55",
-                        "width": 10
-                    }
-                },
-                "worldGrid": {
-                    "enabled": false,
-                    "type": "cartesian",
-                    "stepx": 0.1,
-                    "stepy": 0.1,
-                    "offsetx": 0,
-                    "offsety": 0,
-                    "levels": 1,
-                    "color": "#000000ff",
-                    "width": 1
-                },
-                "screenGrid": {
-                    "enabled": false,
-                    "step": 0.01,
-                    "stepAuto": true,
-                    "color": "#000000ff",
-                    "width": 1
-                },
-                "ruler": {
-                    "enabled": false,
-                    "color": "#000000ff",
-                    "background": "#AAAAAAAA",
-                    "width": 20
                 }
             },
             "options": {
                 "visualComponent": 0,
                 "interpolation": "biquadratic",
-                "showChecker": false,
-                "useMipmap": false
+                "showChecker": false
             }
         },
         "misc": {

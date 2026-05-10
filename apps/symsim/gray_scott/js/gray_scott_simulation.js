@@ -1021,7 +1021,8 @@ function GrayScottSimulation(){
 
     var myself = {
       
-        getName: ()=>{return MYNAME;},
+        getName: ()=> {return MYNAME;},
+        getClassName: () => {return MYNAME;},
         init: init,
         setGroup: setGroup,
         getGroupData: getGroupData,
