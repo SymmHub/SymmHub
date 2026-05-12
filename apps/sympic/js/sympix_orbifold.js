@@ -30,7 +30,7 @@ const visManager = VisualizationManager({
 const app = SymRenderer({
       patternCreator:    PatternImageCreator,
       visualization:     visManager, 
-      groupMakerFactory: GroupMakerFactory({defaultName:'Orbifold WP'}),
+      groupMakerFactory: GroupMakerFactory({defaultName:'Orbifold'}),
       navigator:         new InversiveNavigator(),
       samples:           makeSamplesArray(presets, 'presets/orbifold/'),
 });
