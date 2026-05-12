@@ -1,0 +1,39 @@
+
+import { 
+    GroupMakerFactory,
+    InversiveNavigator,
+    VisualizationManager,
+    VisualizationImage,
+    VisualizationOverlay,
+    SymRenderer,
+    makeSamplesArray,
+    PatternImageCreator,
+} from "./modules.js";
+
+import {
+    presets
+} from './presets_orbifold.js';
+ 
+const visManager = VisualizationManager({
+      visLayers: [
+        {
+            name: 'image',
+            visLayer: VisualizationImage(),
+        },
+        {
+            name: 'overlay',
+            visLayer: VisualizationOverlay(),
+        }
+      ]
+});
+
+const app = SymRenderer({
+      patternCreator:    PatternImageCreator,
+      visualization:     visManager, 
+      groupMakerFactory: GroupMakerFactory({defaultName:'Orbifold WP'}),
+      navigator:         new InversiveNavigator(),
+      samples:           makeSamplesArray(presets, 'presets/orbifold/'),
+});
+
+app.run();
+
