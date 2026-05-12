@@ -7,42 +7,14 @@
 
 export const TEX_CAMERA = '[camera]';
 
-import {iDrawPoint, iDrawSegment} from '../../../lib/invlib/IDrawing.js';
-import {add,sub,distance1,eDistance} from '../../../lib/invlib/LinearAlgebra.js';
-
-import {cMul,complexN,transformFromCenterToPoint} from '../../../lib/invlib/ComplexArithmetic.js';
-
-
-
 import {
-    getParam,
-    TORADIANS,
-    cos,sin,asin,log,
-    isDefined, 
-    isFunction,
-    getCanvasPnt,
-} from '../../../lib/invlib/Utilities.js';
-
-import {
-  iCumPackTransforms,
-   iPackRefCumulativeCount,
-   iPackTransforms,
-} from '../../../lib/invlib/Inversive.js';
-
-
-import {
-    TW as twgl,
-    iSplane,
-    objectToString,
-    iTransformU4,
-} from '../../../lib/invlib/modules.js';
-
-// We need this to reset the centers into the FD. 
-// TBD This kind of functionality will be lifted off into some sort
-// of texture/layer controller class.
-import {
-    WallPaperGroup_General
-} from './WallPaperGroup_General.js'
+    iDrawPoint, iDrawSegment,
+    sub, distance1, eDistance,
+    transformFromCenterToPoint,
+    getParam, asin, isDefined, isFunction, getCanvasPnt,
+    iCumPackTransforms, iPackRefCumulativeCount, iPackTransforms,
+    twgl, iSplane, objectToString, iTransformU4,
+} from './modules.js';
 
 const DEFAULT_TEXTURE_SIZE = 1024;
 

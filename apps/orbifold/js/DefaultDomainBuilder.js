@@ -1,29 +1,9 @@
 import {
-  iMakeDefaultGenNames, 
-  iGetMaxRefCount, 
-  iPackDomain,
-  iPackRefCount,
-  iPackTransforms,
-  iCumPackTransforms,
-  iMakeDefaultTransforms,
-  iPackRefCumulativeCount
-  
-} from '../../../lib/invlib/Inversive.js';
-  
-import {
-  iDrawSplane, 
-} from '../../../lib/invlib/IDrawing.js';
-  
-//import {
-//} from '../../../lib/invlib/Utilities.js';
-
-import {
-  isDefined, 
-  getParam,
-  splaneToString,
-  transformToString,
-  objectToString,
-} from '../../../lib/invlib/modules.js';
+    iMakeDefaultGenNames, iGetMaxRefCount,
+    iCumPackTransforms, iMakeDefaultTransforms, iPackRefCumulativeCount,
+    iDrawSplane,
+    isDefined, getParam, splaneToString, transformToString, objectToString,
+} from './modules.js';
 
 
 //

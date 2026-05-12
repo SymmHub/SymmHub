@@ -4,7 +4,7 @@ export {
 
 export {
      WallPaperGroup_General
-} from './WallPaperGroup_General.js';
+} from '../../../lib/orbilib/orbilib.js';
 
 export {
      SymmetryUIController
@@ -110,3 +110,68 @@ import * as twgl from '../../../lib/extlib/twgl-full.module.js';
 export {
     twgl
 }
+
+// ── Extra Utilities (not re-exported by invlib.js) ────────────────────────
+export {
+    objectToString,
+    transformToString,
+    sign,
+    SHORTEPSILON,
+    TORADIANS,
+    asin,
+    log,
+} from '../../../lib/invlib/Utilities.js';
+
+// ── Extra Inversive symbols ───────────────────────────────────────────────
+export {
+    nearArcQ,
+    iMakeDefaultGenNames,
+    iGetMaxRefCount,
+    iPackDomain,
+    iPackRefCount,
+    iCumPackTransforms,
+    iMakeDefaultTransforms,
+    iPackRefCumulativeCount,
+} from '../../../lib/invlib/Inversive.js';
+
+// ── Extra IDrawing symbols ────────────────────────────────────────────────
+export {
+    iDrawLargeCircle,
+    iDrawPoint,
+    iDrawSegment,
+} from '../../../lib/invlib/IDrawing.js';
+
+// ── ISplane ───────────────────────────────────────────────────────────────
+export {
+    iSplane,
+    splaneToString,
+    SPLANE_POINT,
+    SPLANE_PLANE,
+    SPLANE_SPHERE,
+} from '../../../lib/invlib/ISplane.js';
+
+// ── Extra LinearAlgebra symbols ───────────────────────────────────────────
+export {
+    getCopy,
+    distance1,
+    eDistance,
+} from '../../../lib/invlib/LinearAlgebra.js';
+
+// ── Extra ComplexArithmetic symbols ──────────────────────────────────────
+export {
+    sPlaneThroughPerp,
+    sPlaneSwapping,
+    complexN,
+    cMul,
+    poincareMobiusTranslateFromToByD,
+    sPlanesMovingEdge1ToEdge2,
+    poincareMobiusFromSPlanesList,
+    transformFromCenterToPoint,
+} from '../../../lib/invlib/ComplexArithmetic.js';
+
+// ── orbilib — WallPaperGroup_General constants & keys ────────────────────
+export {
+    TWISTMAXVALUE, TWISTMINVALUE,
+    LENGTHMAXVALUE, LENGTHMINVALUE,
+    lengthKeys, twistKeys,
+} from '../../../lib/orbilib/orbilib.js';

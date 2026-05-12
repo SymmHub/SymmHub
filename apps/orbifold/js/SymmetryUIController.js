@@ -9,54 +9,20 @@ import {
     TWISTMINVALUE,
     LENGTHMAXVALUE,
     LENGTHMINVALUE
-} from './WallPaperGroup_General.js';
+} from './modules.js';
 
 import {
-    
-    lengthKeys,
-    twistKeys
-    
-} from './OrbifoldGeometrization.js';
-
-import {
-    objectToString,
-    isDefined, 
-    getParam,
-    sign,
-    isFunction,
-    sin,
-    cos,
-    abs,
-    sqrt,
-    SHORTEPSILON
-} from '../../../lib/invlib/Utilities.js';
-
-import {
-    nearArcQ,
-    iGetFactorizationU4
-} from '../../../lib/invlib/Inversive.js';
-
-import {
-    iDrawSplane,iDrawLargeCircle,iDrawPoint
-} from '../../../lib/invlib/IDrawing.js';
-
-import {
-    iPoint
-} from '../../../lib/invlib/ISplane.js';
-
-
-import {
-    getCopy
-} from '../../../lib/invlib/LinearAlgebra.js';  
-
-import {
-    sPlaneThroughPerp,
-    sPlaneSwapping,
-    complexN,
+    lengthKeys, twistKeys,
+    objectToString, isDefined, getParam, sign, isFunction,
+    sin, cos, abs, sqrt, SHORTEPSILON,
+    nearArcQ, iGetFactorizationU4,
+    iDrawSplane, iDrawPoint,
+    getCopy,
+    sPlaneThroughPerp, sPlaneSwapping, complexN,
     poincareMobiusTranslateFromToByD,
     sPlanesMovingEdge1ToEdge2,
-    poincareMobiusFromSPlanesList
-} from '../../../lib/invlib/ComplexArithmetic.js';
+    poincareMobiusFromSPlanesList,
+} from './modules.js';
 
 const DEBUG = false;
 const MYNAME = 'SymmetryUIController';
