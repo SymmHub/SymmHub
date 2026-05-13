@@ -19,7 +19,7 @@ import {
         samples: makeSamplesArray(presets_wp, 'presets/wp/'),
         groupMakerFactory: GroupMakerFactory({defaultName: 'Wallpaper'}), 
         navigator:   new InversiveNavigator(),
-        useBinaryFiles:true,
+        //useBinaryFiles:true,
     });
     ss.run();
 
