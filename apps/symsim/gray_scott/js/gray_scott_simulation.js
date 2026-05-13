@@ -29,11 +29,18 @@ import {
   fa2str,
   fa2stra,
   str2fa,
+
+  BinaryLoader,
+  getCurrentDocument,
   
 } from './modules.js';
 
 
-const debug = false;
+
+const DEBUG = false;
+
+/** Set to true to save/load simulation buffers as raw binary (.json.bin) instead of base64. */
+const useBinaryData = true;
 
 
 const MYNAME = 'Gray-Scott';
@@ -183,7 +190,7 @@ function GrayScottSimulation(){
   
     function init(context) {
 
-        if (debug)
+        if (DEBUG)
             console.log(MYNAME + '.init()', context);
         glCtx = context;
         let res = initFragments(gsFragments);
@@ -195,7 +202,7 @@ function GrayScottSimulation(){
 
         let t0 = getTime();
         gsProgs.getProgram(glCtx.gl, 'gsSimulation'); // triggers compileAll
-        if (debug)
+        if (DEBUG)
             console.log(`programBuilder() ready: ${getTime()-t0} ms`);
 
         initBuffers();
@@ -209,7 +216,7 @@ function GrayScottSimulation(){
 
         let uv = gs_uniformUV(config.feedCoeff, config.killCoeff);
         let dig = 6;
-        if (debug)
+        if (DEBUG)
             console.log(`feed: ${config.feedCoeff.toFixed(dig)} kill: ${config.killCoeff.toFixed(dig)} uv: [${uv[0].toFixed(dig)},${uv[1].toFixed(dig)}]`);
 
     }
@@ -322,7 +329,7 @@ function GrayScottSimulation(){
 
   function scheduleRepaint(){
     
-    //if(debug)console.log('scheduleRepaint()', MYNAME);
+    //if(DEBUG)console.log('scheduleRepaint()', MYNAME);
     gNeedTexRender = true;
     informListeners();
     
@@ -333,7 +340,7 @@ function GrayScottSimulation(){
   //
   function onClearSimUni(){
     
-    if(debug)console.log(`${MYNAME}.onClearSimIni()`);
+    if(DEBUG)console.log(`${MYNAME}.onClearSimIni()`);
     let uv = gs_uniformUV(config.feedCoeff, config.killCoeff);
     clearSimBuffer([uv[0],uv[1],0,1]);
     scheduleRepaint();
@@ -617,7 +624,7 @@ function GrayScottSimulation(){
     
   function addEventListener(evtType, listener){
       
-    if(debug)console.log(`${MYNAME}.addEventListener(${evtType}, ${listener})`);            
+    if(DEBUG)console.log(`${MYNAME}.addEventListener(${evtType}, ${listener})`);            
     gEventDispatcher.addEventListener(evtType, listener);
     
   }
@@ -629,14 +636,14 @@ function GrayScottSimulation(){
     
   function getSimBuffer(){
     
-    if(debug)console.log(`${MYNAME}.getSimBuffer()`);            
+    if(DEBUG)console.log(`${MYNAME}.getSimBuffer()`);            
     return gSimBuffer;
     
   }
 
   function getPatternData(){
     
-    if(debug)console.log(`${MYNAME}.getPatternData()`);            
+    if(DEBUG)console.log(`${MYNAME}.getPatternData()`);            
     return makePatternData({mainBuffer: gSimBuffer});
     
   }
@@ -664,7 +671,7 @@ function GrayScottSimulation(){
   //
   function clearSimUni(){
     
-    if(debug)console.log(`${MYNAME}.onClearSimIni()`);
+    if(DEBUG)console.log(`${MYNAME}.onClearSimIni()`);
     let uv = gs_uniformUV(config.feedCoeff, config.killCoeff);
     clearSimBuffer([uv[0],uv[1],0,1]);
     scheduleRepaint();
@@ -676,7 +683,7 @@ function GrayScottSimulation(){
   //
   function clearSim10(){
     
-    if(debug)console.log(`${MYNAME}.onClearSim10()`);
+    if(DEBUG)console.log(`${MYNAME}.onClearSim10()`);
     clearSimBuffer([1,0,0,1]);
     scheduleRepaint();
   }
@@ -686,7 +693,7 @@ function GrayScottSimulation(){
   //
   function applyNoise(){
     
-    if(debug)console.log(`${MYNAME}.applyNoise()`);
+    if(DEBUG)console.log(`${MYNAME}.applyNoise()`);
     
     let gl = glCtx.gl;
     let program = progGsNoise1.program;
@@ -724,10 +731,10 @@ function GrayScottSimulation(){
   function applySymNoise(){
     
     let group = gGroup;
-    if(debug)console.log(`${MYNAME}.onSymNoise() group:`, group);
+    if(DEBUG)console.log(`${MYNAME}.onSymNoise() group:`, group);
     let noiseCfg = config.noise;    
     let gens = group.getReverseITransforms();
-    if(debug)console.log(`${MYNAME}.gens:`, gens);
+    if(DEBUG)console.log(`${MYNAME}.gens:`, gens);
     let trans = GroupUtils.makeTransforms(gens, {maxWordLength: noiseCfg.noiseCrownWordCount});
     //console.log('trans.length:', trans.length);    
     //console.log('trans:', trans);
@@ -744,7 +751,7 @@ function GrayScottSimulation(){
     program.setUniforms(ctUni);
     
     let fd = group.getFundDomain();
-    if(debug) console.log(`${MYNAME}.fd:`, fd);    
+    if(DEBUG) console.log(`${MYNAME}.fd:`, fd);    
     let crownDataSampler = DataPacking.createGroupDataSampler(gl);    
     DataPacking.packGroupToSampler(gl, crownDataSampler, {s: fd, t:trans});
           
@@ -814,13 +821,13 @@ function GrayScottSimulation(){
     }
 
     function onSymmetryChanged(){
-        if(debug)console.log(`${MYNAME}.onSymmetryChanged()`);
+        if(DEBUG)console.log(`${MYNAME}.onSymmetryChanged()`);
         scheduleRepaint();
     }
 
     function onDoStep(){
         
-        if(debug)console.log(`${MYNAME}.onDoStep()`);
+        if(DEBUG)console.log(`${MYNAME}.onDoStep()`);
                 
         let gl = glCtx.gl;      
         
@@ -892,7 +899,7 @@ function GrayScottSimulation(){
           }                  
         }
         
-        if(debug)console.log(`${MYNAME}.config.symmetry.symSim: `, config.symmetry.symSim);
+        if(DEBUG)console.log(`${MYNAME}.config.symmetry.symSim: `, config.symmetry.symSim);
         if(config.symmetry.symSim && sInterval != config.symmetry.symInteval){
             
           if(false)console.log(`symInterval: ${symInterval} last applySymmetry()`);
@@ -903,66 +910,79 @@ function GrayScottSimulation(){
         scheduleRepaint();
     }
 
-    function getInternalBufferData(){
-        
-        let gl = glCtx.gl; 
-        let width = gSimBuffer.width;
-        let height = gSimBuffer.height;
-
+    function readSimBuffer() {
+        const gl     = glCtx.gl;
+        const width  = gSimBuffer.width;
+        const height = gSimBuffer.height;
+        const fa     = new Float32Array(2 * width * height);
         gl.bindFramebuffer(gl.FRAMEBUFFER, gSimBuffer.read.fbo);
-        
-        const data = new Float32Array(2*width*height);
-        //const format = gl.RGBA;
-        const format = gl.RG;
-        const type = gl.FLOAT;
-        gl.readPixels(0, 0, width, height, format, type, data);
-        return fa2str(data);
-        //return fa2stra(data);
+        gl.readPixels(0, 0, width, height, gl.RG, gl.FLOAT, fa);
+        return fa;
+    }
+
+    function getInternalBufferData(){
+        return fa2str(readSimBuffer());
+    }
+
+    function writeSimBuffer(fa, width, height) {
+        const gl = glCtx.gl;
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+        gSimBuffer.read.attach(0);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG32F, width, height, 0, gl.RG, gl.FLOAT, fa);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        scheduleRepaint();
     }
 
     function setInternalBufferData(data){
-        
-        console.log('setInternalBufferData()');
-        
-        let gl = glCtx.gl; 
-        let fdata = str2fa(data.buffer);
-        console.log('fdata.length:  ', fdata.length);
-        console.log('fdata: ', fdata[0], fdata[1], fdata[2], fdata[3], '...');
-        const level = 0;
-        const internalFormat = gl.RG32F; 
-        const width = data.width;
-        const height = data.height;
-        const border = 0;
-        const format = gl.RG; 
-        const type = gl.FLOAT;
-        
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false); 
-        gSimBuffer.read.attach(0); 
-        gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border,format, type, fdata);  
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); 
-        
-        //gSimBuffer.swap();
-        scheduleRepaint();
-                        
-        
+        if(DEBUG)console.log('setInternalBufferData()');
+        const fdata = str2fa(data.buffer);
+        if(DEBUG)console.log('fdata.length:  ', fdata.length);
+        if(DEBUG)console.log('fdata: ', fdata[0], fdata[1], fdata[2], fdata[3], '...');
+        writeSimBuffer(fdata, data.width, data.height);
     }
 
     function getBufferData(){
         console.log('getBufferData:');
-        let data = {
-            width: gSimBuffer.width, 
-            height: gSimBuffer.height, 
-            buffer: getInternalBufferData()
-        };
-        //console.log('getBufferData() return: ', data);        
-        return data;
+        const store  = getCurrentDocument()?.getBinaryStore();
+        const width  = gSimBuffer.width;
+        const height = gSimBuffer.height;
+        if (useBinaryData && store) {
+            // ── Binary mode ───────────────────────────────────────────────
+            const fa        = readSimBuffer();
+            const chunkName = store.getChunkName(`${MYNAME}.simData`);
+            store.append({ name: chunkName, data: fa, dataInfo: { type: 'Float32', width, height, components: 2,  } });
+            return { width, height, binaryData: chunkName };
+        } else {
+            // ── Legacy mode: base64 ─────────────────────────────────────────
+            return { width, height, buffer: getInternalBufferData() };
+        }
     }
 
     function setBufferData(data){
-        
-        console.log(`setBufferData: [${data.width} x ${data.height}] = ${data.width*data.height}`);
-        setInternalBufferData(data);
-        
+        const { width, height } = data;
+        if (data.binaryData) {
+            // ── Binary mode ───────────────────────────────────────────────
+            const loader = getCurrentDocument()?.getBinaryLoader();
+            if (!loader) {
+                console.error(`${MYNAME}: simulation buffer "${data.binaryData}" could not be loaded — binary sidecar (.bin) file is missing or was not provided. The simulation will start from its default initial state.`);
+                return;
+            }
+            const chunkRef = loader.getChunkRef(data.binaryData);
+            if (!chunkRef) {
+                console.error(`${MYNAME}: chunk "${data.binaryData}" not found in binary sidecar manifest.`);
+                return;
+            }
+            if (!chunkRef.isValid()) {
+                console.error(`${MYNAME}: binary sidecar is incomplete or corrupt — chunk "${data.binaryData}" declares ${chunkRef.byteLength} bytes but the .bin file only has ${chunkRef._buffer.byteLength} bytes. The simulation will start from its default initial state.`);
+                return;
+            }
+            console.log(`setBufferData (binary): [${width} x ${height}]`);
+            writeSimBuffer(chunkRef.asFloat32Array(), width, height);
+        } else {
+            // ── Legacy mode ───────────────────────────────────────────────
+            if(DEBUG)console.log(`setBufferData (legacy): [${width} x ${height}]`);
+            setInternalBufferData(data);
+        }
     }
 
     // ----------------------
@@ -973,7 +993,7 @@ function GrayScottSimulation(){
 
     function setGroup(group){
       
-        if(debug)console.log(`${MYNAME}.setGroup()`);      
+        if(DEBUG)console.log(`${MYNAME}.setGroup()`);      
         gGroup = group;
         DataPacking.packGroupToSampler(glCtx.gl, gGroupDataSampler, gGroup); 
         scheduleRepaint();
@@ -987,26 +1007,26 @@ function GrayScottSimulation(){
 
     function getImage(){
       
-        if(debug)console.log(`${MYNAME}.getImage()`);            
+        if(DEBUG)console.log(`${MYNAME}.getImage()`);            
       
     }
   
     function doStep(){
       
-        if(debug)console.log(`${MYNAME}.doStep()`);                  
+        if(DEBUG)console.log(`${MYNAME}.doStep()`);                  
         onDoStep();
     
     }
 
     //function repaint(){
       
-    //    if(debug)console.log(`${MYNAME}.repaint()`);                  
+    //    if(DEBUG)console.log(`${MYNAME}.repaint()`);                  
     
     //}
   
     function getPlotData(){
       
-        if(debug)console.log(`${MYNAME}.getPlotData()`);                  
+        if(DEBUG)console.log(`${MYNAME}.getPlotData()`);                  
       
     } 
   

@@ -80,9 +80,14 @@ export {
     clamp01,
     getParam,
 
+    BinaryStore,
+    BinaryLoader,
+    ChunkRef,
+    getCurrentDocument,
 
 }
 from '../../../../lib/uilib/modules.js';
+
 
 
 
