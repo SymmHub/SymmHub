@@ -321,7 +321,8 @@ button.focus-params.active {
 
 #leftGUI,
 #rightGUI,
-#viewsGUI {
+#viewsGUI,
+#configGUI {
   padding: 10px 6px 10px 3px;
   background-color: var(--background-color);
   overflow-y: auto;
@@ -342,6 +343,11 @@ button.focus-params.active {
 #rightGUI {
   max-height: 100dvh;
   direction: rtl;
+}
+
+#configGUI {
+  max-height: calc(100dvh - 20px);
+  direction: ltr;
 }
 
 #leftGUI {
