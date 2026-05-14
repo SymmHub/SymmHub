@@ -8,7 +8,11 @@ img.thumbnail {
 
 .thumbnail-image {
     border: 1px solid #888;
-    width:128px; height: 128px;
+    width:  128px;
+    height: 128px;
+    display: block;
+    object-fit: contain;
+    background-color: #e8e8e8;  /* fills letterbox / pillarbox area */
 }
 
 .thumbnail-caption {
