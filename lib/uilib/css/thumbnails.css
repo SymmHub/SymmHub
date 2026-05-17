@@ -49,3 +49,11 @@ img.thumbnail {
 .thumbnail-container.selected {
     background-color: #CDF;
 }
+
+/* ParamImage thumbnail row inside dat.gui folder.
+ * dat.gui collapses by setting height:0 on li elements (via .dg .closed li).
+ * We must NOT set height inline on the <li> or it blocks that rule.
+ * This class allows auto-height when the folder is open.              */
+.dg ul:not(.closed) > li.param-image-row {
+    height: auto;
+}
