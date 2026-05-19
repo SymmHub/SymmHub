@@ -5,6 +5,8 @@ import {
     VisualizationManager,
     VisualizationImage,
     VisualizationOverlay,
+    ImageLayerFactory,
+    ImageLayerUpgradeMapping,
     SymRenderer,
     makeSamplesArray,
     PatternsCreator,
@@ -15,16 +17,12 @@ import {
 } from './presets.js';
  
 const visManager = VisualizationManager({
-      visLayers: [
-        {
-            name: 'image',
-            visLayer: VisualizationImage(),
-        },
-        {
-            name: 'overlay',
-            visLayer: VisualizationOverlay(),
-        }
-      ]
+    layerFactory:   ImageLayerFactory,
+    upgradeMapping: ImageLayerUpgradeMapping,
+    visLayers: [
+        { name: 'image',   visLayer: VisualizationImage(  { config: { enabled: true  } }) },
+        { name: 'overlay', visLayer: VisualizationOverlay({ config: { enabled: false } }) },
+    ],
 });
 
 const app = SymRenderer({
