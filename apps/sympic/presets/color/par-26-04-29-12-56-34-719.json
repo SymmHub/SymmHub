@@ -44,6 +44,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 09",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -66,6 +67,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 06",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -88,6 +90,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 08",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -110,6 +113,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "Tafel_007_03_over",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -132,6 +136,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 01",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -154,6 +159,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 01",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -176,6 +182,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 01",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -198,6 +205,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 01",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -220,6 +228,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 01",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -242,6 +251,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 01",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -264,6 +274,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 01",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -286,6 +297,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 01",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -308,6 +320,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 01",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -330,6 +343,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 01",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -351,132 +365,142 @@
         "visualization": {
             "className": "VisualizationManager",
             "params": {
-                "imageColorSym": {
-                    "className": "VisualizationColorSym",
+                "layers": {
+                    "className": "ObjArray",
                     "params": {
-                        "enabled": true,
-                        "opacity": 1,
-                        "imageId": "im1 im2 im3",
-                        "permutations": "ba ba ba ",
-                        "texPermIndex": 0,
-                        "useCrown": true,
-                        "leftCoset": false,
-                        "mask": "",
-                        "interpolation": "linear",
-                        "useMipmap": false,
-                        "colorTiles": {
-                            "className": "ColorTiles",
-                            "params": {
-                                "enabled": false,
-                                "count": 6,
-                                "palette": "pastel",
-                                "permIndex": 0,
-                                "alpha": 1,
-                                "colorMask": "",
-                                "aR": 0.5,
-                                "aG": 0.5,
-                                "aB": 0.5,
-                                "bR": 0.5,
-                                "bG": 0.5,
-                                "bB": 0.5,
-                                "cR": 1,
-                                "cG": 1,
-                                "cB": 1,
-                                "dR": 0,
-                                "dG": 0.33,
-                                "dB": 0.67
-                            }
-                        }
-                    }
-                },
-                "overlay": {
-                    "className": "VisualizationOverlay",
-                    "params": {
-                        "enabled": true,
-                        "opacity": 1,
-                        "fundDomain": {
-                            "fill": {
-                                "enabled": true,
-                                "color": "#ff000023"
+                        "id": "layers",
+                        "children": [
+                            {
+                                "className": "VisualizationColorSym",
+                                "params": {
+                                    "name": "imageColorSym",
+                                    "enabled": true,
+                                    "opacity": 1,
+                                    "imageId": "im1 im2 im3",
+                                    "permutations": "ba ba ba ",
+                                    "texPermIndex": 0,
+                                    "useCrown": true,
+                                    "leftCoset": false,
+                                    "mask": "",
+                                    "interpolation": "linear",
+                                    "useMipmap": false,
+                                    "colorTiles": {
+                                        "className": "ColorTiles",
+                                        "params": {
+                                            "enabled": false,
+                                            "count": 6,
+                                            "palette": "pastel",
+                                            "permIndex": 0,
+                                            "alpha": 1,
+                                            "colorMask": "",
+                                            "aR": 0.5,
+                                            "aG": 0.5,
+                                            "aB": 0.5,
+                                            "bR": 0.5,
+                                            "bG": 0.5,
+                                            "bB": 0.5,
+                                            "cR": 1,
+                                            "cG": 1,
+                                            "cB": 1,
+                                            "dR": 0,
+                                            "dG": 0.33,
+                                            "dB": 0.67
+                                        }
+                                    }
+                                }
                             },
-                            "outline": {
-                                "enabled": false,
-                                "width": 1,
-                                "color": "#000000AA",
-                                "shadowsWidth": 10,
-                                "shadowsColor": "#0000FFAA"
+                            {
+                                "className": "VisualizationOverlay",
+                                "params": {
+                                    "name": "overlay",
+                                    "enabled": true,
+                                    "opacity": 1,
+                                    "fundDomain": {
+                                        "fill": {
+                                            "enabled": true,
+                                            "color": "#ff000023"
+                                        },
+                                        "outline": {
+                                            "enabled": false,
+                                            "width": 1,
+                                            "color": "#000000AA",
+                                            "shadowsWidth": 10,
+                                            "shadowsColor": "#0000FFAA"
+                                        }
+                                    },
+                                    "buffer": {
+                                        "fill": {
+                                            "enabled": false,
+                                            "color": "#00FF0022"
+                                        },
+                                        "outline": {
+                                            "enabled": false,
+                                            "width": 1,
+                                            "color": "#00AA00AA"
+                                        }
+                                    },
+                                    "isolines": {
+                                        "enabled": false,
+                                        "type": "u",
+                                        "step": 0.1,
+                                        "offset": 0,
+                                        "width": 1,
+                                        "levels": 1,
+                                        "color": "#000000ff"
+                                    },
+                                    "tiling": {
+                                        "fill": {
+                                            "enabled": false,
+                                            "color": "#FFFF0055"
+                                        },
+                                        "outline": {
+                                            "enabled": false,
+                                            "width": 1,
+                                            "color": "#000000FF"
+                                        }
+                                    },
+                                    "limitset": {
+                                        "enabled": false,
+                                        "color": "#000000ff",
+                                        "width": 1
+                                    },
+                                    "generators": {
+                                        "enabled": false,
+                                        "width": 2,
+                                        "color": "#0000AAAA",
+                                        "shadow": {
+                                            "enabled": true,
+                                            "color": "#0000AA55",
+                                            "width": 10
+                                        }
+                                    },
+                                    "worldGrid": {
+                                        "enabled": false,
+                                        "type": "cartesian",
+                                        "stepx": 0.1,
+                                        "stepy": 0.1,
+                                        "offsetx": 0,
+                                        "offsety": 0,
+                                        "levels": 1,
+                                        "color": "#000000ff",
+                                        "width": 1
+                                    },
+                                    "screenGrid": {
+                                        "enabled": false,
+                                        "step": 0.02,
+                                        "stepAuto": true,
+                                        "color": "#000000ff",
+                                        "width": 1
+                                    },
+                                    "ruler": {
+                                        "enabled": false,
+                                        "color": "#000000ff",
+                                        "background": "#AAAAAAAA",
+                                        "width": 20
+                                    }
+                                }
                             }
-                        },
-                        "buffer": {
-                            "fill": {
-                                "enabled": false,
-                                "color": "#00FF0022"
-                            },
-                            "outline": {
-                                "enabled": false,
-                                "width": 1,
-                                "color": "#00AA00AA"
-                            }
-                        },
-                        "isolines": {
-                            "enabled": false,
-                            "type": "u",
-                            "step": 0.1,
-                            "offset": 0,
-                            "width": 1,
-                            "levels": 1,
-                            "color": "#000000ff"
-                        },
-                        "tiling": {
-                            "fill": {
-                                "enabled": false,
-                                "color": "#FFFF0055"
-                            },
-                            "outline": {
-                                "enabled": false,
-                                "width": 1,
-                                "color": "#000000FF"
-                            }
-                        },
-                        "limitset": {
-                            "enabled": false,
-                            "color": "#000000ff",
-                            "width": 1
-                        },
-                        "generators": {
-                            "enabled": false,
-                            "width": 2,
-                            "color": "#0000AAAA",
-                            "shadow": {
-                                "enabled": true,
-                                "color": "#0000AA55",
-                                "width": 10
-                            }
-                        },
-                        "worldGrid": {
-                            "enabled": false,
-                            "type": "cartesian",
-                            "stepx": 0.1,
-                            "stepy": 0.1,
-                            "offsetx": 0,
-                            "offsety": 0,
-                            "levels": 1,
-                            "color": "#000000ff",
-                            "width": 1
-                        },
-                        "screenGrid": {
-                            "enabled": false,
-                            "step": 0.01,
-                            "stepAuto": true,
-                            "color": "#000000ff",
-                            "width": 1
-                        },
-                        "ruler": {
-                            "enabled": false,
-                            "color": "#000000ff",
-                            "background": "#AAAAAAAA",
-                            "width": 20
-                        }
+                        ]
                     }
                 }
             }
@@ -529,7 +553,7 @@
             },
             "options": {
                 "useSymm": true,
-                "iterations": 10
+                "iterations": 40
             }
         },
         "tools": {
@@ -621,11 +645,9 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0.013159270863975605,
-                        "centerY": 0.09947588889044154,
-                        "zoom": [
-                            2.0260736201436575
-                        ]
+                        "centerX": 0,
+                        "centerY": 0,
+                        "zoom": 1.5
                     },
                     "options": {
                         "animation": true

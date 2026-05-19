@@ -7,9 +7,9 @@ rem call make_preset ..\presets\frieze\*.json presets_frieze.js
 rem call make_preset ..\presets\spherical\*.json presets_spherical.js
 rem call make_preset ..\presets\klx\*.json presets_klx.js
 rem call make_preset ..\presets\imageArray\*.json presets_imageArray.js
-rem call make_preset ..\presets\color\*.json presets_color.js
 rem 
-call make_preset ..\presets\orbifold\*.json presets_orbifold.js
+call make_preset ..\presets\color\*.json presets_color.js
+rem call make_preset ..\presets\orbifold\*.json presets_orbifold.js
 
 
 pause
