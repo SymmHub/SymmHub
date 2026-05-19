@@ -50,6 +50,10 @@ function VisualizationColorSym(par={}){
         Object.assign(mConfig, par.config);
     }
 
+    // ── id / name management (required by ParamObjArray) ─────────────────────
+    const mIdRef = { id: par.id ?? '' };
+    let mOnIdChange = null;
+
     let mParams = null;
     let mGLCtx = null;
     let mOnChange = null;
@@ -147,6 +151,7 @@ function VisualizationColorSym(par={}){
         let oc = onChange;
 
         return {
+            name: ParamString({ obj: mIdRef, key: 'id', onChange: () => { if (mOnIdChange) mOnIdChange(); } }),
             enabled:       ParamBool({obj: cf, key:'enabled', onChange: oc}),
             opacity:       ParamFloat({obj: cf, key: 'opacity', min: 0, max: 1, step: 0.001, onChange: oc}),
             imageId:       ParamString({obj: cf, key: 'imageId', onChange: oc}),
@@ -287,11 +292,14 @@ function VisualizationColorSym(par={}){
     }
     
     return {
-        getParams:  getParams, 
+        getParams:    getParams,
         getClassName: (() => MYNAME),
-        init:           init,
-        render:         render,
-        get enabled(){return mConfig.enabled;},
+        getId:        () => mIdRef.id,
+        setId:        (id) => { mIdRef.id = id; },
+        setOnIdChange:(fn) => { mOnIdChange = fn; },
+        init:         init,
+        render:       render,
+        get enabled(){ return mConfig.enabled; },
     }
 
 } // function VisualizationColorSym

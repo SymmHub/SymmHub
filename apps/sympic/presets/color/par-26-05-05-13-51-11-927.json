@@ -4,6 +4,32 @@
         "appName": "SymRenderer.Group_WP.PatternImageArray.InversiveNavigator_v1",
         "fileFormatRelease": 1
     },
+    "binary_data": {
+        "file": "par-26-05-05-13-51-11-927.json.bin",
+        "chunks": {
+            "texImage": {
+                "type": "image/png",
+                "byteOffset": 0,
+                "byteLength": 1479214,
+                "meta": {
+                    "filename": "Tafel_024_05_over.png"
+                }
+            },
+            "texImage_1": {
+                "type": "image/png",
+                "byteOffset": 1479216,
+                "byteLength": 1527759,
+                "meta": {
+                    "filename": "Tafel_022_07_over.png"
+                }
+            },
+            "texImage_2": {
+                "type": "image/png",
+                "byteOffset": 3006976,
+                "byteLength": 89998
+            }
+        }
+    },
     "params": {
         "files": {},
         "display": {
@@ -43,7 +69,10 @@
                                         "texture": {
                                             "className": "TextureFile",
                                             "params": {
-                                                "texName": "haeckel 13",
+                                                "texName": "Custom",
+                                                "image": {
+                                                    "__chunk": "texImage"
+                                                },
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -65,7 +94,10 @@
                                         "texture": {
                                             "className": "TextureFile",
                                             "params": {
-                                                "texName": "haeckel 07",
+                                                "texName": "Custom",
+                                                "image": {
+                                                    "__chunk": "texImage_1"
+                                                },
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -87,7 +119,10 @@
                                         "texture": {
                                             "className": "TextureFile",
                                             "params": {
-                                                "texName": "haeckel 08",
+                                                "texName": "Custom",
+                                                "image": {
+                                                    "__chunk": "texImage_2"
+                                                },
                                                 "showFrame": true,
                                                 "texSize": 512
                                             }
@@ -109,7 +144,7 @@
         "visualization": {
             "className": "VisualizationManager",
             "params": {
-                "image": {
+                "imageColorSym": {
                     "className": "VisualizationColorSym",
                     "params": {
                         "enabled": true,
@@ -380,10 +415,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0.0583547102724537,
-                        "centerY": 0.13926381171157196,
+                        "centerX": -0.014877691191642669,
+                        "centerY": 0.11912824514453296,
                         "zoom": [
-                            1.9359343453618625
+                            1.1979235657435066
                         ]
                     },
                     "options": {

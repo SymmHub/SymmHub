@@ -13,18 +13,19 @@ import {
 import {
     presets
 } from './presets_spherical.js';
+import { SympixLayerFactory } from './SympixLayerFactory.js';
  
+
 const visManager = VisualizationManager({
-      visLayers: [
-        {
-            name: 'image',
-            visLayer: VisualizationImage(),
-        },
-        {
-            name: 'overlay',
-            visLayer: VisualizationOverlay(),
-        }
-      ]
+    layerFactory: SympixLayerFactory,
+    upgradeMapping: [
+        { key: 'image',   cls: 'VisualizationImage'   },
+        { key: 'overlay', cls: 'VisualizationOverlay'  },
+    ],
+    visLayers: [
+        { name: 'image',   visLayer: VisualizationImage(  { config: { enabled: true  } }) },
+        { name: 'overlay', visLayer: VisualizationOverlay({ config: { enabled: false } }) },
+    ],
 });
 
 const app = SymRenderer({
