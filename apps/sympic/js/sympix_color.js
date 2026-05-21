@@ -5,6 +5,7 @@ import {
     VisualizationManager,
     VisualizationOverlay,
     VisualizationColorSym,
+    VisualizationColorTiles,
     VisualizationImage,
     ObjectFactory,
     SymRenderer,
@@ -38,9 +39,10 @@ function SympixLayerFactory(getGLCtx, getOnChange, getChildren) {
     return ObjectFactory({
         defaultName: 'VisualizationColorSym',
         infoArray: [
-            { name: 'VisualizationColorSym', creator: make(VisualizationColorSym, 'imageColorSym') },
-            { name: 'VisualizationImage',    creator: make(VisualizationImage,    'image'        ) },
-            { name: 'VisualizationOverlay',  creator: make(VisualizationOverlay,  'overlay'      ) },
+            { name: 'VisualizationColorSym',   creator: make(VisualizationColorSym, 'imageColorSym') },
+            { name: 'VisualizationColorTiles', creator: make(VisualizationColorTiles, 'colorTiles') },
+            { name: 'VisualizationImage',      creator: make(VisualizationImage,    'image'        ) },
+            { name: 'VisualizationOverlay',    creator: make(VisualizationOverlay,  'overlay'      ) },
         ],
     });
 }
@@ -48,11 +50,13 @@ function SympixLayerFactory(getGLCtx, getOnChange, getChildren) {
 const visManager = VisualizationManager({
     layerFactory: SympixLayerFactory,
     upgradeMapping: [
-        { key: 'imageColorSym', cls: 'VisualizationColorSym' },
-        { key: 'image',         cls: 'VisualizationImage'    },
-        { key: 'overlay',       cls: 'VisualizationOverlay'  },
+        { key: 'imageColorSym', cls: 'VisualizationColorSym'   },
+        { key: 'colorTiles',    cls: 'VisualizationColorTiles' },
+        { key: 'image',         cls: 'VisualizationImage'      },
+        { key: 'overlay',       cls: 'VisualizationOverlay'    },
     ],
     visLayers: [
+        { name: 'colorTiles',    visLayer: VisualizationColorTiles({ config: { enabled: true  } }) },
         { name: 'imageColorSym', visLayer: VisualizationColorSym({ config: { enabled: true  } }) },
         { name: 'overlay',       visLayer: VisualizationOverlay( { config: { enabled: false } }) },
     ],

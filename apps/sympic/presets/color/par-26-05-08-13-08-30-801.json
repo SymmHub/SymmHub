@@ -141,6 +141,45 @@
                         "id": "layers",
                         "children": [
                             {
+                                "className": "VisualizationColorTiles",
+                                "params": {
+                                    "name": "colorTiles",
+                                    "enabled": true,
+                                    "opacity": 0.2,
+                                    "permutations": "adbc badc acdb badc ",
+                                    "leftCoset": false,
+                                    "permIndex": 0,
+                                    "mask": "100",
+                                    "colorTiles": {
+                                        "className": "ColorTiles",
+                                        "params": {
+                                            "count": 6,
+                                            "palette": "pastel",
+                                            "a": {
+                                                "R": 0.5,
+                                                "G": 0.5,
+                                                "B": 0.5
+                                            },
+                                            "b": {
+                                                "R": 0.5,
+                                                "G": 0.5,
+                                                "B": 0.5
+                                            },
+                                            "c": {
+                                                "R": 1,
+                                                "G": 1,
+                                                "B": 1
+                                            },
+                                            "d": {
+                                                "R": 0,
+                                                "G": 0.33,
+                                                "B": 0.67
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
                                 "className": "VisualizationColorSym",
                                 "params": {
                                     "name": "imageColorSym",
@@ -148,35 +187,12 @@
                                     "opacity": 1,
                                     "imageId": "im3 im2 im1 im4",
                                     "permutations": "adbc badc acdb badc ",
-                                    "texPermIndex": 0,
+                                    "permIndex": 0,
                                     "useCrown": true,
                                     "leftCoset": false,
                                     "mask": "1111",
                                     "interpolation": "linear",
-                                    "useMipmap": false,
-                                    "colorTiles": {
-                                        "className": "ColorTiles",
-                                        "params": {
-                                            "enabled": true,
-                                            "count": 4,
-                                            "palette": "pastel",
-                                            "permIndex": 0,
-                                            "alpha": 0.4,
-                                            "colorMask": "",
-                                            "aR": 0.5,
-                                            "aG": 0.5,
-                                            "aB": 0.5,
-                                            "bR": 0.5,
-                                            "bG": 0.5,
-                                            "bB": 0.5,
-                                            "cR": 1,
-                                            "cG": 1,
-                                            "cB": 1,
-                                            "dR": 0,
-                                            "dG": 0.33,
-                                            "dB": 0.67
-                                        }
-                                    }
+                                    "useMipmap": false
                                 }
                             },
                             {

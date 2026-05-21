@@ -44,6 +44,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 13",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -66,6 +67,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 07",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -88,6 +90,7 @@
                                             "className": "TextureFile",
                                             "params": {
                                                 "texName": "haeckel 04",
+                                                "image": null,
                                                 "showFrame": false,
                                                 "texSize": 512
                                             }
@@ -109,132 +112,158 @@
         "visualization": {
             "className": "VisualizationManager",
             "params": {
-                "imageColorSym": {
-                    "className": "VisualizationColorSym",
+                "layers": {
+                    "className": "ObjArray",
                     "params": {
-                        "enabled": true,
-                        "opacity": 1,
-                        "imageId": "im3 im2 im1",
-                        "permutations": "adbfcgekhlij badchijefglk acebgdfiklhj badchijefglk ",
-                        "texPermIndex": 0,
-                        "useCrown": true,
-                        "leftCoset": false,
-                        "mask": "100000000000",
-                        "interpolation": "linear",
-                        "useMipmap": false,
-                        "colorTiles": {
-                            "className": "ColorTiles",
-                            "params": {
-                                "enabled": true,
-                                "count": 12,
-                                "palette": "pastel",
-                                "permIndex": 0,
-                                "alpha": 0.4,
-                                "colorMask": "",
-                                "aR": 0.5,
-                                "aG": 0.5,
-                                "aB": 0.5,
-                                "bR": 0.5,
-                                "bG": 0.5,
-                                "bB": 0.5,
-                                "cR": 1,
-                                "cG": 1,
-                                "cB": 1,
-                                "dR": 0,
-                                "dG": 0.33,
-                                "dB": 0.67
-                            }
-                        }
-                    }
-                },
-                "overlay": {
-                    "className": "VisualizationOverlay",
-                    "params": {
-                        "enabled": true,
-                        "opacity": 1,
-                        "fundDomain": {
-                            "fill": {
-                                "enabled": true,
-                                "color": "#ff000014"
+                        "id": "layers",
+                        "children": [
+                            {
+                                "className": "VisualizationColorTiles",
+                                "params": {
+                                    "name": "colorTiles",
+                                    "enabled": true,
+                                    "opacity": 0.5,
+                                    "permutations": "adbfcgekhlij badchijefglk acebgdfiklhj badchijefglk ",
+                                    "leftCoset": true,
+                                    "permIndex": 0,
+                                    "mask": "",
+                                    "colorTiles": {
+                                        "className": "ColorTiles",
+                                        "params": {
+                                            "count": 12,
+                                            "palette": "highContrast",
+                                            "a": {
+                                                "R": 0.5,
+                                                "G": 0.5,
+                                                "B": 0.5
+                                            },
+                                            "b": {
+                                                "R": 0.5,
+                                                "G": 0.5,
+                                                "B": 0.5
+                                            },
+                                            "c": {
+                                                "R": 1,
+                                                "G": 1,
+                                                "B": 1
+                                            },
+                                            "d": {
+                                                "R": 0,
+                                                "G": 0.1,
+                                                "B": 0.2
+                                            }
+                                        }
+                                    }
+                                }
                             },
-                            "outline": {
-                                "enabled": false,
-                                "width": 1,
-                                "color": "#000000AA",
-                                "shadowsWidth": 10,
-                                "shadowsColor": "#0000FFAA"
-                            }
-                        },
-                        "buffer": {
-                            "fill": {
-                                "enabled": true,
-                                "color": "#00FF0022"
+                            {
+                                "className": "VisualizationColorSym",
+                                "params": {
+                                    "name": "imageColorSym",
+                                    "enabled": true,
+                                    "opacity": 1,
+                                    "imageId": "im3 im2 im1",
+                                    "permutations": "adbfcgekhlij badchijefglk acebgdfiklhj badchijefglk ",
+                                    "permIndex": 0,
+                                    "useCrown": true,
+                                    "leftCoset": false,
+                                    "mask": "100000000000",
+                                    "interpolation": "linear",
+                                    "useMipmap": false
+                                }
                             },
-                            "outline": {
-                                "enabled": false,
-                                "width": 1,
-                                "color": "#00AA00AA"
+                            {
+                                "className": "VisualizationOverlay",
+                                "params": {
+                                    "name": "overlay",
+                                    "enabled": true,
+                                    "opacity": 1,
+                                    "fundDomain": {
+                                        "fill": {
+                                            "enabled": true,
+                                            "color": "#ff000014"
+                                        },
+                                        "outline": {
+                                            "enabled": false,
+                                            "width": 1,
+                                            "color": "#000000AA",
+                                            "shadowsWidth": 10,
+                                            "shadowsColor": "#0000FFAA"
+                                        }
+                                    },
+                                    "buffer": {
+                                        "fill": {
+                                            "enabled": true,
+                                            "color": "#00FF0022"
+                                        },
+                                        "outline": {
+                                            "enabled": false,
+                                            "width": 1,
+                                            "color": "#00AA00AA"
+                                        }
+                                    },
+                                    "isolines": {
+                                        "enabled": false,
+                                        "type": "u",
+                                        "step": 0.1,
+                                        "offset": 0,
+                                        "width": 1,
+                                        "levels": 1,
+                                        "color": "#000000ff"
+                                    },
+                                    "tiling": {
+                                        "fill": {
+                                            "enabled": false,
+                                            "color": "#FFFF0055"
+                                        },
+                                        "outline": {
+                                            "enabled": true,
+                                            "width": 1,
+                                            "color": "#000000FF"
+                                        }
+                                    },
+                                    "limitset": {
+                                        "enabled": false,
+                                        "color": "#000000ff",
+                                        "width": 1
+                                    },
+                                    "generators": {
+                                        "enabled": false,
+                                        "width": 2,
+                                        "color": "#0000AAAA",
+                                        "shadow": {
+                                            "enabled": true,
+                                            "color": "#0000AA55",
+                                            "width": 10
+                                        }
+                                    },
+                                    "worldGrid": {
+                                        "enabled": false,
+                                        "type": "cartesian",
+                                        "stepx": 0.1,
+                                        "stepy": 0.1,
+                                        "offsetx": 0,
+                                        "offsety": 0,
+                                        "levels": 1,
+                                        "color": "#000000ff",
+                                        "width": 1
+                                    },
+                                    "screenGrid": {
+                                        "enabled": false,
+                                        "step": 0.05,
+                                        "stepAuto": true,
+                                        "color": "#000000ff",
+                                        "width": 1
+                                    },
+                                    "ruler": {
+                                        "enabled": false,
+                                        "color": "#000000ff",
+                                        "background": "#AAAAAAAA",
+                                        "width": 20
+                                    }
+                                }
                             }
-                        },
-                        "isolines": {
-                            "enabled": false,
-                            "type": "u",
-                            "step": 0.1,
-                            "offset": 0,
-                            "width": 1,
-                            "levels": 1,
-                            "color": "#000000ff"
-                        },
-                        "tiling": {
-                            "fill": {
-                                "enabled": false,
-                                "color": "#FFFF0055"
-                            },
-                            "outline": {
-                                "enabled": true,
-                                "width": 1,
-                                "color": "#000000FF"
-                            }
-                        },
-                        "limitset": {
-                            "enabled": false,
-                            "color": "#000000ff",
-                            "width": 1
-                        },
-                        "generators": {
-                            "enabled": false,
-                            "width": 2,
-                            "color": "#0000AAAA",
-                            "shadow": {
-                                "enabled": true,
-                                "color": "#0000AA55",
-                                "width": 10
-                            }
-                        },
-                        "worldGrid": {
-                            "enabled": false,
-                            "type": "cartesian",
-                            "stepx": 0.1,
-                            "stepy": 0.1,
-                            "offsetx": 0,
-                            "offsety": 0,
-                            "levels": 1,
-                            "color": "#000000ff",
-                            "width": 1
-                        },
-                        "screenGrid": {
-                            "enabled": false,
-                            "step": 0.05,
-                            "stepAuto": true,
-                            "color": "#000000ff",
-                            "width": 1
-                        },
-                        "ruler": {
-                            "enabled": false,
-                            "color": "#000000ff",
-                            "background": "#AAAAAAAA",
-                            "width": 20
-                        }
+                        ]
                     }
                 }
             }

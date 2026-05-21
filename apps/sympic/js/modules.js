@@ -21,6 +21,7 @@ export {
     ParamString,
     setParamValues,
     getParamValues,
+    ParamImage,
 } from '../../../lib/uilib/uilib.js';
 
 export {
@@ -89,6 +90,10 @@ export {
 export {
     VisualizationColorSym
 } from './VisualizationColorSym.js';
+
+export {
+    VisualizationColorTiles
+} from './VisualizationColorTiles.js';
 
 export {
     ColorTiles

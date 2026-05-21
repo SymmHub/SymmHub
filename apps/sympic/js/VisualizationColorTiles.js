@@ -2,55 +2,44 @@ import {
     ParamBool,
     ParamFloat,
     ParamInt,
-    ParamChoice,
     ParamString,
     ParamObj,
     setViewport,
     enableBlending,
-    VisualizationOptions,
     Sympix_programs,
-
-    InterpolationNames, 
-    getInterpolationId, 
 } from './modules.js';
 
-
+import { ColorTiles } from './ColorTiles.js';
 
 
 const DEBUG = true;
-const MYNAME = 'VisualizationColorSym';
-const DataSourceNames = VisualizationOptions.dataSourceNames;
-const DataSourceValues = VisualizationOptions.dataSourceValues;
+const MYNAME = 'VisualizationColorTiles';
+const MAX_COLORS_COUNT = 24;
 
 
 //
-//  Color Symmetry visualization layer.
-//  Renders a PatternImageArray as a composited multi-image using sampler2DArray.
+//  Color Tiles visualization layer.
+//  Renders only the colored cells (colorTiles) of VisualizationColorSym.
+//  Reuses the colorImageArray shader program with uUseCrown and image rendering disabled.
 //
 //  par.config - optional initial values 
 //
-function VisualizationColorSym(par={}){
+function VisualizationColorTiles(par={}){
     
     let mConfig = {
         enabled: true,
         opacity: 1,
-        interpolation: InterpolationNames[0], 
-        dataSource: DataSourceNames[0],
-        useMipmap: false,
-        imageId: '',
         permutations: '',
-        permIndex: 0,
-        useCrown: false,
         leftCoset: false,
-        mask: '',
-
+        permIndex: 0,
+        mask:      '',
     };
 
     if(par.config){
         Object.assign(mConfig, par.config);
     }
 
-    // ── id / name management (required by ParamObjArray) ─────────────────────
+    // ── id / name management ─────────────────────────────────────────────────
     const mIdRef = { id: par.id ?? '' };
     let mOnIdChange = null;
 
@@ -58,34 +47,34 @@ function VisualizationColorSym(par={}){
     let mGLCtx = null;
     let mOnChange = null;
     let mPrograms = null;
-    // Cache for the TEXTURE_2D_ARRAY used in multi-image compositing.
+    // Cache for the TEXTURE_2D_ARRAY
     let mArrayTexCache = { tex: null, count: 0, size: 0 };
 
     // Cell color generator (cosine palette → uCellColors uniform).
-
+    const mColorTiles = ColorTiles({
+        getAlpha:     () => 1.0,
+        getColorMask: () => mConfig.mask,
+        getPermIndex: () => mConfig.permIndex,
+    });
 
     // Parsed permutation data ready to upload as uPermData / uPermSize.
-    // mPermData: flat Uint32Array(MAX_GEN_COUNT * 4) with packed uvec4 values.
     const MAX_GEN_COUNT = 6;
     let mPermData = new Uint32Array(MAX_GEN_COUNT * 4); // zeroed = all identity-like
     let mPermSize = 0;
 
-    // Per-texture-layer alpha mask (0.0 = hidden, 1.0 = visible), padded with 1s.
+    // Per-texture-layer alpha mask filled with 0.0 to disable image rendering.
     const MAX_TEX_COUNT = 24;
-    let mTexAlpha = new Float32Array(MAX_TEX_COUNT).fill(1.0);
+    let mTexAlpha = new Float32Array(MAX_TEX_COUNT).fill(0.0);
 
 
     function onChange(param){
-        
-      if(DEBUG)console.log(`${MYNAME}.onChange()`, param);
+      if(DEBUG) console.log(`${MYNAME}.onChange()`, param);
       if(mOnChange) mOnChange(param);
-        
     }
 
     //
     //  Pack a plain integer array (values 0-23) into a uvec4 using 5-bit packing:
     //  6 values per uint32 component (6 * 5 = 30 bits used, 2 spare).
-    //  Mirrors perm_identity / compose_perms in the shader.
     //
     function packPerm(perm) {
         const result = new Uint32Array(4);
@@ -100,12 +89,7 @@ function VisualizationColorSym(par={}){
     //
     //  Parse mConfig.permutations into packed GPU data.
     //
-    //  Format: space-separated words, each word encodes one permutation.
-    //  Each character maps its position: 'a'->0, 'b'->1, ..., 'z'->25.
-    //  Identity of size n is "abcde..." (first n letters in order).
-    //
     function onPermChanged() {
-
         const str   = mConfig.permutations;
         const words = str ? str.trim().split(/\s+/).filter(Boolean) : [];
 
@@ -124,7 +108,6 @@ function VisualizationColorSym(par={}){
             const word = words[k];
             const perm = Array.from(word).map(c => c.charCodeAt(0) - 97); // 'a'=0
             const packed = packPerm(perm);
-            // Write the 4 uint32s into the flat buffer at slot k.
             mPermData.set(packed, k * 4);
         }
 
@@ -132,51 +115,32 @@ function VisualizationColorSym(par={}){
         onChange(null);
     }
 
-    //
-    //  Parse mConfig.mask into mTexAlpha.
-    //  Each character: '0' → 0.0, anything else → 1.0.
-    //  Positions beyond the string length are filled with 1.0.
-    //
-    function onMaskChanged() {
-        const str = mConfig.mask || '';
-        for (let i = 0; i < MAX_TEX_COUNT; i++) {
-            mTexAlpha[i] = (i < str.length && str[i] === '0') ? 0.0 : 1.0;
-        }
-        if(DEBUG) console.log(`${MYNAME}.onMaskChanged(): "${str}"`, mTexAlpha.slice(0, 8));
-        onChange(null);
-    }
-
     function makeParams(cf) {
-
         let oc = onChange;
-
+        let ocColors = () => {
+            mColorTiles.update();
+            onChange(null);
+        };
         return {
             name: ParamString({ obj: mIdRef, key: 'id', onChange: () => { if (mOnIdChange) mOnIdChange(); } }),
             enabled:       ParamBool({obj: cf, key:'enabled', onChange: oc}),
             opacity:       ParamFloat({obj: cf, key: 'opacity', min: 0, max: 1, step: 0.001, onChange: oc}),
-            imageId:       ParamString({obj: cf, key: 'imageId', onChange: oc}),
             permutations:  ParamString({obj: cf, key: 'permutations', onChange: onPermChanged}),
-            permIndex:     ParamInt({obj: cf, key: 'permIndex', min: 0, max: 23, step: 1, onChange: oc}),
-            useCrown:      ParamBool({obj: cf, key: 'useCrown', onChange: oc}),
             leftCoset:     ParamBool({obj: cf, key: 'leftCoset', onChange: oc}),
-            mask:          ParamString({obj: cf, key: 'mask', onChange: onMaskChanged}),
+            
+            // Moved parameters
+            permIndex:     ParamInt({obj: cf, key: 'permIndex', min: 0, max: MAX_COLORS_COUNT - 1, step: 1, onChange: ocColors}),
+            mask:          ParamString({obj: cf, key: 'mask', onChange: ocColors}),
 
-
-            interpolation: ParamChoice({obj: cf, key: 'interpolation', choice: InterpolationNames, onChange: oc}),
-            useMipmap:     ParamBool({obj: cf, key: 'useMipmap', onChange: oc}),
+            colorTiles:    ParamObj({name: 'tile colors', obj: mColorTiles}),
         }
+    }
 
-    } // function makeParams()
-
-    
-    // Build (or reuse) a TEXTURE_2D_ARRAY containing one layer per DoubleFBO.
-    // doubleFBOs: array of DoubleFBO objects (from patternData.getComponentBuffer()).
-    // Each frame the current read framebuffer of every FBO is blitted into its layer.
+    // Build (or reuse) a dummy TEXTURE_2D_ARRAY.
     function updateImageArrayTex(gl, doubleFBOs) {
         const count = doubleFBOs.length;
-        const size  = doubleFBOs[0].width;  // PatternImage buffers are always square
+        const size  = doubleFBOs[0].width;
 
-        // Recreate only when count or size changes.
         if (!mArrayTexCache.tex || mArrayTexCache.count !== count || mArrayTexCache.size !== size) {
             if (mArrayTexCache.tex) gl.deleteTexture(mArrayTexCache.tex);
             const tex = gl.createTexture();
@@ -189,7 +153,6 @@ function VisualizationColorSym(par={}){
             mArrayTexCache = { tex, count, size };
         }
 
-        // Copy each image's current render result into the corresponding array layer.
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, mArrayTexCache.tex);
         for (let i = 0; i < count; i++) {
             gl.bindFramebuffer(gl.READ_FRAMEBUFFER, doubleFBOs[i].read.fbo);
@@ -202,8 +165,6 @@ function VisualizationColorSym(par={}){
     }
 
     function render(par){
-        
-       //if(DEBUG) console.log(`${MYNAME}.render()`, par);
         let gl = mGLCtx.gl;
         let cmCfg = mConfig;
         
@@ -212,79 +173,55 @@ function VisualizationColorSym(par={}){
         let navigatorUni = par.navigatorUni;
         let canvas       = par.canvas;
         let renderTarget = null;
-        //
-        //  image uniforms
-        //
-        // Parse imageId as a space-separated list of component ids.
-        const ids = cmCfg.imageId ? cmCfg.imageId.trim().split(/\s+/).filter(Boolean) : [];
 
-        // collect DoubleFBOs for each id.
-        const doubleFBOs = ids
-            .map(id => par.patternData?.getComponentBuffer(id))
-            .filter(Boolean);
-
-        // Fall back to the default buffer when no ids are resolved.
-        const buffers = doubleFBOs.length > 0 ? doubleFBOs : [par.dataBuffer];
-
+        // Use the default dataBuffer as a fallback since no image is rendered
+        const buffers = [par.dataBuffer];
         const arrayTex = updateImageArrayTex(gl, buffers);
 
         const imageUni = {
             uImageArray:    arrayTex,
             uNumImages:     buffers.length,
             uTransparency:  (1. - cmCfg.opacity),
-            uInterpolation: getInterpolationId(cmCfg.interpolation),
+            uInterpolation: 0,
             uPermData:      mPermData,
             uPermSize:      mPermSize,
-            uTexPermIndex:  cmCfg.permIndex,
-            uUseCrown:      cmCfg.useCrown,
+            uTexPermIndex:  0,
+            uUseCrown:      false,       // Crown disabled
             uLeftCoset:     cmCfg.leftCoset,
-            uTexAlpha:      mTexAlpha,
+            uTexAlpha:      mTexAlpha,   // Alpha = 0.0 to disable all image rendering
 
-            // cell color tiles disabled in this layer
-            uFillCells:          false,
-            uCellColors:         new Float32Array(24 * 4), // dummy array
-            uCellColorPermIndex: 0,
+            // cell color uniforms from ColorTiles
+            uFillCells:          mColorTiles.enabled,
+            uCellColors:         mColorTiles.getColors(),
+            uCellColorPermIndex: mColorTiles.getPermIndex(),
         };
 
-
-        //
-        // render the complete image 
-        // 
         enableBlending(gl); 
         const progName = 'colorImageArray';
         let renderProg = mPrograms.getProgram(gl, progName);                     
         if(!renderProg) throw new Error(`${MYNAME}.render(): failed to get program ${progName}`);
         renderProg.bind();
         
-        // uniforms for complete canvas transform 
         renderProg.setUniforms(navigatorUni);
         renderProg.setUniforms(renderUni);
         renderProg.setUniforms(imageUni);
         renderProg.setUniforms({uOpacity: cmCfg.opacity}); 
         setViewport(gl, canvas);
         renderProg.blit(renderTarget);                     
-       
     }
     
     function init(par){
-        
        if(DEBUG) console.log(`${MYNAME}.init()`, par);
         mGLCtx = par.glCtx;        
         mOnChange = par.onChange;        
         mPrograms = Sympix_programs;
-
-        
-
+        mColorTiles.setOnChange(() => onChange(null));
     }
     
-    //
-    //
-    //
     function getParams(){
         if(!mParams)
             mParams = makeParams(mConfig);
         return mParams;
-        
     }
     
     return {
@@ -298,9 +235,9 @@ function VisualizationColorSym(par={}){
         get enabled(){ return mConfig.enabled; },
     }
 
-} // function VisualizationColorSym
+} // function VisualizationColorTiles
 
 
 export {
-   VisualizationColorSym
+   VisualizationColorTiles
 }

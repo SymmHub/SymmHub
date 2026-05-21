@@ -4,6 +4,8 @@ import {
     ParamInt,
     ParamChoice,
     ParamString,
+    ParamGroup,
+    ParamImage,
 } from './modules.js';
 
 
@@ -50,7 +52,6 @@ function ColorTiles(options = {}) {
     let mOnChange = options.onChange || null;
 
     let mConfig = {
-        enabled:   false,
         count:     6,
         palette:   PALETTE_NAMES[0],
         permIndex: 0,
@@ -62,6 +63,11 @@ function ColorTiles(options = {}) {
         cR: 1.0, cG: 1.0, cB: 1.0,
         dR: 0.0, dG: 0.33, dB: 0.67,
     };
+
+    // Getters for parameters that can be optionally moved to the host layer
+    const getAlpha = options.getAlpha || (() => mConfig.alpha);
+    const getColorMask = options.getColorMask || (() => mConfig.colorMask);
+    const getPermIndexVal = options.getPermIndex || (() => mConfig.permIndex);
 
 
     // Pre-allocated buffer, zeroed on init.
@@ -84,15 +90,16 @@ function ColorTiles(options = {}) {
 
         // Parse colorMask: string of '0'/'1' chars, one per color slot.
         // Missing positions default to 1 (fully visible).
-        const mask = mConfig.colorMask || '';
+        const mask = getColorMask() || '';
         const maskFactors = Array.from({ length: n }, (_, i) =>
             i < mask.length ? (mask[i] === '0' ? 0 : 1) : 1
         );
 
+        const alphaVal = getAlpha();
         for (let i = 0; i < n; i++) {
             const t     = i / n;
             const idx   = i * 4;
-            const alpha = mConfig.alpha * maskFactors[i];
+            const alpha = alphaVal * maskFactors[i];
             mColors[idx + 0] = _clamp(a[0] + b[0] * Math.cos(TWO_PI * (c[0] * t + d[0]))) * alpha;
             mColors[idx + 1] = _clamp(a[1] + b[1] * Math.cos(TWO_PI * (c[1] * t + d[1]))) * alpha;
             mColors[idx + 2] = _clamp(a[2] + b[2] * Math.cos(TWO_PI * (c[2] * t + d[2]))) * alpha;
@@ -118,8 +125,51 @@ function ColorTiles(options = {}) {
     }
 
 
+    function generateColorStripCanvas() {
+        const { count: n } = mConfig;
+        const canvas = document.createElement('canvas');
+        const W = canvas.width = 128;
+        const H = canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return canvas;
+
+        const a = [mConfig.aR, mConfig.aG, mConfig.aB];
+        const b = [mConfig.bR, mConfig.bG, mConfig.bB];
+        const c = [mConfig.cR, mConfig.cG, mConfig.cB];
+        const d = [mConfig.dR, mConfig.dG, mConfig.dB];
+
+        const mask = getColorMask() || '';
+        const maskFactors = Array.from({ length: n }, (_, i) =>
+            i < mask.length ? (mask[i] === '0' ? 0 : 1) : 1
+        );
+
+        const alphaVal = getAlpha();
+        for (let i = 0; i < n; i++) {
+            const t     = i / n;
+            const alpha = alphaVal * maskFactors[i];
+            const r = Math.round(_clamp(a[0] + b[0] * Math.cos(TWO_PI * (c[0] * t + d[0]))) * 255);
+            const g = Math.round(_clamp(a[1] + b[1] * Math.cos(TWO_PI * (c[1] * t + d[1]))) * 255);
+            const bVal = Math.round(_clamp(a[2] + b[2] * Math.cos(TWO_PI * (c[2] * t + d[2]))) * 255);
+
+            const x0 = Math.round(i * W / n);
+            const x1 = Math.round((i + 1) * W / n);
+            const rectW = x1 - x0;
+
+            ctx.fillStyle = `rgba(${r}, ${g}, ${bVal}, ${alpha})`;
+            ctx.fillRect(x0, 0, rectW, H);
+        }
+        return canvas;
+    }
+
+    function _updateColorStrip() {
+        if (!mParams || !mParams.colormap) return;
+        const canvas = generateColorStripCanvas();
+        mParams.colormap.setDisplayImage(canvas.toDataURL(), '');
+    }
+
     function _onChange() {
         _updateColors();
+        _updateColorStrip();
         if (mOnChange) mOnChange();
     }
 
@@ -133,8 +183,7 @@ function ColorTiles(options = {}) {
 
         // Refresh UI widgets for all channel params so sliders show new values.
         if (mParams) {
-            ['aR','aG','aB','bR','bG','bB','cR','cG','cB','dR','dG','dB']
-                .forEach(k => mParams[k]?.updateDisplay());
+            ['a', 'b', 'c', 'd'].forEach(k => mParams[k]?.updateDisplay());
         }
 
         _onChange();
@@ -151,30 +200,50 @@ function ColorTiles(options = {}) {
         const oc = _onChange;
         const cf = mConfig;
         return {
-            enabled:   ParamBool  ({obj: cf, key: 'enabled',   onChange: oc}),
             count:     ParamInt   ({obj: cf, key: 'count',     min: 1, max: MAX_COLORS_COUNT, step: 1, onChange: oc}),
+            colormap:  ParamImage ({width: 128, height: 64, stretch: true, serializable: false}),
             palette:   ParamChoice({obj: cf, key: 'palette',   choice: PALETTE_NAMES, onChange: _onPaletteChanged}),
-            permIndex: ParamInt   ({obj: cf, key: 'permIndex', min: 0, max: MAX_COLORS_COUNT - 1, step: 1, onChange: oc}),
-            alpha:     ParamFloat ({obj: cf, key: 'alpha',     min: 0, max: 1, step: 0.001, onChange: oc}),
-            colorMask: ParamString ({obj: cf, key: 'colorMask', onChange: oc}),
 
-            aR: ParamFloat({obj: cf, key: 'aR', min: 0, max: 1, step: 0.001, name: 'a.R', onChange: oc}),
-            aG: ParamFloat({obj: cf, key: 'aG', min: 0, max: 1, step: 0.001, name: 'a.G', onChange: oc}),
-            aB: ParamFloat({obj: cf, key: 'aB', min: 0, max: 1, step: 0.001, name: 'a.B', onChange: oc}),
-            bR: ParamFloat({obj: cf, key: 'bR', min: 0, max: 1, step: 0.001, name: 'b.R', onChange: oc}),
-            bG: ParamFloat({obj: cf, key: 'bG', min: 0, max: 1, step: 0.001, name: 'b.G', onChange: oc}),
-            bB: ParamFloat({obj: cf, key: 'bB', min: 0, max: 1, step: 0.001, name: 'b.B', onChange: oc}),
-            cR: ParamFloat({obj: cf, key: 'cR', step: 0.001, name: 'c.R', onChange: oc}),
-            cG: ParamFloat({obj: cf, key: 'cG', step: 0.001, name: 'c.G', onChange: oc}),
-            cB: ParamFloat({obj: cf, key: 'cB', step: 0.001, name: 'c.B', onChange: oc}),
-            dR: ParamFloat({obj: cf, key: 'dR', min: 0, max: 1, step: 0.001, name: 'd.R', onChange: oc}),
-            dG: ParamFloat({obj: cf, key: 'dG', min: 0, max: 1, step: 0.001, name: 'd.G', onChange: oc}),
-            dB: ParamFloat({obj: cf, key: 'dB', min: 0, max: 1, step: 0.001, name: 'd.B', onChange: oc}),
+            a: ParamGroup({
+                name: 'a',
+                params: {
+                    R: ParamFloat({obj: cf, key: 'aR', min: 0, max: 1, step: 0.001, name: 'R', onChange: oc}),
+                    G: ParamFloat({obj: cf, key: 'aG', min: 0, max: 1, step: 0.001, name: 'G', onChange: oc}),
+                    B: ParamFloat({obj: cf, key: 'aB', min: 0, max: 1, step: 0.001, name: 'B', onChange: oc}),
+                }
+            }),
+            b: ParamGroup({
+                name: 'b',
+                params: {
+                    R: ParamFloat({obj: cf, key: 'bR', min: 0, max: 1, step: 0.001, name: 'R', onChange: oc}),
+                    G: ParamFloat({obj: cf, key: 'bG', min: 0, max: 1, step: 0.001, name: 'G', onChange: oc}),
+                    B: ParamFloat({obj: cf, key: 'bB', min: 0, max: 1, step: 0.001, name: 'B', onChange: oc}),
+                }
+            }),
+            c: ParamGroup({
+                name: 'c',
+                params: {
+                    R: ParamFloat({obj: cf, key: 'cR', step: 0.001, name: 'R', onChange: oc}),
+                    G: ParamFloat({obj: cf, key: 'cG', step: 0.001, name: 'G', onChange: oc}),
+                    B: ParamFloat({obj: cf, key: 'cB', step: 0.001, name: 'B', onChange: oc}),
+                }
+            }),
+            d: ParamGroup({
+                name: 'd',
+                params: {
+                    R: ParamFloat({obj: cf, key: 'dR', min: 0, max: 1, step: 0.001, name: 'R', onChange: oc}),
+                    G: ParamFloat({obj: cf, key: 'dG', min: 0, max: 1, step: 0.001, name: 'G', onChange: oc}),
+                    B: ParamFloat({obj: cf, key: 'dB', min: 0, max: 1, step: 0.001, name: 'B', onChange: oc}),
+                }
+            }),
         };
     }
 
     function getParams() {
-        if (!mParams) mParams = makeParams();
+        if (!mParams) {
+            mParams = makeParams();
+            _updateColorStrip();
+        }
         return mParams;
     }
 
@@ -191,7 +260,7 @@ function ColorTiles(options = {}) {
     function getCount() { return mConfig.count; }
 
     /** Index into the permutation used to look up the active cell color. */
-    function getPermIndex() { return mConfig.permIndex; }
+    function getPermIndex() { return getPermIndexVal(); }
 
     return {
         getParams,
@@ -199,8 +268,9 @@ function ColorTiles(options = {}) {
         getCount,
         getPermIndex,
         setOnChange,
+        update:          _onChange,
         getClassName:    () => MYNAME,
-        get enabled() { return mConfig.enabled; },
+        get enabled() { return true; },
     };
 
 
