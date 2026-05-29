@@ -24,7 +24,6 @@ uniform int u_drawLines;
 uniform float u_lineWidth;
 uniform vec4 u_lineColor;
 uniform float u_maxlineWidth;
-uniform float u_zoom;
 uniform float u_scale;
 
 uniform float u_texCrownFactor;

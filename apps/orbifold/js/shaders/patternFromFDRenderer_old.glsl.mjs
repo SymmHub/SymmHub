@@ -20,7 +20,7 @@ uniform int u_drawLines;
 uniform float u_lineWidth;
 uniform vec4 u_lineColor;
 uniform float u_maxlineWidth;
-uniform float u_zoom;
+//uniform float u_zoom;
 uniform float u_scale;
 
 uniform float u_texCrownFactor;
@@ -129,7 +129,7 @@ if(u_curvature>0){
   
 
   	//grab the pixel color at p3 
-		texture2 = getTextureValueWithBoundaries(p3, u_FDdata,scale, u_zoom, u_aspect);
+		texture2 = getTextureValueWithBoundaries(p3, u_FDdata,scale, 1./u_scale, u_aspect);
   	overlay(color,texture2);
 
 		
@@ -157,7 +157,7 @@ if(u_curvature>0){
 	//trying to overlay the FD onto the buffer 
 	// there are still problems with blending: is it gl.blendFunc()?
   
-  //texture2 = getTextureValueWithBoundaries(pt2draw, u_FDdata,scale, u_zoom, u_aspect);
+  //texture2 = getTextureValueWithBoundaries(pt2draw, u_FDdata,scale, 1./u_scale, u_aspect);
   // texture2= .3*texture2;
   //	overlay(color,texture2);
  
