@@ -103,7 +103,7 @@ export {
 } from './ui_utils.js';     
 export {
     GUI 
-} from '../../../lib/extlib/dat.gui.module.js';
+} from '../../../lib/datgui/datgui.js';
 
 import * as twgl from '../../../lib/extlib/twgl-full.module.js';
 

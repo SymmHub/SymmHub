@@ -1,7 +1,7 @@
 export {
     GUI as DatGUI
 }
-from "../../../lib/extlib/dat.gui.module.js";
+from "../../../lib/datgui/datgui.js";
 
 
 export {

@@ -1149,7 +1149,10 @@ a#add_view {
 }
 
 .dg li.folder {
-  border-left: 0;
+  border-left: 10px solid transparent !important;
+}
+.dg.main > ul > li.folder {
+  border-left: 4px solid transparent !important;
 }
 
 .button_list {
@@ -1175,7 +1178,12 @@ a#add_view {
 }
 
 ul li.folder .dg ul li.cr {
-  padding: 0 6px 0 6px !important;
+  margin-left: 6px !important;
+  padding: 0 6px 0 20px !important;
+}
+.dg .cr.color {
+  border-left-width: 3px !important;
+  border-left-style: solid !important;
 }
 
 #viewsGUI ul li div ul li div .property-name {
