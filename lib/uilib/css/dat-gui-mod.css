@@ -1442,7 +1442,6 @@ select {
 }
 */
 .dg .c input[type="text"] {
-  background: var(--input-background-color) !important;
   margin-top: 3px !important;
   height: 21px !important;
   border-radius: 1px !important;
@@ -1452,8 +1451,12 @@ select {
   margin-right: -6px !important;
 }
 
-.dg .c input[type="text"],
-.dg .c input[type="text"]:focus {
+.dg .cr:not(.color) .c input[type="text"] {
+  background: var(--input-background-color) !important;
+}
+
+.dg .cr:not(.color) .c input[type="text"],
+.dg .cr:not(.color) .c input[type="text"]:focus {
   color: var(--text-color) !important;
 }
 
