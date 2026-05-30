@@ -12,6 +12,7 @@ import {
 
     InterpolationNames, 
     getInterpolationId, 
+    Subgroups,
 } from './modules.js';
 
 
@@ -73,6 +74,24 @@ function VisualizationColorSym(par={}){
     // Per-texture-layer alpha mask (0.0 = hidden, 1.0 = visible), padded with 1s.
     const MAX_TEX_COUNT = 24;
     let mTexAlpha = new Float32Array(MAX_TEX_COUNT).fill(1.0);
+
+    const mSubgroups = Subgroups({
+        onSubgroupSelected: (subgroup) => {
+            if (subgroup) {
+                const params = getParams();
+                if (params && params.permutations) {
+                    params.permutations.setValue(subgroup.invcos);
+                } else {
+                    mConfig.permutations = subgroup.invcos;
+                    onPermChanged();
+                }
+                if (params && params.permIndex) {
+                    params.permIndex.setMax(subgroup.index - 1);
+                }
+            }
+        },
+        onChange: () => onChange(null)
+    });
 
 
     function onChange(param){
@@ -161,6 +180,7 @@ function VisualizationColorSym(par={}){
             leftCoset:     ParamBool({obj: cf, key: 'leftCoset', onChange: oc}),
             mask:          ParamString({obj: cf, key: 'mask', onChange: onMaskChanged}),
 
+            subgroups:     ParamObj({name: 'subgroups', obj: mSubgroups}),
 
             interpolation: ParamChoice({obj: cf, key: 'interpolation', choice: InterpolationNames, onChange: oc}),
             useMipmap:     ParamBool({obj: cf, key: 'useMipmap', onChange: oc}),

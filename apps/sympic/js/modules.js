@@ -22,6 +22,7 @@ export {
     setParamValues,
     getParamValues,
     ParamImage,
+    openFile,
 } from '../../../lib/uilib/uilib.js';
 
 export {
@@ -97,4 +98,8 @@ export {
 
 export {
     ColorTiles
-} from './ColorTiles.js';
+} from './ColorTiles.js';
+
+export {
+    Subgroups
+} from './Subgroups.js';

@@ -7,6 +7,7 @@ import {
     setViewport,
     enableBlending,
     Sympix_programs,
+    Subgroups,
 } from './modules.js';
 
 import { ColorTiles } from './ColorTiles.js';
@@ -55,6 +56,25 @@ function VisualizationColorTiles(par={}){
         getAlpha:     () => 1.0,
         getColorMask: () => mConfig.mask,
         getPermIndex: () => mConfig.permIndex,
+    });
+
+    const mSubgroups = Subgroups({
+        onSubgroupSelected: (subgroup) => {
+            if (subgroup) {
+                const params = getParams();
+                if (params && params.permutations) {
+                    params.permutations.setValue(subgroup.invcos);
+                } else {
+                    mConfig.permutations = subgroup.invcos;
+                    onPermChanged();
+                }
+                mColorTiles.getParams().count.setValue(subgroup.index);
+                if (params && params.permIndex) {
+                    params.permIndex.setMax(subgroup.index - 1);
+                }
+            }
+        },
+        onChange: () => onChange(null)
     });
 
     // Parsed permutation data ready to upload as uPermData / uPermSize.
@@ -131,6 +151,8 @@ function VisualizationColorTiles(par={}){
             // Moved parameters
             permIndex:     ParamInt({obj: cf, key: 'permIndex', min: 0, max: MAX_COLORS_COUNT - 1, step: 1, onChange: ocColors}),
             mask:          ParamString({obj: cf, key: 'mask', onChange: ocColors}),
+
+            subgroups:     ParamObj({name: 'subgroups', obj: mSubgroups}),
 
             colorTiles:    ParamObj({name: 'tile colors', obj: mColorTiles}),
         }
@@ -215,7 +237,14 @@ function VisualizationColorTiles(par={}){
         mGLCtx = par.glCtx;        
         mOnChange = par.onChange;        
         mPrograms = Sympix_programs;
-        mColorTiles.setOnChange(() => onChange(null));
+        mColorTiles.setOnChange(() => {
+            const count = mColorTiles.getCount();
+            const params = getParams();
+            if (params && params.permIndex) {
+                params.permIndex.setMax(count - 1);
+            }
+            onChange(null);
+        });
     }
     
     function getParams(){
