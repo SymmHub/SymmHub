@@ -4,6 +4,7 @@ const path = require('path');
 const COLOR_GROUPS_DIR = __dirname;
 const KLM_DIR = path.join(COLOR_GROUPS_DIR, 'klm');
 const SKLM_DIR = path.join(COLOR_GROUPS_DIR, 'sklm');
+const WALLPAPER_DIR = path.join(COLOR_GROUPS_DIR, 'wallpaper');
 
 // Ensure directories exist
 if (!fs.existsSync(KLM_DIR)) {
@@ -11,6 +12,9 @@ if (!fs.existsSync(KLM_DIR)) {
 }
 if (!fs.existsSync(SKLM_DIR)) {
     fs.mkdirSync(SKLM_DIR, { recursive: true });
+}
+if (!fs.existsSync(WALLPAPER_DIR)) {
+    fs.mkdirSync(WALLPAPER_DIR, { recursive: true });
 }
 
 // 1. Move any files matching sub_s*.json from color_groups/ root to color_groups/sklm/
@@ -23,6 +27,8 @@ rootFiles.forEach(file => {
         fs.renameSync(oldPath, newPath);
     }
 });
+
+
 
 // Helper to scan a directory and build groups.json
 function buildGroupsJsonForDir(dirPath, outputName) {
@@ -78,14 +84,19 @@ buildGroupsJsonForDir(KLM_DIR, 'groups.json');
 // 3. Build groups.json for sklm/
 buildGroupsJsonForDir(SKLM_DIR, 'groups.json');
 
+// 3b. Build groups.json for wallpaper/
+buildGroupsJsonForDir(WALLPAPER_DIR, 'groups.json');
+
 // 4. Write group_types.json in color_groups/ root
 const groupTypes = {
     types: [
         { id: 'klm', name: 'klm', path: 'klm/groups.json' },
-        { id: '*klm', name: '*klm', path: 'sklm/groups.json' }
+        { id: '*klm', name: '*klm', path: 'sklm/groups.json' },
+        { id: 'wallpaper', name: 'wallpaper', path: 'wallpaper/groups.json' }
     ]
 };
 
 const groupTypesPath = path.join(COLOR_GROUPS_DIR, 'group_types.json');
 fs.writeFileSync(groupTypesPath, JSON.stringify(groupTypes, null, 2), 'utf8');
 console.log(`Generated group types manifest: ${groupTypesPath}`);
+
