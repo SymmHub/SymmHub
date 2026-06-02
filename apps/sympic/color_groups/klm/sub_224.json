@@ -1,0 +1,85 @@
+{
+  "name": "224",
+  "group": "Group( [ a, b, c, d ] )",
+  "relators": "[ a*c, b*d, a^2, b^2, (a*d)^4 ]",
+  "maxIndex": 8,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 8,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 2,
+      "count": 3
+    },
+    {
+      "index": 4,
+      "count": 3
+    },
+    {
+      "index": 8,
+      "count": 1
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "224.1.1",
+      "index": 1,
+      "generators": "a b",
+      "cosets": "a a a a",
+      "invcos": "a a a a"
+    },
+    {
+      "subgroup": "224.2.1",
+      "index": 2,
+      "generators": "a Bab",
+      "cosets": "ab ba ab ba",
+      "invcos": "ab ba ab ba"
+    },
+    {
+      "subgroup": "224.2.2",
+      "index": 2,
+      "generators": "b Aba",
+      "cosets": "ba ab ba ab",
+      "invcos": "ba ab ba ab"
+    },
+    {
+      "subgroup": "224.2.3",
+      "index": 2,
+      "generators": "Ab",
+      "cosets": "ba ba ba ba",
+      "invcos": "ba ba ba ba"
+    },
+    {
+      "subgroup": "224.4.1",
+      "index": 4,
+      "generators": "a",
+      "cosets": "acbd badc acbd badc",
+      "invcos": "acbd badc acbd badc"
+    },
+    {
+      "subgroup": "224.4.2",
+      "index": 4,
+      "generators": "b",
+      "cosets": "badc acbd badc acbd",
+      "invcos": "badc acbd badc acbd"
+    },
+    {
+      "subgroup": "224.4.3",
+      "index": 4,
+      "generators": "ABab",
+      "cosets": "badc cdab badc cdab",
+      "invcos": "badc cdab badc cdab"
+    },
+    {
+      "subgroup": "224.8.1",
+      "index": 8,
+      "generators": "",
+      "cosets": "baefcdhg cdabghef baefcdhg cdabghef",
+      "invcos": "baefcdhg cdabghef baefcdhg cdabghef"
+    }
+  ]
+}

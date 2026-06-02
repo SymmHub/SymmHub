@@ -1,0 +1,90 @@
+{
+  "name": "235",
+  "group": "Group( [ a, b, c, d ] )",
+  "relators": "[ a*c, b*d, a^2, b^3, (a*d)^5 ]",
+  "maxIndex": 20,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 7,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 5,
+      "count": 1
+    },
+    {
+      "index": 6,
+      "count": 1
+    },
+    {
+      "index": 10,
+      "count": 1
+    },
+    {
+      "index": 12,
+      "count": 1
+    },
+    {
+      "index": 15,
+      "count": 1
+    },
+    {
+      "index": 20,
+      "count": 1
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "235.1.1",
+      "index": 1,
+      "generators": "a b",
+      "cosets": "a a a a",
+      "invcos": "a a a a"
+    },
+    {
+      "subgroup": "235.5.1",
+      "index": 5,
+      "generators": "a BAbab",
+      "cosets": "adebc bcade adebc cabde",
+      "invcos": "adebc cabde adebc bcade"
+    },
+    {
+      "subgroup": "235.6.1",
+      "index": 6,
+      "generators": "a Bab",
+      "cosets": "abdcfe bcaefd abdcfe cabfde",
+      "invcos": "abdcfe cabfde abdcfe bcaefd"
+    },
+    {
+      "subgroup": "235.10.1",
+      "index": 10,
+      "generators": "a BABabab",
+      "cosets": "adebcfijgh bcafhgdiej adebcfijgh cabgidfehj",
+      "invcos": "adebcfijgh cabgidfehj adebcfijgh bcafhgdiej"
+    },
+    {
+      "subgroup": "235.12.1",
+      "index": 12,
+      "generators": "Ab",
+      "cosets": "badcghefjilk bcaefdhigklj badcghefjilk cabfdeighljk",
+      "invcos": "badcghefjilk cabfdeighljk badcghefjilk bcaefdhigklj"
+    },
+    {
+      "subgroup": "235.15.1",
+      "index": 15,
+      "generators": "a bABAbaBab",
+      "cosets": "adebcjklmfghino bcafhgdiemlonjk adebcjklmfghino cabgidfehnokjml",
+      "invcos": "adebcjklmfghino cabgidfehnokjml adebcjklmfghino bcafhgdiemlonjk"
+    },
+    {
+      "subgroup": "235.20.1",
+      "index": 20,
+      "generators": "b",
+      "cosets": "baefcdjklghiqonrmpts acdbgihejfmonkplrsqt baefcdjklghiqonrmpts adbchjegfinpkmlosqrt",
+      "invcos": "baefcdjklghiqonrmpts adbchjegfinpkmlosqrt baefcdjklghiqonrmpts acdbgihejfmonkplrsqt"
+    }
+  ]
+}

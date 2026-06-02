@@ -1,0 +1,96 @@
+{
+  "name": "*272",
+  "group": "Group( [ a, b, c ] )",
+  "relators": "[ a^2, b^2, c^2, (a*b)^2, (c*a)^7, (b*c)^2 ]",
+  "maxIndex": 14,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 9,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 2,
+      "count": 3
+    },
+    {
+      "index": 4,
+      "count": 1
+    },
+    {
+      "index": 7,
+      "count": 1
+    },
+    {
+      "index": 14,
+      "count": 3
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "*272.1.1",
+      "index": 1,
+      "generators": "a b c",
+      "cosets": "a a a",
+      "invcos": "a a a"
+    },
+    {
+      "subgroup": "*272.2.1",
+      "index": 2,
+      "generators": "a c",
+      "cosets": "ab ba ab",
+      "invcos": "ab ba ab"
+    },
+    {
+      "subgroup": "*272.2.2",
+      "index": 2,
+      "generators": "b Ac",
+      "cosets": "ba ab ba",
+      "invcos": "ba ab ba"
+    },
+    {
+      "subgroup": "*272.2.3",
+      "index": 2,
+      "generators": "Ab Ac",
+      "cosets": "ba ba ba",
+      "invcos": "ba ba ba"
+    },
+    {
+      "subgroup": "*272.4.1",
+      "index": 4,
+      "generators": "Ac",
+      "cosets": "badc cdab badc",
+      "invcos": "badc cdab badc"
+    },
+    {
+      "subgroup": "*272.7.1",
+      "index": 7,
+      "generators": "a b",
+      "cosets": "acbedgf abcdefg badcfeg",
+      "invcos": "acbedgf abcdefg badcfeg"
+    },
+    {
+      "subgroup": "*272.14.1",
+      "index": 14,
+      "generators": "a",
+      "cosets": "abefcdijghmnkl badcfehgjilknm cdabghefklijmn",
+      "invcos": "abefcdijghmnkl badcfehgjilknm cdabghefklijmn"
+    },
+    {
+      "subgroup": "*272.14.2",
+      "index": 14,
+      "generators": "b",
+      "cosets": "baefcdijghmnkl abcdefghijklmn cdabghefklijnm",
+      "invcos": "baefcdijghmnkl abcdefghijklmn cdabghefklijnm"
+    },
+    {
+      "subgroup": "*272.14.3",
+      "index": 14,
+      "generators": "Ab",
+      "cosets": "baefcdijghmnkl badcfehgjilknm cdabghefklijnm",
+      "invcos": "baefcdijghmnkl badcfehgjilknm cdabghefklijnm"
+    }
+  ]
+}

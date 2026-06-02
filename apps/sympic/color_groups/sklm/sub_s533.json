@@ -1,0 +1,1881 @@
+{
+  "name": "*533",
+  "group": "Group( [ a, b, c ] )",
+  "relators": "[ a^2, b^2, c^2, (a*b)^5, (c*a)^3, (b*c)^3 ]",
+  "maxIndex": 24,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 256,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 2,
+      "count": 1
+    },
+    {
+      "index": 3,
+      "count": 1
+    },
+    {
+      "index": 5,
+      "count": 1
+    },
+    {
+      "index": 6,
+      "count": 4
+    },
+    {
+      "index": 7,
+      "count": 1
+    },
+    {
+      "index": 10,
+      "count": 6
+    },
+    {
+      "index": 11,
+      "count": 2
+    },
+    {
+      "index": 12,
+      "count": 7
+    },
+    {
+      "index": 14,
+      "count": 1
+    },
+    {
+      "index": 15,
+      "count": 21
+    },
+    {
+      "index": 16,
+      "count": 4
+    },
+    {
+      "index": 17,
+      "count": 11
+    },
+    {
+      "index": 18,
+      "count": 10
+    },
+    {
+      "index": 20,
+      "count": 65
+    },
+    {
+      "index": 21,
+      "count": 33
+    },
+    {
+      "index": 22,
+      "count": 30
+    },
+    {
+      "index": 23,
+      "count": 8
+    },
+    {
+      "index": 24,
+      "count": 49
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "*533.1.1",
+      "index": 1,
+      "generators": "a b c",
+      "cosets": "a a a",
+      "invcos": "a a a"
+    },
+    {
+      "subgroup": "*533.2.1",
+      "index": 2,
+      "generators": "Ab Ac",
+      "cosets": "ba ba ba",
+      "invcos": "ba ba ba"
+    },
+    {
+      "subgroup": "*533.3.1",
+      "index": 3,
+      "generators": "a b CAbc",
+      "cosets": "acb acb bac",
+      "invcos": "acb acb bac"
+    },
+    {
+      "subgroup": "*533.5.1",
+      "index": 5,
+      "generators": "a Bc BABAcbab",
+      "cosets": "acbed badce baced",
+      "invcos": "acbed badce baced"
+    },
+    {
+      "subgroup": "*533.6.1",
+      "index": 6,
+      "generators": "a b CAbac CBABcabc",
+      "cosets": "acbedf adcbfe bacdfe",
+      "invcos": "acbedf adcbfe bacdfe"
+    },
+    {
+      "subgroup": "*533.6.2",
+      "index": 6,
+      "generators": "a b CBabc CABAcbac",
+      "cosets": "acbdfe adebcf bacdfe",
+      "invcos": "acbdfe adebcf bacdfe"
+    },
+    {
+      "subgroup": "*533.6.3",
+      "index": 6,
+      "generators": "a b CABabac CBAcbac",
+      "cosets": "acbfed adebcf bacdfe",
+      "invcos": "acbfed adebcf bacdfe"
+    },
+    {
+      "subgroup": "*533.6.4",
+      "index": 6,
+      "generators": "Ab CAbc",
+      "cosets": "baefcd baefcd cdabfe",
+      "invcos": "baefcd baefcd cdabfe"
+    },
+    {
+      "subgroup": "*533.7.1",
+      "index": 7,
+      "generators": "a b CAbac CBABcbabc",
+      "cosets": "acbedfg adcbfeg bacdgfe",
+      "invcos": "acbedfg adcbfeg bacdgfe"
+    },
+    {
+      "subgroup": "*533.10.1",
+      "index": 10,
+      "generators": "a c BABcab BCABABcabacb",
+      "cosets": "acbfgdeihj baedchgfji adebcgfhji",
+      "invcos": "acbfgdeihj baedchgfji adebcgfhji"
+    },
+    {
+      "subgroup": "*533.10.2",
+      "index": 10,
+      "generators": "a c BABacb BACBabcab",
+      "cosets": "acbedgfhji baedchifgj adfbgceihj",
+      "invcos": "acbedgfhji baedchifgj adfbgceihj"
+    },
+    {
+      "subgroup": "*533.10.3",
+      "index": 10,
+      "generators": "a c BABacb BABCBabcbab",
+      "cosets": "acbedgfjih baedchifgj adfbgceihj",
+      "invcos": "acbedgfjih baedchifgj adfbgceihj"
+    },
+    {
+      "subgroup": "*533.10.4",
+      "index": 10,
+      "generators": "a c BCAbcab",
+      "cosets": "acbghjdeif baedcgfhji adfbicjheg",
+      "invcos": "acbghjdeif baedcgfhji adfbicjheg"
+    },
+    {
+      "subgroup": "*533.10.5",
+      "index": 10,
+      "generators": "Ac BAcb ABABcaba",
+      "cosets": "baefcdijgh cdabghefji baegchdfji",
+      "invcos": "baefcdijgh cdabghefji baegchdfji"
+    },
+    {
+      "subgroup": "*533.10.6",
+      "index": 10,
+      "generators": "a BAcb CBabc CABAcbac",
+      "cosets": "adebcfijgh bafghcdeij cdabegfjih",
+      "invcos": "adebcfijgh bafghcdeij cdabegfjih"
+    },
+    {
+      "subgroup": "*533.11.1",
+      "index": 11,
+      "generators": "a b CAbac CBABCBabcabc",
+      "cosets": "acbedfgjkhi adcbfeikgjh bacdghefkji",
+      "invcos": "acbedfgjkhi adcbfeikgjh bacdghefkji"
+    },
+    {
+      "subgroup": "*533.11.2",
+      "index": 11,
+      "generators": "a b CBabc CABACAbacbac",
+      "cosets": "acbdfeijghk adebcfgkjih bacdghefjik",
+      "invcos": "acbdfeijghk adebcfgkjih bacdghefjik"
+    },
+    {
+      "subgroup": "*533.12.1",
+      "index": 12,
+      "generators": "Ab ACBabc CABAcbac",
+      "cosets": "baegchdfklij bafhicjdeglk cdabghefklij",
+      "invcos": "baegchdfklij bafhicjdeglk cdabghefklij"
+    },
+    {
+      "subgroup": "*533.12.2",
+      "index": 12,
+      "generators": "a b CABabac CABCABabcabc",
+      "cosets": "acbfedihgkjl adebcfgjkhil bacdghefijlk",
+      "invcos": "acbfedihgkjl adebcfgjkhil bacdghefijlk"
+    },
+    {
+      "subgroup": "*533.12.3",
+      "index": 12,
+      "generators": "Ab ACAbac CBABcabc",
+      "cosets": "baegcidjfhlk bafhgcedklij cdabghefklij",
+      "invcos": "baegcidjfhlk bafhgcedklij cdabghefklij"
+    },
+    {
+      "subgroup": "*533.12.4",
+      "index": 12,
+      "generators": "Ab ACABabac CBAcbac",
+      "cosets": "baegcjdlkfih bafhickdelgj cdabghefjilk",
+      "invcos": "baegcjdlkfih bafhickdelgj cdabghefjilk"
+    },
+    {
+      "subgroup": "*533.12.5",
+      "index": 12,
+      "generators": "Ab ACABabac ACBAcbac",
+      "cosets": "baegcjdlkfih bafhickdelgj cdabgheflkji",
+      "invcos": "baegcjdlkfih bafhickdelgj cdabgheflkji"
+    },
+    {
+      "subgroup": "*533.12.6",
+      "index": 12,
+      "generators": "a Bcb BACBabac BABAcbac",
+      "cosets": "adebcigkflhj bacfhdkeilgj cbagejdihflk",
+      "invcos": "adebcigkflhj bacfhdkeilgj cbagejdihflk"
+    },
+    {
+      "subgroup": "*533.12.7",
+      "index": 12,
+      "generators": "Ab CBAbaca ACBAcbac",
+      "cosets": "baegcjdklfhi bafhicjdeglk cdabghefklij",
+      "invcos": "baegcjdklfhi bafhicjdeglk cdabghefklij"
+    },
+    {
+      "subgroup": "*533.14.1",
+      "index": 14,
+      "generators": "Ab ACAbac ACBABcbabc",
+      "cosets": "baegcidjfhmnkl bafhgcedkminjl cdabgheflnmikj",
+      "invcos": "baegcidjfhmnkl bafhgcedkminjl cdabgheflnmikj"
+    },
+    {
+      "subgroup": "*533.15.1",
+      "index": 15,
+      "generators": "a Bcb BABAcabab CABAbcbab CABCAbabcab",
+      "cosets": "adebciglfjnhokm bacfhdkeilgjmon cbagejdmiflkhon",
+      "invcos": "adebciglfjnhokm bacfhdkeilgjmon cbagejdmiflkhon"
+    },
+    {
+      "subgroup": "*533.15.2",
+      "index": 15,
+      "generators": "a Bcb BACBabac BABAcabab BABCBAbacbac",
+      "cosets": "adebcigkfjhnolm bacfhdkeimgljon cbagejdlifmhkon",
+      "invcos": "adebcigkfjhnolm bacfhdkeimgljon cbagejdlifmhkon"
+    },
+    {
+      "subgroup": "*533.15.3",
+      "index": 15,
+      "generators": "a BAbc BCABCabacab",
+      "cosets": "adfbhcieglmjkon badcgfejkhionml ceagbfdihmnojkl",
+      "invcos": "adfbhcieglmjkon badcgfejkhionml ceagbfdihmnojkl"
+    },
+    {
+      "subgroup": "*533.15.4",
+      "index": 15,
+      "generators": "a BAbc BCABAcbacab",
+      "cosets": "adfbhcieglnjokm badcgfejkhimlon ceagbfdihmlkjon",
+      "invcos": "adfbhcieglnjokm badcgfejkhimlon ceagbfdihmlkjon"
+    },
+    {
+      "subgroup": "*533.15.5",
+      "index": 15,
+      "generators": "a BAcab CBabc BABAcbab CABAcbac BCBABAcbabcb",
+      "cosets": "adfbecgklmhijon baghijcdefknmlo ceadbfikgmhljon",
+      "invcos": "adfbecgklmhijon baghijcdefknmlo ceadbfikgmhljon"
+    },
+    {
+      "subgroup": "*533.15.6",
+      "index": 15,
+      "generators": "a Bcb BABCabac BACBAbcabab",
+      "cosets": "adebcigjfhomlnk bacfhdkeinglojm cbagejdlmfnhiko",
+      "invcos": "adebcigjfhomlnk bacfhdkeinglojm cbagejdlmfnhiko"
+    },
+    {
+      "subgroup": "*533.15.7",
+      "index": 15,
+      "generators": "a Bc BABACAbacabab BABACBABcabcabab BABCABABcabacbab",
+      "cosets": "acbedhifglmjkno badcefjkighnolm bacfgdeihjknolm",
+      "invcos": "acbedhifglmjkno badcefjkighnolm bacfgdeihjknolm"
+    },
+    {
+      "subgroup": "*533.15.8",
+      "index": 15,
+      "generators": "a BAcab CBabc BABCabac BABACbabcb",
+      "cosets": "adfbecgkmlhjion baghijcdefklonm ceadbfilgnohmjk",
+      "invcos": "adfbecgkmlhjion baghijcdefklonm ceadbfilgnohmjk"
+    },
+    {
+      "subgroup": "*533.15.9",
+      "index": 15,
+      "generators": "a c BABAcabab BACAbacab BABCBabcab BCABABcabacb",
+      "cosets": "acbghjdeifmnklo baedcklhmjfgion adfbicjhegmlkon",
+      "invcos": "acbghjdeifmnklo baedcklhmjfgion adfbicjhegmlkon"
+    },
+    {
+      "subgroup": "*533.15.10",
+      "index": 15,
+      "generators": "a c BACAbacb BABAcabab BABCBABAcbabcbab",
+      "cosets": "acbghjdeifkmlon baedckjhlgfinmo adfbicjheglkmon",
+      "invcos": "acbghjdeifkmlon baedckjhlgfinmo adfbicjheglkmon"
+    },
+    {
+      "subgroup": "*533.15.11",
+      "index": 15,
+      "generators": "a BAcab CBabc BABAcbac BABCAbabcb",
+      "cosets": "adfbecgkmnhoijl baghijcdefklonm ceadbfilgkjhmon",
+      "invcos": "adfbecgkmnhoijl baghijcdefklonm ceadbfilgkjhmon"
+    },
+    {
+      "subgroup": "*533.15.12",
+      "index": 15,
+      "generators": "a c BABcbab BCABAbcabab BACABAcbacab",
+      "cosets": "acbghidefmkojnl baedcfjhlgmikon adfbecikgnhomjl",
+      "invcos": "acbghidefmkojnl baedcfjhlgmikon adfbecikgnhomjl"
+    },
+    {
+      "subgroup": "*533.15.13",
+      "index": 15,
+      "generators": "a c BABcbab BCABAcbacb BABACBabacab",
+      "cosets": "acbghidefmknjlo baedcfjhlgniokm adfbecikgmhojnl",
+      "invcos": "acbghidefmknjlo baedcfjhlgniokm adfbecikgmhojnl"
+    },
+    {
+      "subgroup": "*533.15.14",
+      "index": 15,
+      "generators": "a c BABacb BACBABcabcbab",
+      "cosets": "acbedgfjkhimlon baedchifglnjokm adfbgceihmlkjon",
+      "invcos": "acbedgfjkhimlon baedchifglnjokm adfbgceihmlkjon"
+    },
+    {
+      "subgroup": "*533.15.15",
+      "index": 15,
+      "generators": "a c BABacb BACBACbabcbab",
+      "cosets": "acbedgfjkhionml baedchifglmjkon adfbgceihmnojkl",
+      "invcos": "acbedgfjkhionml baedchifglmjkon adfbgceihmnojkl"
+    },
+    {
+      "subgroup": "*533.15.16",
+      "index": 15,
+      "generators": "a BABcab BCAbac CBABcabc",
+      "cosets": "adfbicklemghjon baghjicdfenlokm ceahbfjdlgniokm",
+      "invcos": "adfbicklemghjon baghjicdfenlokm ceahbfjdlgniokm"
+    },
+    {
+      "subgroup": "*533.15.17",
+      "index": 15,
+      "generators": "a CBacb BABAcbac BACBacbab",
+      "cosets": "adfbgceljiohnmk baghjkcdnefloim ceaibfjmdglkhon",
+      "invcos": "adfbgceljiohnmk baghjkcdnefloim ceaibfjmdglkhon"
+    },
+    {
+      "subgroup": "*533.15.18",
+      "index": 15,
+      "generators": "a c BABcab BCABABCBabcabacb",
+      "cosets": "acbfgdeihjknolm baedchgfjimoknl adebcgfhklijonm",
+      "invcos": "acbfgdeihjknolm baedchgfjimoknl adebcgfhklijonm"
+    },
+    {
+      "subgroup": "*533.15.19",
+      "index": 15,
+      "generators": "a CBAcbab BCAbcab",
+      "cosets": "adfbjcmnoelkghi baghklcdjiefonm ceaibfkmdognhlj",
+      "invcos": "adfbjcmnoelkghi baghklcdjiefonm ceaibfkmdognhlj"
+    },
+    {
+      "subgroup": "*533.15.20",
+      "index": 15,
+      "generators": "a b CABAcabac CBABcbabc CABABAcababac",
+      "cosets": "acbfgdehljmikno adebcikhfjgmlno bacdhjgeifnomkl",
+      "invcos": "acbfgdehljmikno adebcikhfjgmlno bacdhjgeifnomkl"
+    },
+    {
+      "subgroup": "*533.15.21",
+      "index": 15,
+      "generators": "a BAcb BABAcbac CBABAcbabc",
+      "cosets": "adebcijkfghnolm bafghcdeljmikon cdabegfjkhinolm",
+      "invcos": "adebcijkfghnolm bafghcdeljmikon cdabegfjkhinolm"
+    },
+    {
+      "subgroup": "*533.16.1",
+      "index": 16,
+      "generators": "a b CBabc CABACBabcabac CABCABAcbacbac",
+      "cosets": "acbdfeijghknolmp adebcfgklmhijpon bacdghefjiknplom",
+      "invcos": "acbdfeijghknolmp adebcfgklmhijpon bacdghefjiknplom"
+    },
+    {
+      "subgroup": "*533.16.2",
+      "index": 16,
+      "generators": "a b CAbac CBABCBabcbabc CBABCABAcbacbabc CBACBABAcbabcabc",
+      "cosets": "acbedfgjlhkiopmn adcbfeikgmhnjlop bacdghefkjilopmn",
+      "invcos": "acbedfgjlhkiopmn adcbfeikgmhnjlop bacdghefkjilopmn"
+    },
+    {
+      "subgroup": "*533.16.3",
+      "index": 16,
+      "generators": "a b CAbac CBABCAbacbabc CBACBABcabcabc",
+      "cosets": "acbedfgjlhmikpon adcbfeikgjhnolmp bacdghefkjinplom",
+      "invcos": "acbedfgjlhmikpon adcbfeikgjhnolmp bacdghefkjinplom"
+    },
+    {
+      "subgroup": "*533.16.4",
+      "index": 16,
+      "generators": "a b CBabc CABACAbacabac CABACBABcabcabac CABCABABcabacbac",
+      "cosets": "acbdfeijghmnklop adebcfgkljhiopmn bacdghefjiklopmn",
+      "invcos": "acbdfeijghmnklop adebcfgkljhiopmn bacdghefjiklopmn"
+    },
+    {
+      "subgroup": "*533.17.1",
+      "index": 17,
+      "generators": "a b CABAcabac CBABAcbabc CABABCAbabcabc",
+      "cosets": "acbfgdehljnipkqmo adebcikhfmgnjloqp bacdhjgelfoinmkqp",
+      "invcos": "acbfgdehljnipkqmo adebcikhfmgnjloqp bacdhjgelfoinmkqp"
+    },
+    {
+      "subgroup": "*533.17.2",
+      "index": 17,
+      "generators": "a b CBabc CABACAbacabac CABACBABcabcabac CABCABABcbabacbac",
+      "cosets": "acbdfeijghmnklopq adebcfgkljhiopmnq bacdghefjikloqmpn",
+      "invcos": "acbdfeijghmnklopq adebcfgkljhiopmnq bacdghefjikloqmpn"
+    },
+    {
+      "subgroup": "*533.17.3",
+      "index": 17,
+      "generators": "a c BACAbcab BABACAbacabab BABACBABcabcabab",
+      "cosets": "acbghjdelfmikponq baedcjihgfnomklqp adfbicjkeghmlnoqp",
+      "invcos": "acbghjdelfmikponq baedcjihgfnomklqp adfbicjkeghmlnoqp"
+    },
+    {
+      "subgroup": "*533.17.4",
+      "index": 17,
+      "generators": "a BAcb BABAcbac CABABAcababc",
+      "cosets": "adebcijkfghnplqmo bafghcdeljmikpqno cdabegfjkhioqplnm",
+      "invcos": "adebcijkfghnplqmo bafghcdeljmikpqno cdabegfjkhioqplnm"
+    },
+    {
+      "subgroup": "*533.17.5",
+      "index": 17,
+      "generators": "a BAcab CAbac BABAcbab BCBABcbabc",
+      "cosets": "adfbecjklghimpqno baghifcdemkojplnq ceadbfikgnhpojmlq",
+      "invcos": "adfbecjklghimpqno baghifcdemkojplnq ceadbfikgnhpojmlq"
+    },
+    {
+      "subgroup": "*533.17.6",
+      "index": 17,
+      "generators": "a BABcab BCAbac BCBABcbabc",
+      "cosets": "adfbicklemghjpqno baghjicdfenlpkqmo ceahbfjdlgoiqpknm",
+      "invcos": "adfbicklemghjpqno baghjicdfenlpkqmo ceahbfjdlgoiqpknm"
+    },
+    {
+      "subgroup": "*533.17.7",
+      "index": 17,
+      "generators": "a BCAbcb BABAcbac BABCBabcab",
+      "cosets": "adfbjcilgeohpqkmn baghjkcdneflqipom ceaibfjmdglkhqpon",
+      "invcos": "adfbjcilgeohpqkmn baghjkcdneflqipom ceaibfjmdglkhqpon"
+    },
+    {
+      "subgroup": "*533.17.8",
+      "index": 17,
+      "generators": "a BCBabc BACAbcab BABAcbac",
+      "cosets": "adfbjckmoegphqiln baghklcdonefmjiqp ceaibfkndogmlhjqp",
+      "invcos": "adfbjckmoegphqiln baghklcdonefmjiqp ceaibfkndogmlhjqp"
+    },
+    {
+      "subgroup": "*533.17.9",
+      "index": 17,
+      "generators": "a BCBabc BACAbacb BABAcbac",
+      "cosets": "adfbjckmoegphqiln baghklcdpoefmqjin ceaibfkndogmlhjqp",
+      "invcos": "adfbjckmoegphqiln baghklcdpoefmqjin ceaibfkndogmlhjqp"
+    },
+    {
+      "subgroup": "*533.17.10",
+      "index": 17,
+      "generators": "a b CAbac CBABCBabcbabc CBABCABAcbacbabc CBACBABAcababcabc",
+      "cosets": "acbedfgjlhkiopmnq adcbfeikgmhnjlopq bacdghefkjiloqmpn",
+      "invcos": "acbedfgjlhkiopmnq adcbfeikgmhnjlopq bacdghefkjiloqmpn"
+    },
+    {
+      "subgroup": "*533.17.11",
+      "index": 17,
+      "generators": "a b CABAcabac CABABAcababc CBABCBabcabc",
+      "cosets": "acbfgdehljoipqkmn adebcikhfngoqjlpm bacdhjgemfpoiqlkn",
+      "invcos": "acbfgdehljoipqkmn adebcikhfngoqjlpm bacdhjgemfpoiqlkn"
+    },
+    {
+      "subgroup": "*533.18.1",
+      "index": 18,
+      "generators": "a b CBABcabac CABCABabcabc",
+      "cosets": "acbfgdelmjohipknrq adebcikhfngpojmlrq bacdhjiegfnmlkqrop",
+      "invcos": "acbfgdelmjohipknrq adebcikhfngpojmlrq bacdhjiegfnmlkqrop"
+    },
+    {
+      "subgroup": "*533.18.2",
+      "index": 18,
+      "generators": "a b CABabac CBACBACbabacbac CBACBABacbacbac",
+      "cosets": "acbfedihglmjkonprq adebcfgjkhiopnlmrq bacdghefijnpqkrlmo",
+      "invcos": "acbfedihglmjkonprq adebcfgjkhiopnlmrq bacdghefijnpqkrlmo"
+    },
+    {
+      "subgroup": "*533.18.3",
+      "index": 18,
+      "generators": "a b CABabac CABCABAcabacbac CBACBABcbabcabc CBACBABAcbabacbac",
+      "cosets": "acbfedihglmjknrpqo adebcfgjkhioqnlpmr bacdghefijnpmkolrq",
+      "invcos": "acbfedihglmjknrpqo adebcfgjkhioqnlpmr bacdghefijnpmkolrq"
+    },
+    {
+      "subgroup": "*533.18.4",
+      "index": 18,
+      "generators": "a b CABAcabac CBABcbabc CBABACBacababac",
+      "cosets": "acbfgdehljmikqornp adebcikhfjgmlnrqpo bacdhjgeifnopklmrq",
+      "invcos": "acbfgdehljmikqornp adebcikhfjgmlnrqpo bacdhjgeifnopklmrq"
+    },
+    {
+      "subgroup": "*533.18.5",
+      "index": 18,
+      "generators": "a b CBabc CABACAbacabac CABACBABcbabcabac CABCABABcbabacbac",
+      "cosets": "acbdfeijghmnklopqr adebcfgkljhioqmpnr bacdghefjiklpromqn",
+      "invcos": "acbdfeijghmnklopqr adebcfgkljhioqmpnr bacdghefjiklpromqn"
+    },
+    {
+      "subgroup": "*533.18.6",
+      "index": 18,
+      "generators": "a b CBabc CABACBabcabac CABACABAcabacbac",
+      "cosets": "acbdfeijghknplqmor adebcfgklmhijrqpon bacdghefjikoqplnmr",
+      "invcos": "acbdfeijghknplqmor adebcfgklmhijrqpon bacdghefjikoqplnmr"
+    },
+    {
+      "subgroup": "*533.18.7",
+      "index": 18,
+      "generators": "a b CAbac CBABCBabcbabc CBABCABAcabacbabc CBACBABAcababcabc",
+      "cosets": "acbedfgjlhkioqmpnr adcbfeikgmhnjlopqr bacdghefkjilpromqn",
+      "invcos": "acbedfgjlhkioqmpnr adcbfeikgmhnjlopqr bacdghefkjilpromqn"
+    },
+    {
+      "subgroup": "*533.18.8",
+      "index": 18,
+      "generators": "a b CBABCababac CABACAbcabac",
+      "cosets": "acbfgdemnjorhikqpl adebcikhfpgrqonjml bacdhjleofqgrpinkm",
+      "invcos": "acbfgdemnjorhikqpl adebcikhfpgrqonjml bacdhjleofqgrpinkm"
+    },
+    {
+      "subgroup": "*533.18.9",
+      "index": 18,
+      "generators": "a b CABACababac CBABCAbcbabc",
+      "cosets": "acbfgdemnjlkhirqpo adebcikhfpgnqlrjmo bacdhjleofmgkqirnp",
+      "invcos": "acbfgdemnjlkhirqpo adebcikhfpgnqlrjmo bacdhjleofmgkqirnp"
+    },
+    {
+      "subgroup": "*533.18.10",
+      "index": 18,
+      "generators": "a b CAbac CBABCAbacbabc CBABCBABcbabcabc",
+      "cosets": "acbedfgjlhmikrqpon adcbfeikgjhnplqmor bacdghefkjioqplnmr",
+      "invcos": "acbedfgjlhmikrqpon adcbfeikgjhnplqmor bacdghefkjioqplnmr"
+    },
+    {
+      "subgroup": "*533.20.1",
+      "index": 20,
+      "generators": "a CAbac BABCbabc BCABabcab",
+      "cosets": "adfbjclmoerghniqpkts baghkfcdpqenmlsijtor ceaibfkndogpmhjlrqts",
+      "invcos": "adfbjclmoerghniqpkts baghkfcdpqenmlsijtor ceaibfkndogpmhjlrqts"
+    },
+    {
+      "subgroup": "*533.20.2",
+      "index": 20,
+      "generators": "Ac BABcab ABCAbcaba BCABAcababa",
+      "cosets": "baegcjdmnfprhisktloq cdabihkfeogmlpjnrqts bafhicldenqgrjtskmpo",
+      "invcos": "baegcjdmnfprhisktloq cdabihkfeogmlpjnrqts bafhicldenqgrjtskmpo"
+    },
+    {
+      "subgroup": "*533.20.3",
+      "index": 20,
+      "generators": "Ac BABcab BCABacaba ABACBacbaba",
+      "cosets": "baegcjdmnfpohilkrqts cdabihkfeogrspjntlmq bafhicldenqgojmsktpr",
+      "invcos": "baegcjdmnfpohilkrqts cdabihkfeogrspjntlmq bafhicldenqgojmsktpr"
+    },
+    {
+      "subgroup": "*533.20.4",
+      "index": 20,
+      "generators": "Ac BABcab ABABcaba BCABABcabacb",
+      "cosets": "baegcjdlmfohiqkrnpts cdabihkfengpojmlstqr bafhickdemgojplnstqr",
+      "invcos": "baegcjdlmfohiqkrnpts cdabihkfengpojmlstqr bafhickdemgojplnstqr"
+    },
+    {
+      "subgroup": "*533.20.5",
+      "index": 20,
+      "generators": "Ac BCaba BABCABAcbacabab",
+      "cosets": "baefcdijghmnklqsotpr cdabhgfejilkopmnrqts bafgicdkelhjnmrqpots",
+      "invcos": "baefcdijghmnklqsotpr cdabhgfejilkopmnrqts bafgicdkelhjnmrqpots"
+    },
+    {
+      "subgroup": "*533.20.6",
+      "index": 20,
+      "generators": "Ac BCaba BABCABCabacabab",
+      "cosets": "baefcdijghmnklqropts cdabhgfejilkopmntsrq bafgicdkelhjnmrstopq",
+      "invcos": "baefcdijghmnklqropts cdabhgfejilkopmntsrq bafgicdkelhjnmrstopq"
+    },
+    {
+      "subgroup": "*533.20.7",
+      "index": 20,
+      "generators": "Ac BAcb ABABCBabcaba ABABACAbacbaba",
+      "cosets": "baefcdjkmghpiqslntor cdabghefnkjqritslmpo baegcidlfmohjqksntpr",
+      "invcos": "baefcdjkmghpiqslntor cdabghefnkjqritslmpo baegcidlfmohjqksntpr"
+    },
+    {
+      "subgroup": "*533.20.8",
+      "index": 20,
+      "generators": "Ac BCAbaba BACABabcbab",
+      "cosets": "baegckdihnfmljstrqop cdabihkfeogpqrjlmnts bafhjcldmengikqropts",
+      "invcos": "baegckdihnfmljstrqop cdabihkfeogpqrjlmnts bafhjcldmengikqropts"
+    },
+    {
+      "subgroup": "*533.20.9",
+      "index": 20,
+      "generators": "Ac ABABcbab BACAbacb ABCABcabab",
+      "cosets": "baegckdnopfqrhijlmts cdabihlfempgjsqkotnr bafhjcmdlepigrsktnoq",
+      "invcos": "baegckdnopfqrhijlmts cdabihlfempgjsqkotnr bafhjcmdlepigrsktnoq"
+    },
+    {
+      "subgroup": "*533.20.10",
+      "index": 20,
+      "generators": "Ac BABacb ABABCBabcbab",
+      "cosets": "baegcidkfmhojrltsnqp cdabihkfengpqjslmtor bafhjcldmeogiqksntpr",
+      "invcos": "baegcidkfmhojrltsnqp cdabihkfengpqjslmtor bafhjcldmeogiqksntpr"
+    },
+    {
+      "subgroup": "*533.20.11",
+      "index": 20,
+      "generators": "Ac ABABcbab BACAbacb ABCABcababa",
+      "cosets": "baegckdnopfqrhijlmts cdabihlfempgjsqkotnr bafhjcmdlepigrtksnqo",
+      "invcos": "baegckdnopfqrhijlmts cdabihlfempgjsqkotnr bafhjcmdlepigrtksnqo"
+    },
+    {
+      "subgroup": "*533.20.12",
+      "index": 20,
+      "generators": "Ac BACbaba BCABacaba",
+      "cosets": "baegckdmnpfqhisjltor cdabihjfegqorplnkmts bafhjcldoepgqrikmnts",
+      "invcos": "baegckdmnpfqhisjltor cdabihjfegqorplnkmts bafhjcldoepgqrikmnts"
+    },
+    {
+      "subgroup": "*533.20.13",
+      "index": 20,
+      "generators": "Ac BCAbcab BABAcbaba",
+      "cosets": "baegckdnoqfrshitjlmp cdabihlfekjgtsrqponm bafhjcmdpeqogsliktnr",
+      "invcos": "baegckdnoqfrshitjlmp cdabihlfekjgtsrqponm bafhjcmdpeqogsliktnr"
+    },
+    {
+      "subgroup": "*533.20.14",
+      "index": 20,
+      "generators": "Ac BACabab ABACAbacba ABACBacbaba",
+      "cosets": "baegckdnjiforhltsmqp cdabihlfeopgsrjktnmq bafhjcmdkeiqgrpolnts",
+      "invcos": "baegckdnjiforhltsmqp cdabihlfeopgsrjktnmq bafhjcmdkeiqgrpolnts"
+    },
+    {
+      "subgroup": "*533.20.15",
+      "index": 20,
+      "generators": "a CAbac BABCbabc BCBAbacab",
+      "cosets": "adfbjclmoerghnistkpq baghkfcdpqenmlrijots ceaibfkndogpmhjltsrq",
+      "invcos": "adfbjclmoerghnistkpq baghkfcdpqenmlrijots ceaibfkndogpmhjltsrq"
+    },
+    {
+      "subgroup": "*533.20.16",
+      "index": 20,
+      "generators": "Ac BCAbcab ABCAbcaba",
+      "cosets": "baegckdnoqfrthisjlpm cdabihlfekjgnmrqpots bafhjcmdpeqsgtrikoln",
+      "invcos": "baegckdnoqfrthisjlpm cdabihlfekjgnmrqpots bafhjcmdpeqsgtrikoln"
+    },
+    {
+      "subgroup": "*533.20.17",
+      "index": 20,
+      "generators": "Ac ABCAbcab ABACbacb",
+      "cosets": "baegckdnoqfrthisjlpm cdabihlfenmgkjrtsoqp bafhjcmdpeqsgtrikoln",
+      "invcos": "baegckdnoqfrthisjlpm cdabihlfenmgkjrtsoqp bafhjcmdpeqsgtrikoln"
+    },
+    {
+      "subgroup": "*533.20.18",
+      "index": 20,
+      "generators": "a BABcab CAbac BCBABcabcb BCABAcbabc",
+      "cosets": "adfbicklenghqjormpts baghjfcdmeolirkstnpq ceahbfjdlgpimrqkonts",
+      "invcos": "adfbicklenghqjormpts baghjfcdmeolirkstnpq ceahbfjdlgpimrqkonts"
+    },
+    {
+      "subgroup": "*533.20.19",
+      "index": 20,
+      "generators": "a BAcab BABAcbac CBABcabc BABCAbabcb",
+      "cosets": "adfbecklnoghqijrmpts baghijcdefplmqskntor ceadbfimglpjhrqkonts",
+      "invcos": "adfbecklnoghqijrmpts baghijcdefplmqskntor ceadbfimglpjhrqkonts"
+    },
+    {
+      "subgroup": "*533.20.20",
+      "index": 20,
+      "generators": "a BAcab BABAcbab CBABcabcb CABABcabac",
+      "cosets": "adfbecklmnghijrqpots baghijcdefplrsoktmnq ceadbfilgoqhpsjmktnr",
+      "invcos": "adfbecklmnghijrqpots baghijcdefplrsoktmnq ceadbfilgoqhpsjmktnr"
+    },
+    {
+      "subgroup": "*533.20.21",
+      "index": 20,
+      "generators": "a BAcab BABAcbab CBABcabc BCBABacbac CABABcbabcb",
+      "cosets": "adfbecklmnghijqropts baghijcdefplqsokmtnr ceadbfilgophrtjksmqn",
+      "invcos": "adfbecklmnghijqropts baghijcdefplqsokmtnr ceadbfilgophrtjksmqn"
+    },
+    {
+      "subgroup": "*533.20.22",
+      "index": 20,
+      "generators": "Ac BACbaba ABACAbacba BABACabacb",
+      "cosets": "baegckdmnpfrhitjslqo cdabihjfegqorplnkmts bafhjcldoepgrsiktmnq",
+      "invcos": "baegckdmnpfrhitjslqo cdabihjfegqorplnkmts bafhjcldoepgrsiktmnq"
+    },
+    {
+      "subgroup": "*533.20.23",
+      "index": 20,
+      "generators": "Ac ABCAbcab BCABcbaba",
+      "cosets": "baegckdnoqfsthirjplm cdabihlfenrgqjstmkop bafhjcmdpeqrgtsiklon",
+      "invcos": "baegckdnoqfsthirjplm cdabihlfenrgqjstmkop bafhjcmdpeqrgtsiklon"
+    },
+    {
+      "subgroup": "*533.20.24",
+      "index": 20,
+      "generators": "a BCbab CABABAcbabac CABACAbacbac",
+      "cosets": "adfbhcjekgipqrslmnot bagedichfmnljktsrqpo ceagbfdjlhoimrkstnpq",
+      "invcos": "adfbhcjekgipqrslmnot bagedichfmnljktsrqpo ceagbfdjlhoimrkstnpq"
+    },
+    {
+      "subgroup": "*533.20.25",
+      "index": 20,
+      "generators": "a c BABcab BCABABCAbacbabacb BCABACBABcabcabacb",
+      "cosets": "acbfgdeihjknplqmotsr baedchgfjimoknlrspqt adebcgfhklijonmrtpsq",
+      "invcos": "acbfgdeihjknplqmotsr baedchgfjimoknlrspqt adebcgfhklijonmrtpsq"
+    },
+    {
+      "subgroup": "*533.20.26",
+      "index": 20,
+      "generators": "a BAbc BACABAcbacab BCABACBabcabacb",
+      "cosets": "adfbhcieglnjokmqprts badcgfejkhionmlrspqt ceagbfdihmnpjkqlosrt",
+      "invcos": "adfbhcieglnjokmqprts badcgfejkhionmlrspqt ceagbfdihmnpjkqlosrt"
+    },
+    {
+      "subgroup": "*533.20.27",
+      "index": 20,
+      "generators": "a c BABcab BCABABCBabcbabacb BCABABCABAcbacbabacb BCABACBABAcbabcabacb",
+      "cosets": "acbfgdeihjknplomstqr baedchgfjimokqlrnpst adebcgfhklijonmpstqr",
+      "invcos": "acbfgdeihjknplomstqr baedchgfjimokqlrnpst adebcgfhklijonmpstqr"
+    },
+    {
+      "subgroup": "*533.20.28",
+      "index": 20,
+      "generators": "a BAbc BCABAcbacb BACABABCBabcbabacab",
+      "cosets": "adfbhcieglmjkonqptsr badcgfejkhinolmrspqt ceagbfdihlnjpkqmosrt",
+      "invcos": "adfbhcieglmjkonqptsr badcgfejkhinolmrspqt ceagbfdihlnjpkqmosrt"
+    },
+    {
+      "subgroup": "*533.20.29",
+      "index": 20,
+      "generators": "a BAbc BCABAcbacb BACABACBabcabacab",
+      "cosets": "adfbhcieglmjkonqprts badcgfejkhinolmrspqt ceagbfdihlnjpkqmosrt",
+      "invcos": "adfbhcieglmjkonqprts badcgfejkhinolmrspqt ceagbfdihlnjpkqmosrt"
+    },
+    {
+      "subgroup": "*533.20.30",
+      "index": 20,
+      "generators": "a c BABacb BACBABcabcab BABCBABCAbacbabcbab",
+      "cosets": "acbedgfjkhinolmrspqt baedchifglmjkonqprts adfbgceihlnjpkqmosrt",
+      "invcos": "acbedgfjkhinolmrspqt baedchifglmjkonqprts adfbgceihlnjpkqmosrt"
+    },
+    {
+      "subgroup": "*533.20.31",
+      "index": 20,
+      "generators": "a c BABacb BACBABcabcab BABCBABACAbacababcbab",
+      "cosets": "acbedgfjkhinolmrspqt baedchifglmjkonqptsr adfbgceihlnjpkqmosrt",
+      "invcos": "acbedgfjkhinolmrspqt baedchifglmjkonqptsr adfbgceihlnjpkqmosrt"
+    },
+    {
+      "subgroup": "*533.20.32",
+      "index": 20,
+      "generators": "a BAcb CBACbabac CABACAbacbac",
+      "cosets": "adebcijkfghqrontlmsp bafghcdemjnlikrstopq cdabegflnophsijktrmq",
+      "invcos": "adebcijkfghqrontlmsp bafghcdemjnlikrstopq cdabegflnophsijktrmq"
+    },
+    {
+      "subgroup": "*533.20.33",
+      "index": 20,
+      "generators": "Ac BACabab ABCAbcaba",
+      "cosets": "baegckdnjiforhlstmpq cdabihlfeopgnmjkrqts bafhjcmdkeiqgrpolnts",
+      "invcos": "baegckdnjiforhlstmpq cdabihlfeopgnmjkrqts bafhjcmdkeiqgrpolnts"
+    },
+    {
+      "subgroup": "*533.20.34",
+      "index": 20,
+      "generators": "a c BABacb BABCBABcabcbab BACBABACAbacababcab",
+      "cosets": "acbedgfjkhionmlrspqt baedchifglnjokmqptsr adfbgceihmnpjkqlosrt",
+      "invcos": "acbedgfjkhionmlrspqt baedchifglnjokmqptsr adfbgceihmnpjkqlosrt"
+    },
+    {
+      "subgroup": "*533.20.35",
+      "index": 20,
+      "generators": "a BAcb CBABcabc CABCAbcabac",
+      "cosets": "adebcijkfghqnmrtlosp bafghcdemjolirkqpnts cdabegflmnphijsktroq",
+      "invcos": "adebcijkfghqnmrtlosp bafghcdemjolirkqpnts cdabegflmnphijsktroq"
+    },
+    {
+      "subgroup": "*533.20.36",
+      "index": 20,
+      "generators": "a BAcb BABAcbac CABABAcababac CBABACAbacbabc",
+      "cosets": "adebcijkfghnplsmqtor bafghcdeljmikpqnorts cdabegfjkhioqrlpmnts",
+      "invcos": "adebcijkfghnplsmqtor bafghcdeljmikpqnorts cdabegfjkhioqrlpmnts"
+    },
+    {
+      "subgroup": "*533.20.37",
+      "index": 20,
+      "generators": "Ac BABacb ABACBabcab",
+      "cosets": "baegcidkfmhojplnstqr cdabihkfengpqjrlmots bafhjcldmeogiqkrnpts",
+      "invcos": "baegcidkfmhojplnstqr cdabihkfengpqjrlmots bafhjcldmeogiqkrnpts"
+    },
+    {
+      "subgroup": "*533.20.38",
+      "index": 20,
+      "generators": "a c BACAbacb BABACBabcbab BABCABAcbacbab",
+      "cosets": "acbghjdemfkoiplnstqr baedckjhngfpqirlmots adfbicjlegnhokmpstqr",
+      "invcos": "acbghjdemfkoiplnstqr baedckjhngfpqirlmots adfbicjlegnhokmpstqr"
+    },
+    {
+      "subgroup": "*533.20.39",
+      "index": 20,
+      "generators": "a Bc BABACAbacabab BABACBABcabcabab BABCABABCBabcabacbab",
+      "cosets": "acbedhifglmjknopstqr badcefjkighnolmrtpsq bacfgdeihjknplqmotsr",
+      "invcos": "acbedhifglmjknopstqr badcefjkighnolmrtpsq bacfgdeihjknplqmotsr"
+    },
+    {
+      "subgroup": "*533.20.40",
+      "index": 20,
+      "generators": "a Bc BABACAbacabab BABACBACbabacbab BABACBABCABAcbacbabcabab",
+      "cosets": "acbedhifglmjknoprqts badcefjkighnolmqpsrt bacfgdeihjkopqlmnrts",
+      "invcos": "acbedhifglmjknoprqts badcefjkighnolmqpsrt bacfgdeihjkopqlmnrts"
+    },
+    {
+      "subgroup": "*533.20.41",
+      "index": 20,
+      "generators": "a c BABACabacb BACABabcbab",
+      "cosets": "acbghjdenfqmlipokrts baedcklhopfgrsijtmnq adfbicjmegonhlkstrpq",
+      "invcos": "acbghjdenfqmlipokrts baedcklhopfgrsijtmnq adfbicjmegonhlkstrpq"
+    },
+    {
+      "subgroup": "*533.20.42",
+      "index": 20,
+      "generators": "a c BABACabacb BABCBabcbab BACABabacab",
+      "cosets": "acbghjdenfqmliopkrts baedcklhopfgrsijqmnt adfbicjmegonhlksqrpt",
+      "invcos": "acbghjdenfqmliopkrts baedcklhopfgrsijqmnt adfbicjmegonhlksqrpt"
+    },
+    {
+      "subgroup": "*533.20.43",
+      "index": 20,
+      "generators": "a Bcb BABAcabab CABAbcbab CABCABAcbacbac",
+      "cosets": "adebciglfjnhokmrtpsq bacfhdkeilgjmpqnorts cbagejdmiflkhonstrpq",
+      "invcos": "adebciglfjnhokmrtpsq bacfhdkeilgjmpqnorts cbagejdmiflkhonstrpq"
+    },
+    {
+      "subgroup": "*533.20.44",
+      "index": 20,
+      "generators": "a Bcb BACBabac BABAcabab CABCABAcbacbac",
+      "cosets": "adebcigkfjhnolmrspqt bacfhdkeimgljpqnotsr cbagejdlifmhkonrtpsq",
+      "invcos": "adebcigkfjhnolmrspqt bacfhdkeimgljpqnotsr cbagejdlifmhkonrtpsq"
+    },
+    {
+      "subgroup": "*533.20.45",
+      "index": 20,
+      "generators": "Ac BCAbaba ABACBabcab",
+      "cosets": "baegckdihnfmljpostqr cdabihkfeogpqrjlmnts bafhjcldmengikqropts",
+      "invcos": "baegckdihnfmljpostqr cdabihkfeogpqrjlmnts bafhjcldmengikqropts"
+    },
+    {
+      "subgroup": "*533.20.46",
+      "index": 20,
+      "generators": "Ac ABACabab BACAbacb BACBAcababa",
+      "cosets": "baegckdnmofqihjtlsrp cdabihlfepogqskjmtnr bafhjcmdneorgikstlpq",
+      "invcos": "baegckdnmofqihjtlsrp cdabihlfepogqskjmtnr bafhjcmdneorgikstlpq"
+    },
+    {
+      "subgroup": "*533.20.47",
+      "index": 20,
+      "generators": "Ac BACAbacb BABAcbaba BACBacaba",
+      "cosets": "baegckdnoqfsrhitjmlp cdabihlferqgtpsnkjom bafhjcmdpeqogrliknts",
+      "invcos": "baegckdnoqfsrhitjmlp cdabihlferqgtpsnkjom bafhjcmdpeqogrliknts"
+    },
+    {
+      "subgroup": "*533.20.48",
+      "index": 20,
+      "generators": "Ac ABACabab BACAbacb ABABCabcab",
+      "cosets": "baegckdnmofqihjrlpts cdabihlfepogqskjmtnr bafhjcmdneorgikstlpq",
+      "invcos": "baegckdnmofqihjrlpts cdabihlfepogqskjmtnr bafhjcmdneorgikstlpq"
+    },
+    {
+      "subgroup": "*533.20.49",
+      "index": 20,
+      "generators": "a Bc BABACABAcbacabab BABACBACbabacbab BABCABACababcabab",
+      "cosets": "acbedhifgmnpjktlsrqo badcefjklghiqrpomnts bacfgdeihjoprskltmnq",
+      "invcos": "acbedhifgmnpjktlsrqo badcefjklghiqrpomnts bacfgdeihjoprskltmnq"
+    },
+    {
+      "subgroup": "*533.20.50",
+      "index": 20,
+      "generators": "a Bc BABCABCabacabab BABACBACbabacbab",
+      "cosets": "acbedhifgmnojklstrpq badcefjklghiqrpomnts bacfgdeihjoprskltmnq",
+      "invcos": "acbedhifgmnojklstrpq badcefjklghiqrpomnts bacfgdeihjoprskltmnq"
+    },
+    {
+      "subgroup": "*533.20.51",
+      "index": 20,
+      "generators": "a Bc BABACABabacabab BABACBACbabacbab BABACABCABAcbacbacabab",
+      "cosets": "acbedhifgmnljkorqpts badcefjklghimqponsrt bacfgdeihjopqnklmrts",
+      "invcos": "acbedhifgmnljkorqpts badcefjklghimqponsrt bacfgdeihjopqnklmrts"
+    },
+    {
+      "subgroup": "*533.20.52",
+      "index": 20,
+      "generators": "a Bc BABACAbacabab BABACBABcabacbab BABACBACBABAcbabcabcabab",
+      "cosets": "acbedhifglmjknoprqts badcefjkighnplqmosrt bacfgdeihjkonmlqprts",
+      "invcos": "acbedhifglmjknoprqts badcefjkighnplqmosrt bacfgdeihjkonmlqprts"
+    },
+    {
+      "subgroup": "*533.20.53",
+      "index": 20,
+      "generators": "a c BACAbacb BABACAbacabab BABCABabacbab BABACBABcabcabab",
+      "cosets": "acbghjdemfkoirlsqnpt baedckjhngfpqiolmrts adfbicjlegnhokmpqrts",
+      "invcos": "acbghjdemfkoirlsqnpt baedckjhngfpqiolmrts adfbicjlegnhokmpqrts"
+    },
+    {
+      "subgroup": "*533.20.54",
+      "index": 20,
+      "generators": "Ac BABacb BACBAbcbaba",
+      "cosets": "baegcidkfmhojrlstnpq cdabihkfengpqjrlmots bafhjcldmeogiqkrnpts",
+      "invcos": "baegcidkfmhojrlstnpq cdabihkfengpqjrlmots bafhjcldmeogiqkrnpts"
+    },
+    {
+      "subgroup": "*533.20.55",
+      "index": 20,
+      "generators": "a c BABAcabab BACBabcab BCABAcbacb BABCBABAcbabcbab",
+      "cosets": "acbghjdeifkopqlmnrts baedcklhmnfgijrsqopt adfbicjhegmokrlpqnts",
+      "invcos": "acbghjdeifkopqlmnrts baedcklhmnfgijrsqopt adfbicjhegmokrlpqnts"
+    },
+    {
+      "subgroup": "*533.20.56",
+      "index": 20,
+      "generators": "a c BABAcabab BABCBabacb BACABabacab BACABCAbacbacab",
+      "cosets": "acbghjdeifomlnkrspqt baedcklhmnfgijoqptsr adfbicjhegmpkqrlnost",
+      "invcos": "acbghjdeifomlnkrspqt baedcklhmnfgijoqptsr adfbicjhegmpkqrlnost"
+    },
+    {
+      "subgroup": "*533.20.57",
+      "index": 20,
+      "generators": "a c BABAcabab BACAbacab BABCBabcab BCABABCBabcabacb",
+      "cosets": "acbghjdeifmnklopstqr baedcklhmjfgionrtpsq adfbicjhegmlkpqnotsr",
+      "invcos": "acbghjdeifmnklopstqr baedcklhmjfgionrtpsq adfbicjhegmlkpqnotsr"
+    },
+    {
+      "subgroup": "*533.20.58",
+      "index": 20,
+      "generators": "a c BABACabacb BACBAbacbab",
+      "cosets": "acbghjdenfqmlistkrop baedcklhopfgrqijnmts adfbicjmegonhlkqprts",
+      "invcos": "acbghjdenfqmlistkrop baedcklhopfgrqijnmts adfbicjmegonhlkqprts"
+    },
+    {
+      "subgroup": "*533.20.59",
+      "index": 20,
+      "generators": "a c BABCBabcab BCABAcbacb BABACAbacbab",
+      "cosets": "acbghjdenfoqrikslmpt baedcklhopfgsrijtnmq adfbicjmegoqhrktlnsp",
+      "invcos": "acbghjdenfoqrikslmpt baedcklhopfgsrijtnmq adfbicjmegoqhrktlnsp"
+    },
+    {
+      "subgroup": "*533.20.60",
+      "index": 20,
+      "generators": "a c BABcbab BCABAbcabab BACABABcbabacab BACABACAbacbacab",
+      "cosets": "acbghidefmkojnlsqtpr baedcfjhlgmikpqnorts adfbecikgnhpmjrlqots",
+      "invcos": "acbghidefmkojnlsqtpr baedcfjhlgmikpqnorts adfbecikgnhpmjrlqots"
+    },
+    {
+      "subgroup": "*533.20.61",
+      "index": 20,
+      "generators": "a BAcb BABAcbac CBABAcababc CABABACAbacbabac",
+      "cosets": "adebcijkfghnplomstqr bafghcdeljmikpqnorts cdabegfjkhioqnlrmpts",
+      "invcos": "adebcijkfghnplomstqr bafghcdeljmikpqnorts cdabegfjkhioqnlrmpts"
+    },
+    {
+      "subgroup": "*533.20.62",
+      "index": 20,
+      "generators": "a c BABAcabab BCABCabcbab BACABabacab",
+      "cosets": "acbghjdeifopqnklmtsr baedcklhmnfgijosrqpt adfbicjhegmqkrpolnst",
+      "invcos": "acbghjdeifopqnklmtsr baedcklhmnfgijosrqpt adfbicjhegmqkrpolnst"
+    },
+    {
+      "subgroup": "*533.20.63",
+      "index": 20,
+      "generators": "a c BABcbab BABACBabacab BCABABcbabacb BCABACAbacbacb",
+      "cosets": "acbghidefmkojslpqtnr baedcfjhlgoiqpknmrts adfbecikgnhprjolqmts",
+      "invcos": "acbghidefmkojslpqtnr baedcfjhlgoiqpknmrts adfbecikgnhprjolqmts"
+    },
+    {
+      "subgroup": "*533.20.64",
+      "index": 20,
+      "generators": "a BAcb CAbac BABACBacbabc CBACBABcabcabc",
+      "cosets": "adebchifgjlkoqmrnpts bafgecdjihnopklmstqr cdabegfklmhijponstqr",
+      "invcos": "adebchifgjlkoqmrnpts bafgecdjihnopklmstqr cdabegfklmhijponstqr"
+    },
+    {
+      "subgroup": "*533.20.65",
+      "index": 20,
+      "generators": "a c BACBabcab BABACabacb BABCABabacbab",
+      "cosets": "acbghjdenfkmlistqrop baedcklhopfgqrijmnst adfbicjmegonhlkrqpst",
+      "invcos": "acbghjdenfkmlistqrop baedcklhopfgqrijmnst adfbicjmegonhlkrqpst"
+    },
+    {
+      "subgroup": "*533.21.1",
+      "index": 21,
+      "generators": "a b CABabac CBACBABacbacbac CABCABABcbabacbac CBACBABCBabcabcabc",
+      "cosets": "acbfedihglmjkonpqsrut adebcfgjkhioqnltmrups bacdghefijnprkslqmout",
+      "invcos": "acbfedihglmjkonpqsrut adebcfgjkhioqnltmrups bacdghefijnprkslqmout"
+    },
+    {
+      "subgroup": "*533.21.2",
+      "index": 21,
+      "generators": "a b CBabc CABACAbacabac CABACBABcabacbac CABACBACBABAcbabcabcabac",
+      "cosets": "acbdfeijghmnklopqsrut adebcfgkljhioqmrnptsu bacdghefjiklponmrqsut",
+      "invcos": "acbdfeijghmnklopqsrut adebcfgkljhioqmrnptsu bacdghefjiklponmrqsut"
+    },
+    {
+      "subgroup": "*533.21.3",
+      "index": 21,
+      "generators": "a b CABabac CBACBACbabacbac CABCABACAbacbacbac",
+      "cosets": "acbfedihglmjkrspunotq adebcfgjkhiopnlmtusqr bacdghefijnpqktlmusor",
+      "invcos": "acbfedihglmjkrspunotq adebcfgjkhiopnlmtusqr bacdghefijnpqktlmusor"
+    },
+    {
+      "subgroup": "*533.21.4",
+      "index": 21,
+      "generators": "a b CABabac CBACBABcabacbac CABCABCABabcabcabc",
+      "cosets": "acbfedihglmjkrspqnout adebcfgjkhioqnltmuspr bacdghefijnpokmltsrqu",
+      "invcos": "acbfedihglmjkrspqnout adebcfgjkhioqnltmuspr bacdghefijnpokmltsrqu"
+    },
+    {
+      "subgroup": "*533.21.5",
+      "index": 21,
+      "generators": "a b CBabc CABACAbacabac CABACBACbabacbac CABACBABCABAcbacbabcabac",
+      "cosets": "acbdfeijghmnklopqsrut adebcfgkljhiopmnrqtsu bacdghefjiklpqrmnosut",
+      "invcos": "acbdfeijghmnklopqsrut adebcfgkljhiopmnrqtsu bacdghefjiklpqrmnosut"
+    },
+    {
+      "subgroup": "*533.21.6",
+      "index": 21,
+      "generators": "a b CBabc CABACAbacabac CABACBABcabcabac CABCABABCBabcabacbac",
+      "cosets": "acbdfeijghmnklopqturs adebcfgkljhiopmnsuqtr bacdghefjikloqmrnputs",
+      "invcos": "acbdfeijghmnklopqturs adebcfgkljhiopmnsuqtr bacdghefjikloqmrnputs"
+    },
+    {
+      "subgroup": "*533.21.7",
+      "index": 21,
+      "generators": "a b CBabc CABACAbacabac CABCABABcabacbac CABACBABCBabcabcabac",
+      "cosets": "acbdfeijghmnklopqturs adebcfgkljhioqmsnuptr bacdghefjiklpqrmnouts",
+      "invcos": "acbdfeijghmnklopqturs adebcfgkljhioqmsnuptr bacdghefjiklpqrmnouts"
+    },
+    {
+      "subgroup": "*533.21.8",
+      "index": 21,
+      "generators": "a b CBABCababac CABACAbacbac",
+      "cosets": "acbfgdemnjorhikqplsut adebcikhfpgsronjtmlqu bacdhjleofqgrpinkmtsu",
+      "invcos": "acbfgdemnjorhikqplsut adebcikhfpgsronjtmlqu bacdhjleofqgrpinkmtsu"
+    },
+    {
+      "subgroup": "*533.21.9",
+      "index": 21,
+      "generators": "a b CAbac CBABCBabcbabc CBABCABAcbacbabc CBACBABACAbacbabcabc",
+      "cosets": "acbedfgjlhkiopmnstqru adcbfeikgmhnjlopqutsr bacdghefkjiloqmrnptsu",
+      "invcos": "acbedfgjlhkiopmnstqru adcbfeikgmhnjlopqutsr bacdghefkjiloqmrnptsu"
+    },
+    {
+      "subgroup": "*533.21.10",
+      "index": 21,
+      "generators": "a b CABABcbabc CABACAbacbac CABABACBabcababac",
+      "cosets": "acbfgdemnjophiklrquts adebcikhflgjponmstqru bacdhjlekfigpqrmnotsu",
+      "invcos": "acbfgdemnjophiklrquts adebcikhflgjponmstqru bacdhjlekfigpqrmnotsu"
+    },
+    {
+      "subgroup": "*533.21.11",
+      "index": 21,
+      "generators": "a b CAbac CBABCAbacbabc CBABCBABcbabcbabc CBACBABAcababcabc CBACBABCBabcabcabc",
+      "cosets": "acbedfgjlhmikrqponsut adcbfeikgjhnpltmqruos bacdghefkjioqslpmrnut",
+      "invcos": "acbedfgjlhmikrqponsut adcbfeikgjhnpltmqruos bacdghefkjioqslpmrnut"
+    },
+    {
+      "subgroup": "*533.21.12",
+      "index": 21,
+      "generators": "a b CABabac CABCABACababcabc CABCABCABabcabcabc",
+      "cosets": "acbfedihglmjksrpqonut adebcfgjkhioqnltmrups bacdghefijnprkslqmout",
+      "invcos": "acbfedihglmjksrpqonut adebcfgjkhioqnltmrups bacdghefijnprkslqmout"
+    },
+    {
+      "subgroup": "*533.21.13",
+      "index": 21,
+      "generators": "a b CABABcbabc CABACAbacbac CBABACBabcababc",
+      "cosets": "acbfgdemnjophiklrqsut adebcikhflgjponmstqru bacdhjlekfigpqrmnotsu",
+      "invcos": "acbfgdemnjophiklrqsut adebcikhflgjponmstqru bacdhjlekfigpqrmnotsu"
+    },
+    {
+      "subgroup": "*533.21.14",
+      "index": 21,
+      "generators": "a b CBABAcbabac CABCABabcabc CABACAbacabac",
+      "cosets": "acbfgdemnjqrhistklopu adebcikhfpgstqujnrlmo bacdhjleofngrkiusmqtp",
+      "invcos": "acbfgdemnjqrhistklopu adebcikhfpgstqujnrlmo bacdhjleofngrkiusmqtp"
+    },
+    {
+      "subgroup": "*533.21.15",
+      "index": 21,
+      "generators": "a b CAbac CBABCBabcbabc CBABCABCababcabc CBABCABACBABcabcabacbabc",
+      "cosets": "acbedfgjlhkiopmnrqtsu adcbfeikgmhnjlopqsrut bacdghefkjilpqrmnosut",
+      "invcos": "acbedfgjlhkiopmnrqtsu adcbfeikgmhnjlopqsrut bacdghefkjilpqrmnosut"
+    },
+    {
+      "subgroup": "*533.21.16",
+      "index": 21,
+      "generators": "a b CAbac CBABCBabcbabc CBABCABAcbabcabc CBABCABCABABcabacbacbabc",
+      "cosets": "acbedfgjlhkioqmrnptsu adcbfeikgmhnjlopqsrut bacdghefkjilponmrqsut",
+      "invcos": "acbedfgjlhkioqmrnptsu adcbfeikgmhnjlopqsrut bacdghefkjilponmrqsut"
+    },
+    {
+      "subgroup": "*533.21.17",
+      "index": 21,
+      "generators": "a b CAbac CBABCBabcbabc CBACBABAcbabcabc CBABCABACAbacbacbabc",
+      "cosets": "acbedfgjlhkioqmsntpru adcbfeikgmhnjlopqutsr bacdghefkjilpqrmnotsu",
+      "invcos": "acbedfgjlhkioqmsntpru adcbfeikgmhnjlopqutsr bacdghefkjilpqrmnotsu"
+    },
+    {
+      "subgroup": "*533.21.18",
+      "index": 21,
+      "generators": "a b CABabac CABCABABcbabcabc CABCABACAbacbacbac",
+      "cosets": "acbfedihglmjkstpqunor adebcfgjkhioqnlrmputs bacdghefijnprkqlomuts",
+      "invcos": "acbfedihglmjkstpqunor adebcfgjkhioqnlrmputs bacdghefijnprkqlomuts"
+    },
+    {
+      "subgroup": "*533.21.19",
+      "index": 21,
+      "generators": "a b CABACababc CABCABabcabc CABABACAbacababac",
+      "cosets": "acbfgdemljoihqksntpru adebcikhfngoqjlrmputs bacdhjlemfpgiqrknotsu",
+      "invcos": "acbfgdemljoihqksntpru adebcikhfngoqjlrmputs bacdhjlemfpgiqrknotsu"
+    },
+    {
+      "subgroup": "*533.21.20",
+      "index": 21,
+      "generators": "a b CBabc CABACABAcbacabac CABACBACbabacbac CABCABACababcabac",
+      "cosets": "acbdfeijghnoqklumtsrp adebcfgklmhijrsqpnout bacdghefjikpqstlmunor",
+      "invcos": "acbdfeijghnoqklumtsrp adebcfgklmhijrsqpnout bacdghefjikpqstlmunor"
+    },
+    {
+      "subgroup": "*533.21.21",
+      "index": 21,
+      "generators": "a b CBACBacabac CABABAcababc",
+      "cosets": "acbfgdemnjqphirlkouts adebcikhfpgsoqmjntlru bacdhjleofrgpqimnktsu",
+      "invcos": "acbfgdemnjqphirlkouts adebcikhfpgsoqmjntlru bacdhjleofrgpqimnktsu"
+    },
+    {
+      "subgroup": "*533.21.22",
+      "index": 21,
+      "generators": "a b CBACBacabac CABABAcababac CBABCAbcbabac",
+      "cosets": "acbfgdemnjqphiulkrtso adebcikhfpgsoqmjnultr bacdhjleofrgptimqkuns",
+      "invcos": "acbfgdemnjqphiulkrtso adebcikhfpgsoqmjnultr bacdhjleofrgptimqkuns"
+    },
+    {
+      "subgroup": "*533.21.23",
+      "index": 21,
+      "generators": "a b CAbac CBABCBABcabcbabc CBABCABCababcabc CBACBABCbabacbabc",
+      "cosets": "acbedfgjlhniqkrsmoput adcbfeikgmhojslutrnqp bacdghefkjiprstlumnoq",
+      "invcos": "acbedfgjlhniqkrsmoput adcbfeikgmhojslutrnqp bacdghefkjiprstlumnoq"
+    },
+    {
+      "subgroup": "*533.21.24",
+      "index": 21,
+      "generators": "a b CBabc CABACABabacabac CABACBACbabacbac CABACABCABAcbacbacabac",
+      "cosets": "acbdfeijghnomklpsrqut adebcfgklmhijnrqpotsu bacdghefjikpqrolmnsut",
+      "invcos": "acbdfeijghnomklpsrqut adebcfgklmhijnrqpotsu bacdghefjikpqrolmnsut"
+    },
+    {
+      "subgroup": "*533.21.25",
+      "index": 21,
+      "generators": "a b CABCAbcabac CBACBacbabc",
+      "cosets": "acbfgdemnjqshipokrlut adebcikhfpgmlqujnsrto bacdhjleofrgstiuqkmnp",
+      "invcos": "acbfgdemnjqshipokrlut adebcikhfpgmlqujnsrto bacdhjleofrgstiuqkmnp"
+    },
+    {
+      "subgroup": "*533.21.26",
+      "index": 21,
+      "generators": "a b CABACababc CABCABabcabc CABABCAbacbabac",
+      "cosets": "acbfgdemljoihqksntpru adebcikhfngoqjlrmpsut bacdhjlemfpgiqrknotsu",
+      "invcos": "acbfgdemljoihqksntpru adebcikhfngoqjlrmpsut bacdhjlemfpgiqrknotsu"
+    },
+    {
+      "subgroup": "*533.21.27",
+      "index": 21,
+      "generators": "a b CABAcabac CBABCAbcbabc CABABCAbcababc",
+      "cosets": "acbfgdehljoirqktnmups adebcikhfngorjlptmuqs bacdhjgemfpqirsklnout",
+      "invcos": "acbfgdehljoirqktnmups adebcikhfngorjlptmuqs bacdhjgemfpqirsklnout"
+    },
+    {
+      "subgroup": "*533.21.28",
+      "index": 21,
+      "generators": "a b CBabc CABCABCabacabac CABACBACbabacbac",
+      "cosets": "acbdfeijghnopklmtusqr adebcfgklmhijrsqpnout bacdghefjikpqstlmunor",
+      "invcos": "acbdfeijghnopklmtusqr adebcfgklmhijrsqpnout bacdghefjikpqstlmunor"
+    },
+    {
+      "subgroup": "*533.21.29",
+      "index": 21,
+      "generators": "a b CBabc CABACBabcabac CABACABAcabacabac CABCABABcbabacbac CABCABACAbacbacbac",
+      "cosets": "acbdfeijghknpltmqruos adebcfgklmhijrqponsut bacdghefjikoqslpmrnut",
+      "invcos": "acbdfeijghknpltmqruos adebcfgklmhijrqponsut bacdghefjikoqslpmrnut"
+    },
+    {
+      "subgroup": "*533.21.30",
+      "index": 21,
+      "generators": "a b CABACababac CBABCBabcabc",
+      "cosets": "acbfgdemnjlkhirstopqu adebcikhfpgnqlsjmrout bacdhjleofmgkqisntpru",
+      "invcos": "acbfgdemnjlkhirstopqu adebcikhfpgnqlsjmrout bacdhjleofmgkqisntpru"
+    },
+    {
+      "subgroup": "*533.21.31",
+      "index": 21,
+      "generators": "a b CAbac CBACBACbabcbabc CBABCABCababcabc",
+      "cosets": "acbedfgjlhniqkrsmoput adcbfeikgmhojplnurtsq bacdghefkjiprstlumnoq",
+      "invcos": "acbedfgjlhniqkrsmoput adcbfeikgmhojplnurtsq bacdghefkjiprstlumnoq"
+    },
+    {
+      "subgroup": "*533.21.32",
+      "index": 21,
+      "generators": "a b CAbac CBABCABabacbabc CBABCABCababcabc CBABCBACBABcabcabcbabc",
+      "cosets": "acbedfgjlhnimkqroptsu adcbfeikgmhojnlpqsrut bacdghefkjipqrolmnsut",
+      "invcos": "acbedfgjlhnimkqroptsu adcbfeikgmhojnlpqsrut bacdghefkjipqrolmnsut"
+    },
+    {
+      "subgroup": "*533.21.33",
+      "index": 21,
+      "generators": "a b CABABAcbabac CBACBacabac",
+      "cosets": "acbfgdemnjqphislktoru adebcikhfpgroqmjnluts bacdhjleofqgprimkntsu",
+      "invcos": "acbfgdemnjqphislktoru adebcikhfpgroqmjnluts bacdhjleofqgprimkntsu"
+    },
+    {
+      "subgroup": "*533.22.1",
+      "index": 22,
+      "generators": "a b CBabc CABACAbacabac CABACBABcbabcabac CABCABABCBabcabacbac",
+      "cosets": "acbdfeijghmnklopqruvst adebcfgkljhioqmpntvrus bacdghefjiklpromsnqvut",
+      "invcos": "acbdfeijghmnklopqruvst adebcfgkljhioqmpntvrus bacdghefjiklpromsnqvut"
+    },
+    {
+      "subgroup": "*533.22.2",
+      "index": 22,
+      "generators": "a c BABcab BCABABCAbacbabacb BCABABCBABcbabcabacb",
+      "cosets": "acbfgdeihjknplqmovutsr baedchgfjimoknlrtpuqsv adebcgfhklijonmsutprqv",
+      "invcos": "acbfgdeihjknplqmovutsr baedchgfjimoknlrtpuqsv adebcgfhklijonmsutprqv"
+    },
+    {
+      "subgroup": "*533.22.3",
+      "index": 22,
+      "generators": "a b CABAcabac CBABAcbabc CABABCABAcbacbabac",
+      "cosets": "acbfgdehljnipkqmotvrus adebcikhfmgnjlorspqtvu bacdhjgelfoinmkqpuvtrs",
+      "invcos": "acbfgdehljnipkqmotvrus adebcikhfmgnjlorspqtvu bacdhjgelfoinmkqpuvtrs"
+    },
+    {
+      "subgroup": "*533.22.4",
+      "index": 22,
+      "generators": "a b CABAcabac CABABAcababc CBACBABcabcabc",
+      "cosets": "acbfgdehljoiprkmsnqvut adebcikhfngoqjlpmtursv bacdhjgemfpoiqlkntvrus",
+      "invcos": "acbfgdehljoiprkmsnqvut adebcikhfngoqjlpmtursv bacdhjgemfpoiqlkntvrus"
+    },
+    {
+      "subgroup": "*533.22.5",
+      "index": 22,
+      "generators": "a c BABacb BABCBABcbabcab BACBABACBabcababcab",
+      "cosets": "acbedgfjkhipoqmlnsrtvu baedchifglnjokmqptursv adfbgceihmonjlkrspqutv",
+      "invcos": "acbedgfjkhipoqmlnsrtvu baedchifglnjokmqptursv adfbgceihmonjlkrspqutv"
+    },
+    {
+      "subgroup": "*533.22.6",
+      "index": 22,
+      "generators": "a c BABacb BABCBABcbabcab BABCBABACBabcababcbab",
+      "cosets": "acbedgfjkhipoqmlnsrvut baedchifglnjokmqptursv adfbgceihmonjlkrspqutv",
+      "invcos": "acbedgfjkhipoqmlnsrvut baedchifglnjokmqptursv adfbgceihmonjlkrspqutv"
+    },
+    {
+      "subgroup": "*533.22.7",
+      "index": 22,
+      "generators": "a b CAbac CBABCBabcbabc CBABCABAcabacbabc CBACBABACAbacbabcabc",
+      "cosets": "acbedfgjlhkioqmpntursv adcbfeikgmhnjlopqrvuts bacdghefkjilpromsnqutv",
+      "invcos": "acbedfgjlhkioqmpntursv adcbfeikgmhnjlopqrvuts bacdghefkjilpromsnqutv"
+    },
+    {
+      "subgroup": "*533.22.8",
+      "index": 22,
+      "generators": "a c BABcbab BCABAbcabab BACABACAbcabacab",
+      "cosets": "acbghidefmkojnlsqupvrt baedcfjhlgmikpqnoutsrv adfbecikgnhpmjrltouqsv",
+      "invcos": "acbghidefmkojnlsqupvrt baedcfjhlgmikpqnoutsrv adfbecikgnhpmjrltouqsv"
+    },
+    {
+      "subgroup": "*533.22.9",
+      "index": 22,
+      "generators": "a BAcb CAbac BABACBacbabc CBABCBABcbabcabc",
+      "cosets": "adebchifgjlkoqmrnpuvst bafgecdjihnopklmsuqvrt cdabegfklmhijpontvuqsr",
+      "invcos": "adebchifgjlkoqmrnpuvst bafgecdjihnopklmsuqvrt cdabegfklmhijpontvuqsr"
+    },
+    {
+      "subgroup": "*533.22.10",
+      "index": 22,
+      "generators": "a c BABcbab BABACBabacab BCABACAbcabacb",
+      "cosets": "acbghidefmkojslpqunvrt baedcfjhlgoiqpknmutsrv adfbecikgnhprjoltmuqsv",
+      "invcos": "acbghidefmkojslpqunvrt baedcfjhlgoiqpknmutsrv adfbecikgnhprjoltmuqsv"
+    },
+    {
+      "subgroup": "*533.22.11",
+      "index": 22,
+      "generators": "a c BABcbab BACABAcabacb BABACBAcbabacb",
+      "cosets": "acbghidefmkpjqslnrotvu baedcfjhlgoirqktnmupsv adfbecikgnhqpjomlsrutv",
+      "invcos": "acbghidefmkpjqslnrotvu baedcfjhlgoirqktnmupsv adfbecikgnhqpjomlsrutv"
+    },
+    {
+      "subgroup": "*533.22.12",
+      "index": 22,
+      "generators": "a c BABcbab BACABAcabacb BCABABCbabcabab",
+      "cosets": "acbghidefmkpjqslnrotvu baedcfjhlgoirqktnmupsv adfbecikgnhqpjomlutsrv",
+      "invcos": "acbghidefmkpjqslnrotvu baedcfjhlgoirqktnmupsv adfbecikgnhqpjomlutsrv"
+    },
+    {
+      "subgroup": "*533.22.13",
+      "index": 22,
+      "generators": "a b CAbac CBABCABabacbabc CBABCABCababcabc CBABCBACBABcbabcabcbabc",
+      "cosets": "acbedfgjlhnimkqroptsuv adcbfeikgmhojnlpqsrutv bacdghefkjipqrolmnsvut",
+      "invcos": "acbedfgjlhnimkqroptsuv adcbfeikgmhojnlpqsrutv bacdghefkjipqrolmnsvut"
+    },
+    {
+      "subgroup": "*533.22.14",
+      "index": 22,
+      "generators": "a c BACAbcab BABACBabcabab BABACABAcabacabab BABCABCABAcbacbacbab",
+      "cosets": "acbghjdelfmiknortpsqvu baedcjihgfnopklmsrqutv adfbicjkeghmlnqsorptvu",
+      "invcos": "acbghjdelfmiknortpsqvu baedcjihgfnopklmsrqutv adfbicjkeghmlnqsorptvu"
+    },
+    {
+      "subgroup": "*533.22.15",
+      "index": 22,
+      "generators": "a BCAbcb CAbac BABACBabcbab BABCABAcbacbab",
+      "cosets": "adfbjcikgehomqlrnpuvst baghjfcdmekpirsltnoqvu ceaibfjldgnhpkqmoruvst",
+      "invcos": "adfbjcikgehomqlrnpuvst baghjfcdmekpirsltnoqvu ceaibfjldgnhpkqmoruvst"
+    },
+    {
+      "subgroup": "*533.22.16",
+      "index": 22,
+      "generators": "Ab CABAcbac ACBABcabca CBABAcbabc",
+      "cosets": "baegcjdlmfphisrkvonutq bafhickdengrqjtumlvops cdabghefmoqrisjuklnvpt",
+      "invcos": "baegcjdlmfphisrkvonutq bafhickdengrqjtumlvops cdabghefmoqrisjuklnvpt"
+    },
+    {
+      "subgroup": "*533.22.17",
+      "index": 22,
+      "generators": "a c BACAbcab BABACBAcbacbab BABACABABcabacabab",
+      "cosets": "acbghjdelfmikqornpuvst baedcjihgfnopklmstqrvu adfbicjkeghmlnqsotprvu",
+      "invcos": "acbghjdelfmikqornpuvst baedcjihgfnopklmstqrvu adfbicjkeghmlnqsotprvu"
+    },
+    {
+      "subgroup": "*533.22.18",
+      "index": 22,
+      "generators": "Ab CABAcbac ACBABcabca ACABAcbabc",
+      "cosets": "baegcjdlmfphisrkvonutq bafhickdengrqjtumlvops cdabghefmoqripjnklvuts",
+      "invcos": "baegcjdlmfphisrkvonutq bafhickdengrqjtumlvops cdabghefmoqripjnklvuts"
+    },
+    {
+      "subgroup": "*533.22.19",
+      "index": 22,
+      "generators": "Ab CABAcbac CBABcabc ACABABcabaca",
+      "cosets": "baegcjdlmfohirktunvpqs bafhickdengqpjsmltorvu cdabghefmnprijskulovqt",
+      "invcos": "baegcjdlmfohirktunvpqs bafhickdengqpjsmltorvu cdabghefmnprijskulovqt"
+    },
+    {
+      "subgroup": "*533.22.20",
+      "index": 22,
+      "generators": "a c BABAcabab BACAbacab BCABABcabacb BABCBABcbabcab",
+      "cosets": "acbghjdeifnopklmqusvrt baedcklhmjfgiqstnuoprv adfbicjhegmlkrsutnoqpv",
+      "invcos": "acbghjdeifnopklmqusvrt baedcklhmjfgiqstnuoprv adfbicjhegmlkrsutnoqpv"
+    },
+    {
+      "subgroup": "*533.22.21",
+      "index": 22,
+      "generators": "a c BACAbcab BABACABabacabab BABCABCAbcabcabab",
+      "cosets": "acbghjdelfmikqopnuvtrs baedcjihgfnopklmqsrutv adfbicjkeghmlnrstopquv",
+      "invcos": "acbghjdelfmikqopnuvtrs baedcjihgfnopklmqsrutv adfbicjkeghmlnrstopquv"
+    },
+    {
+      "subgroup": "*533.22.22",
+      "index": 22,
+      "generators": "a c BACAbcab BABACABabacabab BABACABCAbcabcabab",
+      "cosets": "acbghjdelfmikqopnuvtrs baedcjihgfnopklmqsrvut adfbicjkeghmlnrstopquv",
+      "invcos": "acbghjdelfmikqopnuvtrs baedcjihgfnopklmqsrvut adfbicjkeghmlnrstopquv"
+    },
+    {
+      "subgroup": "*533.22.23",
+      "index": 22,
+      "generators": "Ab ACBabc CABACAbacbac ACABACAbacbaca",
+      "cosets": "baegchdfkmipjrslunovqt bafhicjdegmnkltsvuporq cdabgheflnoiqjksmupvrt",
+      "invcos": "baegchdfkmipjrslunovqt bafhicjdegmnkltsvuporq cdabgheflnoiqjksmupvrt"
+    },
+    {
+      "subgroup": "*533.22.24",
+      "index": 22,
+      "generators": "a c BACAbacb BABACBabcbab BABACABAcabacbab",
+      "cosets": "acbghjdemfkoiplnsuqvrt baedckjhngfpqirlmouvst adfbicjlegnhokmptvuqsr",
+      "invcos": "acbghjdemfkoiplnsuqvrt baedckjhngfpqirlmouvst adfbicjlegnhokmptvuqsr"
+    },
+    {
+      "subgroup": "*533.22.25",
+      "index": 22,
+      "generators": "Ab ACAbac CBABCBabcabc ACBABCBabcabca",
+      "cosets": "baegcidjfhmnklstuvopqr bafhgcedkmipjrtlvnuosq cdabgheflnoiqjktmvupsr",
+      "invcos": "baegcidjfhmnklstuvopqr bafhgcedkmipjrtlvnuosq cdabgheflnoiqjktmvupsr"
+    },
+    {
+      "subgroup": "*533.22.26",
+      "index": 22,
+      "generators": "a c BABAcabab BABCBabacb BACBACbabacab",
+      "cosets": "acbghjdeifomlqktnsrpvu baedcklhmnfgijsrtpoqvu adfbicjhegmpkrtlunvoqs",
+      "invcos": "acbghjdeifomlqktnsrpvu baedcklhmnfgijsrtpoqvu adfbicjhegmpkrtlunvoqs"
+    },
+    {
+      "subgroup": "*533.22.27",
+      "index": 22,
+      "generators": "Ab ACBAcbac CBABAcbabc ACABABcabaca",
+      "cosets": "baegcjdlmfohirktunvpqs bafhickdengpqjslmuovrt cdabgheflmpijrskunovqt",
+      "invcos": "baegcjdlmfohirktunvpqs bafhickdengpqjslmuovrt cdabgheflmpijrskunovqt"
+    },
+    {
+      "subgroup": "*533.22.28",
+      "index": 22,
+      "generators": "a c BACAbcab BABACAbacabab BABACBABCBabcabcabab",
+      "cosets": "acbghjdelfmikponqruvst baedcjihgfnomklqptvrus adfbicjkeghmlnorspqvut",
+      "invcos": "acbghjdelfmikponqruvst baedcjihgfnomklqptvrus adfbicjkeghmlnorspqvut"
+    },
+    {
+      "subgroup": "*533.22.29",
+      "index": 22,
+      "generators": "a b CAbac CBABCBabcbabc CBABCABAcbabcabc CBABCABCABABcbabacbacbabc",
+      "cosets": "acbedfgjlhkioqmrnptsuv adcbfeikgmhnjlopqsrutv bacdghefkjilponmrqsvut",
+      "invcos": "acbedfgjlhkioqmrnptsuv adcbfeikgmhnjlopqsrutv bacdghefkjilponmrqsvut"
+    },
+    {
+      "subgroup": "*533.22.30",
+      "index": 22,
+      "generators": "a b CAbac CBABCBabcbabc CBABCABCababcabc CBABCABACBABcbabcabacbabc",
+      "cosets": "acbedfgjlhkiopmnrqtsuv adcbfeikgmhnjlopqsrutv bacdghefkjilpqrmnosvut",
+      "invcos": "acbedfgjlhkiopmnrqtsuv adcbfeikgmhnjlopqsrutv bacdghefkjilpqrmnosvut"
+    },
+    {
+      "subgroup": "*533.23.1",
+      "index": 23,
+      "generators": "a b CAbac CBABCAbacbabc CBABCBABcbabcbabc CBACBABCAbcbabcabc",
+      "cosets": "acbedfgjlhmikrqponvutsw adcbfeikgjhnpltmqrvowsu bacdghefkjioqslpmunvrtw",
+      "invcos": "acbedfgjlhmikrqponvutsw adcbfeikgjhnpltmqrvowsu bacdghefkjioqslpmunvrtw"
+    },
+    {
+      "subgroup": "*533.23.2",
+      "index": 23,
+      "generators": "a b CBabc CABACBabcabac CABACABAcabacabac CABCABACAbcabacbac",
+      "cosets": "acbdfeijghknpltmqrvowsu adebcfgklmhijrqponvutsw bacdghefjikoqslpmunvrtw",
+      "invcos": "acbdfeijghknpltmqrvowsu adebcfgklmhijrqponvutsw bacdghefjikoqslpmunvrtw"
+    },
+    {
+      "subgroup": "*533.23.3",
+      "index": 23,
+      "generators": "a b CABAcabac CBABcbabc CABABACAbacbabac CBABACBABAcbabcababc",
+      "cosets": "acbfgdehljmikqosnuptrwv adebcikhfjgmlnrtsoqpvuw bacdhjgeifnopklmstqruwv",
+      "invcos": "acbfgdehljmikqosnuptrwv adebcikhfjgmlnrtsoqpvuw bacdhjgeifnopklmstqruwv"
+    },
+    {
+      "subgroup": "*533.23.4",
+      "index": 23,
+      "generators": "a b CABAcabac CBABcbabc CABABACBabcababc CABABCABABcabacbabac",
+      "cosets": "acbfgdehljmikqosntprvuw adebcikhfjgmlnrtuospqwv bacdhjgeifnopklmstqruwv",
+      "invcos": "acbfgdehljmikqosntprvuw adebcikhfjgmlnrtuospqwv bacdhjgeifnopklmstqruwv"
+    },
+    {
+      "subgroup": "*533.23.5",
+      "index": 23,
+      "generators": "a b CABACAbcabac CABABAcababc CBACBABAcbabcabc",
+      "cosets": "acbfgdemnjqshirukoltpwv adebcikhfpgsrqtjnmlovuw bacdhjleofrgsqitnkmpuwv",
+      "invcos": "acbfgdemnjqshirukoltpwv adebcikhfpgsrqtjnmlovuw bacdhjleofrgsqitnkmpuwv"
+    },
+    {
+      "subgroup": "*533.23.6",
+      "index": 23,
+      "generators": "a b CABABAcbabac CBABCAbcbabc CABCABABcabacbac",
+      "cosets": "acbfgdemnjqrhiusklpvotw adebcikhfpgstqujnrlmowv bacdhjleofqgrsiukmntpwv",
+      "invcos": "acbfgdemnjqrhiusklpvotw adebcikhfpgstqujnrlmowv bacdhjleofqgrsiukmntpwv"
+    },
+    {
+      "subgroup": "*533.23.7",
+      "index": 23,
+      "generators": "a b CABABcabac CABCABacbabc CBACBABAcbabcabc",
+      "cosets": "acbfgdelmjphiqtknusorwv adebcikhfogqpsjmlunvrtw bacdhjkenfgprislumotqwv",
+      "invcos": "acbfgdelmjphiqtknusorwv adebcikhfogqpsjmlunvrtw bacdhjkenfgprislumotqwv"
+    },
+    {
+      "subgroup": "*533.23.8",
+      "index": 23,
+      "generators": "a b CBABAcbabc CABACBabcabc CABCABABcabacbac",
+      "cosets": "acbfgdemnjprhiskulovqtw adebcikhfogstpjnurlmqwv bacdhjlenfqgripokmutswv",
+      "invcos": "acbfgdemnjprhiskulovqtw adebcikhfogstpjnurlmqwv bacdhjlenfqgripokmutswv"
+    },
+    {
+      "subgroup": "*533.24.1",
+      "index": 24,
+      "generators": "Ab CBAcbac ACABABcababc",
+      "cosets": "baegcjdlmfohirkuwntspxqv bafhickdengpqjslmwoutxrv cdabghefjinmlktvxsrowpuq",
+      "invcos": "baegcjdlmfohirkuwntspxqv bafhickdengpqjslmwoutxrv cdabghefjinmlktvxsrowpuq"
+    },
+    {
+      "subgroup": "*533.24.2",
+      "index": 24,
+      "generators": "a BCBabcb BACBabac BABAcbac BCABAcbabc",
+      "cosets": "adfbjcmnpekqghtilvuosrxw baghklcdqrefsntuijmopvxw ceaibfkodpgnmlhjtwvqxsru",
+      "invcos": "adfbjcmnpekqghtilvuosrxw baghklcdqrefsntuijmopvxw ceaibfkodpgnmlhjtwvqxsru"
+    },
+    {
+      "subgroup": "*533.24.3",
+      "index": 24,
+      "generators": "Ab ACAbac ACBACBacbabc CBACBABcabcabc",
+      "cosets": "baegcidjfhmnklrtuovpqsxw bafhgcedkmipjrslunowqxtv cdabgheflnoiqjksmupwrxtv",
+      "invcos": "baegcidjfhmnklrtuovpqsxw bafhgcedkmipjrslunowqxtv cdabgheflnoiqjksmupwrxtv"
+    },
+    {
+      "subgroup": "*533.24.4",
+      "index": 24,
+      "generators": "a b CABABcbabac CBABAcababc CABCABabcabc CABACABabcbabc",
+      "cosets": "acbfgdemnjqrhiosklpvutxw adebcikhfpglsqtjnvmourxw bacdhjleofkgrnitumwpqxsv",
+      "invcos": "acbfgdemnjqrhiosklpvutxw adebcikhfpglsqtjnvmourxw bacdhjleofkgrnitumwpqxsv"
+    },
+    {
+      "subgroup": "*533.24.5",
+      "index": 24,
+      "generators": "a BCAbcb CABABacabab CABCAbacbab",
+      "cosets": "adfbjcilgeohrtkwumsnqxpv baghjkcdneflsiuptwmqoxrv ceaibfjmdgpqhsvkluntroxw",
+      "invcos": "adfbjcilgeohrtkwumsnqxpv baghjkcdneflsiuptwmqoxrv ceaibfjmdgpqhsvkluntroxw"
+    },
+    {
+      "subgroup": "*533.24.6",
+      "index": 24,
+      "generators": "a BCAbcb BABAcabab BACBABcabcab CABACAbcabac",
+      "cosets": "adfbjcilgeohmrkuvnwxpqst baghjkcdneflqispmwoxvurt ceaibfjmdgplhqtknwvoxsru",
+      "invcos": "adfbjcilgeohmrkuvnwxpqst baghjkcdneflqispmwoxvurt ceaibfjmdgplhqtknwvoxsru"
+    },
+    {
+      "subgroup": "*533.24.7",
+      "index": 24,
+      "generators": "Ab ACABabac CBACBAbacbaca",
+      "cosets": "baegcjdlkfihqpsnmvoutrxw bafhickdelgjormtunvpqsxw cdabghefmnopijklstqrwxuv",
+      "invcos": "baegcjdlkfihqpsnmvoutrxw bafhickdelgjormtunvpqsxw cdabghefmnopijklstqrwxuv"
+    },
+    {
+      "subgroup": "*533.24.8",
+      "index": 24,
+      "generators": "Ab CBAcbac ACBABcabaca",
+      "cosets": "baegcjdlmfohirktunvpqsxw bafhickdengpqjslmuovrtxw cdabghefjinmlkpostqrwxuv",
+      "invcos": "baegcjdlmfohirktunvpqsxw bafhickdengpqjslmuovrtxw cdabghefjinmlkpostqrwxuv"
+    },
+    {
+      "subgroup": "*533.24.9",
+      "index": 24,
+      "generators": "Ab CBAcbac ACBABAcbabac",
+      "cosets": "baegcjdlmfohirkuwnvxpsqt bafhickdengpqjslmwoxvurt cdabghefjinmlktvuxwoqpsr",
+      "invcos": "baegcjdlmfohirkuwnvxpsqt bafhickdengpqjslmwoxvurt cdabghefjinmlktvuxwoqpsr"
+    },
+    {
+      "subgroup": "*533.24.10",
+      "index": 24,
+      "generators": "a c BABCAbcbab BACABAcabacb BABACBAcbabacb",
+      "cosets": "acbghjdenfmpkisltvoqurxw baedcklhnofgrijutmwqpxsv adfbicjmegnqhktslrpovuxw",
+      "invcos": "acbghjdenfmpkisltvoqurxw baedcklhnofgrijutmwqpxsv adfbicjmegnqhktslrpovuxw"
+    },
+    {
+      "subgroup": "*533.24.11",
+      "index": 24,
+      "generators": "Ab ACBAcbac ACABAcbabc",
+      "cosets": "baegcjdlmfohirktunvpqsxw bafhickdengpqjslmuovrtxw cdabgheflmpijonkstqrwxuv",
+      "invcos": "baegcjdlmfohirktunvpqsxw bafhickdengpqjslmuovrtxw cdabgheflmpijonkstqrwxuv"
+    },
+    {
+      "subgroup": "*533.24.12",
+      "index": 24,
+      "generators": "a BCAbcb BABAcabab CABABcabac BABCBAbacbac",
+      "cosets": "adfbjcilgeohmrktunvpqsxw baghjkcdneflqispmvoutrxw ceaibfjmdgplhqsknwovxtru",
+      "invcos": "adfbjcilgeohmrktunvpqsxw baghjkcdneflqispmvoutrxw ceaibfjmdgplhqsknwovxtru"
+    },
+    {
+      "subgroup": "*533.24.13",
+      "index": 24,
+      "generators": "Ab ACBAcbac CBABCbabaca",
+      "cosets": "baegcjdlmfohirktunwpqxsv bafhickdengpqjslmuowrxtv cdabgheflmpijsqkovnutrxw",
+      "invcos": "baegcjdlmfohirktunwpqxsv bafhickdengpqjslmuowrxtv cdabgheflmpijsqkovnutrxw"
+    },
+    {
+      "subgroup": "*533.24.14",
+      "index": 24,
+      "generators": "Ab ACBAcbac ACABACababac",
+      "cosets": "baegcjdlmfohirkvuntsqpxw bafhickdengpqjtlmuvorsxw cdabgheflmpijsukvwnxoqrt",
+      "invcos": "baegcjdlmfohirkvuntsqpxw bafhickdengpqjtlmuvorsxw cdabgheflmpijsukvwnxoqrt"
+    },
+    {
+      "subgroup": "*533.24.15",
+      "index": 24,
+      "generators": "Ab ACABabac CABCABabcabc",
+      "cosets": "baegcjdlkfihqpsnmuovrtxw bafhickdelgjormtunvpqsxw cdabghefmnopijklstqrwxuv",
+      "invcos": "baegcjdlkfihqpsnmuovrtxw bafhickdelgjormtunvpqsxw cdabghefmnopijklstqrwxuv"
+    },
+    {
+      "subgroup": "*533.24.16",
+      "index": 24,
+      "generators": "a BCAbcb BABAcbac BABCAbacbab BABCBABcbabcab",
+      "cosets": "adfbjcilgeohprkmtnuqsxwv baghjkcdneflqispmuowrxtv ceaibfjmdglkhqponvsxwrut",
+      "invcos": "adfbjcilgeohprkmtnuqsxwv baghjkcdneflqispmuowrxtv ceaibfjmdglkhqponvsxwrut"
+    },
+    {
+      "subgroup": "*533.24.17",
+      "index": 24,
+      "generators": "a BCBabcb CBABcabab BABCAbcbab CABCabacb",
+      "cosets": "adfbjcmnpeksghviutlrqoxw baghklcdqrefunvsijptmoxw ceaibfkodpgtmuhjvwxlnqrs",
+      "invcos": "adfbjcmnpeksghviutlrqoxw baghklcdqrefunvsijptmoxw ceaibfkodpgtmuhjvwxlnqrs"
+    },
+    {
+      "subgroup": "*533.24.18",
+      "index": 24,
+      "generators": "a BCAbcb CAbac BABACBabcbab BABACABAcabacbab",
+      "cosets": "adfbjcikgehomqlrnpuwsxtv baghjfcdmekpirsltnoqwxuv ceaibfjldgnhpkqmorvxwsut",
+      "invcos": "adfbjcikgehomqlrnpuwsxtv baghjfcdmekpirsltnoqwxuv ceaibfjldgnhpkqmorvxwsut"
+    },
+    {
+      "subgroup": "*533.24.19",
+      "index": 24,
+      "generators": "Ab CABCabaca CBABcabca",
+      "cosets": "baegcjdlmfnhikpotvuqsrxw bafhickdeogrsqjunlmvptxw cdabghefnpqotiljkuwmrxsv",
+      "invcos": "baegcjdlmfnhikpotvuqsrxw bafhickdeogrsqjunlmvptxw cdabghefnpqotiljkuwmrxsv"
+    },
+    {
+      "subgroup": "*533.24.20",
+      "index": 24,
+      "generators": "a b CBabc CABACABAcbacabac CABACBABcbabcabac CABACBABAcbabacbac",
+      "cosets": "acbdfeijghnoqklvmwstxpru adebcfgklmhijrtqpnsoxwvu bacdghefjikpqsulmrnwoxtv",
+      "invcos": "acbdfeijghnoqklvmwstxpru adebcfgklmhijrtqpnsoxwvu bacdghefjikpqsulmrnwoxtv"
+    },
+    {
+      "subgroup": "*533.24.21",
+      "index": 24,
+      "generators": "Ab CBACbabac ACABAcabac ACBABAcababc",
+      "cosets": "baegcjdlmfqhirutknwpoxsv bafhickdeogsprjmvnlutqxw cdabghefnprtqivjmkxlwous",
+      "invcos": "baegcjdlmfqhirutknwpoxsv bafhickdeogsprjmvnlutqxw cdabghefnprtqivjmkxlwous"
+    },
+    {
+      "subgroup": "*533.24.22",
+      "index": 24,
+      "generators": "Ab ACBACbabac ACABAcabac CBABCababca",
+      "cosets": "baegcjdlmfqhirutknvposxw bafhickdeogstrjuwnlmpxqv cdabghefnprtqivjmkwlxosu",
+      "invcos": "baegcjdlmfqhirutknvposxw bafhickdeogstrjuwnlmpxqv cdabghefnprtqivjmkwlxosu"
+    },
+    {
+      "subgroup": "*533.24.23",
+      "index": 24,
+      "generators": "Ab ACBACbabac ACABAcabac ACBABAcababc",
+      "cosets": "baegcjdlmfqhirutknxpowvs bafhickdeogstrjuwnlmpxqv cdabghefnprtqivjmkwlxosu",
+      "invcos": "baegcjdlmfqhirutknxpowvs bafhickdeogstrjuwnlmpxqv cdabghefnprtqivjmkwlxosu"
+    },
+    {
+      "subgroup": "*533.24.24",
+      "index": 24,
+      "generators": "Ab ACBACbabac ACBABacbac ACABAcbabc",
+      "cosets": "baegcjdlmfqhisvtkwnpxoru bafhickdeogstrjvwnlmxpqu cdabghefnprtuiqjokxlmwvs",
+      "invcos": "baegcjdlmfqhisvtkwnpxoru bafhickdeogstrjvwnlmxpqu cdabghefnprtuiqjokxlmwvs"
+    },
+    {
+      "subgroup": "*533.24.25",
+      "index": 24,
+      "generators": "Ab ACBACbabac ACBABacbac CBABCbabaca",
+      "cosets": "baegcjdlmfqhisvtkwnpxoru bafhickdeogstrjvwnlmxpqu cdabghefnprtuiwjvkxlmqos",
+      "invcos": "baegcjdlmfqhisvtkwnpxoru bafhickdeogstrjvwnlmxpqu cdabghefnprtuiwjvkxlmqos"
+    },
+    {
+      "subgroup": "*533.24.26",
+      "index": 24,
+      "generators": "a BCAbcb CABAcabab BABCBABcbabcab",
+      "cosets": "adfbjcilgeohprkmtnuqsxwv baghjkcdneflqispmuowrxtv ceaibfjmdgpohqlknvsxwrut",
+      "invcos": "adfbjcilgeohprkmtnuqsxwv baghjkcdneflqispmuowrxtv ceaibfjmdgpohqlknvsxwrut"
+    },
+    {
+      "subgroup": "*533.24.27",
+      "index": 24,
+      "generators": "Ab CBAbaca ACBACBAbacabac",
+      "cosets": "baegcjdklfhiqonsmvputrxw bafhicjdeglknmrtuovpqsxw cdabghefmnopijklstqrwxuv",
+      "invcos": "baegcjdklfhiqonsmvputrxw bafhicjdeglknmrtuovpqsxw cdabghefmnopijklstqrwxuv"
+    },
+    {
+      "subgroup": "*533.24.28",
+      "index": 24,
+      "generators": "a b CBabc CABCABAcbacbac CABACBABcbabcabac CABACABABAcababacabac",
+      "cosets": "acbdfeijghnopklmqusvrtwx adebcfgklmhijrqtonspvuwx bacdghefjikoqslpmrnwxvtu",
+      "invcos": "acbdfeijghnopklmqusvrtwx adebcfgklmhijrqtonspvuwx bacdghefjikoqslpmrnwxvtu"
+    },
+    {
+      "subgroup": "*533.24.29",
+      "index": 24,
+      "generators": "a b CAbac CBABCBABcabcbabc CBABCABAcabacbabc CBABCABABcababcabc",
+      "cosets": "acbedfgjlhniqktsmrpoxwvu adcbfeikgmhojslvwrntxpqu bacdghefkjiprsulqmnwoxtv",
+      "invcos": "acbedfgjlhniqktsmrpoxwvu adcbfeikgmhojslvwrntxpqu bacdghefkjiprsulqmnwoxtv"
+    },
+    {
+      "subgroup": "*533.24.30",
+      "index": 24,
+      "generators": "a b CAbac CBABCBABcbabcabc CBABCABAcabacbabc CBABCABABcababcabc",
+      "cosets": "acbedfgjlhniqkutmrwpoxsv adcbfeikgmhojsltvrnpuqxw bacdghefkjiprtslqmonvuxw",
+      "invcos": "acbedfgjlhniqkutmrwpoxsv adcbfeikgmhojsltvrnpuqxw bacdghefkjiprtslqmonvuxw"
+    },
+    {
+      "subgroup": "*533.24.31",
+      "index": 24,
+      "generators": "a c BACAbcab BABACBAcbacbab BABACABABAcbabacabab",
+      "cosets": "acbghjdelfmikqornpvwxstu baedcjihgfnopklmstqrxwvu adfbicjkeghmlnqsoupwrxtv",
+      "invcos": "acbghjdelfmikqornpvwxstu baedcjihgfnopklmstqrxwvu adfbicjkeghmlnqsoupwrxtv"
+    },
+    {
+      "subgroup": "*533.24.32",
+      "index": 24,
+      "generators": "a b CABabac CABCABAcabacbac CBACBABCAbcbabcabc CABCABABCAbcababcabc",
+      "cosets": "acbfedihglmjknrpqowvxtsu adebcfgjkhioqnltmrwpuxsv bacdghefijnpmksluvowqrtx",
+      "invcos": "acbfedihglmjknrpqowvxtsu adebcfgjkhioqnltmrwpuxsv bacdghefijnpmksluvowqrtx"
+    },
+    {
+      "subgroup": "*533.24.33",
+      "index": 24,
+      "generators": "a b CABabac CABCABAcabacbac CBACBABcbabcabc CABCABABCABabcababcabc",
+      "cosets": "acbfedihglmjknrpqoutswvx adebcfgjkhioqnlpmrsvwtux bacdghefijnpmkolstqruvxw",
+      "invcos": "acbfedihglmjknrpqoutswvx adebcfgjkhioqnlpmrsvwtux bacdghefijnpmkolstqruvxw"
+    },
+    {
+      "subgroup": "*533.24.34",
+      "index": 24,
+      "generators": "a b CABABcbabac CBABAcababc CBACBAbacabac CBABCBabacbac",
+      "cosets": "acbfgdemnjqrhioukltspvxw adebcikhfpglsqtjnumorvxw bacdhjleofkgrnitvmwpxqsu",
+      "invcos": "acbfgdemnjqrhioukltspvxw adebcikhfpglsqtjnumorvxw bacdhjleofkgrnitvmwpxqsu"
+    },
+    {
+      "subgroup": "*533.24.35",
+      "index": 24,
+      "generators": "a b CABAcabac CBABAcababc CABABCAbabcabc CABABACAbabcbabc",
+      "cosets": "acbfgdehljoimrktunwpqxsv adebcikhfngoqjlpmtsrwxuv bacdhjgemfpliqsknvowxrtu",
+      "invcos": "acbfgdehljoimrktunwpqxsv adebcikhfngoqjlpmtsrwxuv bacdhjgemfpliqsknvowxrtu"
+    },
+    {
+      "subgroup": "*533.24.36",
+      "index": 24,
+      "generators": "a b CABAcabac CBABAcbabc CABABCABAcababcabc",
+      "cosets": "acbfgdehljnipkqmotvrwsux adebcikhfmgnjlorspqtwxuv bacdhjgelfoinmkqpuwvrtsx",
+      "invcos": "acbfgdehljnipkqmotvrwsux adebcikhfmgnjlorspqtwxuv bacdhjgelfoinmkqpuwvrtsx"
+    },
+    {
+      "subgroup": "*533.24.37",
+      "index": 24,
+      "generators": "Ab ACBabc ACABCAbcabac CABCABAcbacbac",
+      "cosets": "baegchdfkmipjrslunowqxtv bafhicjdegmnklrtuovpqsxw cdabgheflnoiqjksmupwrxtv",
+      "invcos": "baegchdfkmipjrslunowqxtv bafhicjdegmnklrtuovpqsxw cdabgheflnoiqjksmupwrxtv"
+    },
+    {
+      "subgroup": "*533.24.38",
+      "index": 24,
+      "generators": "a BCAbcb BABAcbac BABCBabcbab BABCABAcbabcab",
+      "cosets": "adfbjcilgeohprkmqnuwsxtv baghjkcdneflqistmuoprxwv ceaibfjmdglkhqponrvxwsut",
+      "invcos": "adfbjcilgeohprkmqnuwsxtv baghjkcdneflqistmuoprxwv ceaibfjmdglkhqponrvxwsut"
+    },
+    {
+      "subgroup": "*533.24.39",
+      "index": 24,
+      "generators": "a Bcb BABCAbcbab CABACAbcabac BABACBACbacbabac",
+      "cosets": "adebciglfonhrkjpumvwqstx bacfhdkeiogpmsjlutnrqvxw cbagejdmnfoqhiktlusprxwv",
+      "invcos": "adebciglfonhrkjpumvwqstx bacfhdkeiogpmsjlutnrqvxw cbagejdmnfoqhiktlusprxwv"
+    },
+    {
+      "subgroup": "*533.24.40",
+      "index": 24,
+      "generators": "a b CABAcabac CBABACAbcababc CBABCBabcbabc CABABCAbabcabc",
+      "cosets": "acbfgdehljoirtkvwmsnxpqu adebcikhfngosjlpwumvrtqx bacdhjgemfpqisuklwntoxrv",
+      "invcos": "acbfgdehljoirtkvwmsnxpqu adebcikhfngosjlpwumvrtqx bacdhjgemfpqisuklwntoxrv"
+    },
+    {
+      "subgroup": "*533.24.41",
+      "index": 24,
+      "generators": "a b CABAcabac CBABCBabcabc CABABCAbcababc",
+      "cosets": "acbfgdehljoirskuvmnwpqtx adebcikhfngosjlpurmwqxtv bacdhjgemfpqistklvnowrux",
+      "invcos": "acbfgdehljoirskuvmnwpqtx adebcikhfngosjlpurmwqxtv bacdhjgemfpqistklvnowrux"
+    },
+    {
+      "subgroup": "*533.24.42",
+      "index": 24,
+      "generators": "a b CABAcabac CBABCAbcbabc CABABACAbacbabac",
+      "cosets": "acbfgdehljoirqktnmvpxswu adebcikhfngorjlpumwvqtsx bacdhjgemfpqirsklnovwtux",
+      "invcos": "acbfgdehljoirqktnmvpxswu adebcikhfngorjlpumwvqtsx bacdhjgemfpqirsklnovwtux"
+    },
+    {
+      "subgroup": "*533.24.43",
+      "index": 24,
+      "generators": "a c BABCAbcbab BACABAcbacab BABACBAcbabacb",
+      "cosets": "acbghjdenfmpkislvwotxqru baedcklhnofgrijtsmqpxwvu adfbicjmegnqhksulrowpxtv",
+      "invcos": "acbghjdenfmpkislvwotxqru baedcklhnofgrijtsmqpxwvu adfbicjmegnqhksulrowpxtv"
+    },
+    {
+      "subgroup": "*533.24.44",
+      "index": 24,
+      "generators": "a b CAbac CBACBABcabcabc CBABCABAcabacbabc CBABCABABAcababacbabc",
+      "cosets": "acbedfgjlhnipksmquovrtwx adcbfeikgmhojrltqnspvuwx bacdghefkjioqslpmrnwxvtu",
+      "invcos": "acbedfgjlhnipksmquovrtwx adcbfeikgmhojrltqnspvuwx bacdghefkjioqslpmrnwxvtu"
+    },
+    {
+      "subgroup": "*533.24.45",
+      "index": 24,
+      "generators": "a b CABAcabac CABABAcababc CBABCBABcbabcabc",
+      "cosets": "acbfgdehljoiprkmsnqxwvut adebcikhfngoqjlpmtvrwsux bacdhjgemfpoiqlknuwvrtsx",
+      "invcos": "acbfgdehljoiprkmsnqxwvut adebcikhfngoqjlpmtvrwsux bacdhjgemfpoiqlknuwvrtsx"
+    },
+    {
+      "subgroup": "*533.24.46",
+      "index": 24,
+      "generators": "a BCbab CABACAbcabac CABABCAbcababc",
+      "cosets": "adfbhcjekgipqrtlmnwouxsv bagedichfmnljktsrqpowxuv ceagbfdjlhoimsktuvnpqrxw",
+      "invcos": "adfbhcjekgipqrtlmnwouxsv bagedichfmnljktsrqpowxuv ceagbfdjlhoimsktuvnpqrxw"
+    },
+    {
+      "subgroup": "*533.24.47",
+      "index": 24,
+      "generators": "a b CABAcabac CBABAcababc CBACBABacababac CBABCBAbacbabac",
+      "cosets": "acbfgdehljoimrktunvpqsxw adebcikhfngoqjlpmvsutrxw bacdhjgemfpliqsknwovxtru",
+      "invcos": "acbfgdehljoimrktunvpqsxw adebcikhfngoqjlpmvsutrxw bacdhjgemfpliqsknwovxtru"
+    },
+    {
+      "subgroup": "*533.24.48",
+      "index": 24,
+      "generators": "Ab CABCabaca ACBABcbabc CBABAcbabac",
+      "cosets": "baegcjdlmfnhikvsuwpxqort bafhickdeogrtqjsnlpmwxuv cdabghefnpqsuirjkolvmtxw",
+      "invcos": "baegcjdlmfnhikvsuwpxqort bafhickdeogrtqjsnlpmwxuv cdabghefnpqsuirjkolvmtxw"
+    },
+    {
+      "subgroup": "*533.24.49",
+      "index": 24,
+      "generators": "a b CBabc CABACABAcabacbac CABACBABcbabcabac CABACBABAcbabacbac",
+      "cosets": "acbdfeijghnoqklrmpwtuxsv adebcfgklmhijsurvpntoqxw bacdghefjikprtqlomsnwxuv",
+      "invcos": "acbdfeijghnoqklrmpwtuxsv adebcfgklmhijsurvpntoqxw bacdghefjikprtqlomsnwxuv"
+    }
+  ]
+}

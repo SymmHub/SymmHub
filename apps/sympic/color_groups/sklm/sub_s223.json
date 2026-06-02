@@ -1,0 +1,107 @@
+{
+  "name": "*223",
+  "group": "Group( [ a, b, c ] )",
+  "relators": "[ a^2, b^2, c^2, (a*b)^2, (c*a)^2, (b*c)^3 ]",
+  "maxIndex": 12,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 10,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 2,
+      "count": 3
+    },
+    {
+      "index": 3,
+      "count": 1
+    },
+    {
+      "index": 4,
+      "count": 1
+    },
+    {
+      "index": 6,
+      "count": 3
+    },
+    {
+      "index": 12,
+      "count": 1
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "*223.1.1",
+      "index": 1,
+      "generators": "a b c",
+      "cosets": "a a a",
+      "invcos": "a a a"
+    },
+    {
+      "subgroup": "*223.2.1",
+      "index": 2,
+      "generators": "a Bc",
+      "cosets": "ab ba ba",
+      "invcos": "ab ba ba"
+    },
+    {
+      "subgroup": "*223.2.2",
+      "index": 2,
+      "generators": "b c",
+      "cosets": "ba ab ab",
+      "invcos": "ba ab ab"
+    },
+    {
+      "subgroup": "*223.2.3",
+      "index": 2,
+      "generators": "Ab Ac",
+      "cosets": "ba ba ba",
+      "invcos": "ba ba ba"
+    },
+    {
+      "subgroup": "*223.3.1",
+      "index": 3,
+      "generators": "a b",
+      "cosets": "abc acb bac",
+      "invcos": "abc acb bac"
+    },
+    {
+      "subgroup": "*223.4.1",
+      "index": 4,
+      "generators": "Bc",
+      "cosets": "badc cdab cdab",
+      "invcos": "badc cdab cdab"
+    },
+    {
+      "subgroup": "*223.6.1",
+      "index": 6,
+      "generators": "a",
+      "cosets": "abcdef baefcd cdabfe",
+      "invcos": "abcdef baefcd cdabfe"
+    },
+    {
+      "subgroup": "*223.6.2",
+      "index": 6,
+      "generators": "b",
+      "cosets": "badcfe abefcd cdabef",
+      "invcos": "badcfe abefcd cdabef"
+    },
+    {
+      "subgroup": "*223.6.3",
+      "index": 6,
+      "generators": "Ab",
+      "cosets": "badcfe baefcd cdabfe",
+      "invcos": "badcfe baefcd cdabfe"
+    },
+    {
+      "subgroup": "*223.12.1",
+      "index": 12,
+      "generators": "",
+      "cosets": "baefcdijghlk ceahbjkdlfgi dfgaibckelhj",
+      "invcos": "baefcdijghlk ceahbjkdlfgi dfgaibckelhj"
+    }
+  ]
+}

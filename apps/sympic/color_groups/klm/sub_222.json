@@ -1,0 +1,60 @@
+{
+  "name": "222",
+  "group": "Group( [ a, b, c, d ] )",
+  "relators": "[ a*c, b*d, a^2, b^2, (a*d)^2 ]",
+  "maxIndex": 4,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 5,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 2,
+      "count": 3
+    },
+    {
+      "index": 4,
+      "count": 1
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "222.1.1",
+      "index": 1,
+      "generators": "a b",
+      "cosets": "a a a a",
+      "invcos": "a a a a"
+    },
+    {
+      "subgroup": "222.2.1",
+      "index": 2,
+      "generators": "a",
+      "cosets": "ab ba ab ba",
+      "invcos": "ab ba ab ba"
+    },
+    {
+      "subgroup": "222.2.2",
+      "index": 2,
+      "generators": "b",
+      "cosets": "ba ab ba ab",
+      "invcos": "ba ab ba ab"
+    },
+    {
+      "subgroup": "222.2.3",
+      "index": 2,
+      "generators": "Ab",
+      "cosets": "ba ba ba ba",
+      "invcos": "ba ba ba ba"
+    },
+    {
+      "subgroup": "222.4.1",
+      "index": 4,
+      "generators": "",
+      "cosets": "badc cdab badc cdab",
+      "invcos": "badc cdab badc cdab"
+    }
+  ]
+}

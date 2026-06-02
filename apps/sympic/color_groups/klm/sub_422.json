@@ -1,0 +1,85 @@
+{
+  "name": "422",
+  "group": "Group( [ a, b, c, d ] )",
+  "relators": "[ a*c, b*d, a^4, b^2, (a*d)^2 ]",
+  "maxIndex": 8,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 8,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 2,
+      "count": 3
+    },
+    {
+      "index": 4,
+      "count": 3
+    },
+    {
+      "index": 8,
+      "count": 1
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "422.1.1",
+      "index": 1,
+      "generators": "a b",
+      "cosets": "a a a a",
+      "invcos": "a a a a"
+    },
+    {
+      "subgroup": "422.2.1",
+      "index": 2,
+      "generators": "a",
+      "cosets": "ab ba ab ba",
+      "invcos": "ab ba ab ba"
+    },
+    {
+      "subgroup": "422.2.2",
+      "index": 2,
+      "generators": "AA b",
+      "cosets": "ba ab ba ab",
+      "invcos": "ba ab ba ab"
+    },
+    {
+      "subgroup": "422.2.3",
+      "index": 2,
+      "generators": "AA Ab",
+      "cosets": "ba ba ba ba",
+      "invcos": "ba ba ba ba"
+    },
+    {
+      "subgroup": "422.4.1",
+      "index": 4,
+      "generators": "b",
+      "cosets": "bdac acbd cadb acbd",
+      "invcos": "cadb acbd bdac acbd"
+    },
+    {
+      "subgroup": "422.4.2",
+      "index": 4,
+      "generators": "Ab",
+      "cosets": "bdac badc cadb badc",
+      "invcos": "cadb badc bdac badc"
+    },
+    {
+      "subgroup": "422.4.3",
+      "index": 4,
+      "generators": "AA",
+      "cosets": "badc cdab badc cdab",
+      "invcos": "badc cdab badc cdab"
+    },
+    {
+      "subgroup": "422.8.1",
+      "index": 8,
+      "generators": "",
+      "cosets": "beagcdhf dfgahbce caefbhdg dfgahbce",
+      "invcos": "caefbhdg dfgahbce beagcdhf dfgahbce"
+    }
+  ]
+}

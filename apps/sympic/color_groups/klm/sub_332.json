@@ -1,0 +1,68 @@
+{
+  "name": "332",
+  "group": "Group( [ a, b, c, d ] )",
+  "relators": "[ a*c, b*d, a^3, b^3, (a*d)^2 ]",
+  "maxIndex": 12,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 5,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 3,
+      "count": 1
+    },
+    {
+      "index": 4,
+      "count": 1
+    },
+    {
+      "index": 6,
+      "count": 1
+    },
+    {
+      "index": 12,
+      "count": 1
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "332.1.1",
+      "index": 1,
+      "generators": "a b",
+      "cosets": "a a a a",
+      "invcos": "a a a a"
+    },
+    {
+      "subgroup": "332.3.1",
+      "index": 3,
+      "generators": "Ab aB",
+      "cosets": "bca bca cab cab",
+      "invcos": "cab cab bca bca"
+    },
+    {
+      "subgroup": "332.4.1",
+      "index": 4,
+      "generators": "a",
+      "cosets": "adbc bcad acdb cabd",
+      "invcos": "acdb cabd adbc bcad"
+    },
+    {
+      "subgroup": "332.6.1",
+      "index": 6,
+      "generators": "Ab",
+      "cosets": "bcaefd bdeafc cabfde dafbce",
+      "invcos": "cabfde dafbce bcaefd bdeafc"
+    },
+    {
+      "subgroup": "332.12.1",
+      "index": 12,
+      "generators": "",
+      "cosets": "bcajhldkfgei dfheagbicljk cabgkijeldhf egiadbfchklj",
+      "invcos": "cabgkijeldhf egiadbfchklj bcajhldkfgei dfheagbicljk"
+    }
+  ]
+}

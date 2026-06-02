@@ -1,0 +1,110 @@
+{
+  "name": "822",
+  "group": "Group( [ a, b, c, d ] )",
+  "relators": "[ a*c, b*d, a^8, b^2, (a*d)^2 ]",
+  "maxIndex": 16,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 11,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 2,
+      "count": 3
+    },
+    {
+      "index": 4,
+      "count": 3
+    },
+    {
+      "index": 8,
+      "count": 3
+    },
+    {
+      "index": 16,
+      "count": 1
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "822.1.1",
+      "index": 1,
+      "generators": "a b",
+      "cosets": "a a a a",
+      "invcos": "a a a a"
+    },
+    {
+      "subgroup": "822.2.1",
+      "index": 2,
+      "generators": "a",
+      "cosets": "ab ba ab ba",
+      "invcos": "ab ba ab ba"
+    },
+    {
+      "subgroup": "822.2.2",
+      "index": 2,
+      "generators": "AA b",
+      "cosets": "ba ab ba ab",
+      "invcos": "ba ab ba ab"
+    },
+    {
+      "subgroup": "822.2.3",
+      "index": 2,
+      "generators": "AA Ab",
+      "cosets": "ba ba ba ba",
+      "invcos": "ba ba ba ba"
+    },
+    {
+      "subgroup": "822.4.1",
+      "index": 4,
+      "generators": "b AAAA",
+      "cosets": "bdac acbd cadb acbd",
+      "invcos": "cadb acbd bdac acbd"
+    },
+    {
+      "subgroup": "822.4.2",
+      "index": 4,
+      "generators": "Ab AAAA",
+      "cosets": "bdac badc cadb badc",
+      "invcos": "cadb badc bdac badc"
+    },
+    {
+      "subgroup": "822.4.3",
+      "index": 4,
+      "generators": "AA",
+      "cosets": "badc cdab badc cdab",
+      "invcos": "badc cdab badc cdab"
+    },
+    {
+      "subgroup": "822.8.1",
+      "index": 8,
+      "generators": "b",
+      "cosets": "bdafcheg acbedgfh caebgdhf acbedgfh",
+      "invcos": "caebgdhf acbedgfh bdafcheg acbedgfh"
+    },
+    {
+      "subgroup": "822.8.2",
+      "index": 8,
+      "generators": "Ab",
+      "cosets": "bdafcheg badcfehg caebgdhf badcfehg",
+      "invcos": "caebgdhf badcfehg bdafcheg badcfehg"
+    },
+    {
+      "subgroup": "822.8.3",
+      "index": 8,
+      "generators": "AAAA",
+      "cosets": "beagcdhf dfgahbce caefbhdg dfgahbce",
+      "invcos": "caefbhdg dfgahbce beagcdhf dfgahbce"
+    },
+    {
+      "subgroup": "822.16.1",
+      "index": 16,
+      "generators": "",
+      "cosets": "beahidclmfgokjpn dfhajblcneogpikm cagfbjkdenmhiplo dfhajblcneogpikm",
+      "invcos": "cagfbjkdenmhiplo dfhajblcneogpikm beahidclmfgokjpn dfhajblcneogpikm"
+    }
+  ]
+}

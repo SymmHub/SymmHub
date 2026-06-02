@@ -1,0 +1,57 @@
+{
+  "name": "227",
+  "group": "Group( [ a, b, c, d ] )",
+  "relators": "[ a*c, b*d, a^2, b^2, (a*d)^7 ]",
+  "maxIndex": 14,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 4,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 2,
+      "count": 1
+    },
+    {
+      "index": 7,
+      "count": 1
+    },
+    {
+      "index": 14,
+      "count": 1
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "227.1.1",
+      "index": 1,
+      "generators": "a b",
+      "cosets": "a a a a",
+      "invcos": "a a a a"
+    },
+    {
+      "subgroup": "227.2.1",
+      "index": 2,
+      "generators": "Ab",
+      "cosets": "ba ba ba ba",
+      "invcos": "ba ba ba ba"
+    },
+    {
+      "subgroup": "227.7.1",
+      "index": 7,
+      "generators": "a",
+      "cosets": "acbedgf badcfeg acbedgf badcfeg",
+      "invcos": "acbedgf badcfeg acbedgf badcfeg"
+    },
+    {
+      "subgroup": "227.14.1",
+      "index": 14,
+      "generators": "",
+      "cosets": "baefcdijghmnkl cdabghefklijnm baefcdijghmnkl cdabghefklijnm",
+      "invcos": "baefcdijghmnkl cdabghefklijnm baefcdijghmnkl cdabghefklijnm"
+    }
+  ]
+}

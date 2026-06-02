@@ -1,0 +1,110 @@
+{
+  "name": "282",
+  "group": "Group( [ a, b, c, d ] )",
+  "relators": "[ a*c, b*d, a^2, b^8, (a*d)^2 ]",
+  "maxIndex": 16,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 11,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 2,
+      "count": 3
+    },
+    {
+      "index": 4,
+      "count": 3
+    },
+    {
+      "index": 8,
+      "count": 3
+    },
+    {
+      "index": 16,
+      "count": 1
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "282.1.1",
+      "index": 1,
+      "generators": "a b",
+      "cosets": "a a a a",
+      "invcos": "a a a a"
+    },
+    {
+      "subgroup": "282.2.1",
+      "index": 2,
+      "generators": "a BB",
+      "cosets": "ab ba ab ba",
+      "invcos": "ab ba ab ba"
+    },
+    {
+      "subgroup": "282.2.2",
+      "index": 2,
+      "generators": "b",
+      "cosets": "ba ab ba ab",
+      "invcos": "ba ab ba ab"
+    },
+    {
+      "subgroup": "282.2.3",
+      "index": 2,
+      "generators": "Ab AB",
+      "cosets": "ba ba ba ba",
+      "invcos": "ba ba ba ba"
+    },
+    {
+      "subgroup": "282.4.1",
+      "index": 4,
+      "generators": "a BBBB",
+      "cosets": "acbd bdac acbd cadb",
+      "invcos": "acbd cadb acbd bdac"
+    },
+    {
+      "subgroup": "282.4.2",
+      "index": 4,
+      "generators": "Ab ABBB",
+      "cosets": "badc bdac badc cadb",
+      "invcos": "badc cadb badc bdac"
+    },
+    {
+      "subgroup": "282.4.3",
+      "index": 4,
+      "generators": "BB",
+      "cosets": "badc cdab badc cdab",
+      "invcos": "badc cdab badc cdab"
+    },
+    {
+      "subgroup": "282.8.1",
+      "index": 8,
+      "generators": "a",
+      "cosets": "acbedgfh bdafcheg acbedgfh caebgdhf",
+      "invcos": "acbedgfh caebgdhf acbedgfh bdafcheg"
+    },
+    {
+      "subgroup": "282.8.2",
+      "index": 8,
+      "generators": "Ab",
+      "cosets": "badcfehg bdafcheg badcfehg caebgdhf",
+      "invcos": "badcfehg caebgdhf badcfehg bdafcheg"
+    },
+    {
+      "subgroup": "282.8.3",
+      "index": 8,
+      "generators": "BBBB",
+      "cosets": "bafedchg cegahbdf bafedchg dfagbhce",
+      "invcos": "bafedchg dfagbhce bafedchg cegahbdf"
+    },
+    {
+      "subgroup": "282.16.1",
+      "index": 16,
+      "generators": "",
+      "cosets": "bafedcjihgnmlkpo cegaibkdmfohpjln bafedcjihgnmlkpo dfahbjclengoipkm",
+      "invcos": "bafedcjihgnmlkpo dfahbjclengoipkm bafedcjihgnmlkpo cegaibkdmfohpjln"
+    }
+  ]
+}

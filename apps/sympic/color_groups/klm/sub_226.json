@@ -1,0 +1,107 @@
+{
+  "name": "226",
+  "group": "Group( [ a, b, c, d ] )",
+  "relators": "[ a*c, b*d, a^2, b^2, (a*d)^6 ]",
+  "maxIndex": 12,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 10,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 2,
+      "count": 3
+    },
+    {
+      "index": 3,
+      "count": 1
+    },
+    {
+      "index": 4,
+      "count": 1
+    },
+    {
+      "index": 6,
+      "count": 3
+    },
+    {
+      "index": 12,
+      "count": 1
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "226.1.1",
+      "index": 1,
+      "generators": "a b",
+      "cosets": "a a a a",
+      "invcos": "a a a a"
+    },
+    {
+      "subgroup": "226.2.1",
+      "index": 2,
+      "generators": "a Bab",
+      "cosets": "ab ba ab ba",
+      "invcos": "ab ba ab ba"
+    },
+    {
+      "subgroup": "226.2.2",
+      "index": 2,
+      "generators": "b Aba",
+      "cosets": "ba ab ba ab",
+      "invcos": "ba ab ba ab"
+    },
+    {
+      "subgroup": "226.2.3",
+      "index": 2,
+      "generators": "Ab",
+      "cosets": "ba ba ba ba",
+      "invcos": "ba ba ba ba"
+    },
+    {
+      "subgroup": "226.3.1",
+      "index": 3,
+      "generators": "a BAbab",
+      "cosets": "acb bac acb bac",
+      "invcos": "acb bac acb bac"
+    },
+    {
+      "subgroup": "226.4.1",
+      "index": 4,
+      "generators": "ABab",
+      "cosets": "badc cdab badc cdab",
+      "invcos": "badc cdab badc cdab"
+    },
+    {
+      "subgroup": "226.6.1",
+      "index": 6,
+      "generators": "a",
+      "cosets": "acbedf badcfe acbedf badcfe",
+      "invcos": "acbedf badcfe acbedf badcfe"
+    },
+    {
+      "subgroup": "226.6.2",
+      "index": 6,
+      "generators": "b",
+      "cosets": "badcfe acbedf badcfe acbedf",
+      "invcos": "badcfe acbedf badcfe acbedf"
+    },
+    {
+      "subgroup": "226.6.3",
+      "index": 6,
+      "generators": "ABAbab",
+      "cosets": "baefcd cdabfe baefcd cdabfe",
+      "invcos": "baefcd cdabfe baefcd cdabfe"
+    },
+    {
+      "subgroup": "226.12.1",
+      "index": 12,
+      "generators": "",
+      "cosets": "baefcdijghlk cdabghefklij baefcdijghlk cdabghefklij",
+      "invcos": "baefcdijghlk cdabghefklij baefcdijghlk cdabghefklij"
+    }
+  ]
+}

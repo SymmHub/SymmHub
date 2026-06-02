@@ -1,0 +1,292 @@
+{
+  "name": "*228",
+  "group": "Group( [ a, b, c ] )",
+  "relators": "[ a^2, b^2, c^2, (a*b)^2, (c*a)^2, (b*c)^8 ]",
+  "maxIndex": 16,
+  "nextIndex": null,
+  "nextIndexCount": null,
+  "totalCount": 37,
+  "countPerIndex": [
+    {
+      "index": 1,
+      "count": 1
+    },
+    {
+      "index": 2,
+      "count": 7
+    },
+    {
+      "index": 4,
+      "count": 11
+    },
+    {
+      "index": 8,
+      "count": 11
+    },
+    {
+      "index": 16,
+      "count": 7
+    }
+  ],
+  "subgroups": [
+    {
+      "subgroup": "*228.1.1",
+      "index": 1,
+      "generators": "a b c",
+      "cosets": "a a a",
+      "invcos": "a a a"
+    },
+    {
+      "subgroup": "*228.2.1",
+      "index": 2,
+      "generators": "a c Bcb",
+      "cosets": "ab ba ab",
+      "invcos": "ab ba ab"
+    },
+    {
+      "subgroup": "*228.2.2",
+      "index": 2,
+      "generators": "a Bc",
+      "cosets": "ab ba ba",
+      "invcos": "ab ba ba"
+    },
+    {
+      "subgroup": "*228.2.3",
+      "index": 2,
+      "generators": "a b Cbc",
+      "cosets": "ab ab ba",
+      "invcos": "ab ab ba"
+    },
+    {
+      "subgroup": "*228.2.4",
+      "index": 2,
+      "generators": "b c",
+      "cosets": "ba ab ab",
+      "invcos": "ba ab ab"
+    },
+    {
+      "subgroup": "*228.2.5",
+      "index": 2,
+      "generators": "b Ac",
+      "cosets": "ba ab ba",
+      "invcos": "ba ab ba"
+    },
+    {
+      "subgroup": "*228.2.6",
+      "index": 2,
+      "generators": "Ab Ac",
+      "cosets": "ba ba ba",
+      "invcos": "ba ba ba"
+    },
+    {
+      "subgroup": "*228.2.7",
+      "index": 2,
+      "generators": "Ab c",
+      "cosets": "ba ba ab",
+      "invcos": "ba ba ab"
+    },
+    {
+      "subgroup": "*228.4.1",
+      "index": 4,
+      "generators": "a BCbc",
+      "cosets": "abcd badc cdab",
+      "invcos": "abcd badc cdab"
+    },
+    {
+      "subgroup": "*228.4.2",
+      "index": 4,
+      "generators": "a b CBCbcbc",
+      "cosets": "abcd acbd badc",
+      "invcos": "abcd acbd badc"
+    },
+    {
+      "subgroup": "*228.4.3",
+      "index": 4,
+      "generators": "a c BCBcbcb",
+      "cosets": "abcd badc acbd",
+      "invcos": "abcd badc acbd"
+    },
+    {
+      "subgroup": "*228.4.4",
+      "index": 4,
+      "generators": "Ac ABcb",
+      "cosets": "badc cdab badc",
+      "invcos": "badc cdab badc"
+    },
+    {
+      "subgroup": "*228.4.5",
+      "index": 4,
+      "generators": "Bc",
+      "cosets": "badc cdab cdab",
+      "invcos": "badc cdab cdab"
+    },
+    {
+      "subgroup": "*228.4.6",
+      "index": 4,
+      "generators": "Cba",
+      "cosets": "badc cdab dcba",
+      "invcos": "badc cdab dcba"
+    },
+    {
+      "subgroup": "*228.4.7",
+      "index": 4,
+      "generators": "c ABcb",
+      "cosets": "badc cdab abdc",
+      "invcos": "badc cdab abdc"
+    },
+    {
+      "subgroup": "*228.4.8",
+      "index": 4,
+      "generators": "b Cbc",
+      "cosets": "badc abcd cdab",
+      "invcos": "badc abcd cdab"
+    },
+    {
+      "subgroup": "*228.4.9",
+      "index": 4,
+      "generators": "b ACbc",
+      "cosets": "badc abdc cdab",
+      "invcos": "badc abdc cdab"
+    },
+    {
+      "subgroup": "*228.4.10",
+      "index": 4,
+      "generators": "c Bcb",
+      "cosets": "badc cdab abcd",
+      "invcos": "badc cdab abcd"
+    },
+    {
+      "subgroup": "*228.4.11",
+      "index": 4,
+      "generators": "Ab ACbc",
+      "cosets": "badc badc cdab",
+      "invcos": "badc badc cdab"
+    },
+    {
+      "subgroup": "*228.8.1",
+      "index": 8,
+      "generators": "c ABCBcbcb",
+      "cosets": "badcfehg cdabghef abefcdhg",
+      "invcos": "badcfehg cdabghef abefcdhg"
+    },
+    {
+      "subgroup": "*228.8.2",
+      "index": 8,
+      "generators": "b ACBCbcbc",
+      "cosets": "badcfehg abefcdhg cdabghef",
+      "invcos": "badcfehg abefcdhg cdabghef"
+    },
+    {
+      "subgroup": "*228.8.3",
+      "index": 8,
+      "generators": "Ac ABCBcbcb",
+      "cosets": "badcfehg cdabghef baefcdhg",
+      "invcos": "badcfehg cdabghef baefcdhg"
+    },
+    {
+      "subgroup": "*228.8.4",
+      "index": 8,
+      "generators": "BCbc",
+      "cosets": "baefcdhg ceagbhdf dfgahbce",
+      "invcos": "baefcdhg ceagbhdf dfgahbce"
+    },
+    {
+      "subgroup": "*228.8.5",
+      "index": 8,
+      "generators": "b CBCbcbc",
+      "cosets": "badcfehg abefcdgh cdabghef",
+      "invcos": "badcfehg abefcdgh cdabghef"
+    },
+    {
+      "subgroup": "*228.8.6",
+      "index": 8,
+      "generators": "CBcba",
+      "cosets": "baefcdhg ceahbgfd dfgahbce",
+      "invcos": "baefcdhg ceahbgfd dfgahbce"
+    },
+    {
+      "subgroup": "*228.8.7",
+      "index": 8,
+      "generators": "c BCBcbcb",
+      "cosets": "badcfehg cdabghef abefcdgh",
+      "invcos": "badcfehg cdabghef abefcdgh"
+    },
+    {
+      "subgroup": "*228.8.8",
+      "index": 8,
+      "generators": "a c",
+      "cosets": "abcdefgh badcfehg acbedgfh",
+      "invcos": "abcdefgh badcfehg acbedgfh"
+    },
+    {
+      "subgroup": "*228.8.9",
+      "index": 8,
+      "generators": "a b",
+      "cosets": "abcdefgh acbedgfh badcfehg",
+      "invcos": "abcdefgh acbedgfh badcfehg"
+    },
+    {
+      "subgroup": "*228.8.10",
+      "index": 8,
+      "generators": "a BCBCbcbc",
+      "cosets": "abcdefgh baefcdhg cdabghef",
+      "invcos": "abcdefgh baefcdhg cdabghef"
+    },
+    {
+      "subgroup": "*228.8.11",
+      "index": 8,
+      "generators": "Ab ACBCbcbc",
+      "cosets": "badcfehg baefcdhg cdabghef",
+      "invcos": "badcfehg baefcdhg cdabghef"
+    },
+    {
+      "subgroup": "*228.16.1",
+      "index": 16,
+      "generators": "Ac",
+      "cosets": "badcfehgjilknmpo cdabghefklijopmn baefcdijghmnklpo",
+      "invcos": "badcfehgjilknmpo cdabghefklijopmn baefcdijghmnklpo"
+    },
+    {
+      "subgroup": "*228.16.2",
+      "index": 16,
+      "generators": "c",
+      "cosets": "badcfehgjilknmpo cdabghefklijopmn abefcdijghmnklop",
+      "invcos": "badcfehgjilknmpo cdabghefklijopmn abefcdijghmnklop"
+    },
+    {
+      "subgroup": "*228.16.3",
+      "index": 16,
+      "generators": "BCBCbcbc",
+      "cosets": "baefcdijghmnklpo ceahbjkdmfgoipln dfgaibclenohpjkm",
+      "invcos": "baefcdijghmnklpo ceahbjkdmfgoipln dfgaibclenohpjkm"
+    },
+    {
+      "subgroup": "*228.16.4",
+      "index": 16,
+      "generators": "Ab",
+      "cosets": "badcfehgjilknmpo baefcdijghmnklpo cdabghefklijopmn",
+      "invcos": "badcfehgjilknmpo baefcdijghmnklpo cdabghefklijopmn"
+    },
+    {
+      "subgroup": "*228.16.5",
+      "index": 16,
+      "generators": "a",
+      "cosets": "abcdefghijklmnop baefcdijghmnklpo cdabghefklijopmn",
+      "invcos": "abcdefghijklmnop baefcdijghmnklpo cdabghefklijopmn"
+    },
+    {
+      "subgroup": "*228.16.6",
+      "index": 16,
+      "generators": "b",
+      "cosets": "badcfehgjilknmpo abefcdijghmnklop cdabghefklijopmn",
+      "invcos": "badcfehgjilknmpo abefcdijghmnklop cdabghefklijopmn"
+    },
+    {
+      "subgroup": "*228.16.7",
+      "index": 16,
+      "generators": "CBCBcbcba",
+      "cosets": "baefcdijghmnklpo ceahbjkdmfgpionl dfgaibclenohpjkm",
+      "invcos": "baefcdijghmnklpo ceahbjkdmfgpionl dfgaibclenohpjkm"
+    }
+  ]
+}

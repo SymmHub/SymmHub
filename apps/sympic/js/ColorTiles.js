@@ -11,7 +11,7 @@ import {
 
 const MYNAME = 'ColorTiles';
 
-const DEBUG = true;
+const DEBUG = false;
 
 const TWO_PI = 2.0 * Math.PI;
 const MAX_COLORS_COUNT = 24;
