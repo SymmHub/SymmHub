@@ -136,7 +136,7 @@ $button-height: 20px;
   li.folder {
     padding: 0;
     border-left: $nest-margin solid rgba(0, 0, 0, 0);
-
+    box-sizing: border-box;
   }
 
   /** Folder names */
@@ -233,7 +233,7 @@ $button-height: 20px;
   .selector {
     display: none;
     position: absolute;
-    margin-left: -9px;
+    right: 0px;
     margin-top: 23px;
     z-index: 10;
   }

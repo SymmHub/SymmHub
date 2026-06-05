@@ -7,6 +7,7 @@ import {
 
 const DEBUG = true;
 const MYNAME = 'Subgroups';
+const SELECT = '[select]';
 
 function Subgroups(options = {}) {
     const mConfig = {
@@ -18,11 +19,11 @@ function Subgroups(options = {}) {
     };
 
     let mGroupTypes = [];
-    let mGroupTypeChoices = [''];
+    let mGroupTypeChoices = [SELECT];
     let mGroupNames = [];
-    let mGroupNameChoices = [''];
-    let mIndexChoices = [];
-    let mSubgroupChoices = [];
+    let mGroupNameChoices = [SELECT];
+    let mIndexChoices = [SELECT];
+    let mSubgroupChoices = [SELECT];
     let mSubgroupsData = [];
     let mParams = null;
 
@@ -37,7 +38,7 @@ function Subgroups(options = {}) {
             }
             const data = await response.json();
             mGroupTypes = data.types || [];
-            mGroupTypeChoices = ['', ...mGroupTypes.map(t => t.name)];
+            mGroupTypeChoices = [SELECT, ...mGroupTypes.map(t => t.name)];
             if (mParams && mParams.groupType) {
                 mParams.groupType.updateChoices(mGroupTypeChoices);
             }
@@ -50,12 +51,12 @@ function Subgroups(options = {}) {
         const typeInfo = mGroupTypes.find(t => t.name === mConfig.groupType);
         if (!typeInfo) {
             mGroupNames = [];
-            mGroupNameChoices = [''];
+            mGroupNameChoices = [SELECT];
             if (mParams && mParams.groupName) {
-                mParams.groupName.updateChoices(['']);
-                mParams.groupName.setValue('');
+                mParams.groupName.updateChoices([SELECT]);
+                mParams.groupName.setValue(SELECT);
             }
-            mConfig.groupName = '';
+            mConfig.groupName = SELECT;
             return;
         }
 
@@ -67,14 +68,14 @@ function Subgroups(options = {}) {
             }
             const data = await response.json();
             mGroupNames = data.groups || [];
-            mGroupNameChoices = ['', ...mGroupNames.map(g => g.name)];
+            mGroupNameChoices = [SELECT, ...mGroupNames.map(g => g.name)];
             if (mParams && mParams.groupName) {
                 mParams.groupName.updateChoices(mGroupNameChoices);
             }
 
             const activeGroupName = (preferredGroupName !== undefined && mGroupNameChoices.includes(preferredGroupName))
                 ? preferredGroupName
-                : (mGroupNameChoices.length > 0 ? mGroupNameChoices[0] : '');
+                : (mGroupNameChoices.length > 0 ? mGroupNameChoices[0] : SELECT);
 
             mConfig.groupName = activeGroupName;
             if (mParams && mParams.groupName) {
@@ -109,21 +110,40 @@ function Subgroups(options = {}) {
     }
 
     function getActualIndex(displayIndex) {
-        if (!displayIndex) return '';
+        if (!displayIndex || displayIndex === SELECT) return '';
         const idx = displayIndex.indexOf('(');
         return idx !== -1 ? displayIndex.substring(0, idx) : displayIndex;
     }
 
+    function normalizePerms(str) {
+        if (!str) return '';
+        return str.trim().split(/\s+/).join(' ');
+    }
+
     function onIndexChanged(preferredSubgroup) {
         const actualIndex = getActualIndex(mConfig.index);
+        if (actualIndex === '') {
+            mSubgroupChoices = [SELECT];
+            if (mParams && mParams.subgroup) {
+                mParams.subgroup.updateChoices(mSubgroupChoices);
+            }
+            mConfig.subgroup = SELECT;
+            if (mParams && mParams.subgroup) {
+                mParams.subgroup.setValue(SELECT);
+            }
+            onSubgroupChanged();
+            return;
+        }
+
         const subgroupsWithIndex = mSubgroupsData.filter(s => String(s.index) === actualIndex);
-        mSubgroupChoices = subgroupsWithIndex.map(s => String(s.subgroup));
+        mSubgroupChoices = [SELECT, ...subgroupsWithIndex.map(s => String(s.subgroup))];
         if (mParams && mParams.subgroup) {
             mParams.subgroup.updateChoices(mSubgroupChoices);
         }
+        const firstValidSubgroup = mSubgroupChoices.find(s => s !== SELECT) || SELECT;
         const activeSubgroup = (preferredSubgroup !== undefined && mSubgroupChoices.includes(preferredSubgroup))
             ? preferredSubgroup
-            : (mSubgroupChoices.length > 0 ? mSubgroupChoices[0] : '');
+            : firstValidSubgroup;
 
         mConfig.subgroup = activeSubgroup;
         if (mParams && mParams.subgroup) {
@@ -161,24 +181,52 @@ function Subgroups(options = {}) {
         }
 
         if (data && Array.isArray(data.countPerIndex)) {
-            mIndexChoices = data.countPerIndex.map(item => `${item.index}(${item.count})`);
+            mIndexChoices = [SELECT, ...data.countPerIndex.map(item => `${item.index}(${item.count})`)];
         } else {
             const counts = {};
             mSubgroupsData.forEach(s => {
                 counts[s.index] = (counts[s.index] || 0) + 1;
             });
             const indices = Object.keys(counts).map(Number).sort((a, b) => a - b);
-            mIndexChoices = indices.map(idx => `${idx}(${counts[idx]})`);
+            mIndexChoices = [SELECT, ...indices.map(idx => `${idx}(${counts[idx]})`)];
         }
 
         if (mParams && mParams.index) {
             mParams.index.updateChoices(mIndexChoices);
         }
 
+        // Prioritize matching by permutations string if parent visualizer provides it
+        let matchedSubgroup = null;
+        if (options.getParentPermutations) {
+            const parentPerms = normalizePerms(options.getParentPermutations());
+            if (parentPerms) {
+                matchedSubgroup = mSubgroupsData.find(s => normalizePerms(s.invcos) === parentPerms);
+            }
+        }
+
+        if (matchedSubgroup) {
+            preferredSubgroup = String(matchedSubgroup.subgroup);
+        }
+
+        if (preferredSubgroup === '' || preferredSubgroup === SELECT) {
+            mConfig.index = SELECT;
+            mConfig.subgroup = SELECT;
+            mSubgroupChoices = [SELECT];
+            if (mParams && mParams.index) {
+                mParams.index.setValue(SELECT);
+            }
+            if (mParams && mParams.subgroup) {
+                mParams.subgroup.updateChoices(mSubgroupChoices);
+                mParams.subgroup.setValue(SELECT);
+            }
+            return;
+        }
+
         const prefSub = mSubgroupsData.find(s => String(s.subgroup) === preferredSubgroup);
         const preferredIdxVal = prefSub ? String(prefSub.index) : '';
+        const firstValidIndexChoice = mIndexChoices.find(c => c !== SELECT) || SELECT;
         const preferredIndexChoice = mIndexChoices.find(c => getActualIndex(c) === preferredIdxVal)
-            || (mIndexChoices.length > 0 ? mIndexChoices[0] : '');
+            || firstValidIndexChoice;
 
         mConfig.index = preferredIndexChoice;
         if (mParams && mParams.index) {
@@ -194,10 +242,10 @@ function Subgroups(options = {}) {
         try {
             const text = await file.text();
             const data = JSON.parse(text);
-            mConfig.groupType = '';
-            mConfig.groupName = '';
-            if (mParams && mParams.groupType) mParams.groupType.setValue('');
-            if (mParams && mParams.groupName) mParams.groupName.setValue('');
+            mConfig.groupType = SELECT;
+            mConfig.groupName = SELECT;
+            if (mParams && mParams.groupType) mParams.groupType.setValue(SELECT);
+            if (mParams && mParams.groupName) mParams.groupName.setValue(SELECT);
             parseSubgroupsData(data, file.name);
             if (options.onChange) {
                 options.onChange();
@@ -232,15 +280,18 @@ function Subgroups(options = {}) {
         // Wait for group types to finish loading
         await mInitPromise;
 
-        let targetGroupType = params.groupType !== undefined ? params.groupType : (initialize ? '' : mConfig.groupType);
-        let targetGroupName = params.groupName !== undefined ? params.groupName : (initialize ? '' : mConfig.groupName);
+        let targetGroupType = params.groupType !== undefined ? params.groupType : (initialize ? SELECT : mConfig.groupType);
+        let targetGroupName = params.groupName !== undefined ? params.groupName : (initialize ? SELECT : mConfig.groupName);
         let targetFileName = params.fileName !== undefined ? params.fileName : (initialize ? '' : mConfig.fileName);
-        const targetIndexVal = params.index !== undefined ? String(params.index) : (initialize ? '' : getActualIndex(mConfig.index));
-        const targetSubgroup = params.subgroup !== undefined ? String(params.subgroup) : (initialize ? '' : mConfig.subgroup);
-        const targetIndexChoice = mIndexChoices.find(c => getActualIndex(c) === targetIndexVal) || '';
+        const targetIndexVal = params.index !== undefined ? getActualIndex(String(params.index)) : (initialize ? '' : getActualIndex(mConfig.index));
+        let targetSubgroup = params.subgroup !== undefined ? String(params.subgroup) : (initialize ? '' : mConfig.subgroup);
+        if (targetSubgroup === SELECT) targetSubgroup = '';
+
+        if (targetGroupType === '') targetGroupType = SELECT;
+        if (targetGroupName === '') targetGroupName = SELECT;
 
         // Deduce groupType and groupName from fileName if they are missing
-        if (!targetGroupType && targetFileName) {
+        if ((!targetGroupType || targetGroupType === SELECT) && targetFileName) {
             const parts = targetFileName.split('/');
             const folder = parts[parts.length - 2];
             if (folder === 'klm') {
@@ -250,7 +301,7 @@ function Subgroups(options = {}) {
             }
         }
 
-        if (targetGroupType) {
+        if (targetGroupType && targetGroupType !== SELECT) {
             mConfig.groupType = targetGroupType;
             if (mParams && mParams.groupType) {
                 mParams.groupType.setValue(targetGroupType);
@@ -265,13 +316,13 @@ function Subgroups(options = {}) {
                     if (response.ok) {
                         const data = await response.json();
                         mGroupNames = data.groups || [];
-                        mGroupNameChoices = ['', ...mGroupNames.map(g => g.name)];
+                        mGroupNameChoices = [SELECT, ...mGroupNames.map(g => g.name)];
                         if (mParams && mParams.groupName) {
                             mParams.groupName.updateChoices(mGroupNameChoices);
                         }
 
                         // Deduce groupName from fileName if missing
-                        if (!targetGroupName && targetFileName) {
+                        if ((!targetGroupName || targetGroupName === SELECT) && targetFileName) {
                             const fileOnly = targetFileName.split('/').pop();
                             const matchingGroup = mGroupNames.find(g => g.file === fileOnly);
                             if (matchingGroup) {
@@ -284,7 +335,7 @@ function Subgroups(options = {}) {
                 }
             }
 
-            if (targetGroupName) {
+            if (targetGroupName && targetGroupName !== SELECT) {
                 mConfig.groupName = targetGroupName;
                 if (mParams && mParams.groupName) {
                     mParams.groupName.setValue(targetGroupName);
@@ -298,34 +349,43 @@ function Subgroups(options = {}) {
                 }
             }
         } else if (targetFileName) {
-            mConfig.groupType = '';
-            mConfig.groupName = '';
-            if (mParams && mParams.groupType) mParams.groupType.setValue('');
-            if (mParams && mParams.groupName) mParams.groupName.setValue('');
+            mConfig.groupType = SELECT;
+            mConfig.groupName = SELECT;
+            if (mParams && mParams.groupType) mParams.groupType.setValue(SELECT);
+            if (mParams && mParams.groupName) mParams.groupName.setValue(SELECT);
             await loadSubgroupFileByName(targetFileName, targetSubgroup);
         } else {
-            mConfig.groupType = '';
-            mConfig.groupName = '';
+            mConfig.groupType = SELECT;
+            mConfig.groupName = SELECT;
             mConfig.fileName = '';
-            if (mParams && mParams.groupType) mParams.groupType.setValue('');
-            if (mParams && mParams.groupName) mParams.groupName.setValue('');
+            mConfig.index = SELECT;
+            mConfig.subgroup = SELECT;
+            if (mParams && mParams.groupType) mParams.groupType.setValue(SELECT);
+            if (mParams && mParams.groupName) mParams.groupName.setValue(SELECT);
             if (mParams && mParams.fileName) mParams.fileName.setValue('');
             mSubgroupsData = [];
-            mIndexChoices = [];
-            mSubgroupChoices = [];
-            if (mParams && mParams.index) mParams.index.updateChoices([]);
-            if (mParams && mParams.subgroup) mParams.subgroup.updateChoices([]);
+            mIndexChoices = [SELECT];
+            mSubgroupChoices = [SELECT];
+            if (mParams && mParams.index) {
+                mParams.index.updateChoices(mIndexChoices);
+                mParams.index.setValue(SELECT);
+            }
+            if (mParams && mParams.subgroup) {
+                mParams.subgroup.updateChoices(mSubgroupChoices);
+                mParams.subgroup.setValue(SELECT);
+            }
         }
 
         // Apply final index / subgroup choices if they are different
         const currentActualIndex = getActualIndex(mConfig.index);
-        if (targetIndexVal !== undefined && targetIndexVal !== currentActualIndex) {
+        if (targetIndexVal && targetIndexVal !== currentActualIndex) {
+            const targetIndexChoice = mIndexChoices.find(c => getActualIndex(c) === targetIndexVal) || SELECT;
             mConfig.index = targetIndexChoice;
             if (mParams && mParams.index) {
                 mParams.index.setValue(targetIndexChoice);
             }
-            onIndexChanged(targetSubgroup);
-        } else if (targetSubgroup !== undefined && targetSubgroup !== mConfig.subgroup) {
+            onIndexChanged(targetSubgroup || SELECT);
+        } else if (targetSubgroup && targetSubgroup !== mConfig.subgroup) {
             mConfig.subgroup = targetSubgroup;
             if (mParams && mParams.subgroup) {
                 mParams.subgroup.setValue(targetSubgroup);

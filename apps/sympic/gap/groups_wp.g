@@ -49,7 +49,7 @@ make_wp_s2222 := function()
   F := FreeGroup("a", "b", "c", "d");;
   a := F.1;; b := F.2;; c := F.3;; d := F.4;;
   # Prototype relators for "*2222" (pmm)
-  return F / [ a^2, b^2, c^2, d^2 ];
+  return F / [ a^2, b^2, c^2, d^2, (a*c)^2, (c*b)^2,(b*d)^2, (d*a)^2 ];
 end;
 
 make_wp_22s := function()
@@ -78,26 +78,26 @@ end;
 
 make_wp_442 := function()
   local F, a, b, c, d;
-  F := FreeGroup("a", "b", "c", "d");;
-  a := F.1;; b := F.2;; c := F.3;; d := F.4;;
+  F := FreeGroup("a", "b", "c");;
+  a := F.1;; b := F.2;; c := F.3;;
   # Prototype relators for "442" (p4)
-  return F / [ a^4, b^4, c^2, a*b*c*d ];
+  return F / [ a^2, c*b, b^4, (a*b)^4];
 end;
 
 make_wp_s442 := function()
-  local F, a, b, c, d;
-  F := FreeGroup("a", "b", "c", "d");;
-  a := F.1;; b := F.2;; c := F.3;; d := F.4;;
+  local F, a, b, c;
+  F := FreeGroup("a", "b", "c");;
+  a := F.1;; b := F.2;; c := F.3;;
   # Prototype relators for "*442" (p4m)
-  return F / [ a^2, b^2, c^2, d^2 ];
+  return F / [ a^2, b^2, c^2,(a*b)^2, (a*c)^4, (b*c)^4 ];
 end;
 
 make_wp_4s2 := function()
   local F, a, b, c, d;
-  F := FreeGroup("a", "b", "c", "d");;
-  a := F.1;; b := F.2;; c := F.3;; d := F.4;;
+  F := FreeGroup("a", "b", "c");;
+  a := F.1;; b := F.2;; c := F.3;;
   # Prototype relators for "4*2" (p4g)
-  return F / [ a^2, b^2, c^2, d^2 ];
+  return F / [ a^2, b^4, b*c,(c*a*b*a)^2 ];
 end;
 
 make_wp_333 := function()
@@ -117,11 +117,12 @@ make_wp_s333 := function()
 end;
 
 make_wp_3s3 := function()
-  local F, a, b, c, d;
-  F := FreeGroup("a", "b", "c", "d");;
-  a := F.1;; b := F.2;; c := F.3;; d := F.4;;
-  # Prototype relators for "3*3" (p31m)
-  return F / [ a^2, b^2, c^2, d^2 ];
+  local F, a, b, c;
+  F := FreeGroup("a", "b", "c");;
+  a := F.1;; b := F.2;; c := F.3;; 
+  # Prototype relators for "3*3" (p31m) 
+  # WRONG 
+  return F / [ a^2, b^3, b*c,(c*a*b*a)^3 ];
 end;
 
 make_wp_632 := function()
@@ -133,11 +134,11 @@ make_wp_632 := function()
 end;
 
 make_wp_s632 := function()
-  local F, a, b, c, d;
-  F := FreeGroup("a", "b", "c", "d");;
-  a := F.1;; b := F.2;; c := F.3;; d := F.4;;
+  local F, a, b, c;
+  F := FreeGroup("a", "b", "c");;
+  a := F.1;; b := F.2;; c := F.3;;
   # Prototype relators for "*632" (p6m)
-  return F / [ a^2, b^2, c^2, d^2 ];
+  return F / [ a^2, b^2, c^2, (a*b)^2, (b*c)^3, (c*a)^6];
 end;
 
 

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>ColorInput Component Tester</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.07);
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #d946ef;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            max-width: 800px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Glassmorphic Panel Card */
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-main);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            background: rgba(139, 92, 246, 0.2);
+            color: #c084fc;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.no-alpha {
+            background: rgba(217, 70, 239, 0.2);
+            color: #f472b6;
+            border: 1px solid rgba(217, 70, 239, 0.3);
+        }
+
+        /* Component Placement Slot */
+        .slot-container {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        /* Preview Display */
+        .preview-wrapper {
+            position: relative;
+            height: 120px;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: flex-end;
+            padding: 0.75rem;
+        }
+
+        /* Checkerboard background for transparency helper */
+        .checkerboard {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #1e293b;
+            background-image: 
+                linear-gradient(45deg, #0f172a 25%, transparent 25%), 
+                linear-gradient(-45deg, #0f172a 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #0f172a 75%), 
+                linear-gradient(-45deg, transparent 75%, #0f172a 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            z-index: 1;
+        }
+
+        .preview-color {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2;
+            transition: background-color 0.15s linear;
+        }
+
+        .preview-info {
+            position: relative;
+            z-index: 3;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Controller Settings Block */
+        .controls-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .control-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-row label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        /* Premium Buttons */
+        button {
+            font-family: 'Outfit', sans-serif;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 0.5rem 0.9rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        button:hover {
+            background: var(--glass-hover);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button.active-toggle {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        button.active-toggle.disabled {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        /* Output Logs panel */
+        .log-panel {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            color: #a7f3d0;
+            overflow-y: auto;
+            max-height: 120px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .log-entry {
+            border-left: 2px solid var(--accent-primary);
+            padding-left: 0.5rem;
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            margin-right: 0.5rem;
+        }
+
+        /* Live State Data Grid */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .state-item {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 0.6rem 0.8rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .state-label {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .state-value {
+            color: #38bdf8;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>ColorInput Component Tester</h1>
+        <p>Interactive testing harness for the standalone decoupled ColorInput component</p>
+    </div>
+
+    <div class="container">
+        
+        <!-- Case 1: ColorInput WITH Alpha -->
+        <div class="card" id="card-alpha">
+            <h2>
+                <span>With Alpha Picker</span>
+                <span class="badge">RGBA Mode</span>
+            </h2>
+            
+            <div class="slot-container" id="slot-alpha">
+                <!-- ColorInput will be appended here -->
+            </div>
+
+            <div class="preview-wrapper">
+                <div class="checkerboard"></div>
+                <div class="preview-color" id="preview-alpha"></div>
+                <div class="preview-info">
+                    <span>Live Preview</span>
+                    <span id="preview-val-alpha">#0000ffff</span>
+                </div>
+            </div>
+
+            <div class="state-grid">
+                <div class="state-item">
+                    <span class="state-label">getValue()</span>
+                    <span class="state-value" id="val-alpha">#0000ffff</span>
+                </div>
+                <div class="state-item">
+                    <span class="state-label">colorObject</span>
+                    <span class="state-value" id="obj-alpha">{"red":0,"green":0,"blue":255,"alpha":255}</span>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <div class="control-row">
+                    <label>State Controls</label>
+                    <div class="button-group">
+                        <button id="toggle-active-alpha" class="active-toggle">Active: True</button>
+                        <button id="btn-font-14-alpha">Font: 14px</button>
+                        <button id="btn-font-20-alpha">Font: 20px</button>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <label>Set Value Programmatically</label>
+                    <div class="button-group">
+                        <button id="set-hex-alpha-1">Opaque Pink (#ff00ff)</button>
+                        <button id="set-hex-alpha-2">Translucent Teal (#00ffbb80)</button>
+                        <button id="set-obj-alpha">Object Orange (a=100)</button>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <label>Width Customization</label>
+                    <div class="button-group">
+                        <button id="set-width-normal-alpha">Normal (70, 30, 100)</button>
+                        <button id="set-width-wide-alpha">Wide (100, 50, 150)</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="log-panel" id="log-alpha">
+                <div class="log-entry"><span class="log-time">00:00:00</span>Initialised ColorInput</div>
+            </div>
+        </div>
+
+        <!-- Case 2: ColorInput WITHOUT Alpha -->
+        <div class="card" id="card-no-alpha">
+            <h2>
+                <span>Without Alpha Picker</span>
+                <span class="badge no-alpha">RGB Mode</span>
+            </h2>
+            
+            <div class="slot-container" id="slot-no-alpha">
+                <!-- ColorInput will be appended here -->
+            </div>
+
+            <div class="preview-wrapper">
+                <div class="checkerboard"></div>
+                <div class="preview-color" id="preview-no-alpha"></div>
+                <div class="preview-info">
+                    <span>Live Preview</span>
+                    <span id="preview-val-no-alpha">#0000ff</span>
+                </div>
+            </div>
+
+            <div class="state-grid">
+                <div class="state-item">
+                    <span class="state-label">getValue()</span>
+                    <span class="state-value" id="val-no-alpha">#0000ff</span>
+                </div>
+                <div class="state-item">
+                    <span class="state-label">colorObject</span>
+                    <span class="state-value" id="obj-no-alpha">{"red":0,"green":0,"blue":255,"alpha":255}</span>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <div class="control-row">
+                    <label>State Controls</label>
+                    <div class="button-group">
+                        <button id="toggle-active-no-alpha" class="active-toggle">Active: True</button>
+                        <button id="btn-font-14-no-alpha">Font: 14px</button>
+                        <button id="btn-font-20-no-alpha">Font: 20px</button>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <label>Set Value Programmatically</label>
+                    <div class="button-group">
+                        <button id="set-hex-no-alpha-1">Lime (#00ff00)</button>
+                        <button id="set-hex-no-alpha-2">Gold (#ffd700)</button>
+                        <button id="set-obj-no-alpha">Object Coral</button>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <label>Width Customization</label>
+                    <div class="button-group">
+                        <button id="set-width-normal-no-alpha">Normal (70, 30)</button>
+                        <button id="set-width-wide-no-alpha">Wide (100, 60)</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="log-panel" id="log-no-alpha">
+                <div class="log-entry"><span class="log-time">00:00:00</span>Initialised ColorInput</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Import logic script -->
+    <script type="module" src="js/testColorInput.js"></script>
+</body>
+</html>

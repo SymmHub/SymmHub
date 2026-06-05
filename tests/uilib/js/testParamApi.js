@@ -327,3 +327,30 @@ iwin.interior.appendChild(gui.domElement);
 
 app.createUI(gui);
 
+// Test the new Param helper functions
+setTimeout(() => {
+    console.log("=== RUNNING PARAM UI HELPERS TESTS ===");
+    const widthParam = uiparams.width; // ParamInt
+
+    console.log("widthParam has setError:", typeof widthParam.setError === 'function');
+    console.log("widthParam has focus:", typeof widthParam.focus === 'function');
+    console.log("widthParam has select:", typeof widthParam.select === 'function');
+    console.log("widthParam has scrollToEnd:", typeof widthParam.scrollToEnd === 'function');
+    console.log("widthParam has syncValue:", typeof widthParam.syncValue === 'function');
+
+    // Test error styling
+    console.log("Testing setError(true)");
+    widthParam.setError(true);
+    const input = gui.domElement.querySelector('input');
+    if (input) {
+        console.log("Input border color after setError(true):", input.style.borderColor);
+        // Test clear on typing/input
+        const event = new Event('input', { bubbles: true });
+        input.dispatchEvent(event);
+        console.log("Input border color after dispatching 'input' event:", input.style.borderColor);
+    }
+    
+    console.log("=== PARAM UI HELPERS TESTS COMPLETED ===");
+}, 1000);
+
+

@@ -76,6 +76,7 @@ function VisualizationColorSym(par={}){
     let mTexAlpha = new Float32Array(MAX_TEX_COUNT).fill(1.0);
 
     const mSubgroups = Subgroups({
+        getParentPermutations: () => mConfig.permutations,
         onSubgroupSelected: (subgroup) => {
             if (subgroup) {
                 const params = getParams();

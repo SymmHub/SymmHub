@@ -59,6 +59,7 @@ function VisualizationColorTiles(par={}){
     });
 
     const mSubgroups = Subgroups({
+        getParentPermutations: () => mConfig.permutations,
         onSubgroupSelected: (subgroup) => {
             if (subgroup) {
                 const params = getParams();
