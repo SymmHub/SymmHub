@@ -61,3 +61,84 @@ img.thumbnail {
 .param-image-row .thumbnail-caption {
     color: var(--text-color, #111);
 }
+
+/* Background modes for the thumbnail image */
+.thumbnail-image.bg-black {
+    background-color: #000 !important;
+    background-image: none !important;
+}
+
+.thumbnail-image.bg-white {
+    background-color: #fff !important;
+    background-image: none !important;
+}
+
+.thumbnail-image.bg-checkerboard {
+    background-image: conic-gradient(#ccc 25%, #fff 0 50%, #ccc 0 75%, #fff 0) !important;
+    background-size: 16px 16px !important;
+    background-color: #fff !important;
+}
+
+.thumbnail-image.bg-lightgray {
+    background-color: #e8e8e8 !important;
+    background-image: none !important;
+}
+
+.thumbnail-image.bg-darkgray {
+    background-color: #555555 !important;
+    background-image: none !important;
+}
+
+/* Background toggle overlay container */
+.thumbnail-bg-toggles {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    gap: 4px;
+    z-index: 10;
+    opacity: 0.5;
+    transition: opacity 0.15s ease;
+}
+
+.thumbnail-container:hover .thumbnail-bg-toggles {
+    opacity: 1;
+}
+
+/* Background toggle tiny button styles */
+.thumbnail-bg-btn {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+    outline: none;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: transform 0.1s ease, border-color 0.1s ease;
+}
+
+.thumbnail-bg-btn:hover {
+    transform: scale(1.2);
+    border-color: rgba(0, 0, 0, 0.8);
+}
+
+.thumbnail-bg-btn.active {
+    border: 1.5px solid #0078d4;
+    box-shadow: 0 1px 4px rgba(0, 90, 158, 0.5);
+}
+
+.thumbnail-bg-btn-black {
+    background-color: #000;
+}
+
+.thumbnail-bg-btn-white {
+    background-color: #fff;
+}
+
+.thumbnail-bg-btn-checkerboard {
+    background-image: conic-gradient(#ccc 25%, #fff 0 50%, #ccc 0 75%, #fff 0);
+    background-size: 6px 6px;
+    background-color: #fff;
+}
+
