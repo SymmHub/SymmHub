@@ -6,43 +6,91 @@ ul, #myUL {
 #myUL {
   margin: 0;
   padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif !important;
+  font-size: 0.9rem !important;
+  color: var(--text-color, #111111) !important;
+  text-shadow: none !important;
 }
 
-.caret {
-  /*cursor: pointer;*/
-  /*user-select: none;*/
+#myUL * {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif !important;
+  text-shadow: none !important;
 }
 
-.tree_node_clickable {
-  cursor: pointer;
-  background-color: #DFDFDF;
-  
-  /*user-select: none;*/
+#myUL ul {
+  margin: 0 !important;
+  padding-left: 0 !important;
+  padding-inline-start: 0 !important;
+  list-style: none !important;
 }
 
-.caret::before {
-  font-size: 0.7em; 
-  content: "\25B6";
-  color: black;
-  display: inline-block;
-  margin-right: 10px;
+#myUL ul ul {
+  padding-left: 12px !important;
+  padding-inline-start: 12px !important;
+}
+
+#myUL li {
+  list-style: none !important;
+  margin: 1px 0 !important;
+}
+
+.tree-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 3px 6px !important;
+  border-radius: 4px !important;
+  transition: background 0.1s ease !important;
+  user-select: none !important;
+  font-weight: var(--font-weight, 400) !important;
+}
+
+.tree-row.tree_node_clickable,
+.tree-row.tree-folder-row {
+  cursor: pointer !important;
+}
+
+.tree-row.tree_node_clickable:hover:not(.selected-node),
+.tree-row.tree-folder-row:hover:not(.selected-node) {
+  background: var(--hover-background-color, #f8f8f8) !important;
+}
+
+.tree-row.selected-node {
+  background-color: var(--toggled-on-hover-color, #b6d4fa) !important;
+  color: var(--text-color, #111111) !important;
+}
+
+.selected-node {
+  background-color: var(--toggled-on-hover-color, #b6d4fa) !important;
+  color: var(--text-color, #111111) !important;
 }
 
 .folder-arrow-right {
-  font-size: 0.8em; 
-  content: "\25B6";
-  color: black;
-  cursor: pointer;
   display: inline-block;
-  margin-right: 10px;
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-image: url('images/ui_arrow_right.svg');
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.1s ease;
+  vertical-align: middle;
+}
+
+.folder-arrow-right:hover {
+  opacity: 1;
 }
 
 .folder-arrow-down {
-  transform: rotate(90deg);  
+  background-image: url('images/ui_arrow_down.svg') !important;
 }
 
-.caret-down::before {
-  transform: rotate(90deg);  
+.folder-arrow-hidden {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .nested {
@@ -53,7 +101,3 @@ ul, #myUL {
   display: block;
 }
 
-.selected-node {
-  
-  background-color: #AAF;
-}
