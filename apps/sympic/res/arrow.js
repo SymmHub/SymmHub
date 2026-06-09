@@ -1,0 +1,20 @@
+export const resources=`
+arrow_aqua.png
+arrow_black.png
+arrow_blue.png
+arrow_gray.png
+arrow_green.png
+arrow_lime.png
+arrow_magenta.png
+arrow_maroon.png
+arrow_navy.png
+arrow_olive.png
+arrow_orange.png
+arrow_pink.png
+arrow_purple.png
+arrow_red.png
+arrow_silver.png
+arrow_teal.png
+arrow_white.png
+arrow_yellow.png
+`; 

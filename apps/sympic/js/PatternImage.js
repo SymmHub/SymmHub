@@ -32,7 +32,7 @@ const DEBUG = true;
 
 const TORADIANS = Math.PI/180.;
 
-const MyTextures = Textures.t2.concat(Tex2.haeckel_challenger).concat(Tex2.haeckel_kunst).concat(Tex2.misc);
+const MyTextures = Textures.t2.concat(Tex2.haeckel_challenger).concat(Tex2.haeckel_kunst).concat(Tex2.misc).concat(Tex2.arrow);
 
 if(false)console.log('Tex2:', Tex2);
 

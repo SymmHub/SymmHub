@@ -17,7 +17,7 @@ make_wp_2222 := function()
   F := FreeGroup("a", "b", "c", "d");;
   a := F.1;; b := F.2;; c := F.3;; d := F.4;;
   # Prototype relators for "2222" (p2)
-  return F / [ a^2, b^2, c^2, d^2, a*b*c*d ];
+  return F / [ a^2, b^2, c*d, (c*a)^2, (c*b)^2];
 end;
 
 make_wp_ss := function()
@@ -25,7 +25,7 @@ make_wp_ss := function()
   F := FreeGroup("a", "b", "c", "d");;
   a := F.1;; b := F.2;; c := F.3;; d := F.4;;
   # Prototype relators for "**" (pm)
-  return F / [ a^2, b^2, c^2, d^2 ];
+  return F / [ a^2, b^2, c*d, a*c*a*d, a*d*a*c, b*c*b*d, b*d*b*c ];
 end;
 
 make_wp_xx := function()
@@ -33,7 +33,7 @@ make_wp_xx := function()
   F := FreeGroup("a", "b", "c", "d");;
   a := F.1;; b := F.2;; c := F.3;; d := F.4;;
   # Prototype relators for "xx" (pg)
-  return F / [ a^2, b^2, c^2, d^2 ];
+  return F / [ a*b, c*d, a*d*b*c, a*c*b*d, b*d*a*c, b*c*a*d ];
 end;
 
 make_wp_sx := function()
@@ -41,7 +41,7 @@ make_wp_sx := function()
   F := FreeGroup("a", "b", "c", "d");;
   a := F.1;; b := F.2;; c := F.3;; d := F.4;;
   # Prototype relators for "*x" / "X*" (cm)
-  return F / [ a^2, b^2, c^2, d^2 ];
+  return F / [ c^2, d^2, a*b, a*c*b*d, b*c*a*d];
 end;
 
 make_wp_s2222 := function()
@@ -57,7 +57,7 @@ make_wp_22s := function()
   F := FreeGroup("a", "b", "c", "d");;
   a := F.1;; b := F.2;; c := F.3;; d := F.4;;
   # Prototype relators for "22*" (pmg)
-  return F / [ a^2, b^2, c^2, d^2 ];
+  return F / [ a^2, b^2, c^2, d^2, (a*c*a*d), (b*c*b*d) ];
 end;
 
 make_wp_22x := function()
@@ -65,7 +65,7 @@ make_wp_22x := function()
   F := FreeGroup("a", "b", "c", "d");;
   a := F.1;; b := F.2;; c := F.3;; d := F.4;;
   # Prototype relators for "22x" / "22X" (pgg)
-  return F / [ a^2, b^2, c^2, d^2 ];
+  return F / [ a*b, c*d, (b*c)^2, (b*d)^2, (a*c)^2, (a*d)^2];
 end;
 
 make_wp_2s22 := function()
@@ -73,7 +73,7 @@ make_wp_2s22 := function()
   F := FreeGroup("a", "b", "c", "d");;
   a := F.1;; b := F.2;; c := F.3;; d := F.4;;
   # Prototype relators for "2*22" (cmm)
-  return F / [ a^2, b^2, c^2, d^2 ];
+  return F / [ a^2, b^2, c^2, d^2, (a*c)^2, (a*d)^2, (b*c*b*d), (b*d*b*c) ];
 end;
 
 make_wp_442 := function()
@@ -105,15 +105,15 @@ make_wp_333 := function()
   F := FreeGroup("a", "b", "c", "d");;
   a := F.1;; b := F.2;; c := F.3;; d := F.4;;
   # Prototype relators for "333" (p3)
-  return F / [ a^3, b^3, c^3, a*b*c*d ];
+  return F / [ a^3, b^3, a*c, b*d, (a*d)^3 ];
 end;
 
 make_wp_s333 := function()
-  local F, a, b, c, d;
-  F := FreeGroup("a", "b", "c", "d");;
-  a := F.1;; b := F.2;; c := F.3;; d := F.4;;
+  local F, a, b, c;
+  F := FreeGroup("a", "b", "c");;
+  a := F.1;; b := F.2;; c := F.3;;
   # Prototype relators for "*333" (p3m1)
-  return F / [ a^2, b^2, c^2, d^2 ];
+  return F / [ a^2, b^2, c^2, (a*b)^3, (b*c)^3, (c*a)^3 ];
 end;
 
 make_wp_3s3 := function()
@@ -126,11 +126,11 @@ make_wp_3s3 := function()
 end;
 
 make_wp_632 := function()
-  local F, a, b, c, d;
-  F := FreeGroup("a", "b", "c", "d");;
-  a := F.1;; b := F.2;; c := F.3;; d := F.4;;
+  local F, a, b, c;
+  F := FreeGroup("a", "b", "c");;
+  a := F.1;; b := F.2;; c := F.3;; 
   # Prototype relators for "632" (p6)
-  return F / [ a^6, b^3, c^2, a*b*c*d ];
+  return F / [ a^2, b^3, (a*b)^6, b*c];
 end;
 
 make_wp_s632 := function()

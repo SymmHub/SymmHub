@@ -9,6 +9,9 @@ import {
 import {
     resources as misc
 } from './misc.js';
+import {
+    resources as arrow
+} from './arrow.js';
 
 
 const MYPATH = new URL('./', import.meta.url).pathname;
@@ -17,9 +20,10 @@ const MYPATH = new URL('./', import.meta.url).pathname;
 console.log('textures MYPATH: ', MYPATH);
 
 export const textures = {
-    haeckel_kunst: getTexInfoArray(tex_haeckel_kunst, MYPATH + 'haeckel_kunst/'),
+    arrow:              getTexInfoArray(arrow, MYPATH + 'arrow/'),
+    haeckel_kunst:      getTexInfoArray(tex_haeckel_kunst, MYPATH + 'haeckel_kunst/'),
     haeckel_challenger: getTexInfoArray(tex_haeckel_challenger, MYPATH + 'haeckel_challenger/'),
-    misc: getTexInfoArray(misc, MYPATH + 'misc/'),
+    misc:               getTexInfoArray(misc, MYPATH + 'misc/'),
 };
 
 
