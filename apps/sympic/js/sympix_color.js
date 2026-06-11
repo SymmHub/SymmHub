@@ -39,10 +39,10 @@ function SympixLayerFactory(getGLCtx, getOnChange, getChildren) {
     return ObjectFactory({
         defaultName: 'VisualizationColorSym',
         infoArray: [
-            { name: 'VisualizationColorSym',   creator: make(VisualizationColorSym, 'imageColorSym') },
-            { name: 'VisualizationColorTiles', creator: make(VisualizationColorTiles, 'colorTiles') },
-            { name: 'VisualizationImage',      creator: make(VisualizationImage,    'image'        ) },
-            { name: 'VisualizationOverlay',    creator: make(VisualizationOverlay,  'overlay'      ) },
+            { name: 'VisualizationColorSym',   label: 'Color Images', creator: make(VisualizationColorSym, 'Color Images') },
+            { name: 'VisualizationColorTiles', label: 'Color Tiles',  creator: make(VisualizationColorTiles, 'Color Tiles') },
+            { name: 'VisualizationImage',      label: 'Image',        creator: make(VisualizationImage,    'image'        ) },
+            { name: 'VisualizationOverlay',    label: 'Overlay',      creator: make(VisualizationOverlay,  'overlay'      ) },
         ],
     });
 }

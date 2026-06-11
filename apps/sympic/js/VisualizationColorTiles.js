@@ -143,7 +143,7 @@ function VisualizationColorTiles(par={}){
             onChange(null);
         };
         return {
-            name: ParamString({ obj: mIdRef, key: 'id', onChange: () => { if (mOnIdChange) mOnIdChange(); } }),
+            id: ParamString({ obj: mIdRef, key: 'id', name: 'id', onChange: () => { if (mOnIdChange) mOnIdChange(); } }),
             enabled:       ParamBool({obj: cf, key:'enabled', onChange: oc}),
             opacity:       ParamFloat({obj: cf, key: 'opacity', min: 0, max: 1, step: 0.001, onChange: oc}),
             permutations:  ParamString({obj: cf, key: 'permutations', onChange: onPermChanged}),
