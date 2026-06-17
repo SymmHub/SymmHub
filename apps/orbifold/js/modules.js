@@ -118,6 +118,8 @@ export {
     sign,
     SHORTEPSILON,
     TORADIANS,
+    TODEGREE,
+    normalizeAngle,
     asin,
     log,
 } from '../../../lib/invlib/Utilities.js';

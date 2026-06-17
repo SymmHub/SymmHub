@@ -18,7 +18,7 @@ import {
 
 
 
-const DEBUG = true;
+const DEBUG = false;
 const MYNAME = 'VisualizationColorSym';
 const DataSourceNames = VisualizationOptions.dataSourceNames;
 const DataSourceValues = VisualizationOptions.dataSourceValues;

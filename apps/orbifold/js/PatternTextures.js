@@ -14,6 +14,7 @@ import {
     getParam, asin, isDefined, isFunction, getCanvasPnt,
     iCumPackTransforms, iPackRefCumulativeCount, iPackTransforms,
     twgl, iSplane, objectToString, iTransformU4,
+    normalizeAngle, TODEGREE, TORADIANS,
 } from './modules.js';
 
 const DEFAULT_TEXTURE_SIZE = 1024;
@@ -1056,13 +1057,7 @@ export class PatternTextures {
   //
   normalizeAngle(a){
 
-    while(a > 180) 
-      a -= 360;
-    while(a < -180) 
-      a += 360;
-
-    
-    return a;
+    return TODEGREE * normalizeAngle(a * TORADIANS);
     
   }
   

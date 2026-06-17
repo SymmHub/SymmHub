@@ -13,7 +13,7 @@ import {
 import { ColorTiles } from './ColorTiles.js';
 
 
-const DEBUG = true;
+const DEBUG = false;
 const MYNAME = 'VisualizationColorTiles';
 const MAX_COLORS_COUNT = 24;
 

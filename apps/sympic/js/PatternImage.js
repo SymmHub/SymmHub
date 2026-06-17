@@ -28,7 +28,7 @@ import {
 } from '../res/textures.js';
 
 const MYNAME='PatternImage';
-const DEBUG = true;
+const DEBUG = false;
 
 const TORADIANS = Math.PI/180.;
 
@@ -203,10 +203,6 @@ function PatternImage(options){
     // 
     function renderBuffer(){
     
-       let ubi = {
-            uColorTexture:  mTextureMaker.getTexture(),
-        }
-
         let program = mPrograms.getProgram(mGL, 'renderImage');
         program.bind();
         let buf = mRenderedBuffer.read;
