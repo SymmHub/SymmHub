@@ -53,6 +53,14 @@ export {
     InterpolationNames,
     getInterpolationId,
     programBuilder,
+    CrownCalculator,
+    composePerms,
+    invertPerm,
+    wordToPerm,
+    packPerm,
+    MAX_COLORS_COUNT,
+    transToPackedPerms,
+    strToPermutations,
 } from "../../../lib/symhublib/symhublib.js";
 
 

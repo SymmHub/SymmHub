@@ -35,6 +35,6 @@ end;
 #process_wp_group("2*22", 24, 1000);
 #process_wp_group("22*", 24, 1000);
 #process_wp_group("**", 24, 1000);
-process_wp_group("*x", 24, 1000);
+#process_wp_group("*x", 24, 1000);
 #process_wp_group("22x", 24, 1000);
-#process_wp_group("xx", 24, 1000);
+process_wp_group("xx", 24, 1000);

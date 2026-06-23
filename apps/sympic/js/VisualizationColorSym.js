@@ -13,15 +13,23 @@ import {
     InterpolationNames, 
     getInterpolationId, 
     Subgroups,
+    CrownCalculator,
+    DataPacking,
+    wordToPerm,
+    invertPerm,
+    packPerm,
+    MAX_COLORS_COUNT,
+    transToPackedPerms,
+    strToPermutations,
 } from './modules.js';
 
 
 
 
-const DEBUG = false;
+const DEBUG = true;
 const MYNAME = 'VisualizationColorSym';
 const DataSourceNames = VisualizationOptions.dataSourceNames;
-const DataSourceValues = VisualizationOptions.dataSourceValues;
+const MAX_CROWN_COUNT = 20;
 
 
 //
@@ -61,9 +69,13 @@ function VisualizationColorSym(par={}){
     let mPrograms = null;
     // Cache for the TEXTURE_2D_ARRAY used in multi-image compositing.
     let mArrayTexCache = { tex: null, count: 0, size: 0 };
+    let mCrownGroupData = null;
 
     // Cell color generator (cosine palette → uCellColors uniform).
 
+
+    let mGeneratorPerms = strToPermutations(mConfig.permutations);
+    let mInvGeneratorPerms = mGeneratorPerms.map(p => invertPerm(p));
 
     // Parsed permutation data ready to upload as uPermData / uPermSize.
     // mPermData: flat Uint32Array(MAX_GEN_COUNT * 4) with packed uvec4 values.
@@ -72,7 +84,7 @@ function VisualizationColorSym(par={}){
     let mPermSize = 0;
 
     // Per-texture-layer alpha mask (0.0 = hidden, 1.0 = visible), padded with 1s.
-    const MAX_TEX_COUNT = 24;
+    const MAX_TEX_COUNT = MAX_COLORS_COUNT;
     let mTexAlpha = new Float32Array(MAX_TEX_COUNT).fill(1.0);
 
     const mSubgroups = Subgroups({
@@ -102,20 +114,7 @@ function VisualizationColorSym(par={}){
         
     }
 
-    //
-    //  Pack a plain integer array (values 0-23) into a uvec4 using 5-bit packing:
-    //  6 values per uint32 component (6 * 5 = 30 bits used, 2 spare).
-    //  Mirrors perm_identity / compose_perms in the shader.
-    //
-    function packPerm(perm) {
-        const result = new Uint32Array(4);
-        for (let i = 0; i < perm.length; i++) {
-            const comp  = Math.floor(i / 6);
-            const shift = (i % 6) * 5;
-            result[comp] |= (perm[i] << shift);
-        }
-        return result;
-    }
+
 
     //
     //  Parse mConfig.permutations into packed GPU data.
@@ -125,30 +124,29 @@ function VisualizationColorSym(par={}){
     //  Identity of size n is "abcde..." (first n letters in order).
     //
     function onPermChanged() {
-
-        const str   = mConfig.permutations;
-        const words = str ? str.trim().split(/\s+/).filter(Boolean) : [];
+        const str = mConfig.permutations;
+        mGeneratorPerms = strToPermutations(str);
+        mInvGeneratorPerms = mGeneratorPerms.map(p => invertPerm(p));
 
         mPermData = new Uint32Array(MAX_GEN_COUNT * 4);
         mPermSize = 0;
 
-        if (words.length === 0) {
-            if(DEBUG) console.log(`${MYNAME}.onPermChanged(): empty — using identity`);
+        if (mGeneratorPerms.length === 0) {
+            if (DEBUG) console.log(`${MYNAME}.onPermChanged(): empty — using identity`);
             onChange(null);
             return;
         }
 
-        mPermSize = words[0].length;
+        mPermSize = mGeneratorPerms[0].length;
 
-        for (let k = 0; k < Math.min(words.length, MAX_GEN_COUNT); k++) {
-            const word = words[k];
-            const perm = Array.from(word).map(c => c.charCodeAt(0) - 97); // 'a'=0
+        for (let k = 0; k < Math.min(mGeneratorPerms.length, MAX_GEN_COUNT); k++) {
+            const perm = mGeneratorPerms[k];
             const packed = packPerm(perm);
             // Write the 4 uint32s into the flat buffer at slot k.
             mPermData.set(packed, k * 4);
         }
 
-        if(DEBUG) console.log(`${MYNAME}.onPermChanged(): ${words.length} perms, size=${mPermSize}`, mPermData);
+        if (DEBUG) console.log(`${MYNAME}.onPermChanged(): ${mGeneratorPerms.length} perms, size=${mPermSize}`, mPermData);
         onChange(null);
     }
 
@@ -222,6 +220,49 @@ function VisualizationColorSym(par={}){
         return mArrayTexCache.tex;
     }
 
+    /**
+     * Calculates the crown transforms, packs them into a GL sampler,
+     * and computes the packed permutation data for shader usage.
+     * Reverses the transforms list to render inner tiles on top of outer ones.
+     * 
+     * @param {Group} group - The symmetry group.
+     * @param {Object} patternTransform - The current pattern transform.
+     * @returns {Object} An object containing { crownData, crownPerms }.
+     */
+    function prepareCrownData(group, patternTransform) {
+        const revTrans = CrownCalculator.calculate(group, patternTransform, { gridRadius: 15 });
+        const loopCount = Math.min(revTrans.length, MAX_CROWN_COUNT);
+        // dirTrans[g] = revTrans[g]^-1: maps FD → adjacent tile g in world space.
+        // Used for both geometry and permutations:
+        //   Geometry:     the shader applies dirTrans[g] to a FD point to locate the
+        //                 adjacent tile's image in world coords (correct even when
+        //                 the pattern center is offset from the FD center).
+        //   Permutations: wordToPerm(dirTrans[g].word, ...) produces the correct
+        //                 crown color permutation consistent with the FD tiling shader.
+        // Reversed so that transforms closer to the center are rendered last (on top).
+        let dirTrans = revTrans.slice(0, loopCount).reverse().map(t => t.getInverse());
+
+        const crownGroup = {
+            s: group.getFundDomain(),
+            t: dirTrans
+        };
+        const gl = mGLCtx.gl;
+        DataPacking.packGroupToSampler(gl, mCrownGroupData, crownGroup);
+        const crownData = mCrownGroupData;
+
+        const crownPerms = transToPackedPerms(dirTrans, mGeneratorPerms, mInvGeneratorPerms, mConfig.leftCoset);
+
+        if (DEBUG) {
+            const crownPermsInfo = dirTrans.map(t => {
+                const perm = wordToPerm(t.getWord(), mGeneratorPerms, mInvGeneratorPerms, mConfig.leftCoset);
+                return `${t.getWord() || "identity"}: [${perm.join(",")}]`;
+            }).join(", ");
+            console.log(`Crown Permutations: ${crownPermsInfo}`);
+        }
+
+        return { crownData, crownPerms };
+    }
+
     function render(par){
         
        //if(DEBUG) console.log(`${MYNAME}.render()`, par);
@@ -249,6 +290,17 @@ function VisualizationColorSym(par={}){
 
         const arrayTex = updateImageArrayTex(gl, buffers);
 
+        let crownData = renderUni.uGroupData;
+        let crownPerms = null;
+
+        if (cmCfg.useCrown && par.group && par.patternTransform) {
+            const res = prepareCrownData(par.group, par.patternTransform);
+            crownData = res.crownData;
+            crownPerms = res.crownPerms;
+        } else {
+            crownPerms = new Uint32Array(MAX_CROWN_COUNT * 4);
+        }
+
         const imageUni = {
             uImageArray:    arrayTex,
             uNumImages:     buffers.length,
@@ -260,10 +312,12 @@ function VisualizationColorSym(par={}){
             uUseCrown:      cmCfg.useCrown,
             uLeftCoset:     cmCfg.leftCoset,
             uTexAlpha:      mTexAlpha,
+            uCrownData:     crownData,
+            uCrownPermData: crownPerms,
 
             // cell color tiles disabled in this layer
             uFillCells:          false,
-            uCellColors:         new Float32Array(24 * 4), // dummy array
+            uCellColors:         new Float32Array(MAX_COLORS_COUNT * 4), // dummy array
             uCellColorPermIndex: 0,
         };
 
@@ -294,7 +348,7 @@ function VisualizationColorSym(par={}){
         mOnChange = par.onChange;        
         mPrograms = Sympix_programs;
 
-        
+        mCrownGroupData = DataPacking.createGroupDataSampler(mGLCtx.gl);
 
     }
     
@@ -320,6 +374,8 @@ function VisualizationColorSym(par={}){
     }
 
 } // function VisualizationColorSym
+
+
 
 
 export {

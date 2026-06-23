@@ -8,6 +8,8 @@ import {
     enableBlending,
     Sympix_programs,
     Subgroups,
+    packPerm,
+    MAX_COLORS_COUNT,
 } from './modules.js';
 
 import { ColorTiles } from './ColorTiles.js';
@@ -15,7 +17,6 @@ import { ColorTiles } from './ColorTiles.js';
 
 const DEBUG = false;
 const MYNAME = 'VisualizationColorTiles';
-const MAX_COLORS_COUNT = 24;
 
 
 //
@@ -93,19 +94,7 @@ function VisualizationColorTiles(par={}){
       if(mOnChange) mOnChange(param);
     }
 
-    //
-    //  Pack a plain integer array (values 0-23) into a uvec4 using 5-bit packing:
-    //  6 values per uint32 component (6 * 5 = 30 bits used, 2 spare).
-    //
-    function packPerm(perm) {
-        const result = new Uint32Array(4);
-        for (let i = 0; i < perm.length; i++) {
-            const comp  = Math.floor(i / 6);
-            const shift = (i % 6) * 5;
-            result[comp] |= (perm[i] << shift);
-        }
-        return result;
-    }
+
 
     //
     //  Parse mConfig.permutations into packed GPU data.

@@ -6,6 +6,7 @@ import {
     ParamString,
     ParamGroup,
     ParamImage,
+    MAX_COLORS_COUNT,
 } from './modules.js';
 
 
@@ -14,7 +15,6 @@ const MYNAME = 'ColorTiles';
 const DEBUG = false;
 
 const TWO_PI = 2.0 * Math.PI;
-const MAX_COLORS_COUNT = 24;
 
 const PALETTES = {
     pastel: {

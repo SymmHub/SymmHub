@@ -36,6 +36,12 @@ uniform uint uCellColorPermIndex;
 uniform uint uTexPermIndex;
 uniform bool uUseCrown;
 uniform bool uLeftCoset;
+
+#ifndef MAX_CROWN_COUNT
+#define MAX_CROWN_COUNT 20
+#endif
+uniform sampler2D uCrownData;
+uniform uvec4 uCrownPermData[MAX_CROWN_COUNT];
 // alpha factor per texture layer (0.0 = hidden, 1.0 = visible), padded with 1s.
 uniform float uTexAlpha[MAX_COLORS_COUNT];
 
@@ -67,7 +73,7 @@ vec4 getImageArrayCrown(vec3 pnt,
                         sampler2D groupData, 
                         int groupOffset, 
                         float scale, 
-                        uvec4 permData[MAX_GEN_COUNT], 
+                        uvec4 permData[MAX_CROWN_COUNT], 
                         uint permSize, 
                         uvec4 currentPerm, 
                         bool leftCoset,
@@ -77,10 +83,12 @@ vec4 getImageArrayCrown(vec3 pnt,
     vec4 color = vec4(0.0);
 
     int domainOffset     = fetchInt(groupData, groupOffset);
-    int domainSize       = fetchInt(groupData, domainOffset);
     int transformsOffset = fetchInt(groupData, groupOffset + 1);
+    int transformsCount  = fetchInt(groupData, transformsOffset);
 
-    for (int g = 0; g < domainSize; g++) {
+    int loopCount = min(transformsCount, MAX_CROWN_COUNT);
+
+    for (int g = 0; g < loopCount; g++) {
 
         vec3  v  = pnt;
         float ss = scale;
@@ -91,16 +99,19 @@ vec4 getImageArrayCrown(vec3 pnt,
 
         // Apply inverse pairing transform: maps crown cell back into FD.
         for (int r = 0; r < refCount; r++) {
-            iSPlane rsp = fetchSplane(uGroupData, transformSplanesOffset + r * 2);
+            iSPlane rsp = fetchSplane(groupData, transformSplanesOffset + r * 2);
             iReflect(rsp, v, ss);
         }
         uvec4 gperm = permData[g];
         // Blend all images using generator g's permutation row.
         uvec4 perm;
-        if(leftCoset) 
+        if(leftCoset) {
             perm = compose_perms(gperm, currentPerm, permSize);
-        else 
+            //perm = compose_perms(currentPerm, gperm, permSize);
+        } else {
             perm = compose_perms(currentPerm, gperm, permSize);
+            //perm = compose_perms(gperm, currentPerm, permSize);
+        }
 
         uint imgIdx = get_perm_val(perm, texIndex);
         if(texAlpha[imgIdx] > 0.0) {
@@ -156,19 +167,17 @@ void main() {
     if(uUseCrown){
         // Crown: accumulate neighbour-cell contributions.
         // append images from neighbours
-        vec4 crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uGroupData, groupOffset, scale, uPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth); 
-
+        vec4 crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth); 
         color = overlayColor(color, crownColor);
+    } else {
+        // Main tile: single image selected via currentPerm + uTexPermIndex.
+        uint imageIndex = get_perm_val(currentPerm, uTexPermIndex);
+
+        if(uTexAlpha[imageIndex] > 0.0) {
+            vec4 layer = uTexAlpha[imageIndex]*getImageComponentData(wpnt.xy, uImageArray, uBufScale, uBufCenter, imageIndex, blurWidth);
+            color = overlayColor(color, layer);
+        }
     }
-
-    // Main tile: single image selected via currentPerm + uTexPermIndex.
-    uint imageIndex = get_perm_val(currentPerm, uTexPermIndex);
-
-    if(uTexAlpha[imageIndex] > 0.0) {
-        vec4 layer = uTexAlpha[imageIndex]*getImageComponentData(wpnt.xy, uImageArray, uBufScale, uBufCenter, imageIndex, blurWidth);
-        color = overlayColor(color, layer);
-    }
-
     outColor = color * (1. - uTransparency);
     //outColor = vec4(1.,0,0,1.)*mask;
     

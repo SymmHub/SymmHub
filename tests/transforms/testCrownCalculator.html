@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en"> 
+    <head> 
+        <meta charset="UTF-8">
+        <title>testCrownCalculator</title> 
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                background-color: #f5f7fa;
+                color: #333;
+                margin: 20px;
+            }
+            h1 {
+                margin-bottom: 20px;
+                color: #1e293b;
+            }
+            .container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 25px;
+            }
+            .canvas-container {
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .legend {
+                display: flex;
+                gap: 20px;
+                margin-top: 15px;
+                font-size: 13px;
+                font-weight: 500;
+                color: #475569;
+            }
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .legend-color {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                border: 1px solid rgba(0,0,0,0.1);
+            }
+            #canvas {
+                border: 1px solid #e2e8f0;
+                background-color: #fafbfd;
+                border-radius: 6px;
+            }
+            .results-container {
+                flex: 1;
+                min-width: 450px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+                padding: 20px;
+                max-height: 1200px;
+                overflow-y: auto;
+            }
+            .result-item {
+                font-family: monospace;
+                font-size: 12px;
+                padding: 6px 10px;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            .result-item:last-child {
+                border-bottom: none;
+            }
+        </style>
+    </head> 
+    <body> 
+        <h1>Crown Calculator Visualization Test</h1>
+        <div class="container">
+            <div class="canvas-container">
+                <canvas id="canvas" width="1200" height="1200"></canvas>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: rgba(255, 0, 255, 0.75);"></div>
+                        <span>Scanned Grid Points (Magenta)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: rgba(0, 120, 255, 0.75);"></div>
+                        <span>World Points (Blue)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: rgba(255, 40, 0, 0.85);"></div>
+                        <span>FD Points (Red)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: rgba(0, 150, 0, 0.75);"></div>
+                        <span>FD Boundary (Green)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="results-container">
+                <div id="results">
+                    <h2>Test Results</h2>
+                    <p>Loading calculations...</p>
+                </div>
+            </div>
+        </div>
+        <script type="module" src="./js/testCrownCalculator.js"></script>            
+    </body> 
+</html>

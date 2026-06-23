@@ -33,7 +33,7 @@ make_wp_xx := function()
   F := FreeGroup("a", "b", "c", "d");;
   a := F.1;; b := F.2;; c := F.3;; d := F.4;;
   # Prototype relators for "xx" (pg)
-  return F / [ a*b, c*d, a*d*b*c, a*c*b*d, b*d*a*c, b*c*a*d ];
+  return F / [ a*b, c*d, a*d*b*d,a*c*b*c, b*d*a*d, b*c*a*c ];
 end;
 
 make_wp_sx := function()
