@@ -6,6 +6,7 @@ import {
     ParamString,
     ParamGroup,
     ParamImage,
+    ParamFunc,
     MAX_COLORS_COUNT,
 } from './modules.js';
 
@@ -173,6 +174,45 @@ function ColorTiles(options = {}) {
         if (mOnChange) mOnChange();
     }
 
+    function _randomize() {
+        const r3 = (lo, hi) => Math.round((lo + Math.random() * (hi - lo)) * 1000) / 1000;
+        const frac = (v) => ((v % 1) + 1) % 1; // positive modulo 1
+
+        // b: amplitude → controls contrast. Allow some per-channel variation for tint.
+        const bBase = r3(0.35, 0.5);
+        mConfig.bR = Math.min(0.5, bBase + r3(-0.08, 0.08));
+        mConfig.bG = Math.min(0.5, bBase + r3(-0.08, 0.08));
+        mConfig.bB = Math.min(0.5, bBase + r3(-0.08, 0.08));
+
+        // a: DC offset. Per-channel variation introduces warm/cool cast.
+        const aBase = r3(0.3, 0.5);
+        mConfig.aR = Math.min(1, aBase + r3(-0.1, 0.1));
+        mConfig.aG = Math.min(1, aBase + r3(-0.1, 0.1));
+        mConfig.aB = Math.min(1, aBase + r3(-0.1, 0.1));
+
+        // c: not randomized — left at current value.
+
+        // d: phase spread between channels controls saturation:
+        //   spread ≈ 0      → near-monochrome (highContrast style)
+        //   spread ≈ 0.1    → warm/tinted (sunset style)
+        //   spread ≈ 0.33   → full rainbow saturation (pastel style)
+        // Full range [0, 0.45] gives equal chance of each style.
+        const base   = Math.random();
+        const spread = r3(0, 0.45);
+        const sign   = Math.random() < 0.5 ? 1 : -1;
+
+        mConfig.dR = Math.round(frac(base)                    * 1000) / 1000;
+        mConfig.dG = Math.round(frac(base + sign * spread)     * 1000) / 1000;
+        mConfig.dB = Math.round(frac(base + sign * spread * 2) * 1000) / 1000;
+
+        // Refresh UI sliders (skip c — it was not changed).
+        if (mParams) {
+            ['a', 'b', 'd'].forEach(k => mParams[k]?.updateDisplay());
+        }
+
+        _onChange();
+    }
+
     function _onPaletteChanged() {
         const p = PALETTES[mConfig.palette];
         if (!p) return;
@@ -236,6 +276,8 @@ function ColorTiles(options = {}) {
                     B: ParamFloat({obj: cf, key: 'dB', min: 0, max: 1, step: 0.001, name: 'B', onChange: oc}),
                 }
             }),
+
+            randomize: ParamFunc({ name: 'Randomize', func: _randomize }),
         };
     }
 

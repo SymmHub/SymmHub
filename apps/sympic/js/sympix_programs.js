@@ -22,6 +22,7 @@ const renderImageFragMain   = {obj:LocalShaders, id:'renderImage'};
 const fragBaseVertex        = {obj:LocalShaders, id: 'canvasVertexShader'};
 const fragPermutations24    = {obj:LocalShaders, id: 'permutations24'};
 const colorImageArrayFrag   = {obj:LocalShaders, id: 'colorImageArray'};
+const colorTilesFrag        = {obj:LocalShaders, id: 'colorTiles'};
 
 
 
@@ -50,11 +51,20 @@ const colorImageArrayProgram = {
     }
 };
 
+const colorTilesProgram = {
+    name: 'ColorTiles',
+    vs: {frags: [renderImageVertMain]}, 
+    fs: {
+        frags: [fragIsplane, inversiveFrag, fragComplex, utilsFrag, fragProjection, fragPermutations24, colorTilesFrag]
+    }
+};
+
 const programs = 
 {
     'renderImage':              renderImageProgram, 
     'bufferToScreenImageArray': progBufferToScreenImageArray,
     'colorImageArray':          colorImageArrayProgram,
+    'colorTiles':               colorTilesProgram,
 };
 
 export const Sympix_programs = programBuilder(programs);

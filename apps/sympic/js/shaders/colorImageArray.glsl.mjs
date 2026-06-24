@@ -36,7 +36,8 @@ uniform uint uCellColorPermIndex;
 uniform uint uTexPermIndex;
 uniform bool uUseCrown;
 uniform bool uLeftCoset;
-uniform bool uMultiplyColors;
+// 0 = none, 1 = multiply image by cell color, 2 = 1-(cellColor*(1-imgColor))
+uniform int uColoringType;
 
 #ifndef MAX_CROWN_COUNT
 #define MAX_CROWN_COUNT 20
@@ -60,6 +61,22 @@ vec4 getImageComponentData(vec2 wpnt, highp sampler2DArray imageArray, vec2 imgS
 }
 
 //
+// Applies the selected image-coloring mode (premultiplied alpha).
+//   coloringType 0: no change
+//   coloringType 1: multiply — white pixels become cellColor, black stays black
+//   coloringType 2: screen blend — black pixels become cellColor, white stays white
+//
+vec4 applyColoring(vec4 imgColor, vec4 cellColor, int coloringType) {
+    if(coloringType == 1) {
+        // premult multiply: imgColor.xyz *= cell.xyz
+        imgColor.xyz *= cellColor.xyz;
+    } else if(coloringType == 2) {
+        // premult screen blend: a*cell + imgColor.xyz*(1-cell)  (a = imgColor.w)
+        imgColor.xyz = cellColor.xyz * imgColor.w + imgColor.xyz * (1.0 - cellColor.xyz);
+    }
+    return imgColor;
+}
+
 //
 // Crown rendering for image arrays with color permutations.
 // For each pairing transform g of the fundamental domain, maps the screen point
@@ -80,7 +97,7 @@ vec4 getImageArrayCrown(vec3 pnt,
                         bool leftCoset,
                         uint texIndex, 
                         float blurWidth,
-                        bool multiplyColors,
+                        int coloringType,
                         vec4 cellColors[MAX_COLORS_COUNT]) { 
 
     vec4 color = vec4(0.0);
@@ -119,9 +136,7 @@ vec4 getImageArrayCrown(vec3 pnt,
         uint imgIdx = get_perm_val(perm, texIndex);
         if(texAlpha[imgIdx] > 0.0) {
             vec4 imgColor = texAlpha[imgIdx]*getImageComponentData(v.xy, imageArray, imgScale, imgCenter, imgIdx, blurWidth);
-            if(multiplyColors) {
-                imgColor *= cellColors[imgIdx];
-            }
+            imgColor = applyColoring(imgColor, cellColors[imgIdx], coloringType);
             color = overlayColor(color, imgColor);
         }
     }
@@ -172,7 +187,7 @@ void main() {
     float blurWidth = u_pixelSize * 0.5;
     if(uUseCrown){
         // Crown: accumulate neighbour-cell contributions.
-        vec4 crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth, uMultiplyColors, uCellColors); 
+        vec4 crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth, uColoringType, uCellColors); 
         color = overlayColor(color, crownColor);
     } else {
         // Main tile: single image selected via currentPerm + uTexPermIndex.
@@ -180,10 +195,8 @@ void main() {
 
         if(uTexAlpha[imageIndex] > 0.0) {
             vec4 layer = uTexAlpha[imageIndex]*getImageComponentData(wpnt.xy, uImageArray, uBufScale, uBufCenter, imageIndex, blurWidth);
-            if(uMultiplyColors) {
-                vec4 cellColor = uCellColors[get_perm_val(currentPerm, uCellColorPermIndex)];
-                layer *= cellColor;
-            }
+            vec4 cellColor = uCellColors[get_perm_val(currentPerm, uCellColorPermIndex)];
+            layer = applyColoring(layer, cellColor, uColoringType);
             color = overlayColor(color, layer);
         }
     }

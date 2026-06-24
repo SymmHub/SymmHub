@@ -33,6 +33,9 @@ const MYNAME = 'VisualizationColorSym';
 const DataSourceNames = VisualizationOptions.dataSourceNames;
 const MAX_CROWN_COUNT = 20;
 
+const COLORING_TYPE_NAMES = ['none', 'mult', '1-mult'];
+const COLORING_TYPE = { 'none': 0, 'mult': 1, '1-mult': 2 };
+
 
 //
 //  Color Symmetry visualization layer.
@@ -54,7 +57,7 @@ function VisualizationColorSym(par={}){
         useCrown: false,
         leftCoset: false,
         mask: '',
-        multiplyColors: false,
+        coloringType: 'none',
     };
 
     if(par.config){
@@ -186,19 +189,17 @@ function VisualizationColorSym(par={}){
             id: ParamString({ obj: mIdRef, key: 'id', name: 'id', onChange: () => { if (mOnIdChange) mOnIdChange(); } }),
             enabled:       ParamBool({obj: cf, key:'enabled', onChange: oc}),
             opacity:       ParamFloat({obj: cf, key: 'opacity', min: 0, max: 1, step: 0.001, onChange: oc}),
-            imageId:       ParamString({obj: cf, key: 'imageId', onChange: oc}),
+            imageId:       ParamString({obj: cf, key: 'imageId', name: 'images', onChange: oc}),
             permutations:  ParamString({obj: cf, key: 'permutations', onChange: onPermChanged}),
-            permIndex:     ParamInt({obj: cf, key: 'permIndex', min: 0, max: 23, step: 1, onChange: oc}),
-            useCrown:      ParamBool({obj: cf, key: 'useCrown', onChange: oc}),
+            permIndex:     ParamInt({obj: cf, key: 'permIndex', name:'offset', min: 0, max: 23, step: 1, onChange: oc}),
             leftCoset:     ParamBool({obj: cf, key: 'leftCoset', onChange: oc}),
             mask:          ParamString({obj: cf, key: 'mask', onChange: onMaskChanged}),
-            multiplyColors: ParamBool({obj: cf, key: 'multiplyColors', onChange: oc}),
-            colorTiles:    ParamObj({name: 'tile colors', obj: mColorTiles}),
-
             subgroups:     ParamObj({name: 'subgroups', obj: mSubgroups}),
-
-            interpolation: ParamChoice({obj: cf, key: 'interpolation', choice: InterpolationNames, onChange: oc}),
-            useMipmap:     ParamBool({obj: cf, key: 'useMipmap', onChange: oc}),
+            coloringType:  ParamChoice({obj: cf, key: 'coloringType', name: 'coloring', choice: COLORING_TYPE_NAMES, onChange: oc}),
+            colorTiles:    ParamObj({name: 'colors', obj: mColorTiles}),
+            useCrown:      ParamBool({obj: cf, key: 'useCrown', name: 'crown', onChange: oc}),
+            useMipmap:     ParamBool({obj: cf, key: 'useMipmap', name: 'mipmap', onChange: oc}),
+            interpolation: ParamChoice({obj: cf, key: 'interpolation', name: 'interp', choice: InterpolationNames, onChange: oc}),
         }
 
     } // function makeParams()
@@ -331,11 +332,11 @@ function VisualizationColorSym(par={}){
             uCrownData:     crownData,
             uCrownPermData: crownPerms,
 
-            // cell color tiles: disabled unless multiplyColors is on
+            // cell color tiles
             uFillCells:          false,
             uCellColors:         mColorTiles.getColors(),
             uCellColorPermIndex: mColorTiles.getPermIndex(),
-            uMultiplyColors:     cmCfg.multiplyColors,
+            uColoringType:       COLORING_TYPE[cmCfg.coloringType] ?? 0,
         };
 
 
