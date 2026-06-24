@@ -23,6 +23,8 @@ import {
     strToPermutations,
 } from './modules.js';
 
+import { ColorTiles } from './ColorTiles.js';
+
 
 
 
@@ -52,7 +54,7 @@ function VisualizationColorSym(par={}){
         useCrown: false,
         leftCoset: false,
         mask: '',
-
+        multiplyColors: false,
     };
 
     if(par.config){
@@ -71,8 +73,12 @@ function VisualizationColorSym(par={}){
     let mArrayTexCache = { tex: null, count: 0, size: 0 };
     let mCrownGroupData = null;
 
-    // Cell color generator (cosine palette → uCellColors uniform).
-
+    // Cell color palette (cosine palette → uCellColors uniform) used when multiplyColors is on.
+    const mColorTiles = ColorTiles({
+        getAlpha:     () => 1.0,
+        getColorMask: () => '',
+        getPermIndex: () => mConfig.permIndex,
+    });
 
     let mGeneratorPerms = strToPermutations(mConfig.permutations);
     let mInvGeneratorPerms = mGeneratorPerms.map(p => invertPerm(p));
@@ -98,6 +104,7 @@ function VisualizationColorSym(par={}){
                     mConfig.permutations = subgroup.invcos;
                     onPermChanged();
                 }
+                mColorTiles.getParams().count.setValue(subgroup.index);
                 if (params && params.permIndex) {
                     params.permIndex.setMax(subgroup.index - 1);
                 }
@@ -139,6 +146,13 @@ function VisualizationColorSym(par={}){
 
         mPermSize = mGeneratorPerms[0].length;
 
+        // Keep ColorTiles count in sync with the permutation size.
+        mColorTiles.getParams().count.setValue(mPermSize);
+        const params = getParams();
+        if (params && params.permIndex) {
+            params.permIndex.setMax(mPermSize - 1);
+        }
+
         for (let k = 0; k < Math.min(mGeneratorPerms.length, MAX_GEN_COUNT); k++) {
             const perm = mGeneratorPerms[k];
             const packed = packPerm(perm);
@@ -178,6 +192,8 @@ function VisualizationColorSym(par={}){
             useCrown:      ParamBool({obj: cf, key: 'useCrown', onChange: oc}),
             leftCoset:     ParamBool({obj: cf, key: 'leftCoset', onChange: oc}),
             mask:          ParamString({obj: cf, key: 'mask', onChange: onMaskChanged}),
+            multiplyColors: ParamBool({obj: cf, key: 'multiplyColors', onChange: oc}),
+            colorTiles:    ParamObj({name: 'tile colors', obj: mColorTiles}),
 
             subgroups:     ParamObj({name: 'subgroups', obj: mSubgroups}),
 
@@ -315,10 +331,11 @@ function VisualizationColorSym(par={}){
             uCrownData:     crownData,
             uCrownPermData: crownPerms,
 
-            // cell color tiles disabled in this layer
+            // cell color tiles: disabled unless multiplyColors is on
             uFillCells:          false,
-            uCellColors:         new Float32Array(MAX_COLORS_COUNT * 4), // dummy array
-            uCellColorPermIndex: 0,
+            uCellColors:         mColorTiles.getColors(),
+            uCellColorPermIndex: mColorTiles.getPermIndex(),
+            uMultiplyColors:     cmCfg.multiplyColors,
         };
 
 
@@ -350,6 +367,7 @@ function VisualizationColorSym(par={}){
 
         mCrownGroupData = DataPacking.createGroupDataSampler(mGLCtx.gl);
 
+        mColorTiles.setOnChange(() => onChange(null));
     }
     
     //

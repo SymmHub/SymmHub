@@ -36,6 +36,7 @@ uniform uint uCellColorPermIndex;
 uniform uint uTexPermIndex;
 uniform bool uUseCrown;
 uniform bool uLeftCoset;
+uniform bool uMultiplyColors;
 
 #ifndef MAX_CROWN_COUNT
 #define MAX_CROWN_COUNT 20
@@ -78,7 +79,9 @@ vec4 getImageArrayCrown(vec3 pnt,
                         uvec4 currentPerm, 
                         bool leftCoset,
                         uint texIndex, 
-                        float blurWidth) { 
+                        float blurWidth,
+                        bool multiplyColors,
+                        vec4 cellColors[MAX_COLORS_COUNT]) { 
 
     vec4 color = vec4(0.0);
 
@@ -115,8 +118,11 @@ vec4 getImageArrayCrown(vec3 pnt,
 
         uint imgIdx = get_perm_val(perm, texIndex);
         if(texAlpha[imgIdx] > 0.0) {
-            vec4 cellColor = texAlpha[imgIdx]*getImageComponentData(v.xy, imageArray, imgScale, imgCenter, imgIdx, blurWidth);      
-            color = overlayColor(color, cellColor);
+            vec4 imgColor = texAlpha[imgIdx]*getImageComponentData(v.xy, imageArray, imgScale, imgCenter, imgIdx, blurWidth);
+            if(multiplyColors) {
+                imgColor *= cellColors[imgIdx];
+            }
+            color = overlayColor(color, imgColor);
         }
     }
 
@@ -166,8 +172,7 @@ void main() {
     float blurWidth = u_pixelSize * 0.5;
     if(uUseCrown){
         // Crown: accumulate neighbour-cell contributions.
-        // append images from neighbours
-        vec4 crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth); 
+        vec4 crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth, uMultiplyColors, uCellColors); 
         color = overlayColor(color, crownColor);
     } else {
         // Main tile: single image selected via currentPerm + uTexPermIndex.
@@ -175,6 +180,10 @@ void main() {
 
         if(uTexAlpha[imageIndex] > 0.0) {
             vec4 layer = uTexAlpha[imageIndex]*getImageComponentData(wpnt.xy, uImageArray, uBufScale, uBufCenter, imageIndex, blurWidth);
+            if(uMultiplyColors) {
+                vec4 cellColor = uCellColors[get_perm_val(currentPerm, uCellColorPermIndex)];
+                layer *= cellColor;
+            }
             color = overlayColor(color, layer);
         }
     }
