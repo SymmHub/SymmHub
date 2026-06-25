@@ -35,6 +35,7 @@ const MAX_CROWN_COUNT = 20;
 
 const COLORING_TYPE_NAMES = ['none', 'mult', '1-mult'];
 const COLORING_TYPE = { 'none': 0, 'mult': 1, '1-mult': 2 };
+const TORADIANS = Math.PI / 180;
 
 
 //
@@ -58,6 +59,8 @@ function VisualizationColorSym(par={}){
         leftCoset: false,
         mask: '',
         coloringType: 'none',
+        patternTiltDirection: 0,
+        useTilt: false,
     };
 
     if(par.config){
@@ -198,6 +201,8 @@ function VisualizationColorSym(par={}){
             coloringType:  ParamChoice({obj: cf, key: 'coloringType', name: 'coloring', choice: COLORING_TYPE_NAMES, onChange: oc}),
             colorTiles:    ParamObj({name: 'colors', obj: mColorTiles}),
             useCrown:      ParamBool({obj: cf, key: 'useCrown', name: 'crown', onChange: oc}),
+            useTilt:       ParamBool({obj: cf, key: 'useTilt', name: 'depth sort', onChange: oc}),
+            patternTiltDirection: ParamFloat({obj: cf, key: 'patternTiltDirection', name: 'tilt angle°', min: -180, max: 180, step: 1, onChange: oc}),
             useMipmap:     ParamBool({obj: cf, key: 'useMipmap', name: 'mipmap', onChange: oc}),
             interpolation: ParamChoice({obj: cf, key: 'interpolation', name: 'interp', choice: InterpolationNames, onChange: oc}),
         }
@@ -334,9 +339,16 @@ function VisualizationColorSym(par={}){
 
             // cell color tiles
             uFillCells:          false,
-            uCellColors:         mColorTiles.getColors(),
+            uCellColors:         mColorTiles.getPremultColors(),
             uCellColorPermIndex: mColorTiles.getPermIndex(),
             uColoringType:       COLORING_TYPE[cmCfg.coloringType] ?? 0,
+
+            // tilt depth-sort
+            uUseTilt:    cmCfg.useTilt,
+            uTiltVector: (() => {
+                const angle = cmCfg.patternTiltDirection * TORADIANS;
+                return new Float32Array([Math.cos(angle), Math.sin(angle)]);
+            })(),
         };
 
 

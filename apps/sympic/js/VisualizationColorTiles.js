@@ -157,7 +157,7 @@ function VisualizationColorTiles(par={}){
             uLeftCoset:          cmCfg.leftCoset,
 
             uFillCells:          mColorTiles.enabled,
-            uCellColors:         mColorTiles.getColors(),
+            uCellColors:         mColorTiles.getPremultColors(),
             uCellColorPermIndex: mColorTiles.getPermIndex(),
         };
 

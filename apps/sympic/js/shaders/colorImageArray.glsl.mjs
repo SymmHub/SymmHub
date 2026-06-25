@@ -39,6 +39,11 @@ uniform bool uLeftCoset;
 // 0 = none, 1 = multiply image by cell color, 2 = 1-(cellColor*(1-imgColor))
 uniform int uColoringType;
 
+// Tilt: unit direction vector [cos(angle), sin(angle)] for depth-sort compositing.
+uniform vec2 uTiltVector;
+// When true, crown tiles are sorted by z = dot(uTiltVector, tc) before compositing.
+uniform bool uUseTilt;
+
 #ifndef MAX_CROWN_COUNT
 #define MAX_CROWN_COUNT 20
 #endif
@@ -78,10 +83,9 @@ vec4 applyColoring(vec4 imgColor, vec4 cellColor, int coloringType) {
 }
 
 //
-// Crown rendering for image arrays with color permutations.
-// For each pairing transform g of the fundamental domain, maps the screen point
-// into the adjacent copy, then blends all images cycling through permuted indices.
-// permData[g] gives the color permutation which needs to be pre-composed with currentPerm for that reflected copy.
+// Crown rendering — simple variant.
+// For each crown tile maps the point into the adjacent FD copy,
+// selects the permuted image, applies coloring, and overlays directly.
 //
 vec4 getImageArrayCrown(vec3 pnt, 
                         highp sampler2DArray imageArray,
@@ -98,18 +102,14 @@ vec4 getImageArrayCrown(vec3 pnt,
                         uint texIndex, 
                         float blurWidth,
                         int coloringType,
-                        vec4 cellColors[MAX_COLORS_COUNT]) { 
+                        vec4 cellColors[MAX_COLORS_COUNT]) {
 
     vec4 color = vec4(0.0);
-
-    int domainOffset     = fetchInt(groupData, groupOffset);
     int transformsOffset = fetchInt(groupData, groupOffset + 1);
     int transformsCount  = fetchInt(groupData, transformsOffset);
-
     int loopCount = min(transformsCount, MAX_CROWN_COUNT);
 
     for (int g = 0; g < loopCount; g++) {
-
         vec3  v  = pnt;
         float ss = scale;
 
@@ -117,20 +117,16 @@ vec4 getImageArrayCrown(vec3 pnt,
         int refCount               = fetchInt(groupData, transformOffset);
         int transformSplanesOffset = transformOffset + 1;
 
-        // Apply inverse pairing transform: maps crown cell back into FD.
         for (int r = 0; r < refCount; r++) {
             iSPlane rsp = fetchSplane(groupData, transformSplanesOffset + r * 2);
             iReflect(rsp, v, ss);
         }
         uvec4 gperm = permData[g];
-        // Blend all images using generator g's permutation row.
         uvec4 perm;
         if(leftCoset) {
             perm = compose_perms(gperm, currentPerm, permSize);
-            //perm = compose_perms(currentPerm, gperm, permSize);
         } else {
             perm = compose_perms(currentPerm, gperm, permSize);
-            //perm = compose_perms(gperm, currentPerm, permSize);
         }
 
         uint imgIdx = get_perm_val(perm, texIndex);
@@ -143,6 +139,100 @@ vec4 getImageArrayCrown(vec3 pnt,
 
     return color;
 }
+
+//
+// Crown rendering — depth-sorted variant.
+// Collects visible crown contributions, insertion-sorts them by
+//   z = dot(tiltVector, cMul(imgScale, v.xy - imgCenter))
+// then composites back-to-front with overlayColor().
+//
+vec4 getImageArrayCrownSorted(vec3 pnt, 
+                              highp sampler2DArray imageArray,
+                              float texAlpha[MAX_COLORS_COUNT],
+                              vec2 imgScale, 
+                              vec2 imgCenter,     
+                              sampler2D groupData, 
+                              int groupOffset, 
+                              float scale, 
+                              uvec4 permData[MAX_CROWN_COUNT], 
+                              uint permSize, 
+                              uvec4 currentPerm, 
+                              bool leftCoset,
+                              uint texIndex, 
+                              float blurWidth,
+                              int coloringType,
+                              vec4 cellColors[MAX_COLORS_COUNT],
+                              vec2 tiltVector) {
+
+    int transformsOffset = fetchInt(groupData, groupOffset + 1);
+    int transformsCount  = fetchInt(groupData, transformsOffset);
+    int loopCount = min(transformsCount, MAX_CROWN_COUNT);
+
+    // Fixed-size accumulation buffers.
+    vec4  colorBuf[MAX_CROWN_COUNT];
+    float zBuf[MAX_CROWN_COUNT];
+    int   count = 0;
+
+    // Collect phase.
+    for (int g = 0; g < loopCount; g++) {
+        vec3  v  = pnt;
+        float ss = scale;
+
+        int transformOffset        = fetchInt(groupData, transformsOffset + g + 1);
+        int refCount               = fetchInt(groupData, transformOffset);
+        int transformSplanesOffset = transformOffset + 1;
+
+        for (int r = 0; r < refCount; r++) {
+            iSPlane rsp = fetchSplane(groupData, transformSplanesOffset + r * 2);
+            iReflect(rsp, v, ss);
+        }
+        uvec4 gperm = permData[g];
+        uvec4 perm;
+        if(leftCoset) {
+            perm = compose_perms(gperm, currentPerm, permSize);
+        } else {
+            perm = compose_perms(currentPerm, gperm, permSize);
+        }
+
+        uint imgIdx = get_perm_val(perm, texIndex);
+        if(texAlpha[imgIdx] > 0.0) {
+            vec4 imgColor = texAlpha[imgIdx]*getImageComponentData(v.xy, imageArray, imgScale, imgCenter, imgIdx, blurWidth);
+            imgColor = applyColoring(imgColor, cellColors[imgIdx], coloringType);
+            if(imgColor.w > 0.0 && count < MAX_CROWN_COUNT) {
+                vec2  tc = cMul(imgScale, v.xy - imgCenter);
+                colorBuf[count] = imgColor;
+                zBuf[count]     = dot(tiltVector, tc);
+                count++;
+            }
+        }
+    }
+
+    // Insertion sort by z (ascending = back-most first).
+    for (int i = 1; i < MAX_CROWN_COUNT; i++) {
+        if (i >= count) break;
+        vec4  keyColor = colorBuf[i];
+        float keyZ     = zBuf[i];
+        int j = i - 1;
+        for (int k = 0; k < MAX_CROWN_COUNT; k++) {
+            if (j < 0 || zBuf[j] <= keyZ) break;
+            colorBuf[j + 1] = colorBuf[j];
+            zBuf[j + 1]     = zBuf[j];
+            j--;
+        }
+        colorBuf[j + 1] = keyColor;
+        zBuf[j + 1]     = keyZ;
+    }
+
+    // Composite in z-order (back to front).
+    vec4 color = vec4(0.0);
+    for (int i = 0; i < MAX_CROWN_COUNT; i++) {
+        if (i >= count) break;
+        color = overlayColor(color, colorBuf[i]);
+    }
+
+    return color;
+}
+
 
 void main() {
 
@@ -187,7 +277,12 @@ void main() {
     float blurWidth = u_pixelSize * 0.5;
     if(uUseCrown){
         // Crown: accumulate neighbour-cell contributions.
-        vec4 crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth, uColoringType, uCellColors); 
+        vec4 crownColor;
+        if(uUseTilt) {
+            crownColor = getImageArrayCrownSorted(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth, uColoringType, uCellColors, uTiltVector);
+        } else {
+            crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth, uColoringType, uCellColors);
+        }
         color = overlayColor(color, crownColor);
     } else {
         // Main tile: single image selected via currentPerm + uTexPermIndex.

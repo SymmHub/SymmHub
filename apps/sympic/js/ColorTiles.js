@@ -10,6 +10,8 @@ import {
     MAX_COLORS_COUNT,
 } from './modules.js';
 
+import { adjustColorRGB, adjustColorRGB_OKLCH } from './color_uitils.js';
+
 
 const MYNAME = 'ColorTiles';
 
@@ -45,7 +47,7 @@ const PALETTE_NAMES = Object.keys(PALETTES);
 //  cosine palette formula:  color = a + b * cos(2π * (c*t + d))
 //
 //  Compatible with the ParamObj API: exposes getParams().
-//  Call getColors() each frame to obtain the current Float32Array for
+//  Call getPremultColors() each frame to obtain the current premultiplied Float32Array for
 //  uploading to the GPU as uniform vec4 uCellColors[MAX_COLORS_COUNT].
 //
 function ColorTiles(options = {}) {
@@ -63,6 +65,11 @@ function ColorTiles(options = {}) {
         bR: 0.5, bG: 0.5, bB: 0.5,
         cR: 1.0, cG: 1.0, cB: 1.0,
         dR: 0.0, dG: 0.33, dB: 0.67,
+        // HSL adjustments (neutral defaults = no effect)
+        adjHueShift:     0,
+        adjSatMult:      1.0,
+        adjLightOffset:  0,
+        adjContrastMult: 1.0,
     };
 
     // Getters for parameters that can be optionally moved to the host layer
@@ -71,8 +78,11 @@ function ColorTiles(options = {}) {
     const getPermIndexVal = options.getPermIndex || (() => mConfig.permIndex);
 
 
-    // Pre-allocated buffer, zeroed on init.
-    const mColors = new Float32Array(MAX_COLORS_COUNT * 4);
+    // Pre-allocated buffers, zeroed on init.
+    // mColors        — straight (non-premultiplied) RGBA, layout [r, g, b, a] per slot.
+    // mPremultColors — premultiplied RGBA, safe to upload directly as uCellColors.
+    const mColors        = new Float32Array(MAX_COLORS_COUNT * 4);
+    const mPremultColors = new Float32Array(MAX_COLORS_COUNT * 4);
 
     _updateColors();
 
@@ -97,14 +107,33 @@ function ColorTiles(options = {}) {
         );
 
         const alphaVal = getAlpha();
+        const adj = {
+            hueShift:     mConfig.adjHueShift,
+            satMult:      mConfig.adjSatMult,
+            lightOffset:  mConfig.adjLightOffset,
+            contrastMult: mConfig.adjContrastMult,
+        };
         for (let i = 0; i < n; i++) {
             const t     = i / n;
             const idx   = i * 4;
             const alpha = alphaVal * maskFactors[i];
-            mColors[idx + 0] = _clamp(a[0] + b[0] * Math.cos(TWO_PI * (c[0] * t + d[0]))) * alpha;
-            mColors[idx + 1] = _clamp(a[1] + b[1] * Math.cos(TWO_PI * (c[1] * t + d[1]))) * alpha;
-            mColors[idx + 2] = _clamp(a[2] + b[2] * Math.cos(TWO_PI * (c[2] * t + d[2]))) * alpha;
+
+            // Cosine palette: compute raw RGB, then apply HSL adjustments
+            let r  = _clamp(a[0] + b[0] * Math.cos(TWO_PI * (c[0] * t + d[0])));
+            let g  = _clamp(a[1] + b[1] * Math.cos(TWO_PI * (c[1] * t + d[1])));
+            let bv = _clamp(a[2] + b[2] * Math.cos(TWO_PI * (c[2] * t + d[2])));
+            //const rgb = adjustColorRGB(r, g, bv, adj);
+            const rgb = adjustColorRGB_OKLCH(r, g, bv, adj);
+
+            mColors[idx + 0] = rgb.r;
+            mColors[idx + 1] = rgb.g;
+            mColors[idx + 2] = rgb.b;
             mColors[idx + 3] = alpha;
+
+            mPremultColors[idx + 0] = rgb.r * alpha;
+            mPremultColors[idx + 1] = rgb.g * alpha;
+            mPremultColors[idx + 2] = rgb.b * alpha;
+            mPremultColors[idx + 3] = alpha;
         }
 
         // Zero out unused slots so the GPU always receives a valid array.
@@ -113,6 +142,10 @@ function ColorTiles(options = {}) {
             mColors[i * 4 + 1] = 0;
             mColors[i * 4 + 2] = 0;
             mColors[i * 4 + 3] = 0;
+            mPremultColors[i * 4 + 0] = 0;
+            mPremultColors[i * 4 + 1] = 0;
+            mPremultColors[i * 4 + 2] = 0;
+            mPremultColors[i * 4 + 3] = 0;
         }
 
         if(DEBUG) {
@@ -134,33 +167,23 @@ function ColorTiles(options = {}) {
         const ctx = canvas.getContext('2d');
         if (!ctx) return canvas;
 
-        const a = [mConfig.aR, mConfig.aG, mConfig.aB];
-        const b = [mConfig.bR, mConfig.bG, mConfig.bB];
-        const c = [mConfig.cR, mConfig.cG, mConfig.cB];
-        const d = [mConfig.dR, mConfig.dG, mConfig.dB];
-
-        const mask = getColorMask() || '';
-        const maskFactors = Array.from({ length: n }, (_, i) =>
-            i < mask.length ? (mask[i] === '0' ? 0 : 1) : 1
-        );
-
-        const alphaVal = getAlpha();
+        // Read straight (non-premultiplied) RGBA directly from mColors.
         for (let i = 0; i < n; i++) {
-            const t     = i / n;
-            const alpha = alphaVal * maskFactors[i];
-            const r = Math.round(_clamp(a[0] + b[0] * Math.cos(TWO_PI * (c[0] * t + d[0]))) * 255);
-            const g = Math.round(_clamp(a[1] + b[1] * Math.cos(TWO_PI * (c[1] * t + d[1]))) * 255);
-            const bVal = Math.round(_clamp(a[2] + b[2] * Math.cos(TWO_PI * (c[2] * t + d[2]))) * 255);
+            const idx   = i * 4;
+            const r     = mColors[idx + 0];
+            const g     = mColors[idx + 1];
+            const b     = mColors[idx + 2];
+            const alpha = mColors[idx + 3];
 
             const x0 = Math.round(i * W / n);
             const x1 = Math.round((i + 1) * W / n);
-            const rectW = x1 - x0;
 
-            ctx.fillStyle = `rgba(${r}, ${g}, ${bVal}, ${alpha})`;
-            ctx.fillRect(x0, 0, rectW, H);
+            ctx.fillStyle = `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha})`;
+            ctx.fillRect(x0, 0, x1 - x0, H);
         }
         return canvas;
     }
+
 
     function _updateColorStrip() {
         if (!mParams || !mParams.colormap) return;
@@ -278,6 +301,16 @@ function ColorTiles(options = {}) {
             }),
 
             randomize: ParamFunc({ name: 'Randomize', func: _randomize }),
+
+            adjust: ParamGroup({
+                name: 'adjust',
+                params: {
+                    hueShift:     ParamFloat({obj: cf, key: 'adjHueShift',     name: 'hueShift',     min: -1, max: 1, step: 0.005, onChange: oc}),
+                    satMult:      ParamFloat({obj: cf, key: 'adjSatMult',      name: 'satMult',      min: 0,    max: 4,   step: 0.01, onChange: oc}),
+                    lightOffset:  ParamFloat({obj: cf, key: 'adjLightOffset',  name: 'lightOffset',  min: -1,   max: 1,   step: 0.01, onChange: oc}),
+                    contrastMult: ParamFloat({obj: cf, key: 'adjContrastMult', name: 'contrastMult', min: 0,    max: 4,   step: 0.01, onChange: oc}),
+                }
+            }),
         };
     }
 
@@ -295,7 +328,10 @@ function ColorTiles(options = {}) {
 
     function setOnChange(fn) { mOnChange = fn; }
 
-    /** Float32Array(MAX_COLORS_COUNT * 4) — upload as uCellColors each frame. */
+    /** Float32Array(MAX_COLORS_COUNT * 4) — premultiplied RGBA, upload as uCellColors each frame. */
+    function getPremultColors() { return mPremultColors; }
+
+    /** Float32Array(MAX_COLORS_COUNT * 4) — straight (non-premultiplied) RGBA. */
     function getColors() { return mColors; }
 
     /** Number of active color slots (== mConfig.count). */
@@ -307,6 +343,7 @@ function ColorTiles(options = {}) {
     return {
         getParams,
         getColors,
+        getPremultColors,
         getCount,
         getPermIndex,
         setOnChange,
