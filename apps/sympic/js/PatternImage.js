@@ -32,7 +32,13 @@ const DEBUG = false;
 
 const TORADIANS = Math.PI/180.;
 
-const MyTextures = Textures.t2.concat(Tex2.haeckel_challenger).concat(Tex2.haeckel_kunst).concat(Tex2.misc).concat(Tex2.arrow);
+const MyTextures = [
+    { name: 'Haeckel',            items: Textures.t2 },
+    { name: 'Haeckel Challenger', items: Tex2.haeckel_challenger },
+    { name: 'Haeckel Kunst',      items: Tex2.haeckel_kunst },
+    { name: 'Misc',               items: Tex2.misc },
+    { name: 'Arrows',             items: Tex2.arrow },
+];
 
 if(false)console.log('Tex2:', Tex2);
 
