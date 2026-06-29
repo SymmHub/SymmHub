@@ -43,6 +43,7 @@ uniform int uColoringType;
 uniform vec2 uTiltVector;
 // When true, crown tiles are sorted by z = dot(uTiltVector, tc) before compositing.
 uniform bool uUseTilt;
+uniform bool uUseMipmap;
 
 #ifndef MAX_CROWN_COUNT
 #define MAX_CROWN_COUNT 20
@@ -52,7 +53,7 @@ uniform uvec4 uCrownPermData[MAX_CROWN_COUNT];
 // alpha factor per texture layer (0.0 = hidden, 1.0 = visible), padded with 1s.
 uniform float uTexAlpha[MAX_COLORS_COUNT];
 
-vec4 getImageComponentData(vec2 wpnt, highp sampler2DArray imageArray, vec2 imgScale,  vec2 imgCenter, uint componentIndex, float blurRadius){
+vec4 getImageComponentData(vec2 wpnt, highp sampler2DArray imageArray, vec2 imgScale,  vec2 imgCenter, uint componentIndex, float blurRadius, bool useMipmap, float scale){
     // Map world point into texture coordinates.
     vec2 tc = cMul(imgScale, (wpnt - imgCenter));
     // coordinates in [0,1] to feed to texture 
@@ -62,7 +63,14 @@ vec4 getImageComponentData(vec2 wpnt, highp sampler2DArray imageArray, vec2 imgS
     float sdb = max(tc.x, tc.y) - 0.5;
     // edge mask
     float mask = 1. - smoothstep(-blurRadius, blurRadius, sdb);
-    return texture(imageArray, vec3(tpnt, float(componentIndex))) * mask;
+    if (useMipmap) {
+        float texSize = float(textureSize(imageArray, 0).x);
+        float lod = log2(texSize * u_pixelSize * scale * length(imgScale));
+        if (lod > 0.0) {
+            return textureLod(imageArray, vec3(tpnt, float(componentIndex)), lod) * mask;
+        }
+    }
+    return textureLod(imageArray, vec3(tpnt, float(componentIndex)), 0.0) * mask;
 }
 
 //
@@ -70,6 +78,7 @@ vec4 getImageComponentData(vec2 wpnt, highp sampler2DArray imageArray, vec2 imgS
 //   coloringType 0: no change
 //   coloringType 1: multiply — white pixels become cellColor, black stays black
 //   coloringType 2: screen blend — black pixels become cellColor, white stays white
+//
 //
 vec4 applyColoring(vec4 imgColor, vec4 cellColor, int coloringType) {
     if(coloringType == 1) {
@@ -102,7 +111,8 @@ vec4 getImageArrayCrown(vec3 pnt,
                         uint texIndex, 
                         float blurWidth,
                         int coloringType,
-                        vec4 cellColors[MAX_COLORS_COUNT]) {
+                        vec4 cellColors[MAX_COLORS_COUNT],
+                        bool useMipmap) {
 
     vec4 color = vec4(0.0);
     int transformsOffset = fetchInt(groupData, groupOffset + 1);
@@ -131,7 +141,7 @@ vec4 getImageArrayCrown(vec3 pnt,
 
         uint imgIdx = get_perm_val(perm, texIndex);
         if(texAlpha[imgIdx] > 0.0) {
-            vec4 imgColor = texAlpha[imgIdx]*getImageComponentData(v.xy, imageArray, imgScale, imgCenter, imgIdx, blurWidth);
+            vec4 imgColor = texAlpha[imgIdx]*getImageComponentData(v.xy, imageArray, imgScale, imgCenter, imgIdx, blurWidth, useMipmap, ss);
             imgColor = applyColoring(imgColor, cellColors[imgIdx], coloringType);
             color = overlayColor(color, imgColor);
         }
@@ -162,7 +172,8 @@ vec4 getImageArrayCrownSorted(vec3 pnt,
                               float blurWidth,
                               int coloringType,
                               vec4 cellColors[MAX_COLORS_COUNT],
-                              vec2 tiltVector) {
+                              vec2 tiltVector,
+                              bool useMipmap) {
 
     int transformsOffset = fetchInt(groupData, groupOffset + 1);
     int transformsCount  = fetchInt(groupData, transformsOffset);
@@ -196,7 +207,7 @@ vec4 getImageArrayCrownSorted(vec3 pnt,
 
         uint imgIdx = get_perm_val(perm, texIndex);
         if(texAlpha[imgIdx] > 0.0) {
-            vec4 imgColor = texAlpha[imgIdx]*getImageComponentData(v.xy, imageArray, imgScale, imgCenter, imgIdx, blurWidth);
+            vec4 imgColor = texAlpha[imgIdx]*getImageComponentData(v.xy, imageArray, imgScale, imgCenter, imgIdx, blurWidth, useMipmap, ss);
             imgColor = applyColoring(imgColor, cellColors[imgIdx], coloringType);
             if(imgColor.w > 0.0 && count < MAX_CROWN_COUNT) {
                 vec2  tc = cMul(imgScale, v.xy - imgCenter);
@@ -279,9 +290,9 @@ void main() {
         // Crown: accumulate neighbour-cell contributions.
         vec4 crownColor;
         if(uUseTilt) {
-            crownColor = getImageArrayCrownSorted(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth, uColoringType, uCellColors, uTiltVector);
+            crownColor = getImageArrayCrownSorted(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth, uColoringType, uCellColors, uTiltVector, uUseMipmap);
         } else {
-            crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth, uColoringType, uCellColors);
+            crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth, uColoringType, uCellColors, uUseMipmap);
         }
         color = overlayColor(color, crownColor);
     } else {
@@ -289,7 +300,7 @@ void main() {
         uint imageIndex = get_perm_val(currentPerm, uTexPermIndex);
 
         if(uTexAlpha[imageIndex] > 0.0) {
-            vec4 layer = uTexAlpha[imageIndex]*getImageComponentData(wpnt.xy, uImageArray, uBufScale, uBufCenter, imageIndex, blurWidth);
+            vec4 layer = uTexAlpha[imageIndex]*getImageComponentData(wpnt.xy, uImageArray, uBufScale, uBufCenter, imageIndex, blurWidth, uUseMipmap, scale);
             vec4 cellColor = uCellColors[get_perm_val(currentPerm, uCellColorPermIndex)];
             layer = applyColoring(layer, cellColor, uColoringType);
             color = overlayColor(color, layer);

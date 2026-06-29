@@ -223,8 +223,6 @@ function VisualizationColorSym(par={}){
             const tex = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D_ARRAY, tex);
             gl.texImage3D(gl.TEXTURE_2D_ARRAY, 0, gl.RGBA32F, size, size, count, 0, gl.RGBA, gl.FLOAT, null);
-            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             mArrayTexCache = { tex, count, size };
@@ -232,11 +230,18 @@ function VisualizationColorSym(par={}){
 
         // Copy each image's current render result into the corresponding array layer.
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, mArrayTexCache.tex);
+        gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, mConfig.useMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
         for (let i = 0; i < count; i++) {
             gl.bindFramebuffer(gl.READ_FRAMEBUFFER, doubleFBOs[i].read.fbo);
             gl.copyTexSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, 0, 0, size, size);
         }
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+
+        if (mConfig.useMipmap) {
+            gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
+        }
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, null);
 
         return mArrayTexCache.tex;
@@ -336,6 +341,7 @@ function VisualizationColorSym(par={}){
             uTexAlpha:      mTexAlpha,
             uCrownData:     crownData,
             uCrownPermData: crownPerms,
+            uUseMipmap:     cmCfg.useMipmap,
 
             // cell color tiles
             uFillCells:          false,
