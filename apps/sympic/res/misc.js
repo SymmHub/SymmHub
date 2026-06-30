@@ -5,10 +5,11 @@ comma-3.svg
 comma-4.svg
 comma-5.svg
 comma.svg
+hand.png
+letter_b_512.png
 r.svg
 ring-1.svg
-test_pattern.svg
-test_pattern_2.svg
-test_pattern_3.svg
-test_pattern_png.png
+scissors_blue.png
+scissors_orange.png
+scissors_pink.png
 `; 

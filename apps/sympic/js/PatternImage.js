@@ -59,6 +59,13 @@ function PatternImage(options){
         angle:        0,
         transparency: 0,
         useCrown:     false,
+        adjHueShift:     0.0,
+        adjSatMult:      1.0,
+        adjLightOffset:  0.0,
+        adjContrastMult: 1.0,
+        useOKLCH:        false,
+        flipX:           false,
+        flipY:           false,
     };
 
     let mOnIdChange = null;
@@ -137,9 +144,21 @@ function PatternImage(options){
                     centerY: ParamFloat({obj: cfg, key: 'centerY', onChange: onc}),
                     scale:   ParamFloat({obj: cfg, key: 'scale',   onChange: onc}),
                     angle:   ParamFloat({obj: cfg, key: 'angle',   onChange: onc}),
+                    flipX:   ParamBool  ({obj: cfg, key: 'flipX',   onChange: onc}),
+                    flipY:   ParamBool  ({obj: cfg, key: 'flipY',   onChange: onc}),
                 },
             }),
             texture:      ParamObj   ({name: 'texture', obj: mTextureMaker}),
+            adjust: ParamGroup({
+                name: 'adjust',
+                params: {
+                    useOKLCH:     ParamBool  ({obj: cfg, key: 'useOKLCH',       name: 'useOKLCH',                  onChange: onc}),
+                    hueShift:     ParamFloat({obj: cfg, key: 'adjHueShift',     name: 'hueShift',     min: -1, max: 1, step: 0.005, onChange: onc}),
+                    satMult:      ParamFloat({obj: cfg, key: 'adjSatMult',      name: 'satMult',      min: 0,    max: 4,   step: 0.01, onChange: onc}),
+                    lightOffset:  ParamFloat({obj: cfg, key: 'adjLightOffset',  name: 'lightOffset',  min: -1,   max: 1,   step: 0.01, onChange: onc}),
+                    contrastMult: ParamFloat({obj: cfg, key: 'adjContrastMult', name: 'contrastMult', min: 0,    max: 4,   step: 0.01, onChange: onc}),
+                }
+            }),
         };
     }
 
@@ -229,6 +248,13 @@ function PatternImage(options){
             uImage:             mTextureMaker.getTexture(),
             uCrownData:         mGroupData, 
             uUseCrown:          cfg.useCrown,
+            uHueShift:          cfg.adjHueShift,
+            uSatMult:           cfg.adjSatMult,
+            uLightOffset:       cfg.adjLightOffset,
+            uContrastMult:      cfg.adjContrastMult,
+            uUseOKLCH:          cfg.useOKLCH,
+            uFlipX:             cfg.flipX,
+            uFlipY:             cfg.flipY,
         };
 
         program.setUniforms(imgUni);
