@@ -12,6 +12,15 @@ import {
 import {
     resources as arrow
 } from './arrow.js';
+import {
+    resources as latin
+} from './latin.js';
+import {
+    resources as greek
+} from './greek.js';
+import {
+    resources as cyrillic
+} from './cyrillic.js';
 
 
 const MYPATH = new URL('./', import.meta.url).pathname;
@@ -21,9 +30,13 @@ console.log('textures MYPATH: ', MYPATH);
 
 export const textures = {
     arrow:              getTexInfoArray(arrow, MYPATH + 'arrow/'),
+    latin:              getTexInfoArray(latin, MYPATH + 'latin/'),
+    cyrillic:           getTexInfoArray(cyrillic, MYPATH + 'cyrillic/'),
+    greek:              getTexInfoArray(greek, MYPATH + 'greek/'),
     haeckel_kunst:      getTexInfoArray(tex_haeckel_kunst, MYPATH + 'haeckel_kunst/'),
     haeckel_challenger: getTexInfoArray(tex_haeckel_challenger, MYPATH + 'haeckel_challenger/'),
     misc:               getTexInfoArray(misc, MYPATH + 'misc/'),
+    
 };
 
 

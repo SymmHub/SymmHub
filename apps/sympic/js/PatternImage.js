@@ -38,6 +38,9 @@ const MyTextures = [
     { name: 'Haeckel Kunst',      items: Tex2.haeckel_kunst },
     { name: 'Misc',               items: Tex2.misc },
     { name: 'Arrows',             items: Tex2.arrow },
+    { name: 'Latin',              items: Tex2.latin },
+    { name: 'Greek',              items: Tex2.greek },
+    { name: 'Cyrillic',           items: Tex2.cyrillic },
 ];
 
 if(false)console.log('Tex2:', Tex2);
