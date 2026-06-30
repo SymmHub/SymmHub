@@ -20,6 +20,7 @@ uniform float uContrastMult;
 uniform bool uUseOKLCH;
 uniform bool uFlipX;
 uniform bool uFlipY;
+uniform bool uNegative;
 
 uniform sampler2D uCrownData;
 uniform bool uUseCrown;
@@ -146,6 +147,7 @@ vec4 getImageData(vec2 pnt, sampler2D image, vec2 imageScale,  vec2 imageCenter)
 
     vec4 texColor = texture(image, tpnt);
     vec3 rgb = texColor.rgb;
+    if (uNegative) rgb = vec3(1.0) - rgb;
     
     if (uUseOKLCH) {
         vec3 oklch = rgb2oklch(rgb);

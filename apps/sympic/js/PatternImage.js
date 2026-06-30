@@ -69,6 +69,7 @@ function PatternImage(options){
         useOKLCH:        false,
         flipX:           false,
         flipY:           false,
+        negative:        false,
     };
 
     let mOnIdChange = null;
@@ -155,6 +156,7 @@ function PatternImage(options){
             adjust: ParamGroup({
                 name: 'adjust',
                 params: {
+                    negative:     ParamBool  ({obj: cfg, key: 'negative',       name: 'negative',                  onChange: onc}),
                     useOKLCH:     ParamBool  ({obj: cfg, key: 'useOKLCH',       name: 'useOKLCH',                  onChange: onc}),
                     hueShift:     ParamFloat({obj: cfg, key: 'adjHueShift',     name: 'hueShift',     min: -1, max: 1, step: 0.005, onChange: onc}),
                     satMult:      ParamFloat({obj: cfg, key: 'adjSatMult',      name: 'satMult',      min: 0,    max: 4,   step: 0.01, onChange: onc}),
@@ -258,6 +260,7 @@ function PatternImage(options){
             uUseOKLCH:          cfg.useOKLCH,
             uFlipX:             cfg.flipX,
             uFlipY:             cfg.flipY,
+            uNegative:          cfg.negative,
         };
 
         program.setUniforms(imgUni);
