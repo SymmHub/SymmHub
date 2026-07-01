@@ -28,13 +28,13 @@ import { ColorTiles } from './ColorTiles.js';
 
 
 
-const DEBUG = true;
+const DEBUG = false;
 const MYNAME = 'VisualizationColorSym';
 const DataSourceNames = VisualizationOptions.dataSourceNames;
 const MAX_CROWN_COUNT = 20;
 
-const COLORING_TYPE_NAMES = ['none', 'mult', '1-mult'];
-const COLORING_TYPE = { 'none': 0, 'mult': 1, '1-mult': 2 };
+const COLORING_TYPE_NAMES = ['none', 'mult', 'invMut', 'hueShift'];
+const COLORING_TYPE = { 'none': 0, 'mult': 1, 'invMut': 2, 'hueShift': 3 };
 const TORADIANS = Math.PI / 180;
 
 
@@ -308,8 +308,10 @@ function VisualizationColorSym(par={}){
         const ids = cmCfg.imageId ? cmCfg.imageId.trim().split(/\s+/).filter(Boolean) : [];
 
         // collect DoubleFBOs for each id.
+        // Use optional chaining on getComponentBuffer — simple PatternData
+        // objects (from PatternImage) don't implement it.
         const doubleFBOs = ids
-            .map(id => par.patternData?.getComponentBuffer(id))
+            .map(id => par.patternData?.getComponentBuffer?.(id))
             .filter(Boolean);
 
         // Fall back to the default buffer when no ids are resolved.

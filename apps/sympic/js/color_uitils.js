@@ -1,6 +1,10 @@
+function fract(x) {
+    return x - Math.floor(x);
+}
+
 /**
  * Applies perceptual adjustments to a single color's channels.
- * * @param {number} h - Base Hue (0 - 360)
+ * @param {number} h - Base Hue normalized to [0, 1]
  * @param {number} s - Base Saturation or Chroma (0.0 - 1.0)
  * @param {number} l - Base Lightness (0.0 - 1.0)
  * @param {Object} adj - The transformation parameters
@@ -11,12 +15,8 @@
  * @returns {Object} { h, s, l } The adjusted color components
  */
 function adjustColorHSL(h, s, l, adj) {
-    // 1. Hue Shift (normalized [-1, 1] → converted to degrees by * 360)
-    // Note: JS '%' is a remainder operator, not a true Euclidean modulo. 
-    // The ((n % 360) + 360) % 360 formula ensures negative hue shifts wrap correctly 
-    // around the color wheel instead of returning negative degrees.
-    let newH = h + (adj.hueShift || 0) * 360;
-    newH = ((newH % 360) + 360) % 360;
+    // 1. Hue Shift (normalized [-1, 1])
+    let newH = fract(h + (adj.hueShift || 0));
 
     // 2. Saturation / Chroma (Multiplicative)
     let newS = s * (adj.satMult ?? 1.0);
@@ -48,7 +48,7 @@ function adjustColorHSL(h, s, l, adj) {
  * @param {number} r - Red channel (0.0 to 1.0)
  * @param {number} g - Green channel (0.0 to 1.0)
  * @param {number} b - Blue channel (0.0 to 1.0)
- * @returns {Object} { h: [0-360], s: [0.0-1.0], l: [0.0-1.0] }
+ * @returns {Object} { h: [0.0-1.0], s: [0.0-1.0], l: [0.0-1.0] }
  */
 function rgbToHsl(r, g, b) {
     const max = Math.max(r, g, b);
@@ -76,7 +76,7 @@ function rgbToHsl(r, g, b) {
                 h = (r - g) / d + 4; 
                 break;
         }
-        h *= 60; // Convert to degrees (0 - 360)
+        h /= 6; // Convert to [0.0 - 1.0]
     }
 
     return { h, s, l };
@@ -84,7 +84,7 @@ function rgbToHsl(r, g, b) {
 
 /**
  * Converts an HSL color value to RGB.
- * @param {number} h - Hue angle (0 to 360)
+ * @param {number} h - Hue normalized to [0, 1]
  * @param {number} s - Saturation (0.0 to 1.0)
  * @param {number} l - Lightness (0.0 to 1.0)
  * @returns {Object} { r: [0.0-1.0], g: [0.0-1.0], b: [0.0-1.0] }
@@ -107,7 +107,7 @@ function hslToRgb(h, s, l) {
 
         const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
         const p = 2 * l - q;
-        const normalizedH = h / 360; // Normalize hue back to 0.0 - 1.0
+        const normalizedH = h; // Already normalized back to 0.0 - 1.0
 
         r = hue2rgb(p, q, normalizedH + 1/3);
         g = hue2rgb(p, q, normalizedH);
@@ -153,7 +153,7 @@ function linearToSrgb(c) {
  * @param {number} r - Red (0.0 to 1.0)
  * @param {number} g - Green (0.0 to 1.0)
  * @param {number} b - Blue (0.0 to 1.0)
- * @returns {Object} { L: [0-1], C: [0-~0.4], H: [0-360] }
+ * @returns {Object} { L: [0-1], C: [0-~0.4], H: [0-1] }
  */
 function rgbToOklch(r, g, b) {
     const rL = srgbToLinear(r);
@@ -177,8 +177,8 @@ function rgbToOklch(r, g, b) {
 
     // OKLab to OKLCH (Cylindrical coordinates)
     const C = Math.sqrt(okA * okA + okB * okB);
-    let H = Math.atan2(okB, okA) * (180 / Math.PI);
-    if (H < 0) H += 360;
+    let H = Math.atan2(okB, okA) / (2 * Math.PI);
+    if (H < 0) H += 1;
 
     return { L, C, H };
 }
@@ -187,12 +187,12 @@ function rgbToOklch(r, g, b) {
  * Converts OKLCH values back to normalized RGB [0-1].
  * @param {number} L - Lightness (0.0 to 1.0)
  * @param {number} C - Chroma (0.0 to ~0.4)
- * @param {number} H - Hue angle (0.0 to 360.0)
+ * @param {number} H - Hue angle normalized to [0, 1]
  * @returns {Object} { r: [0-1], g: [0-1], b: [0-1] }
  */
 function oklchToRgb(L, C, H) {
     // OKLCH to OKLab Cartesian coordinates
-    const hRad = H * (Math.PI / 180);
+    const hRad = H * (2 * Math.PI);
     const okA = C * Math.cos(hRad);
     const okB = C * Math.sin(hRad);
 
@@ -227,7 +227,7 @@ function oklchToRgb(L, C, H) {
  * Calculates parameter adjustments inside the uniform OKLCH space.
  * @param {number} L - Current Lightness
  * @param {number} C - Current Chroma
- * @param {number} H - Current Hue
+ * @param {number} H - Current Hue normalized to [0, 1]
  * @param {Object} adj - Object containing adjustment parameters
  * @param {number} adj.hueShift - Normalized hue rotation [-1, 1] (1 = full 360° rotation)
  * @param {number} adj.satMult - Scalar multiplier for chroma/saturation (e.g. 1.5)
@@ -236,9 +236,8 @@ function oklchToRgb(L, C, H) {
  * @returns {Object} { L, C, H } The newly transformed OKLCH properties
  */
 function adjustColorOKLCH(L, C, H, adj) {
-    // 1. Hue shift (normalized [-1, 1] → converted to degrees by * 360)
-    let newH = H + (adj.hueShift || 0) * 360;
-    newH = ((newH % 360) + 360) % 360;
+    // 1. Hue shift (normalized [-1, 1])
+    let newH = fract(H + (adj.hueShift || 0));
 
     // 2. Multiplicative chroma scaling (guarantees gray remains gray)
     let newC = C * (adj.satMult ?? 1.0);

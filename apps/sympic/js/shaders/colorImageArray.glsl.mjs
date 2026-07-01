@@ -73,11 +73,15 @@ vec4 getImageComponentData(vec2 wpnt, highp sampler2DArray imageArray, vec2 imgS
     return textureLod(imageArray, vec3(tpnt, float(componentIndex)), 0.0) * mask;
 }
 
+vec3 rgb2oklch(vec3 color);
+vec3 oklch2rgb(vec3 oklch);
+
 //
 // Applies the selected image-coloring mode (premultiplied alpha).
 //   coloringType 0: no change
 //   coloringType 1: multiply — white pixels become cellColor, black stays black
 //   coloringType 2: screen blend — black pixels become cellColor, white stays white
+//   coloringType 3: hueShift — shift image hue by cellColor hue
 //
 //
 vec4 applyColoring(vec4 imgColor, vec4 cellColor, int coloringType) {
@@ -87,6 +91,16 @@ vec4 applyColoring(vec4 imgColor, vec4 cellColor, int coloringType) {
     } else if(coloringType == 2) {
         // premult screen blend: a*cell + imgColor.xyz*(1-cell)  (a = imgColor.w)
         imgColor.xyz = cellColor.xyz * imgColor.w + imgColor.xyz * (1.0 - cellColor.xyz);
+    } else if(coloringType == 3) {
+        vec3 straightImg = imgColor.w > 0.0 ? imgColor.xyz / imgColor.w : vec3(0.0);
+        vec3 imgOklch = rgb2oklch(straightImg);
+        vec3 straightCell = cellColor.w > 0.0 ? cellColor.xyz / cellColor.w : vec3(0.0);
+        vec3 cellOklch = rgb2oklch(straightCell);
+        
+        imgOklch.z = fract(imgOklch.z + cellOklch.z);
+        
+        vec3 shiftedRgb = oklch2rgb(imgOklch);
+        imgColor.xyz = shiftedRgb * imgColor.w;
     }
     return imgColor;
 }
