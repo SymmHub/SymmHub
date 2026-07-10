@@ -1,7 +1,6 @@
 import {
   isDefined, 
   initFragments, 
-  programBuilder,
 
   GroupUtils,
   getTime, 
@@ -26,16 +25,20 @@ import {
   fa2str,
   fa2stra,
   str2fa,
-  
-  //GrayScottFragments as GS, 
-  GinzburgLandauFragments as GLF, 
-  ShaderFragments as SF,
   makePatternData,
+
+  BinaryLoader,
+  getCurrentDocument,
   
 } from './modules.js';
 
+import { GL_programs, gsFragments } from './ginzburg_landau_programs.js';
+
 
 const DEBUG = false;
+
+/** Set to true to save/load simulation buffers as raw binary (.json.bin) instead of base64. */
+const useBinaryData = true;
 
 
 const MYNAME = 'Ginzburg-Landau';
@@ -46,84 +49,6 @@ const INIT_TYPE_NOISE = 'noise';
 const INIT_TYPE_SYM_NOISE = 'sym noise';
 
 const initTypeNames = [INIT_TYPE_CLEAR, INIT_TYPE_NOISE,INIT_TYPE_SYM_NOISE];
-
-
-const fragGL_utils      = {obj:GLF,id:'GL_utils'};
-const fragGL_reset      = {obj:GLF,id:'GL_reset'};
-const fragGL_step       = {obj:GLF,id:'GL_step'};
-const fragGL_render_inc = {obj:GLF,id:'render_inc'};
-const fragGL_render_fp =  {obj:GLF, id:'render_fp'};
-const fragGL_hist_vp = {obj:GLF,id:'hist_vp'};
-const fragGL_hist_fp = {obj:GLF,id:'hist_fp'};
-
-const fragBaseVertex       = {obj:SF,id:'canvasVertexShader'};
-const fragColormap         = {obj:SF,id:'colormap'};
-const fragComplex          = {obj:SF,id:'complex'};
-const fragSimplexNoise     = {obj:SF,id:'simplexNoise'};
-const fragSdf2d            = {obj:SF,id:'sdf2d'};
-const fragUtils            = {obj:SF,id:'utils'};
-const fragDrawDot          = {obj:SF,id:'drawDotShader'};
-const fragDrawSegment      = {obj:SF,id:'drawSegmentShader'};
-const fragIsplane          = {obj:SF,id:'isplane'};
-const fragInversiveSampler = {obj:SF,id:'inversiveSampler'};
-const fragSymSampler       = {obj:SF,id:'symSamplerShader'};
-const fragAddNoise         = {obj:SF,id:'addNoiseShader'};
-
-
-
-const gsFragments = [
-
-    fragGL_utils,
-    fragGL_reset,
-    fragGL_step,
-    fragGL_render_inc,
-    fragGL_hist_vp,
-    fragGL_hist_fp,
-    fragGL_render_fp,
-
-    fragBaseVertex,
-    fragColormap,
-    fragComplex,
-    fragSimplexNoise,
-    fragSdf2d,
-    fragUtils,
-    fragDrawDot,
-    fragIsplane,
-    fragInversiveSampler,
-    fragSymSampler,
-    fragAddNoise,
-];
-
-const baseVertexShader = {
-    frags: [fragBaseVertex],
-};
-
-const progGL_reset = {name: 'GL_reset', vs: baseVertexShader, 
-    fs: {frags:[fragGL_utils, fragGL_reset]}
-};
-
-const progGL_step = {name: 'GL_step', vs: baseVertexShader, 
-    fs: {frags:[fragGL_step]}
-};
-
-const progSymSampler = { name: 'SymSampler', vs:baseVertexShader, 
-    fs: {frags: [fragIsplane, fragInversiveSampler, fragSymSampler]},
- };
-
-const progSymNoise =  { name: 'SymNoise', vs: baseVertexShader,
-        fs: { frags: [ fragUtils, fragIsplane, fragInversiveSampler,fragSimplexNoise,fragAddNoise]},
-      };
-
-//
-const gsPrograms = {
-    glReset:    progGL_reset,
-    glStep:     progGL_step,
-    symSampler: progSymSampler,
-    symNoise:   progSymNoise,
-};
-
-const gsProgs = programBuilder(gsPrograms, true);
-
 
 
 
@@ -222,7 +147,7 @@ function GinzburgLandauSimulation(){
         }
 
         let t0 = getTime();
-        gsProgs.getProgram(glCtx.gl, 'glReset'); // triggers compileAll
+        GL_programs.getProgram(glCtx.gl, 'glReset'); // triggers compileAll
         if (DEBUG)
             console.log(`programBuilder() ready: ${getTime()-t0} ms`);
 
@@ -382,7 +307,7 @@ function GinzburgLandauSimulation(){
         let gl = glCtx.gl;      
         
         gl.disable(gl.BLEND);        
-        let program = progGL_reset.program;
+        let program = GL_programs.getProgram(gl, 'glReset');
         let buffer = gSimBuffer;
         gl.viewport(0, 0, buffer.width, buffer.height);      
         program.bind();
@@ -528,43 +453,6 @@ function GinzburgLandauSimulation(){
         });
     }
     
-
-/*    
-    
-    function initGUI(folder){
-      
-        if(DEBUG)console.log(`${MYNAME}.initGUI()`);      
-        
-        m_guiFolder = folder;
-        
-        folder.add({ fun: onStep},'fun').name('make one step');
-
-        initPresetsGUI(folder.addFolder('presets'));
-                    
-        initSimParamsGUI(folder.addFolder('simulation params'), 'simParams');            
-        initResetGUI(folder.addFolder('reset'));                      
-        initSymmetryGUI(folder.addFolder('symmetry'),'symmetry');
-
-    }
-
-    function initPresetsGUI(folder){
-        
-        folder.add(mConfig, 'preset', Presets.names).name('preset').onChange(onPresetChanged);
-        let presetsPlotFolder = folder.addFolder('presets plot');      
-        //mPresetsPlot.initGUI(presetsPlotFolder);
-    }
-    
-    function initResetGUI(folder, key){
-        
-        folder.add({ fun: initSimulation},'fun').name('initialize');
-        
-        initSimpleNoiseGUI(folder.addFolder('simple noise'), 'simpleNoise');
-        
-        initSymmetricalNoiseGUI(folder.addFolder('Symmetrical Noise'), 'symmetricalNoise');
-        
-    }
-    */
-
     //
     //
     //
@@ -597,57 +485,6 @@ function GinzburgLandauSimulation(){
                 
     } // makeInitParams()
 
-    /*
-    function makeSimInitParams(){
-                
-        initSimpleNoiseGUI(folder.addFolder('simple noise'), 'simpleNoise');        
-        initSymmetricalNoiseGUI(folder.addFolder('Symmetrical Noise'), 'symmetricalNoise');
-        
-    }
-    */
-    /*
-    function initSimpleNoiseGUI(folder, key){
-        
-        let cfg = mConfig[key];
-        let ed = mEditors[key];
-        
-        ed.noiseCell   = folder.add(cfg, 'noiseCell', 1, 50, 1).name('cell size(px)');
-        ed.noiseForce  = folder.add(cfg, 'noiseForce').name('noise force');
-        ed.noiseOffset = folder.add(cfg, 'noiseOffset').name('noise offset');
-        
-    }
-
-    function initSymmetricalNoiseGUI(folder, key){
-        
-        let ed = mEditors[key];
-        let cfg = mConfig[key];
-                      
-                                 folder.add({ fun: onSymNoise},'fun').name('Do Sym Noise');    
-        ed.noiseCell           = folder.add(cfg,'noiseCell', 0, 1, 0.001).name('Noise Cell');
-        ed.noiseFactor         = folder.add(cfg,'noiseFactor', -1, 1,0.001).name('Noise Factor');
-        ed.lineThickness       = folder.add(cfg,'lineThickness', 0, 1,0.0001).name('Line Thickness');
-        ed.noiseX              = folder.add(cfg,'noiseX', -10, 10,0.001).name('Noise X');
-        ed.noiseY              = folder.add(cfg,'noiseY', -10, 10,0.001).name('Noise Y');
-        ed.noiseCapSizeX       = folder.add(cfg,'noiseCapSizeX', 0, 10,0.001).name('Cap Size X');
-        ed.noiseCapSizeY       = folder.add(cfg,'noiseCapSizeY', 0, 10,0.001).name('Cap Size Y');
-        ed.noiseCapCenterX     = folder.add(cfg,'noiseCapCenterX', -1,1,0.001).name('Cap Center X');
-        ed.noiseCapCenterY     = folder.add(cfg,'noiseCapCenterY', -1,1,0.001).name('Cap Center Y');
-        ed.noiseCrownWordCount = folder.add(cfg,'noiseCrownWordCount', 0, 10, 1).name('Crown Word Count');
-        
-    }
-
-   function initSymmetryGUI(folder, key){
-       
-    let cfg = mConfig[key];
-    let ed = mEditors[key];
-    ed.symSim     = folder.add(cfg,'symSim').name('use symmetry');
-                    folder.add({ fun: applySymmetry},'fun').name('apply symmetry');
-    ed.symMix     = folder.add(cfg,'symMix', 0, 1., 0.001).name('symmetry mix').onChange(onSymmetryChanged);
-    ed.symIterations = folder.add(cfg,'symIterations', 0, 100, 1).name('symmetry iterations').onChange(onSymmetryChanged);
-    
-   }
-   
-*/
     
     function makeSymmetryParams(){
         
@@ -689,70 +526,82 @@ function GinzburgLandauSimulation(){
         if(false)console.log('onAlphaBetaChanged()');
     }
     
-    function getInternalBufferData(){
-        
-        let gl = glCtx.gl; 
-        let width = gSimBuffer.width;
-        let height = gSimBuffer.height;
-
+    function readSimBuffer() {
+        const gl     = glCtx.gl;
+        const width  = gSimBuffer.width;
+        const height = gSimBuffer.height;
+        const fa     = new Float32Array(2 * width * height);
         gl.bindFramebuffer(gl.FRAMEBUFFER, gSimBuffer.read.fbo);
-        
-        const data = new Float32Array(2*width*height);
-        //const format = gl.RGBA;
-        const format = gl.RG;
-        const type = gl.FLOAT;
-        gl.readPixels(0, 0, width, height, format, type, data);
-        return fa2str(data);
-        //return fa2stra(data);
+        gl.readPixels(0, 0, width, height, gl.RG, gl.FLOAT, fa);
+        return fa;
+    }
+
+    function getInternalBufferData(){
+        return fa2str(readSimBuffer());
+    }
+
+    function writeSimBuffer(fa, width, height) {
+        const gl = glCtx.gl;
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+        gSimBuffer.read.attach(0);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG32F, width, height, 0, gl.RG, gl.FLOAT, fa);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        scheduleRepaint();
     }
 
     function setInternalBufferData(data){
-        
         if(DEBUG)console.log('setInternalBufferData()');
-        
-        let gl = glCtx.gl; 
-        let fdata = str2fa(data.buffer);
+        const fdata = str2fa(data.buffer);
         if(DEBUG)console.log('fdata.length:  ', fdata.length);
         if(DEBUG)console.log('fdata: ', fdata[0], fdata[1], fdata[2], fdata[3], '...');
-        const level = 0;
-        const internalFormat = gl.RG32F; 
-        const width = data.width;
-        const height = data.height;
-        const border = 0;
-        const format = gl.RG; 
-        const type = gl.FLOAT;
-        
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false); 
-        gSimBuffer.read.attach(0); 
-        gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border,format, type, fdata);  
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); 
-        
-        //gSimBuffer.swap();
-        scheduleRepaint();
-                        
-        
+        writeSimBuffer(fdata, data.width, data.height);
     }
-    
-    
+
     function getBufferData(){
-        if(DEBUG)console.log('getBufferData:');
-        let data = {
-            width: gSimBuffer.width, 
-            height: gSimBuffer.height, 
-            buffer: getInternalBufferData()
-        };
-        //console.log('getBufferData() return: ', data);        
-        return data;
+        console.log('getBufferData:');
+        const store  = getCurrentDocument()?.getBinaryStore();
+        const width  = gSimBuffer.width;
+        const height = gSimBuffer.height;
+        if (useBinaryData && store) {
+            // ── Binary mode ───────────────────────────────────────────────
+            const fa        = readSimBuffer();
+            const chunkName = store.getChunkName(`${MYNAME}.simData`);
+            store.append({ name: chunkName, data: fa, dataInfo: { type: 'Float32', width, height, components: 2 } });
+            return { width, height, binaryData: chunkName };
+        } else {
+            // ── Legacy mode: base64 ─────────────────────────────────────────
+            return { width, height, buffer: getInternalBufferData() };
+        }
     }
 
     function setBufferData(data){
-        
-        if(DEBUG)console.log(`setBufferData: [${data.width} x ${data.height}] = ${data.width*data.height}`);
-        setInternalBufferData(data);
-        
+        const { width, height } = data;
+        if (data.binaryData) {
+            // ── Binary mode ───────────────────────────────────────────────
+            const loader = getCurrentDocument()?.getBinaryLoader();
+            if (!loader) {
+                console.error(`${MYNAME}: simulation buffer "${data.binaryData}" could not be loaded — binary sidecar (.bin) file is missing or was not provided. The simulation will start from its default initial state.`);
+                return;
+            }
+            const chunkRef = loader.getChunkRef(data.binaryData);
+            if (!chunkRef) {
+                console.error(`${MYNAME}: chunk "${data.binaryData}" not found in binary sidecar manifest.`);
+                return;
+            }
+            if (!chunkRef.isValid()) {
+                console.error(`${MYNAME}: binary sidecar is incomplete or corrupt — chunk "${data.binaryData}" declares ${chunkRef.byteLength} bytes but the .bin file only has ${chunkRef._buffer.byteLength} bytes. The simulation will start from its default initial state.`);
+                return;
+            }
+            console.log(`setBufferData (binary): [${width} x ${height}]`);
+            writeSimBuffer(chunkRef.asFloat32Array(), width, height);
+        } else {
+            // ── Legacy mode ───────────────────────────────────────────────
+            if(DEBUG)console.log(`setBufferData (legacy): [${width} x ${height}]`);
+            setInternalBufferData(data);
+        }
     }
     
-    
+
   function addEventListener(evtType, listener){
       
     if(DEBUG)console.log(`${MYNAME}.addEventListener(${evtType}, ${listener})`);            
@@ -785,12 +634,10 @@ function GinzburgLandauSimulation(){
     function applySymmetry(){
 
         if(false)console.log(`${MYNAME}.applySymmetry()`);
-        let symCfg = mConfig.symmetry;
-        let iteration = symCfg.symIterations;
-        let symMix = symCfg.symMix;
-        let program = progSymSampler.program;
-
         let gl = glCtx.gl;            
+        let symCfg = mConfig.symmetry;
+        let program = GL_programs.getProgram(gl, 'symSampler');
+
         gl.disable(gl.BLEND);  
 
 
@@ -830,7 +677,7 @@ function GinzburgLandauSimulation(){
         let gl = glCtx.gl;      
         
         gl.disable(gl.BLEND);        
-        let program = progGL_step.program;
+        let program = GL_programs.getProgram(gl, 'glStep');
         let buffer = gSimBuffer;
         gl.viewport(0, 0, buffer.width, buffer.height);      
         

@@ -2,7 +2,6 @@ import {
   isDefined, 
   gs_uniformUV,
   initFragments, 
-  programBuilder,
 
   GroupUtils,
   getTime, 
@@ -15,8 +14,6 @@ import {
   createDataPlot, 
   Colormaps,
   GrayScottPresets,
-  GrayScottFragments as GS, 
-  ShaderFragments as SF,
   
   ParamBool, 
   ParamFloat, 
@@ -35,6 +32,7 @@ import {
   
 } from './modules.js';
 
+import { GS_programs, gsFragments } from './gray_scott_programs.js';
 
 
 const DEBUG = false;
@@ -45,63 +43,6 @@ const useBinaryData = true;
 
 const MYNAME = 'Gray-Scott';
 //const GrayScottPresets = GsPresets;
-
-const fragGsSimulation     = {obj:GS,id:'grayScottShader'};
-const fragGsNoise1         = {obj:GS,id:'gsNoise1Shader'};
-
-const fragSdf2d            = {obj:SF,id:'sdf2d'};
-const fragUtils            = {obj:SF,id:'utils'};
-const fragBaseVertex       = {obj:SF,id:'canvasVertexShader'};
-const fragSimplexNoise     = {obj:SF,id:'simplexNoise'};
-const fragIsplane          = {obj:SF,id:'isplane'};
-const fragInversiveSampler = {obj:SF,id:'inversiveSampler'};
-const fragDrawFdSampler    = {obj:SF,id:'fundDomainSamplerShader'};
-const fragAddNoise         = {obj:SF,id:'addNoiseShader'};
-const fragSymSampler       = {obj:SF,id:'symSamplerShader'};
-
-
-const gsFragments = [
-    fragGsSimulation,
-    fragGsNoise1,
-    fragBaseVertex,
-    fragSimplexNoise,
-    fragSdf2d,
-    fragUtils,
-    fragIsplane,
-    fragInversiveSampler,
-    fragSymSampler,
-    fragAddNoise,
-];
-
-const baseVertexShader = {
-    frags: [fragBaseVertex],
-};
-
-const progGsSimulation =  {name: 'GsSimulation', vs:baseVertexShader, 
-    fs: {frags:[fragSdf2d, fragGsSimulation]}
-}; 
-
-const progGsNoise1 =  {name: 'GsNoise1', vs:baseVertexShader, 
-    fs: {frags:[fragSimplexNoise,fragGsNoise1]}
-};
-
-const progSymSampler = { name: 'SymSampler', vs:baseVertexShader, 
-    fs: {frags: [fragIsplane, fragInversiveSampler, fragSymSampler]},
- };
-
-const progSymNoise =  { name: 'SymNoise', vs: baseVertexShader,
-        fs: { frags: [ fragUtils, fragIsplane, fragInversiveSampler,fragSimplexNoise,fragAddNoise]},
-      };
-
-//
-const gsPrograms = {
-  gsSimulation: progGsSimulation,
-  gsNoise1:     progGsNoise1,  
-  symSampler:   progSymSampler,
-  symNoise:     progSymNoise,
-};
-
-const gsProgs = programBuilder(gsPrograms, true);
 
 
 
@@ -201,7 +142,7 @@ function GrayScottSimulation(){
         }
 
         let t0 = getTime();
-        gsProgs.getProgram(glCtx.gl, 'gsSimulation'); // triggers compileAll
+        GS_programs.getProgram(glCtx.gl, 'gsSimulation'); // triggers compileAll
         if (DEBUG)
             console.log(`programBuilder() ready: ${getTime()-t0} ms`);
 
@@ -612,12 +553,6 @@ function GrayScottSimulation(){
                 }
         });
         
-    //initFolder.add(config, 'initType', initTypeNames).name('init type');
-    //initFolder.add({ fun: initSimulation}, 'fun').name('Initialize');    
-    //initFolder.add({ fun: onDoStep},'fun').name('one step');
-
-    //let snFolder = initFolder.addFolder('params');
-    
         
     } // makeInitParams()
     
@@ -696,7 +631,7 @@ function GrayScottSimulation(){
     if(DEBUG)console.log(`${MYNAME}.applyNoise()`);
     
     let gl = glCtx.gl;
-    let program = progGsNoise1.program;
+    let program = GS_programs.getProgram(gl, 'gsNoise1');
     let buffer = gSimBuffer;
     gl.viewport(0, 0, buffer.width, buffer.height);      
     program.bind();
@@ -741,7 +676,7 @@ function GrayScottSimulation(){
 
     
     let gl = glCtx.gl;
-    let program = progSymNoise.program;
+    let program = GS_programs.getProgram(gl, 'symNoise');
     
     let buffer = gSimBuffer;
     gl.viewport(0, 0, buffer.width, buffer.height);      
@@ -792,10 +727,10 @@ function GrayScottSimulation(){
     function applySymmetry(){
 
         if(false)console.log(`${MYNAME}.applySymmetry()`);
+        let gl = glCtx.gl;
         let symCfg    = config.symmetry;
-        let program   = progSymSampler.program;
+        let program   = GS_programs.getProgram(gl, 'symSampler');
 
-        let gl = glCtx.gl;            
         gl.disable(gl.BLEND);  
 
 
@@ -832,7 +767,7 @@ function GrayScottSimulation(){
         let gl = glCtx.gl;      
         
         gl.disable(gl.BLEND);        
-        let program = progGsSimulation.program;
+        let program = GS_programs.getProgram(gl, 'gsSimulation');
         let buffer = gSimBuffer;
         gl.viewport(0, 0, buffer.width, buffer.height);      
         
@@ -889,8 +824,8 @@ function GrayScottSimulation(){
             if(--sInterval <= 0){
                   if(false)console.log(`symmetrization`);
                   applySymmetry(); 
-                  // restore the simulation program whoich was reset in applySymmetry()
-                  program = progGsSimulation.program;
+                  // restore the simulation program which was reset in applySymmetry()
+                  program = GS_programs.getProgram(gl, 'gsSimulation');
                   program.bind();
                   program.setUniforms(ctUni);
                   program.setUniforms(simUni);
@@ -1018,19 +953,7 @@ function GrayScottSimulation(){
     
     }
 
-    //function repaint(){
-      
-    //    if(DEBUG)console.log(`${MYNAME}.repaint()`);                  
-    
-    //}
-  
-    function getPlotData(){
-      
-        if(DEBUG)console.log(`${MYNAME}.getPlotData()`);                  
-      
-    } 
-  
-  
+
     function getGroup(){
         return gGroup;
     }
@@ -1048,17 +971,12 @@ function GrayScottSimulation(){
         getGroupData: getGroupData,
         addEventListener: addEventListener,
         
-        //initGUI: initGUI,
-        //createUI: initGUI,
         getParams: getParams,
         handleEvent: handleEvent,
-        //getColormapName: getColormapName,
         getImage: getImage,
         getSimBuffer: getSimBuffer,
         getPatternData: getPatternData,
         doStep: doStep,
-        //repaint: repaint,
-        getPlotData: getPlotData,
         getGroup:  getGroup,
         applySymmetry: applySymmetry,
         initSimulation:  initSimulation,
