@@ -84,7 +84,8 @@ export {
     BinaryLoader,
     ChunkRef,
     getCurrentDocument,
-
+    saveBufferData,
+    loadBufferData,
 }
 from '../../../../lib/uilib/modules.js';
 

@@ -27,9 +27,9 @@ import {
   fa2stra,
   str2fa,
 
-  BinaryLoader,
-  getCurrentDocument,
-  
+  saveBufferData,
+  loadBufferData,
+
 } from './modules.js';
 
 import { GS_programs, gsFragments } from './gray_scott_programs.js';
@@ -878,46 +878,23 @@ function GrayScottSimulation(){
 
     function getBufferData(){
         console.log('getBufferData:');
-        const store  = getCurrentDocument()?.getBinaryStore();
-        const width  = gSimBuffer.width;
-        const height = gSimBuffer.height;
-        if (useBinaryData && store) {
-            // ── Binary mode ───────────────────────────────────────────────
-            const fa        = readSimBuffer();
-            const chunkName = store.getChunkName(`${MYNAME}.simData`);
-            store.append({ name: chunkName, data: fa, dataInfo: { type: 'Float32', width, height, components: 2,  } });
-            return { width, height, binaryData: chunkName };
-        } else {
-            // ── Legacy mode: base64 ─────────────────────────────────────────
-            return { width, height, buffer: getInternalBufferData() };
-        }
+        return saveBufferData({
+            name:          `${MYNAME}.simData`,
+            width:         gSimBuffer.width,
+            height:        gSimBuffer.height,
+            components:    2,
+            useBinary:     useBinaryData,
+            readData:      readSimBuffer,
+            getLegacyData: getInternalBufferData,
+        });
     }
 
     function setBufferData(data){
-        const { width, height } = data;
-        if (data.binaryData) {
-            // ── Binary mode ───────────────────────────────────────────────
-            const loader = getCurrentDocument()?.getBinaryLoader();
-            if (!loader) {
-                console.error(`${MYNAME}: simulation buffer "${data.binaryData}" could not be loaded — binary sidecar (.bin) file is missing or was not provided. The simulation will start from its default initial state.`);
-                return;
-            }
-            const chunkRef = loader.getChunkRef(data.binaryData);
-            if (!chunkRef) {
-                console.error(`${MYNAME}: chunk "${data.binaryData}" not found in binary sidecar manifest.`);
-                return;
-            }
-            if (!chunkRef.isValid()) {
-                console.error(`${MYNAME}: binary sidecar is incomplete or corrupt — chunk "${data.binaryData}" declares ${chunkRef.byteLength} bytes but the .bin file only has ${chunkRef._buffer.byteLength} bytes. The simulation will start from its default initial state.`);
-                return;
-            }
-            console.log(`setBufferData (binary): [${width} x ${height}]`);
-            writeSimBuffer(chunkRef.asFloat32Array(), width, height);
-        } else {
-            // ── Legacy mode ───────────────────────────────────────────────
-            if(DEBUG)console.log(`setBufferData (legacy): [${width} x ${height}]`);
-            setInternalBufferData(data);
-        }
+        loadBufferData(data, {
+            name:        MYNAME,
+            writeData:   writeSimBuffer,
+            writeLegacy: setInternalBufferData,
+        });
     }
 
     // ----------------------
