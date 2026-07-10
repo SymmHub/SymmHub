@@ -7,6 +7,7 @@ comma-5.svg
 comma.svg
 gr_epsilon.svg
 hand.png
+par-25-09-07-15-48-31-943.png
 ring-1.svg
 scissors_blue.png
 scissors_orange.png

@@ -1,4 +1,6 @@
 export const resources=`
+arrow_2.svg
+arrow_3.svg
 arrow_aqua.png
 arrow_black.png
 arrow_blue.png

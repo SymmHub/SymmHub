@@ -19,6 +19,22 @@ import {
 
 import { scripts } from './scripts.js';
 
+/**
+ * Convert the template-string scripts index (one filename per line)
+ * into the [{name, url}] array expected by SymRenderer's scriptUrls option.
+ * @param {string} str  — exported template string from scripts.js
+ * @param {string} baseUrl — URL prefix for each script file
+ */
+function makeScriptsArray(str, baseUrl = './scripts/') {
+    return str.split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .map(filename => ({
+            name: filename.replace(/\.m?js$/i, ''),
+            url:  baseUrl + filename,
+        }));
+}
+
 // ── Custom layer factory for sympix_color ─────────────────────────────────────
 // Signature: (getGLCtx, getOnChange, getChildren) => ObjectFactory
 function SympixLayerFactory(getGLCtx, getOnChange, getChildren) {
@@ -71,7 +87,7 @@ const app = SymRenderer({
     navigator:        new InversiveNavigator(),
     samples:          makeSamplesArray(presets, 'presets/color/'),
     // List of available animation scripts for the 'scripting' UI folder:
-    scriptUrls:       scripts,
+    scriptUrls:       makeScriptsArray(scripts),
 });
 
 app.run();
