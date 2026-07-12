@@ -181,7 +181,7 @@ function GinzburgLandauSimulation(){
                           backgroundImagePath: 'images/gl_map_2048_trans.png',  
                           plotName: 'Ginzburg-Landau parameters',
                           floating: true,  
-                          storageId:  'presetParamsPlot',
+                          storageId:  `${MYNAME}.paramsPlot`,
                           });
         return plot;
     }
@@ -189,7 +189,7 @@ function GinzburgLandauSimulation(){
     function makePresetsHandler() {
         let mouseDown = false;
 
-        function handleEvent(evt) {
+        function handlePresetsEvent(evt) {
 
             switch (evt.type) {
             case 'mouseup':
@@ -210,7 +210,7 @@ function GinzburgLandauSimulation(){
 
         }
         return {
-            handleEvent: handleEvent
+            handleEvent: handlePresetsEvent
         };
     }
 
@@ -495,11 +495,11 @@ function GinzburgLandauSimulation(){
                 useSym:     ParamBool({
                                 obj: cfg, 
                                 key: 'symSim',
-                                name: 'use symmetry',
+                                name: 'useSymm',
                                 }),
                 applySymmetry:    ParamFunc({
-                                    func: applySymmetry, 
-                                    name: 'Apply Symmetry',
+                                    func: onApplySymmetry, 
+                                    name: 'ApplySymm',
                                 }),
                 symIterations:
                             ParamInt({
@@ -514,7 +514,7 @@ function GinzburgLandauSimulation(){
                 symMix:    ParamFloat({
                                     obj: cfg, 
                                     key: 'symMix', 
-                                    name: 'symmetry mix',
+                                    name: 'symMix',
                                     onChange: onSymmetryChanged,
                                 }),
             }
@@ -591,12 +591,7 @@ function GinzburgLandauSimulation(){
       
   }
     
-  function getSimBuffer(){
-    
-    if(false)console.log(`${MYNAME}.getSimBuffer()`);            
-    return gSimBuffer;
-    
-  }
+
 
   function getPatternData(){
     
@@ -605,6 +600,11 @@ function GinzburgLandauSimulation(){
     
   }
     
+    function onApplySymmetry(){
+        applySymmetry();        
+        scheduleRepaint();
+    }
+
     //
     //
     //
@@ -752,12 +752,9 @@ function GinzburgLandauSimulation(){
         init:               init,
         setGroup:           setGroup,
         addEventListener:   addEventListener,
-        //initGUI: initGUI,
         handleEvent:        handleEvent,
-        getSimBuffer:       getSimBuffer,
         getPatternData:     getPatternData,
         doStep:             doStep,
-        //repaint: repaint,
         getGroup:           getGroup,
         applySymmetry:      applySymmetry,
         initSimulation:     initSimulation,
