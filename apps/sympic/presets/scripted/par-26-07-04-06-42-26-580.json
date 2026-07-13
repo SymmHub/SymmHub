@@ -1,0 +1,473 @@
+{
+    "name": "par-26-07-04-06-42-26-580",
+    "appInfo": {
+        "appName": "SymRenderer.Group_WP.PatternImageArray.InversiveNavigator_v1",
+        "fileFormatRelease": 1
+    },
+    "params": {
+        "files": {},
+        "display": {
+            "backgroundColor": "#FFFFFF00"
+        },
+        "recording": {
+            "animTime": 53.92000000000076,
+            "animSpeed": 1,
+            "startFrame": 0,
+            "endFrame": 100,
+            "currentFrame": 0
+        },
+        "pattern": {
+            "patternParams": {
+                "className": "PatternImageArray",
+                "params": {
+                    "id": "imgarray",
+                    "active": true,
+                    "transparency": 0,
+                    "images": {
+                        "className": "ObjArray",
+                        "params": {
+                            "id": "",
+                            "children": [
+                                {
+                                    "className": "PatternImage",
+                                    "params": {
+                                        "id": "im1",
+                                        "transparency": 0,
+                                        "useCrown": false,
+                                        "transform": {
+                                            "centerX": 0,
+                                            "centerY": 0,
+                                            "scale": 1,
+                                            "angle": 0,
+                                            "flipX": false,
+                                            "flipY": false
+                                        },
+                                        "texture": {
+                                            "className": "TextureFile",
+                                            "params": {
+                                                "texName": "arrow_white",
+                                                "image": null,
+                                                "showFrame": false,
+                                                "interpolation": "linear",
+                                                "texSize": 512
+                                            }
+                                        },
+                                        "adjust": {
+                                            "negative": false,
+                                            "useOKLCH": false,
+                                            "hueShift": 0,
+                                            "satMult": 1,
+                                            "lightOffset": 0,
+                                            "contrastMult": 1
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "patternTransform": {
+                "centerX": 0.6960000000000379,
+                "centerY": 0.7960000000000379,
+                "scale": 0.1540504978994271,
+                "angle": 46.30741053588311,
+                "pivotX": 0.012554622330145107,
+                "pivotY": 0.20644623097155018
+            }
+        },
+        "visualization": {
+            "className": "VisualizationManager",
+            "params": {
+                "layers": {
+                    "className": "ObjArray",
+                    "params": {
+                        "id": "layers",
+                        "children": [
+                            {
+                                "className": "VisualizationColorTiles",
+                                "params": {
+                                    "id": "colorTiles",
+                                    "enabled": false,
+                                    "opacity": 0.5,
+                                    "permutations": "acbd badc bdac cadb",
+                                    "leftCoset": true,
+                                    "permIndex": 0,
+                                    "mask": "",
+                                    "subgroups": {
+                                        "className": "Subgroups",
+                                        "params": {
+                                            "groupType": "wallpaper",
+                                            "groupName": "2222",
+                                            "fileName": "wallpaper/sub_2222.json",
+                                            "index": "4(19)",
+                                            "subgroup": "2222.4.2"
+                                        }
+                                    },
+                                    "colorTiles": {
+                                        "className": "ColorTiles",
+                                        "params": {
+                                            "count": 4,
+                                            "palette": "highContrast",
+                                            "a": {
+                                                "R": 0.5,
+                                                "G": 0.5,
+                                                "B": 0.5
+                                            },
+                                            "b": {
+                                                "R": 0.5,
+                                                "G": 0.5,
+                                                "B": 0.5
+                                            },
+                                            "c": {
+                                                "R": 1,
+                                                "G": 1,
+                                                "B": 1
+                                            },
+                                            "d": {
+                                                "R": 0,
+                                                "G": 0.1,
+                                                "B": 0.2
+                                            },
+                                            "adjust": {
+                                                "hueShift": 0,
+                                                "satMult": 1,
+                                                "lightOffset": 0,
+                                                "contrastMult": 1
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "className": "VisualizationColorSym",
+                                "params": {
+                                    "id": "arrows",
+                                    "enabled": true,
+                                    "opacity": 1,
+                                    "imageId": "im1",
+                                    "permutations": "badc acbd acbd",
+                                    "permIndex": 0,
+                                    "leftCoset": false,
+                                    "mask": "",
+                                    "subgroups": {
+                                        "className": "Subgroups",
+                                        "params": {
+                                            "groupType": "wallpaper",
+                                            "groupName": "442",
+                                            "fileName": "wallpaper/sub_442.json",
+                                            "index": "4(7)",
+                                            "subgroup": "442.4.7"
+                                        }
+                                    },
+                                    "coloringType": "mult",
+                                    "colorTiles": {
+                                        "className": "ColorTiles",
+                                        "params": {
+                                            "count": 4,
+                                            "palette": "pastel",
+                                            "a": {
+                                                "R": 0.5,
+                                                "G": 0.5,
+                                                "B": 0.5
+                                            },
+                                            "b": {
+                                                "R": 0.5,
+                                                "G": 0.5,
+                                                "B": 0.5
+                                            },
+                                            "c": {
+                                                "R": 1,
+                                                "G": 1,
+                                                "B": 1
+                                            },
+                                            "d": {
+                                                "R": 0,
+                                                "G": 0.33,
+                                                "B": 0.67
+                                            },
+                                            "adjust": {
+                                                "hueShift": 0,
+                                                "satMult": 1,
+                                                "lightOffset": 0,
+                                                "contrastMult": 1
+                                            }
+                                        }
+                                    },
+                                    "useCrown": true,
+                                    "useTilt": true,
+                                    "patternTiltDirection": 0,
+                                    "useMipmap": false,
+                                    "interpolation": "linear"
+                                }
+                            },
+                            {
+                                "className": "VisualizationOverlay",
+                                "params": {
+                                    "id": "overlay",
+                                    "enabled": true,
+                                    "opacity": 1,
+                                    "fundDomain": {
+                                        "fill": {
+                                            "enabled": false,
+                                            "color": "#ff000014"
+                                        },
+                                        "outline": {
+                                            "enabled": true,
+                                            "width": 1,
+                                            "color": "#000000AA",
+                                            "shadowsWidth": 10,
+                                            "shadowsColor": "#0000FFAA"
+                                        }
+                                    },
+                                    "buffer": {
+                                        "fill": {
+                                            "enabled": false,
+                                            "color": "#00FF0022"
+                                        },
+                                        "outline": {
+                                            "enabled": true,
+                                            "width": 1,
+                                            "color": "#00AA00AA"
+                                        }
+                                    },
+                                    "isolines": {
+                                        "enabled": false,
+                                        "type": "u",
+                                        "step": 0.1,
+                                        "offset": 0,
+                                        "width": 1,
+                                        "levels": 1,
+                                        "color": "#000000ff"
+                                    },
+                                    "tiling": {
+                                        "fill": {
+                                            "enabled": false,
+                                            "color": "#FFFF0055"
+                                        },
+                                        "outline": {
+                                            "enabled": true,
+                                            "width": 1,
+                                            "color": "#000000FF"
+                                        }
+                                    },
+                                    "limitset": {
+                                        "enabled": false,
+                                        "color": "#000000ff",
+                                        "width": 1
+                                    },
+                                    "generators": {
+                                        "enabled": false,
+                                        "width": 2,
+                                        "color": "#0000AAAA",
+                                        "shadow": {
+                                            "enabled": true,
+                                            "color": "#0000AA55",
+                                            "width": 10
+                                        }
+                                    },
+                                    "worldGrid": {
+                                        "enabled": false,
+                                        "type": "cartesian",
+                                        "stepx": 0.1,
+                                        "stepy": 0.1,
+                                        "offsetx": 0,
+                                        "offsety": 0,
+                                        "levels": 1,
+                                        "color": "#000000ff",
+                                        "width": 1
+                                    },
+                                    "screenGrid": {
+                                        "enabled": false,
+                                        "step": 0.02,
+                                        "stepAuto": true,
+                                        "color": "#000000ff",
+                                        "width": 1
+                                    },
+                                    "ruler": {
+                                        "enabled": false,
+                                        "color": "#000000ff",
+                                        "background": "#AAAAAAAA",
+                                        "width": 20
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "misc": {
+            "dataPlot": {
+                "className": "DataPlot",
+                "params": {
+                    "potType": 0,
+                    "viewport": {
+                        "xmin": -1.3,
+                        "xmax": 1.3,
+                        "ymin": -0.2,
+                        "ymax": 1.1
+                    },
+                    "viewbox": {
+                        "width": 65,
+                        "height": 20,
+                        "left": 17.5,
+                        "bottom": 0,
+                        "centerX": 0,
+                        "centerY": 0,
+                        "zoom": 1
+                    }
+                }
+            }
+        },
+        "symmetry": {
+            "groupType": "Wallpaper",
+            "group": {
+                "className": "Group_WP",
+                "params": {
+                    "type": "442",
+                    "a": 0.5,
+                    "b": 0.5,
+                    "c": 0.038,
+                    "angle_a": 0,
+                    "angle_b": 90
+                }
+            },
+            "transform": {
+                "translationX": 0,
+                "translationY": 0,
+                "rotation": 0,
+                "scale": 1
+            },
+            "options": {
+                "useSymm": true,
+                "iterations": 90
+            }
+        },
+        "tools": {
+            "transform": {
+                "className": "InversiveNavigator_v1",
+                "params": {
+                    "projection": {
+                        "className": "ProjectionTransform",
+                        "params": {
+                            "enabled": false,
+                            "fpdMap": {
+                                "className": "FixedPointTransform",
+                                "params": {
+                                    "enabled": true,
+                                    "showUI": false,
+                                    "animate": false,
+                                    "word": "abac",
+                                    "orientation": "1,-1",
+                                    "fp0x": 0.9889755198145506,
+                                    "fp0y": 0.14807910456083556,
+                                    "fp1x": -0.14807910456083595,
+                                    "fp1y": -0.988975519814551,
+                                    "basex": 0,
+                                    "basey": 0,
+                                    "translation": 1.265948638401895,
+                                    "rotation": 0,
+                                    "fraction": 0,
+                                    "loopTime": 5
+                                }
+                            },
+                            "bandMap": {
+                                "enabled": true,
+                                "fraction": 1
+                            },
+                            "logMap": {
+                                "enabled": false
+                            },
+                            "periodicMap": {
+                                "enabled": false,
+                                "a1x": 1,
+                                "a1y": 0,
+                                "a2x": 0,
+                                "a2y": 1,
+                                "cx": 0,
+                                "cy": 0
+                            },
+                            "scaleMap": {
+                                "enabled": false,
+                                "a1x": 1,
+                                "a1y": 0,
+                                "a2x": 0,
+                                "a2y": 1,
+                                "n1": 10,
+                                "n2": 0,
+                                "shift1": 0,
+                                "shift2": 0
+                            },
+                            "expMap": {
+                                "enabled": false
+                            },
+                            "loxMap": {
+                                "enabled": false
+                            },
+                            "uhpMap": {
+                                "enabled": false
+                            },
+                            "rationalMap": {
+                                "enabled": false,
+                                "x1": 1,
+                                "y1": 0,
+                                "n1": 1,
+                                "x2": 0,
+                                "y2": 1,
+                                "n2": -1,
+                                "x3": -1,
+                                "y3": 0,
+                                "n3": 1,
+                                "x4": 0,
+                                "y4": -1,
+                                "n4": -1
+                            }
+                        }
+                    },
+                    "inversive": {
+                        "enabled": true,
+                        "itrans": []
+                    },
+                    "spherical": {
+                        "enabled": false
+                    },
+                    "euclidean": {
+                        "centerX": 0.021332442264326384,
+                        "centerY": 0.45707490355214697,
+                        "zoom": [
+                            0.7709278909420212
+                        ]
+                    },
+                    "options": {
+                        "animation": true
+                    }
+                }
+            },
+            "drawing": {
+                "className": "DrawingToolRenderer",
+                "params": {
+                    "symmetry": false,
+                    "brushR": 1,
+                    "brushG": 0,
+                    "brushB": 0,
+                    "brushA": 1,
+                    "brushRadius": 0.01,
+                    "brushBlur": 0.5,
+                    "brushX": 0,
+                    "brushY": 0
+                }
+            }
+        },
+        "scripting": {
+            "script": "linear_motion",
+            "scriptParams": {
+                "originX": 0,
+                "originY": 0.1,
+                "speedX": 0.05,
+                "speedY": 0.05,
+                "period": 20
+            }
+        }
+    }
+}

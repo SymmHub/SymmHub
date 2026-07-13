@@ -22,6 +22,20 @@ export {
 }
 from './ginzburg_landau_simulation.js';
 
+export {
+    GinzburgLandauWorker,
+} from './GinzburgLandauWorker.js';
+
+export {
+    GinzburgLandauInitializer,
+} from './GinzburgLandauInitializer.js';
+
+export {
+    PipelineManager,
+    makePipelineManagerCreator,
+    SymmetrizationWorker,
+} from '../../../../lib/symhublib/modules.js';
+
 
 
 export {
@@ -87,6 +101,8 @@ export {
     BinaryLoader,
     ChunkRef,
     getCurrentDocument,
+
+    ObjectFactory,
 
     saveBufferData,
     loadBufferData,

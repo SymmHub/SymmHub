@@ -15,7 +15,7 @@ import {
 
 import {
     presets
-} from './presets_color.js';
+} from './presets_scripted.js';
 
 import { scripts } from './scripts.js';
 
@@ -85,7 +85,7 @@ const app = SymRenderer({
     visualization:    visManager, 
     groupMakerFactory: GroupMakerFactory({defaultName:'Wallpaper'}),
     navigator:        new InversiveNavigator(),
-    samples:          makeSamplesArray(presets, 'presets/color/'),
+    samples:          makeSamplesArray(presets, 'presets/scripted/'),
     // List of available animation scripts for the 'scripting' UI folder:
     scriptUrls:       makeScriptsArray(scripts),
 });
