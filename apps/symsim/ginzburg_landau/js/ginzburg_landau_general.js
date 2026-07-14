@@ -26,6 +26,7 @@ import { GinzburgLandauWorker }      from './GinzburgLandauWorker.js';
 import { GinzburgLandauInitializer } from './GinzburgLandauInitializer.js';
 
 import { presets } from './presets_klm.js';
+import { GinzburgLandauUpgradeData } from './GinzburgLandauUpgradeData.js';
 
 // ── Worker factory ────────────────────────────────────────────────────────────
 //
@@ -81,6 +82,7 @@ try {
         samples:          makeSamplesArray(presets, 'presets/klm/'),
         groupMakerFactory: GroupMakerFactory({ defaultName: 'KLM' }),
         navigator:        new InversiveNavigator(),
+        dataUpgrader:     GinzburgLandauUpgradeData,
     });
 
     ss.run();

@@ -18,12 +18,16 @@ import {
     ParamBool,
     ParamFloat,
     ParamInt,
+    ParamObj,
+    GinzburgLandauPresets,
+    createDataPlot,
 } from './modules.js';
 
 import { GL_programs } from './ginzburg_landau_programs.js';
 
-const MYNAME = 'GinzburgLandauWorker';
-const DEBUG  = false;
+const MYNAME  = 'GinzburgLandauWorker';
+const DEBUG   = false;
+const Presets = GinzburgLandauPresets;
 
 // ── Worker ───────────────────────────────────────────────────────────────────
 
@@ -47,6 +51,54 @@ function GinzburgLandauWorker(options = {}) {
         },
     };
 
+    // ── presets plot (created at construction; not serialised) ─────────────────
+
+    const mPresetsPlot = makePresetsPlot();
+
+    function makePresetsPlot() {
+        return createDataPlot({
+            left:                '2%',
+            top:                 '2px',
+            width:               '40%',
+            height:              '40%',
+            bounds:              Presets.getBounds(),
+            plotType:            1,
+            eventHandler:        makePresetsHandler(),
+            backgroundImagePath: 'images/gl_map_2048_trans.png',
+            plotName:            'Ginzburg-Landau parameters',
+            floating:            true,
+            storageId:           `${MYNAME}.paramsPlot`,
+        });
+    }
+
+    function makePresetsHandler() {
+        let mouseDown = false;
+
+        function handlePresetsEvent(evt) {
+            switch (evt.type) {
+            case 'mouseup':
+                mouseDown = false;
+                break;
+            case 'mousedown':
+                mouseDown = true;
+                if (evt.ctrlKey) setParamsFromPlot(evt.wpnt);
+                break;
+            case 'mousemove':
+                if (mouseDown && evt.ctrlKey) setParamsFromPlot(evt.wpnt);
+                break;
+            }
+        }
+        return { handleEvent: handlePresetsEvent };
+    }
+
+    /** Set alpha/beta from a 2-element [alpha, beta] point on the plot. */
+    function setParamsFromPlot(p) {
+        const params = getParams();
+        params.alpha.setValue(p[0]);
+        params.beta.setValue(p[1]);
+        mPresetsPlot.setPlotData(p, 1);
+    }
+
     // ── lifecycle ─────────────────────────────────────────────────────────────
 
     function init(glCtx) {
@@ -55,6 +107,9 @@ function GinzburgLandauWorker(options = {}) {
 
         // Trigger compilation of all GL programs
         GL_programs.getProgram(glCtx.gl, 'glStep');
+
+        // Populate preset dots on the 2D parameter plot
+        mPresetsPlot.setPlotData(Presets.getPlotData(), 0);
     }
 
     // ── processing ────────────────────────────────────────────────────────────
@@ -111,6 +166,10 @@ function GinzburgLandauWorker(options = {}) {
     function makeParams() {
         const cfg = mConfig.simParams;
         return {
+            // ── 2D parameter plot (UI only — not serialised to JSON) ──────────
+            presetsPlot: ParamObj({ name: 'presets', obj: mPresetsPlot }),
+
+            // ── simulation parameters ─────────────────────────────────────────
             alpha:         ParamFloat({ obj: cfg, key: 'alpha',         min: -0.1, max: 1.0, step: 0.0000001 }),
             beta:          ParamFloat({ obj: cfg, key: 'beta',          min: -0.1, max: 1.0, step: 0.0000001 }),
             alphaGradient: ParamFloat({ obj: cfg, key: 'alphaGradient', step: 0.0000001, name: 'a-grad' }),
