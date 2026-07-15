@@ -167,7 +167,7 @@ function GinzburgLandauWorker(options = {}) {
         const cfg = mConfig.simParams;
         return {
             // ── 2D parameter plot (UI only — not serialised to JSON) ──────────
-            presetsPlot: ParamObj({ name: 'presets', obj: mPresetsPlot }),
+            presetsPlot: ParamObj({ name: 'presets', obj: mPresetsPlot, serializable: false }),
 
             // ── simulation parameters ─────────────────────────────────────────
             alpha:         ParamFloat({ obj: cfg, key: 'alpha',         min: -0.1, max: 1.0, step: 0.0000001 }),
