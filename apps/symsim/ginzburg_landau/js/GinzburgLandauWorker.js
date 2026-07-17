@@ -19,9 +19,11 @@ import {
     ParamFloat,
     ParamInt,
     ParamObj,
-    GinzburgLandauPresets,
     createDataPlot,
 } from './modules.js';
+
+import { GinzburgLandauPresets } from './ginzburg_landau_presets.js';
+
 
 import { GL_programs } from './ginzburg_landau_programs.js';
 

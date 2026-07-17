@@ -17,6 +17,20 @@ export {
 }
 from './gray_scott_simulation.js';
 
+export {
+    GrayScottWorker,
+} from './GrayScottWorker.js';
+
+export {
+    GrayScottInitializer,
+} from './GrayScottInitializer.js';
+
+export {
+    PipelineManager,
+    makePipelineManagerCreator,
+    SymmetrizationWorker,
+} from '../../../../lib/symhublib/modules.js';
+
 
 export {
     Colormaps,
@@ -69,6 +83,7 @@ export {
     ParamCustom,
     createParamUI,
     getParamValues,
+    ObjectFactory,
     setParamValues,
     updateParamDisplay,
     createInternalWindow,
