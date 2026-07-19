@@ -1,25 +1,4 @@
-import {
-    SymRenderer,
-    GinzburgLandauSimulationCreator,
-    makeSamplesArray,    
-    InversiveNavigator,
-    GroupMakerFactory,
-}
-from './modules.js';
+import { runGinzburgLandau } from './ginzburg_landau_app.js';
+import { presets }           from './presets_klm.js';
 
-import {
-    presets
-}
-from './presets_klm.js';
-
-try {
-    let ss = SymRenderer({
-        patternCreator: GinzburgLandauSimulationCreator,
-        samples: makeSamplesArray(presets, 'presets/klm/'),
-        groupMakerFactory: GroupMakerFactory({defaultName: 'KLM'}),         
-        navigator: new InversiveNavigator(),
-    });
-    ss.run();
-} catch (err) {
-    console.error('error: ', err);
-}
+runGinzburgLandau({ presets, presetsPath: 'presets/klm/', groupName: 'KLM' });

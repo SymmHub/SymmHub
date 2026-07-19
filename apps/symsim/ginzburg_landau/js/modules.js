@@ -16,11 +16,7 @@ export {
 //from '../../../../lib/shaders/modules.js';
 from '../../../../lib/shaders/modules.js';
 
-export {
-    GinzburgLandauSimulation,
-    GinzburgLandauSimulationCreator,
-}
-from './ginzburg_landau_simulation.js';
+
 
 export {
     GinzburgLandauWorker,

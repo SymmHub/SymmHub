@@ -1,27 +1,4 @@
-import {
-    SymRenderer,
-    GrayScottSimulationCreator,
-    Group_WP,
-    PlaneNavigator, 
-    makeSamplesArray,
-    InversiveNavigator,
-    GroupMakerFactory, 
-}
-from './modules.js';
+import { runGrayScott } from './gray_scott_app.js';
+import { presets }      from './presets_wp.js';
 
-import {
-    presets as presets_wp
-} from './presets_wp.js';
-
-//try {
-    let ss = SymRenderer({
-        patternCreator: GrayScottSimulationCreator,
-        samples: makeSamplesArray(presets_wp, 'presets/wp/'),
-        groupMakerFactory: GroupMakerFactory({defaultName: 'Wallpaper'}), 
-        navigator:   new InversiveNavigator(),
-    });
-    ss.run();
-
-//} catch (err) {
-//    console.error('error: ', err);
-//}
+runGrayScott({ presets, presetsPath: 'presets/wp/', groupName: 'Wallpaper' });

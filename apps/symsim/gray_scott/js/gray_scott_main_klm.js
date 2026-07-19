@@ -1,29 +1,4 @@
-import {
-    SymRenderer,
-    GrayScottSimulationCreator,
-    Group_KLM,
-    makeSamplesArray,
-    InversiveNavigator,
-    GroupMakerFactory,
-}
-from './modules.js';
+import { runGrayScott } from './gray_scott_app.js';
+import { presets }      from './presets_klm.js';
 
-import {
-    presets 
-} from './presets_klm.js';
-
-
-
-try {
-
-    let ss = SymRenderer({
-        patternCreator: GrayScottSimulationCreator,
-        samples: makeSamplesArray(presets, 'presets/klm/'),
-        groupMakerFactory: GroupMakerFactory({defaultName: 'KLM'}), 
-        navigator:   new InversiveNavigator(),
-    });
-    ss.run();
-
-} catch (err) {
-    console.error('error: ', err);
-}
+runGrayScott({ presets, presetsPath: 'presets/klm/', groupName: 'KLM' });

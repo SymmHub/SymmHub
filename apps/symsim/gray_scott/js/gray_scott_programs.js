@@ -83,4 +83,4 @@ const gsPrograms = {
     symNoise:     progSymNoise,
 };
 
-export const GS_programs = programBuilder(gsPrograms, true);
+export const GS_programs = programBuilder(gsPrograms, /* compileAll = */ false);

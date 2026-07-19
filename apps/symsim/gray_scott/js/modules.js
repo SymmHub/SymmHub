@@ -12,12 +12,6 @@ export {
 from '../../../../lib/shaders/modules.js';
 
 export {
-    GrayScottSimulation,
-    GrayScottSimulationCreator
-}
-from './gray_scott_simulation.js';
-
-export {
     GrayScottWorker,
 } from './GrayScottWorker.js';
 
