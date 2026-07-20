@@ -19,6 +19,7 @@ import {
 
 import { makePipelineManagerCreator } from '../../../../lib/symhublib/PipelineManager.js';
 import { SymmetrizationWorker }       from '../../../../lib/symhublib/SymmetrizationWorker.js';
+import { MaskWorker }                 from '../../../../lib/symhublib/MaskWorker.js';
 
 import { GinzburgLandauWorker }      from './GinzburgLandauWorker.js';
 import { GinzburgLandauInitializer } from './GinzburgLandauInitializer.js';
@@ -45,6 +46,7 @@ function makeGLWorkerFactory(getGLCtx, getBuffer, getGroup, getChildren) {
             { name: 'GinzburgLandauInitializer', label: 'GL initialization', creator: make(GinzburgLandauInitializer) },
             { name: 'GinzburgLandauWorker',      label: 'GL simulation',     creator: make(GinzburgLandauWorker)      },
             { name: 'SymmetrizationWorker',      label: 'Symmetrization',    creator: make(SymmetrizationWorker)      },
+            { name: 'MaskWorker',                label: 'Mask',              creator: make(MaskWorker)                },
         ],
     });
 }
