@@ -36,18 +36,37 @@
  */
 
 const MYNAME = 'GrayScottUpgradeData';
-const OLD_CLASS_NAME = 'Gray-Scott';
+
+// Class names used by old GrayScott simulation objects:
+//   'simulation'  — original name (files saved ~2024 and earlier)
+//   'Gray-Scott'  — intermediate name before PipelineManager migration
+//   (none)        — "flat" format: no className, simParams is directly inside
+//                   patternParams (files saved with GrayScottSimulation while
+//                   fileFormatRelease was already 1, around early 2026)
+const OLD_CLASS_NAMES = new Set(['Gray-Scott', 'simulation']);
+
+/** True when pp looks like any old non-PipelineManager GrayScott format. */
+function isOldGSFormat(pp) {
+    if (!pp) return false;
+    // Named-class formats
+    if (OLD_CLASS_NAMES.has(pp.className)) return true;
+    // Flat format: no className but simParams is directly present
+    if (pp.className == null && pp.simParams != null) return true;
+    return false;
+}
 
 function upgrade(data) {
     const pattern = data?.params?.pattern;
     if (!pattern) return;
 
     const pp = pattern.patternParams;
-    if (!pp || pp.className !== OLD_CLASS_NAME) return;
+    if (!isOldGSFormat(pp)) return;
 
-    console.log(`${MYNAME}: upgrading old "${OLD_CLASS_NAME}" format to PipelineManager`);
+    console.log(`${MYNAME}: upgrading old "${pp.className ?? 'flat'}" format to PipelineManager`);
 
-    const old = pp.params ?? {};
+    // Named-class formats wrap their content under pp.params;
+    // the flat format puts simParams etc. directly in pp.
+    const old = (pp.className != null) ? (pp.params ?? {}) : pp;
 
     // ── GrayScottInitializer params ───────────────────────────────────────────
     // Old: simInit.initType and simInit.initParams.*

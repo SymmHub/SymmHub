@@ -20,6 +20,7 @@ import {
 
 import { makePipelineManagerCreator } from '../../../../lib/symhublib/PipelineManager.js';
 import { SymmetrizationWorker }       from '../../../../lib/symhublib/SymmetrizationWorker.js';
+import { MaskWorker }                 from '../../../../lib/symhublib/MaskWorker.js';
 
 import { GrayScottWorker }      from './GrayScottWorker.js';
 import { GrayScottInitializer } from './GrayScottInitializer.js';
@@ -46,6 +47,7 @@ function makeGSWorkerFactory(getGLCtx, getBuffer, getGroup, getChildren) {
             { name: 'GrayScottInitializer', label: 'GS initialization', creator: make(GrayScottInitializer) },
             { name: 'GrayScottWorker',      label: 'GS simulation',     creator: make(GrayScottWorker)      },
             { name: 'SymmetrizationWorker', label: 'Symmetrization',    creator: make(SymmetrizationWorker)  },
+            { name: 'MaskWorker',           label: 'Mask',              creator: make(MaskWorker)            },
         ],
     });
 }

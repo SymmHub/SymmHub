@@ -22,6 +22,7 @@ import {
     ParamFloat,
     ParamInt,
     ParamObj,
+    ParamChoice,
     createDataPlot,
 } from './modules.js';
 
@@ -42,6 +43,8 @@ function GrayScottWorker(options = {}) {
     let mParams = null;
 
     const mConfig = {
+        enabled:      options.enabled      ?? true,
+        preset:       options.preset       ?? Presets.names[0],
         feedCoeff:    options.feedCoeff    ?? 0.062,
         killCoeff:    options.killCoeff    ?? 0.0609,
         feedGradient: options.feedGradient ?? 0,
@@ -119,6 +122,14 @@ function GrayScottWorker(options = {}) {
         mPresetsPlot.setPlotData([mConfig.killCoeff, mConfig.feedCoeff], 1);
     }
 
+    /** Apply feed/kill values from the selected named preset. */
+    function onPresetChanged() {
+        const set = Presets[mConfig.preset];
+        if (set?.feed != null && set?.kill != null) {
+            setParamsFromPlot([set.feed, set.kill]);
+        }
+    }
+
     // ── lifecycle ─────────────────────────────────────────────────────────────
 
     function init(glCtx) {
@@ -140,6 +151,8 @@ function GrayScottWorker(options = {}) {
      * @param {number}    time   — unused (kept for interface conformance)
      */
     function process(buffer, time) {
+        if (!mConfig.enabled) return;
+
         const gl      = mGLCtx.gl;
         const program = GS_programs.getProgram(gl, 'gsSimulation');
         const c       = mConfig;
@@ -187,6 +200,12 @@ function GrayScottWorker(options = {}) {
     function makeParams() {
         const c = mConfig;
         return {
+            // ── enabled toggle ─────────────────────────────────────────────────
+            enabled:      ParamBool({  obj: mConfig, key: 'enabled',                                        name: 'enabled'       }),
+
+            // ── preset selector ────────────────────────────────────────────────
+            preset:       ParamChoice({ obj: mConfig, key: 'preset', choice: Presets.names, name: 'preset', onChange: onPresetChanged }),
+
             // ── 2D parameter plot (UI only — not serialised to JSON) ──────────
             presetsPlot:  ParamObj({   name: 'presets',     obj: mPresetsPlot, serializable: false }),
 

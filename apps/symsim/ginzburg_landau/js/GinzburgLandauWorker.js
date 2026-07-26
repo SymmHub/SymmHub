@@ -40,6 +40,7 @@ function GinzburgLandauWorker(options = {}) {
     let mFirstStep = true;  // log uniforms once on first process()
 
     const mConfig = {
+        enabled: options.enabled ?? true,
         simParams: {
             stepsCount:    options.stepsCount    ?? 4,
             alpha:         options.alpha         ?? 0.84,
@@ -122,6 +123,7 @@ function GinzburgLandauWorker(options = {}) {
      * @param {number}    time   — unused (kept for interface conformance)
      */
     function process(buffer, time) {
+        if (!mConfig.enabled) return;
         const gl      = mGLCtx.gl;
         const program = GL_programs.getProgram(gl, 'glStep');
 
@@ -168,6 +170,9 @@ function GinzburgLandauWorker(options = {}) {
     function makeParams() {
         const cfg = mConfig.simParams;
         return {
+            // ── enabled toggle ────────────────────────────────────────────────
+            enabled: ParamBool({ obj: mConfig, key: 'enabled', name: 'enabled' }),
+
             // ── 2D parameter plot (UI only — not serialised to JSON) ──────────
             presetsPlot: ParamObj({ name: 'presets', obj: mPresetsPlot, serializable: false }),
 
