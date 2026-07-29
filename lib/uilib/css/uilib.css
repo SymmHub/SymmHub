@@ -261,24 +261,23 @@
     box-shadow: 0 1px 2px rgba(0,0,0,0.08);
     cursor: pointer;
     transition: all 0.1s ease-in-out;
-    color: #475569;
+    color: #1e293b;
     margin: 0;
     align-self: center;
 }
 
-.colormap-editor-link-btn:hover {
-    background-color: #f0f0f0;
-    border-color: #999;
-    color: #222;
+.colormap-editor-link-btn svg {
+    stroke: #1e293b;
 }
 
-.colormap-editor-link-btn.pressed,
-.colormap-editor-link-btn.active {
-    background-color: #bae6fd;
-    border-color: #0284c7;
-    color: #0369a1;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
-    transform: translateY(1px);
+.colormap-editor-link-btn:hover {
+    background-color: #e2e8f0;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+.colormap-editor-link-btn:hover svg {
+    stroke: #0f172a;
 }
 
 .colormap-icon-btn {
@@ -294,7 +293,11 @@
     box-shadow: 0 1px 2px rgba(0,0,0,0.08);
     cursor: pointer;
     transition: all 0.1s ease-in-out;
-    color: #475569;
+    color: #1e293b;
+}
+
+.colormap-icon-btn svg {
+    stroke: #1e293b;
 }
 
 .colormap-icon-btn:hover {
@@ -303,19 +306,53 @@
     color: #0f172a;
 }
 
+.colormap-icon-btn:hover svg {
+    stroke: #0f172a;
+}
+
 .colormap-icon-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
     background: #f1f5f9;
+    color: #94a3b8;
 }
 
+.colormap-icon-btn:disabled svg {
+    stroke: #94a3b8;
+}
+
+.colormap-editor-link-btn.pressed,
+.colormap-editor-link-btn.active,
 .colormap-icon-btn.pressed,
 .colormap-icon-btn.active {
     background-color: #bae6fd;
     border-color: #0284c7;
-    color: #0369a1;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+    color: #1e293b;
+    box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.25);
     transform: translateY(1px);
+}
+
+.colormap-editor-link-btn.pressed svg,
+.colormap-editor-link-btn.active svg,
+.colormap-icon-btn.pressed svg,
+.colormap-icon-btn.active svg {
+    stroke: #222222;
+}
+
+.colormap-icon-btn.pressed:hover,
+.colormap-icon-btn.active:hover,
+.colormap-editor-link-btn.pressed:hover,
+.colormap-editor-link-btn.active:hover {
+    background-color: #7dd3fc;
+    border-color: #0284c7;
+    color: #0f172a;
+}
+
+.colormap-icon-btn.pressed:hover svg,
+.colormap-icon-btn.active:hover svg,
+.colormap-editor-link-btn.pressed:hover svg,
+.colormap-editor-link-btn.active:hover svg {
+    stroke: #222222;
 }
 
 .colormap-editor-btn-row {
