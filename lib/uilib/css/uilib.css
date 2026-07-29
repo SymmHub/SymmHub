@@ -69,6 +69,42 @@
   background-color: #c42b1c;
 }
 
+/* Remove DatGUI panel outer border, shadow, and rounded corners when hosted inside internalWindow */
+.interior-style #rightGUI,
+.interior-style #configGUI,
+.interior-style .dg.main,
+.interior-style .dg {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+/* InternalWindow DatGUI container & panel classes */
+.gui-window-interior {
+    padding: 0;
+    box-sizing: border-box;
+    background-color: var(--background-color, #f9f9f9);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.gui-window-panel {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+.vbar-separator {
+    width: 20px;
+}
+
 /* Colormap Editor Styles */
 .colormap-editor-interior {
     display: flex;
@@ -357,4 +393,15 @@
 
 .colormap-handle.active {
     border: 2px solid #0055ff;
+}
+
+input.imgbutton {
+    box-sizing: border-box !important;
+    border: 1px solid transparent !important;
+}
+
+input.imgbutton.pressed {
+    background-color: #bae6fd !important;
+    border-color: #0284c7 !important;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
 }
