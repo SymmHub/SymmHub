@@ -1,5 +1,5 @@
 export const draw_hist_vert = 
-`
+/*glsl*/`
 out vec2 texCoord; // texture coordinates in [0,1] 
 
 in vec2 position;

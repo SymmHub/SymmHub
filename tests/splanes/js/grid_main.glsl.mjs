@@ -1,5 +1,5 @@
 export const GRID_MAIN=
-`
+/*glsl*/`
 in vec2 vUv;
 
 uniform float u_gridStep;

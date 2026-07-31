@@ -1,4 +1,4 @@
-export const patternTextures = `
+export const patternTextures = /*glsl*/`
 
 
 /////////////////////   

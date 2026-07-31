@@ -1,6 +1,6 @@
 export const clearShader = 
 
-`
+/*glsl*/`
 in vec2 vUv;
 out vec4 outValue;
 

@@ -1,6 +1,6 @@
 
 export const FDRenderer = 
-`
+/*glsl*/`
     
 /////////////////////    
 /**  FDRenderer.glsl */

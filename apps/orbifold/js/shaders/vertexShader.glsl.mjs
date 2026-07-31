@@ -1,5 +1,5 @@
 export const vertexShader = 
-`
+/*glsl*/`
 
 /////////////////////   
 /**  vertexShader.glsl */

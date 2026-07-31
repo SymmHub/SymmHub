@@ -1,6 +1,6 @@
 
 export const copy_vert = 
-`
+/*glsl*/`
 in vec2 position;
 
 void main () {
@@ -10,7 +10,7 @@ void main () {
 }`;
 
 export const  copy_frag = 
-`
+/*glsl*/`
 uniform sampler2D uSrc;
 out vec4 outPnt;
 void main () {

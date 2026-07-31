@@ -1,5 +1,5 @@
 
-export const extract_overlay = `
+export const extract_overlay = /*glsl*/`
 
 
 

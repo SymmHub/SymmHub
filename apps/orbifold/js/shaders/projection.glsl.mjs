@@ -1,5 +1,5 @@
 export const projection = 
-`
+/*glsl*/`
 #define HAS_PROJECTION 
 
 #ifndef TRANSFORM_DATA_SIZE 

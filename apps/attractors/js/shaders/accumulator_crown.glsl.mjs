@@ -6,7 +6,7 @@
 
 
 export const accumulator_crown_vert = 
-`
+/*glsl*/`
 
 in vec4 a_position; // point in attractor coordinates   
 out vec3 vertColor;

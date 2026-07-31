@@ -1,7 +1,7 @@
 
 export const  iterator_mandelbrot_frag = 
 
-`
+/*glsl*/`
 uniform sampler2D uPointsData;
 
 out vec4 outPnt;  // result of iteration 

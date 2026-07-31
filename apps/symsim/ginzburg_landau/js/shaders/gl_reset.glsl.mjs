@@ -1,5 +1,5 @@
 export const GL_reset = 
-`
+/*glsl*/`
 in vec2 vUv;
 out vec4 outValue;
 

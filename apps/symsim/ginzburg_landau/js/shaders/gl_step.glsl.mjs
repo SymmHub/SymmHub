@@ -1,4 +1,4 @@
-export const GL_step = `
+export const GL_step = /*glsl*/`
 
 in vec2 vUv;
 out vec4 outValue;

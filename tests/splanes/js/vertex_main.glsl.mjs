@@ -3,7 +3,7 @@
 //  maps standard quad (-1-1), (1,1)
 //  into world coordinates vUv which are used by fragment shaders 
 //
-export const VERTEX_MAIN = `
+export const VERTEX_MAIN = /*glsl*/`
 in vec2 a_pos;           // 
 out vec2 vUv;            // output world coordinates 
 uniform float u_scale;   // 

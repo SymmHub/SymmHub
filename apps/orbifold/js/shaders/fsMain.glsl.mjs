@@ -1,5 +1,5 @@
 export const fsMain = 
-`
+/*glsl*/`
 /////////////////////   
 /**  fsMain.glsl */
 

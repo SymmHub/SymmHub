@@ -1,7 +1,7 @@
 
 
 export const patternFromFDRenderer = 
-`
+/*glsl*/`
 
 //////////////////////////////////   
 /**  PatternFromFDRenderer.glsl */

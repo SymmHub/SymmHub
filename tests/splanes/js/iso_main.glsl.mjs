@@ -1,4 +1,4 @@
-export const ISO_MAIN = `
+export const ISO_MAIN = /*glsl*/`
 
 in vec2 vUv;
 #define PI (3.1415926)

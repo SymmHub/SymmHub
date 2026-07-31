@@ -1,5 +1,5 @@
 export const GL_utils = 
-`
+/*glsl*/`
 // source: https://www.shadertoy.com/view/XlXcW4
 // TODO more complete hash library
 vec3 hash( ivec3 ix ) {

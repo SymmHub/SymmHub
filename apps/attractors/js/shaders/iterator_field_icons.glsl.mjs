@@ -1,7 +1,7 @@
 
 export const  iterator_field_icons_frag = 
 
-`
+/*glsl*/`
 uniform sampler2D uPointsData;
 
 out vec4 outPnt;  // result of iteration 

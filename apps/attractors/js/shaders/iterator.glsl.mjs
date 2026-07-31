@@ -1,6 +1,6 @@
 
 export const iterator_vert = 
-`
+/*glsl*/`
 in vec2 position;
 
 void main () {

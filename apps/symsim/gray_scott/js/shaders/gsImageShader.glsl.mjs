@@ -1,6 +1,6 @@
 export const gsImageShader = 
 
-`
+/*glsl*/`
 in vec2 vUv;
 out vec4 outColor;
 

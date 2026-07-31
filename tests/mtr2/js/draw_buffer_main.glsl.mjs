@@ -1,4 +1,4 @@
-export const DRAW_BUFF = `
+export const DRAW_BUFF = /*glsl*/`
 uniform sampler2D u_tex;
 out vec4 outColor;
 void main() {

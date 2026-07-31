@@ -3,7 +3,7 @@
 //
 export const  iterator_tinkerbell_frag = 
 
-`
+/*glsl*/`
 uniform sampler2D uPointsData;
 
 out vec4 outPnt;  // result of iteration 

@@ -1,6 +1,6 @@
 // Vertex shader
 export const draw_points_vert = 
-`
+/*glsl*/`
 //#version 300 es
 in vec2 a_position;
 

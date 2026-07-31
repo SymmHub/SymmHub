@@ -1,4 +1,4 @@
-export const render_fp = `
+export const render_fp = /*glsl*/`
 {
     //vec2 v = state(UV).xy;
     vec2 v = sample_biquadratic(state, UV).xy;

@@ -1,7 +1,7 @@
 
 
 export const patternFromFDRenderer_v1 = 
-`
+/*glsl*/`
 // input UV coordinates 
 in vec2 vUV;
 // output color

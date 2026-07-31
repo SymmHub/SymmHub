@@ -1,5 +1,5 @@
 export const draw_hist_frag = 
-`
+/*glsl*/`
 in vec2 texCoord;
 uniform sampler2D src;
 uniform float brightness;

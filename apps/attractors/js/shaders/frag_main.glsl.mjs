@@ -1,5 +1,5 @@
 export const frag_main = 
-`
+/*glsl*/`
 in vec2 vUv;
 out vec4 outValue;
 

@@ -1,7 +1,7 @@
 // common vertex shader for performing BLIT by rendering quad
 
 export const blit_vert = 
-`
+/*glsl*/`
 out vec2 uv;
 in vec2 position;
 

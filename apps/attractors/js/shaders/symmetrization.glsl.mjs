@@ -1,6 +1,6 @@
 
 export const symmetrization_vert = 
-`
+/*glsl*/`
 in vec2 position;
 
 void main () {
@@ -12,7 +12,7 @@ void main () {
 
 export const  symmetrization_frag = 
 
-`
+/*glsl*/`
 uniform sampler2D uPointsData;
 uniform vec2 uTransScale;
 uniform vec2 uTransCenter;

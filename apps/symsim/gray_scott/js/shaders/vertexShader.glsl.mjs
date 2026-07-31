@@ -1,5 +1,5 @@
 export const vertexShader = 
-`
+/*glsl*/`
 precision highp float;
 
 VS_IN vec2 position;

@@ -1,5 +1,5 @@
 export const canvasVertexShader = 
-`
+/*glsl*/`
 precision highp float;
 
 in vec2 position;

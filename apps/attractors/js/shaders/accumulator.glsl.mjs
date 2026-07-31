@@ -4,7 +4,7 @@
 
 
 export const accumulator_vert = 
-`
+/*glsl*/`
 
 in vec4 a_position; // point in attractor coordinates   
 out vec3 vertColor;
@@ -65,7 +65,7 @@ void main () {
 
 
 export const accumulator_frag = 
-`
+/*glsl*/`
 in vec3 vertColor;
 in float actualPointSize;
 out vec4 outColor;

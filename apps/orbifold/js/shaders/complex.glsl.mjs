@@ -1,7 +1,7 @@
 
 
 export const complex = 
-`
+/*glsl*/`
 	
 /////////////////////	
 /**  complex.glsl */

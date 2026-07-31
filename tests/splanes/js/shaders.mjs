@@ -7,7 +7,7 @@ import { SPLANES_MAIN }      from './splanes_main.glsl.mjs';
 import { DRAW_BUFFER_MAIN } from './draw_buffer_main.glsl.mjs';
 import { VERTEX_MAIN }      from './vertex_main.glsl.mjs';
 
-const DISPLAY_FS = `
+const DISPLAY_FS = /*glsl*/`
 in vec2 vUv;
 uniform sampler2D u_tex;
 out vec4 outColor;

@@ -1,5 +1,5 @@
 export const overlayExtractorShader = 
-`
+/*glsl*/`
 in vec2 vUv;
 out vec4 outColor;
 

@@ -1,4 +1,4 @@
-const VERT_SRC = `#version 300 es
+const VERT_SRC = /*glsl*/`#version 300 es
 in vec2 a_pos;
 out vec2 v_uv;
 void main() {
@@ -8,7 +8,7 @@ void main() {
 `;
 
 
-const FRAG_SRC = `#version 300 es
+const FRAG_SRC = /*glsl*/`#version 300 es
 precision highp float;
 in vec2 v_uv;
 layout(location = 0) out vec4 outColor0;
@@ -40,7 +40,7 @@ void main() {
 }
 `;
 
-const DISPLAY_FS = `#version 300 es
+const DISPLAY_FS = /*glsl*/`#version 300 es
 precision highp float;
 in vec2 v_uv;
 uniform sampler2D u_tex;

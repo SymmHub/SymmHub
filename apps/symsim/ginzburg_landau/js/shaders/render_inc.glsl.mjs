@@ -3,7 +3,7 @@
 //
 // rendering include 
 //
-export const render_inc = `
+export const render_inc = /*glsl*/`
 
   vec2 state2screen(vec2 v) {
       return 4.*vec2((v.x),(v.y));

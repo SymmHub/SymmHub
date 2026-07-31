@@ -1,5 +1,5 @@
 export const draw_points_frag = 
-`
+/*glsl*/`
 //#version 300 es
 //precision highp float;
 out vec4 outColor;

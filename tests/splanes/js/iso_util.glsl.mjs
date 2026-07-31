@@ -1,4 +1,4 @@
-export const ISO_UTIL = `
+export const ISO_UTIL = /*glsl*/`
 
 float linearstep(float edge0, float edge1, float x){
 

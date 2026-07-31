@@ -1,5 +1,5 @@
 export const inversive = 
-`
+/*glsl*/`
 
 /////////////////////   
 /**  Inversive.glsl */

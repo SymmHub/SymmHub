@@ -1,7 +1,7 @@
 //
 // transfer the input buffer with simple pixel scaling 
 // 
-export const DRAW_BUFFER_MAIN = `
+export const DRAW_BUFFER_MAIN = /*glsl*/`
 uniform sampler2D u_tex;
 uniform float u_scaling;
 

@@ -1,6 +1,6 @@
 export const grayScottShader = 
 
-`
+/*glsl*/`
 in vec2 vUv;
 out vec4 outValue;
 

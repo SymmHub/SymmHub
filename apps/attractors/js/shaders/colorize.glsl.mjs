@@ -1,4 +1,4 @@
-export const colorize_frag = `
+export const colorize_frag = /*glsl*/`
 #ifndef PI
 #define PI 3.14159265358979323846
 #endif

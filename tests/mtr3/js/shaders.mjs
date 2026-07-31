@@ -1,4 +1,4 @@
-const VERT_SRC = `
+const VERT_SRC = /*glsl*/`
 in vec2 a_pos;
 out vec2 v_uv;
 void main() {
@@ -9,7 +9,7 @@ void main() {
 `;
 
 
-const FRAG_SRC = `
+const FRAG_SRC = /*glsl*/`
 in vec2 v_uv;
 #define PI (3.1415926)
 uniform float u_time;
@@ -43,7 +43,7 @@ void main() {
 }
 `;
 
-const DISPLAY_FS = `
+const DISPLAY_FS = /*glsl*/`
 in vec2 v_uv;
 uniform sampler2D u_tex;
 out vec4 outColor;
@@ -52,7 +52,7 @@ void main() {
 }
 `;
 
-const DRAW_BUFF = `
+const DRAW_BUFF = /*glsl*/`
 uniform sampler2D u_tex;
 out vec4 outColor;
 void main() {

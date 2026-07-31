@@ -1,5 +1,5 @@
 
-export const utils = `
+export const utils = /*glsl*/`
 
 // https://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/ 
 // 2D random points 

@@ -1,5 +1,5 @@
 export const gsNoise1Shader = 
-`
+/*glsl*/`
 in vec2 vUv;
 out vec4 outValue;
 

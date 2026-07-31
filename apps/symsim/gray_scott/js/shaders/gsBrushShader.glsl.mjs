@@ -1,6 +1,6 @@
 export const gsBrushShader = 
 
-`
+/*glsl*/`
 in vec2 vUv;
 out vec2 outValue;
 

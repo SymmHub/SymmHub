@@ -1,4 +1,4 @@
-export const SPLANES_MAIN = `
+export const SPLANES_MAIN = /*glsl*/`
 
 in vec2 vUv;
 

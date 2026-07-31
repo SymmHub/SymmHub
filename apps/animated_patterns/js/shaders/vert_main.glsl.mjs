@@ -1,5 +1,5 @@
 export const vert_main = 
-`
+/*glsl*/`
 precision highp float;
 
 in vec2 position;

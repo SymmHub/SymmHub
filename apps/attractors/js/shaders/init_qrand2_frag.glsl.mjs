@@ -1,6 +1,6 @@
 // initialize quiad with random points calculated using qrand2
 export const init_qrand2_frag = 
-`
+/*glsl*/`
 
 out vec4 outColor;
 

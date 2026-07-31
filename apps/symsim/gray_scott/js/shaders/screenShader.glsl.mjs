@@ -1,6 +1,6 @@
 export const screenShader = 
 
-`
+/*glsl*/`
 in vec2 vUv;
 out vec4 outColor;
 
