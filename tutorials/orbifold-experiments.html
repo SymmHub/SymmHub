@@ -55,6 +55,9 @@ figcaption{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:v
   font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--graphite)}
 .swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:baseline}
 .crumb{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13.5px;margin:20px 0 0}
+.vizbtn{display:block;margin-top:6px;border:1px solid #C9D2DA;border-radius:6px;background:#fff;
+  padding:2px 10px;font:600 12px ui-sans-serif,system-ui,sans-serif;color:var(--phy);cursor:pointer}
+.vizbtn:hover{background:#F2F6FA}
 </style>
 </head>
 <body>
@@ -268,12 +271,12 @@ Schattschneider's <i>Visions of Symmetry</i> (Deaton's reference [S]) has the so
 <tr><td class="c"><span class="sym">5</span> or <span class="sym">34</span></td><td>rejected</td>
   <td>Bad orbifolds — the teardrop and the unequal spindle are not quotients of any surface group;
   Thurston's list of &ldquo;bad&rdquo; orbifolds, and the parser refuses them.</td></tr>
-<tr><td class="c"><span class="sym">*632</span>, <span class="sym">442</span>, <span class="sym">o</span></td><td>renders, nothing to drag</td>
+<tr><td class="c"><span class="sym" data-viz="*632">*632</span>, <span class="sym">442</span>, <span class="sym">o</span></td><td>renders, nothing to drag</td>
   <td>Cost exactly $2: Euclidean wallpaper (p6m, p4, p1). Flat groups are rigid up to scale, so the edge
   overlay deactivates — the drag machinery is hyperbolic-only.</td></tr>
-<tr><td class="c"><span class="sym">532</span>, <span class="sym">*432</span></td><td>renders, nothing to drag</td>
+<tr><td class="c"><span class="sym" data-viz="532">532</span>, <span class="sym">*432</span></td><td>renders, nothing to drag</td>
   <td>Under $2: spherical — icosahedral (order 60) and full octahedral (order 48) symmetry on the sphere.</td></tr>
-<tr><td class="c"><span class="sym">(12)3x</span></td><td>works!</td>
+<tr><td class="c"><span class="sym" data-viz="(12)3x">(12)3x</span></td><td>works!</td>
   <td>Parenthesized multi-digit orders are fine — a 12-fold gyration, a 3-fold, and a miracle
   (χ = −7/12, one cap length). Push orders higher and watch the cone tighten.</td></tr>
 <tr><td class="c"><span class="sym">23∞</span></td><td>not supported here</td>
@@ -384,6 +387,30 @@ Machine check of every table row: <span id="selfcheck">…</span>
   document.getElementById('selfcheck').innerHTML = bad.length
     ? '<b style="color:#B5443C">'+bad.length+' MISMATCH</b> — '+bad.join(' · ')
     : '<b>all '+n+' symbols verified</b> — χ and dim recomputed from each symbol at page load.';
+
+  // ── "Visualize" buttons: open the SymPix app in ONE shared window with
+  //    the symbol already selected (via the #{"params":...} deep link).
+  var APP_URL = new URL('../apps/sympic/sympix_orbifold.html', window.location.href).href;
+  function vizHash(sym){
+    return '#' + encodeURIComponent(JSON.stringify({
+      params: { symmetry: {
+        groupType: 'Orbifold',
+        group: { className: 'Group_Orbifold', params: { name: sym } }
+      }}
+    }));
+  }
+  document.querySelectorAll('[data-sym],[data-viz]').forEach(function(el){
+    var sym = el.getAttribute('data-viz') || el.getAttribute('data-sym');
+    var b = document.createElement('button');
+    b.className = 'vizbtn';
+    b.textContent = 'Visualize';
+    b.title = 'Open ' + sym + ' in the SymPix app (reuses one window)';
+    b.addEventListener('click', function(){
+      var w = window.open(APP_URL + vizHash(sym), 'symmhub-visualize');
+      if (w) w.focus();
+    });
+    el.parentElement.appendChild(b);
+  });
 })();
 </script>
 
