@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two Dollars of Symmetry — Conway's orbifold notation, Deaton's thesis, and what the drags in SymmHub actually do</title>
+<script>
+window.MathJax = {tex:{inlineMath:[['$','$']]}, chtml:{scale:0.96}};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{
+  --paper:#F2F4F6; --ink:#1B2733; --phy:#1F4E79; --prb:#B5443C;
+  --gold:#C9A227; --graphite:#5A6773; --card:#FFFFFF;
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;color:var(--ink);
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,"URW Palladio L",Georgia,serif;
+  font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
+main{max-width:1000px;margin:0 auto;padding:0 20px 90px}
+.prose{max-width:700px;margin:0 auto}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.12;font-weight:600;letter-spacing:-0.01em;margin:.2em 0 .25em}
+h2{font-size:24px;font-weight:600;margin:2.6em 0 .5em;letter-spacing:-0.005em}
+h3{font-size:18px;font-weight:600;margin:1.8em 0 .4em}
+.eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  font-family:ui-sans-serif,system-ui,sans-serif;font-weight:600;margin:3.4em 0 -0.2em}
+.eyebrow.phy{color:var(--phy)} .eyebrow.prb{color:var(--prb)} .eyebrow.syn{color:var(--gold)}
+.eyebrow.ink{color:var(--graphite)}
+p{margin:.85em 0}
+figure{margin:2em auto;max-width:1000px;text-align:center}
+figcaption{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--graphite);
+  max-width:760px;margin:.6em auto 0;line-height:1.5}
+.hero{padding:76px 0 8px;text-align:center}
+.hero .sub{color:var(--graphite);font-size:18px;max-width:660px;margin:0 auto}
+.note{background:var(--card);border-left:3px solid var(--gold);padding:12px 18px;border-radius:0 8px 8px 0;
+  font-size:15.5px;max-width:700px;margin:1.4em auto}
+.check{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--graphite);
+  border-top:1px solid #DDE3E8;margin-top:70px;padding-top:18px;max-width:700px;margin-left:auto;margin-right:auto}
+.kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;
+  background:#EAEEF2;padding:1px 5px;border-radius:4px}
+.sym{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:600}
+.widget{background:var(--card);border:1px solid #E2E6EA;border-radius:8px;padding:16px 16px 12px;
+  max-width:1000px;margin:1.6em auto}
+.wtitle{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-family:ui-sans-serif,system-ui,sans-serif;
+  font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--graphite);margin:0 0 8px}
+.wtitle .dot{display:inline-block;width:9px;height:9px;border-radius:50%}
+table.pins{border-collapse:collapse;margin:1.6em auto;font-size:15px;max-width:100%}
+table.pins th{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--graphite);font-weight:600}
+table.pins th,table.pins td{border:1px solid #E2E6EA;padding:7px 14px;text-align:left;background:var(--card)}
+table.pins td{font-variant-numeric:tabular-nums}
+table.pins td.r{text-align:right;font-variant-numeric:tabular-nums}
+table.pins tr.gold td{background:#FDF9EC}
+.tablewrap{overflow-x:auto;margin:0 -20px;padding:0 20px}
+a{color:var(--phy)}
+mjx-container{max-width:100%}
+mjx-container[display="true"]{display:block;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:1000px;margin:1.6em auto}
+.thread{background:var(--card);border:1px solid #E2E6EA;border-radius:8px;padding:18px 18px 8px}
+.thread h3{margin:0 0 4px;font-size:15px;font-family:ui-sans-serif,system-ui,sans-serif;
+  letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.thread.phy{border-top:3px solid var(--phy)} .thread.phy h3{color:var(--phy)}
+.thread.prb{border-top:3px solid var(--prb)} .thread.prb h3{color:var(--prb)}
+.thread.syn{border-top:3px solid var(--gold)} .thread.syn h3{color:var(--gold)}
+.thread p{font-size:14.5px;line-height:1.5;margin:.7em 0}
+.pipe{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;justify-content:center;margin:1.4em auto;max-width:960px;
+  font-family:ui-sans-serif,system-ui,sans-serif}
+.pipe .stage{background:var(--card);border:1px solid #E2E6EA;border-radius:8px;padding:10px 12px;flex:1;min-width:130px;max-width:180px}
+.pipe .stage b{display:block;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--phy);margin-bottom:4px}
+.pipe .stage span{font-size:12.5px;color:var(--graphite);line-height:1.45;display:block}
+.pipe .arr{align-self:center;color:var(--graphite);font-size:18px}
+.glyphrow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:920px;margin:1.4em auto}
+.glyph{background:var(--card);border:1px solid #E2E6EA;border-radius:8px;padding:14px 14px 10px;text-align:center}
+.glyph .g{font-size:34px;font-family:ui-monospace,Menlo,monospace;font-weight:700;line-height:1.1}
+.glyph .nm{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  font-weight:700;margin-top:2px}
+.glyph p{font-size:13.5px;color:var(--graphite);line-height:1.45;margin:.5em 0 0}
+.glyph .price{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--ink);margin-top:6px}
+.calc input[type=text]{font:600 20px ui-monospace,Menlo,monospace;padding:8px 12px;border:1px solid #C9D2DA;
+  border-radius:6px;width:220px;color:var(--ink);background:#fff}
+.calc .exrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px;font-family:ui-sans-serif,system-ui,sans-serif}
+.calc .exrow button{border:1px solid #C9D2DA;border-radius:6px;background:#fff;padding:4px 10px;
+  font:600 13px ui-monospace,Menlo,monospace;color:var(--phy);cursor:pointer}
+.calc .exrow button:hover{background:#F2F6FA}
+.receipt{font-family:ui-monospace,Menlo,monospace;font-size:14.5px;background:#FAFBFC;border:1px dashed #C9D2DA;
+  border-radius:6px;padding:12px 16px;margin-top:12px;max-width:430px}
+.receipt .line{display:flex;justify-content:space-between;gap:20px}
+.receipt .total{border-top:1px solid #C9D2DA;margin-top:6px;padding-top:6px;font-weight:700}
+.verdict{font-family:ui-sans-serif,system-ui,sans-serif;font-size:15px;margin-top:12px;line-height:1.55}
+.verdict b.sph{color:#2F6B3A} .verdict b.euc{color:var(--gold)} .verdict b.hyp{color:var(--phy)} .verdict b.bad{color:var(--prb)}
+.swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:baseline}
+iframe.app{width:100%;height:540px;border:1px solid #E2E6EA;border-radius:8px;background:#fff}
+.mcheck{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--graphite);
+  padding:8px 14px;border-top:1px solid #EDF0F3;background:#FAFBFC;border-radius:0 0 6px 6px;margin-top:12px}
+.mcheck b{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600}
+@media(max-width:760px){.timeline{grid-template-columns:1fr}.glyphrow{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<main>
+
+<div class="hero prose" style="max-width:880px">
+  <div class="eyebrow ink" style="margin-top:0">SymmHub &nbsp;·&nbsp; hyperbolic symmetry lab &nbsp;·&nbsp; Bulatov · Goodman-Strauss · Vorthmann</div>
+  <h1>Two Dollars of Symmetry</h1>
+  <p class="sub">In SymmHub you can type <span class="sym">3456</span> into a box, get a hyperbolic wallpaper,
+  and then <em>grab an edge of its fundamental domain and drag it</em>. This page explains what that drag
+  actually is: Conway's orbifold notation, the Magic Theorem that prices every symmetry at exactly two
+  dollars, a lost 1994 Princeton thesis, and the Teichm&uuml;ller coordinates hiding behind a yellow highlight.</p>
+</div>
+
+<div class="prose">
+
+<div class="eyebrow phy">Part I &nbsp;·&nbsp; The idea</div>
+<h2>A symmetry is a way of folding the plane</h2>
+
+<p>Take an infinitely repeating pattern — bathroom tiles, an Escher print, a hyperbolic
+tiling in the Poincar&eacute; disk. Its symmetry group is the set of motions that leave it looking
+untouched. The classical way to study the group is to list generators and relations. The
+<em>orbifold</em> way, due to William Thurston, is to do something more physical: fold the
+pattern up along all of its symmetries, until no two equivalent points remain. What is left
+is a small, curved scrap of surface — the <b>orbifold</b> (from <i>orbit&nbsp;+ manifold</i>,
+a name chosen by a vote in Thurston's Princeton class). Everything about the group is written
+on that scrap:</p>
+
+<ul>
+<li>a point where the pattern spins $n$ times becomes a <b>cone point</b> of order $n$ — the paper is rolled into a cone;</li>
+<li>a mirror line becomes a <b>boundary</b> of the scrap; corners where mirrors cross become <b>corner points</b>;</li>
+<li>a glide reflection — symmetry with no mirror and no rotation, Conway called it a <b>miracle</b> — sews a cross-cap into the scrap;</li>
+<li>plain translations with nothing else to show for themselves roll the scrap into a <b>handle</b> — Conway's <b>wonder</b>.</li>
+</ul>
+
+<p>John Conway's notation, introduced around 1990 and refined with Daniel Huson (2002) and in
+<i>The Symmetries of Things</i> (2008, with Heidi Burgiel and Chaim Goodman-Strauss), simply
+spells the scrap: one character per feature. Conway was careful about the pedigree — he described
+his symbol as an elegant repackaging of A.&nbsp;M. Macbeath's 1967 &ldquo;signature&rdquo; for
+non-Euclidean crystallographic groups, expressed in Thurston's orbifold language.</p>
+
+</div>
+
+<div class="glyphrow">
+  <div class="glyph"><div class="g" style="color:#1F4E79">o</div><div class="nm">wonder · handle</div>
+    <p>pure translations; rolls the orbifold into a torus handle</p><div class="price">costs <b>$2</b></div></div>
+  <div class="glyph"><div class="g" style="color:#AA00E1">n</div><div class="nm">gyration · cone point</div>
+    <p>an $n$-fold rotation center not on a mirror</p><div class="price">costs <b>$\frac{n-1}{n}$</b></div></div>
+  <div class="glyph"><div class="g" style="color:#DB00FF">*n&hellip;</div><div class="nm">kaleidoscope · mirrors</div>
+    <p><span class="sym">*</span> opens a mirror boundary; digits after it are corner points</p>
+    <div class="price"><span class="sym">*</span> costs <b>$1</b>, corner $n$ costs <b>$\frac{n-1}{2n}$</b></div></div>
+  <div class="glyph"><div class="g" style="color:#8C0072">&times;</div><div class="nm">miracle · cross-cap</div>
+    <p>a glide reflection; sews in a cross-cap (written <span class="sym">x</span> in SymmHub)</p><div class="price">costs <b>$1</b></div></div>
+</div>
+
+<div class="prose">
+<p>So <span class="sym">*632</span> is a triangle kaleidoscope (the honeycomb group, p6m),
+<span class="sym">442</span> spins without mirrors (p4), <span class="sym">22&times;</span> is
+two half-turns and a miracle (pgg), and <span class="sym">o</span> is nothing but translations (p1).</p>
+
+<div class="eyebrow syn">Part II &nbsp;·&nbsp; The accounting</div>
+<h2>The Magic Theorem: every wallpaper costs exactly $2</h2>
+
+<p>Here is the piece of magic that Conway, Burgiel and Goodman-Strauss put at the center of
+<i>The Symmetries of Things</i> (and of its 2025 sequel, <i>The Magic Theorem</i>, finished by
+Burgiel and Goodman-Strauss after Conway's death in 2020). Give every symbol a price, as in the
+cards above. Then go shopping in the <em>Orbifold Shop</em> with two dollars in your pocket:</p>
+
+<ul>
+<li>spend <b>less than $2</b> and your group lives on the <b>sphere</b> — there are exactly 14 types (7 infinite families and 7 polyhedral groups);</li>
+<li>spend <b>exactly $2</b> and it lives in the <b>Euclidean plane</b> — precisely the 17 wallpaper groups;</li>
+<li>spend <b>more than $2</b> and it lives in the <b>hyperbolic plane</b> — infinitely many groups, the ones SymmHub draws.</li>
+</ul>
+
+<p>The magic is bookkeeping for the Gauss&ndash;Bonnet theorem. The <em>orbifold Euler
+characteristic</em> is the honest Euler characteristic of the folded scrap, with cone and corner
+points counted fractionally:</p>
+
+$$\chi_{\mathrm{orb}} \;=\; 2 \;-\; \underbrace{2\,(\#o) \;-\; (\#\times) \;-\; (\#*)
+\;-\; \sum_{\text{cones}}\Bigl(1-\tfrac1n\Bigr) \;-\; \tfrac12\sum_{\text{corners}}\Bigl(1-\tfrac1m\Bigr)}_{\text{the bill}}
+\;=\; 2 - \text{cost},$$
+
+<p>and Gauss&ndash;Bonnet says $\int K\,dA = 2\pi\chi_{\mathrm{orb}}$: positive characteristic
+forces spherical geometry, zero forces flat, negative forces hyperbolic — with hyperbolic area
+exactly $2\pi\,|\chi_{\mathrm{orb}}|$. This exact formula, thresholds and all, is what runs in
+SymmHub every time you press Enter in the symbol box
+(<a href="https://github.com/SymmHub/SymmHub/blob/main/lib/orbilib/OrbifoldGeometrization.js"><span class="kbd">OrbifoldGeometrization.js</span></a>,
+function <span class="kbd">hashOrbifoldString</span>).</p>
+</div>
+
+<div class="widget calc">
+  <div class="wtitle"><span class="dot" style="background:var(--gold)"></span>Interactive · the Orbifold Shop till</div>
+  <div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:14px;color:var(--graphite);margin-bottom:10px">
+    Type an orbifold symbol — digits, <span class="sym">*</span>, <span class="sym">x</span>, <span class="sym">o</span>;
+    parenthesize multi-digit orders like <span class="sym">(12)</span>. The till itemizes the bill, computes
+    $\chi_{\mathrm{orb}}$, classifies the geometry, and counts the degrees of freedom SymmHub will let you drag.
+  </div>
+  <input id="symInput" type="text" value="3456" spellcheck="false" autocomplete="off">
+  <div class="exrow">
+    <button data-s="*632">*632</button><button data-s="442">442</button><button data-s="22x">22x</button>
+    <button data-s="o">o</button><button data-s="2223">2223</button><button data-s="3456">3456</button>
+    <button data-s="34x">34x</button><button data-s="*34x">*34x</button><button data-s="*237">*237</button>
+    <button data-s="oo">oo</button><button data-s="532">532</button>
+  </div>
+  <div id="receipt" class="receipt"></div>
+  <div id="verdict" class="verdict"></div>
+  <div class="mcheck">machine check: <span id="selfcheck"></span></div>
+</div>
+
+<div class="prose">
+<div class="note"><b>Reading the receipt.</b> <span class="sym">*237</span> is the cheapest possible
+overspend — $2\tfrac1{84}$, so $\chi=-\tfrac1{84}$ — the smallest hyperbolic orbifold, whose group
+is the (2,3,7) triangle group of Klein's quartic. Escher's <i>Circle Limit IV</i> (angels and devils)
+is <span class="sym">4*3</span>, $\chi = -\tfrac1{12}$. Every over-$2 symbol is a genuinely new
+universe of wallpaper; the notation is a catalogue of infinitely many hyperbolic worlds.</div>
+
+<div class="eyebrow prb">Part III &nbsp;·&nbsp; The lost thesis</div>
+<h2>From a symbol to an actual tiling: Deaton's <i>lafite</i></h2>
+
+<p>The Magic Theorem tells you <em>which</em> geometry a symbol lives in. It does not tell you how
+to <em>draw</em> it. To render <span class="sym">3456</span> you must produce an honest hyperbolic
+polygon — a fundamental domain — together with the M&ouml;bius transformations that glue its edges,
+and this is a real construction problem: the recipe is only sketched in Thurston's notes
+(<i>The Geometry and Topology of Three-Manifolds</i>, ch.&nbsp;13), via triangles that are allowed
+to have <em>imaginary angles</em>.</p>
+
+<p>The missing link is a thesis that barely exists in the public record: <b>Adam A. Deaton,
+<i>Hyperbolic Orbifolds and Patterns</i></b> — a Princeton senior thesis (B.A. in Mathematics,
+<b>1993</b>), preserved as a scan in Princeton's Mudd Manuscript Library. This is Conway's era at
+Princeton — the thesis leans on Conway's notation paper and his then-unpublished &ldquo;ZIP Up Your
+Surfaces,&rdquo; and on Thurston's then-forthcoming book — and it is the source of the
+half-remembered &ldquo;Conway student's master's thesis&rdquo; story (it was an undergraduate
+thesis; even the code comment in this repository misremembers it as &ldquo;1994&rdquo;). It came
+with a program, <b><i>lafite</i></b>: over 4,000 lines of C that turned any orbifold symbol into a
+picture — and, remarkably, already let the user <em>&ldquo;change the length and twist parameters
+interactively, recalculating the hyperbolic structure on the fly&rdquo;</em>, smoothly on a 1993
+graphics workstation. The interaction this repository resurrects is a direct descendant of that
+program. Neither thesis nor program was ever published; Goodman-Strauss later reconstructed
+(&ldquo;digested&rdquo;) the method for his own software, and his reconstruction is the engine in
+<span class="kbd">OrbifoldGeometrization.js</span>, which cites Deaton's thesis by name in its
+header.</p>
+
+<p>Deaton's construction is a small rewriting system <em>on the notation itself</em>. Nine types of
+geodesic cut — mirror-to-mirror, around a cross-cap, around a handle, order-2 cone to mirror,
+between order-2 corners, between order-2 cones, and so on — are expressed as Mathematica-style
+transformation rules on the symbol, each cut introducing a boundary token $\infty_\ell$ of length
+$\ell$ (his rule for a handle: $o \to \infty_\ell\,\infty_\ell$; for cutting a four-cone pillow:
+$ABCD \to \infty_\ell AB + \infty_\ell CD$). Applying the rules to a fixed point leaves exactly
+<b>twelve types of atoms</b>: four <i>sheets</i> ($*abc$ and variants), four <i>pillows</i> ($ABC$
+and variants), four <i>pillowcases</i> ($A{*}b$ and variants — Goodman-Strauss's code calls them
+<i>hats</i>). A second pass halves pillows and pillowcases into <b>generalized triangles</b> —
+triangles whose &ldquo;angles&rdquo; may be imaginary, an imaginary angle $i\ell$ standing for a
+perpendicular geodesic edge of length $\ell$ — which are solved exactly in the Lorentz
+(hyperboloid) model by the generalized law of cosines, welded back along the cuts, and traversed
+as a connection graph whose generating cycles are the group generators. The same pipeline, in the
+same order, runs in this repository every time you press Enter:</p>
+</div>
+
+<div class="pipe">
+  <div class="stage"><b>parse</b><span><span class="kbd">hashOrbifoldString</span> — symbol → features, $\chi_{\mathrm{orb}}$, geometry</span></div>
+  <div class="arr">→</div>
+  <div class="stage"><b>normalize</b><span><span class="kbd">hashOrbifold</span> — pair 2-fold points, open handles &amp; cross-caps, merge mirror circles</span></div>
+  <div class="arr">→</div>
+  <div class="stage"><b>atomize</b><span><span class="kbd">atomizeOrbifold</span> — cut along tubes &amp; slices into sheets / pillows / hats</span></div>
+  <div class="arr">→</div>
+  <div class="stage"><b>unfold</b><span><span class="kbd">unfoldAtom</span> — turtle geometry walks each atom out as a disk polygon</span></div>
+  <div class="arr">→</div>
+  <div class="stage"><b>assemble</b><span><span class="kbd">assembleFundamentalDomain</span> — weld atoms along seams (twists applied here)</span></div>
+  <div class="arr">→</div>
+  <div class="stage"><b>generate</b><span><span class="kbd">produceGenerators</span> — one inversion-circle list per edge → the group, packed for the GPU</span></div>
+</div>
+
+<div class="prose">
+
+<div class="eyebrow phy">Part IV &nbsp;·&nbsp; The drags</div>
+<h2>What you are really dragging: Teichm&uuml;ller space</h2>
+
+<p>Here is the payoff. A spherical or Euclidean group is rigid up to scale: <span class="sym">*632</span>
+is the honeycomb, end of story. A <em>hyperbolic</em> orbifold is different — the same group signature
+admits a continuous family of genuinely distinct hyperbolic shapes. Thurston (Cor.&nbsp;13.3.7) computes
+the dimension of that family, its <b>Teichm&uuml;ller space</b>:</p>
+
+$$\dim \mathcal{T}(O) \;=\; -3\,\chi(X_O) \;+\; 2k \;+\; l,$$
+
+<p>where $\chi(X_O)$ is the ordinary Euler characteristic of the underlying surface, $k$ counts cone
+points and $l$ counts corner reflectors. And his proof is a recipe: cut the orbifold along disjoint
+geodesics into pants-like primitive pieces; then <em>the lengths of the cuts, plus a twist angle for
+each gluing along a closed geodesic, are global coordinates</em>. These are the <b>Fenchel&ndash;Nielsen
+coordinates</b> of the orbifold.</p>
+
+<p>Now look at what SymmHub puts in the settings panel when you type <span class="sym">3456</span>:
+two sliders, <span class="kbd">tube_1_l</span> and <span class="kbd">tube_1_t</span>. The atomizer cut
+the four-cone pillow into two pillows along one tube; the geometrizer realized that tube as a geodesic
+seam of hyperbolic length <span class="kbd">tube_1_l</span>, and welded the two sides with a relative
+slide of <span class="kbd">tube_1_t</span> along the seam. <b>Length and twist. The sliders are
+literally Fenchel&ndash;Nielsen coordinates,</b> and the number of them is Thurston's dimension —
+computed in the code (up to bookkeeping) as</p>
+
+$$\#\text{params} = -6 + 6\,(\#o) + 3\,(\#\times) + 2\,(\#\text{cones}) + 3\,(\#*) + (\#\text{corners}).$$
+
+<p>Check it against the shop: <span class="sym">2223</span> → 2 (one paired-up 2-fold &ldquo;cone pair&rdquo;
+with a length and a twist); <span class="sym">34x</span> → 1 (the cross-cap's length);
+<span class="sym">*34x</span> → 2 (cap length + slice length); <span class="sym">*237</span> → 0 —
+triangle groups are rigid, which is why nothing lights up when you hover them.</p>
+
+<p>Deaton's thesis pins down exactly <em>where</em> the twists come from: of his nine cut types,
+precisely three cut an annular neighbourhood into two pieces that can then be slid against each
+other before regluing — the cut <em>around a handle</em>, the cut <em>between two order-2 cone
+points</em>, and the cut <em>around a pair of cone points</em>. Those are, one for one, the
+code's <span class="kbd">twistKeys = [handle, conePair, tube]</span>. (Cutting around a cross-cap
+looks promising too, he notes, but slicing a M&ouml;bius band down the middle leaves a single
+piece — no second side to slide, hence <span class="kbd">cap</span> has a length and no twist.)
+His worked example is <span class="sym">o2</span>: one cut turns it into a two-cone pillow, and
+the resulting length-plus-twist pair sweeps out its entire Teichm&uuml;ller space — his Figure 3.5
+shows the pattern morphing as the twist runs through $0, \tfrac13, 1$ of the cut's length. He
+closes by citing Thurston: the Teichm&uuml;ller space is always $\mathbb{R}^n$ with $n$ the total
+number of length and twist parameters in the decomposition.</p>
+
+<p>When the resurrection described below is active, hovering the image highlights any edge of the
+fundamental domain that carries such a parameter, and <b>dragging it moves the orbifold through its
+Teichm&uuml;ller space</b> — the app re-runs the whole parse&nbsp;→&nbsp;assemble pipeline every frame
+and re-anchors the view so the grabbed point stays under your cursor. Shift-drag (or shift-wheel)
+moves the twist instead. Each edge type is color-coded:</p>
+
+<div class="tablewrap"><table class="pins">
+<tr><th>edge on screen</th><th>feature</th><th>parameters</th><th>geometric meaning</th></tr>
+<tr><td><span class="swatch" style="background:#0000E1"></span><span class="kbd">conePair</span></td><td>two 2-fold gyrations, paired</td><td>length + twist</td><td>geodesic joining the pair; twist slides the half-turn center along it</td></tr>
+<tr><td><span class="swatch" style="background:#EBAD00"></span><span class="kbd">tube</span></td><td>cone-to-cone cut</td><td>length + twist</td><td>Fenchel–Nielsen coordinates of the pants seam</td></tr>
+<tr><td><span class="swatch" style="background:#0000FF"></span><span class="kbd">handle</span></td><td>an <span class="sym">o</span></td><td>length + twist</td><td>translation length of the handle gluing and its offset</td></tr>
+<tr><td><span class="swatch" style="background:#8C0072"></span><span class="kbd">cap</span></td><td>a miracle <span class="sym">x</span></td><td>length</td><td>glide-reflection edge; the glide is half its length</td></tr>
+<tr><td><span class="swatch" style="background:#EBAD00"></span><span class="kbd">slice</span> / <span class="kbd">band</span></td><td>cone-to-mirror / mirror-to-mirror cuts</td><td>length</td><td>mirror-anchored seams — the mirrors freeze the twist</td></tr>
+<tr><td><span class="swatch" style="background:#DB0000"></span><span class="kbd">fold</span> / <span class="kbd">cornerPair</span></td><td>2-fold points on mirrors</td><td>length</td><td>edge folded onto itself by a half-turn / between paired corners</td></tr>
+<tr><td><span class="swatch" style="background:#92C4DD"></span><span class="kbd">cuttingEdge</span></td><td>bookkeeping cuts from unfolding</td><td>—</td><td>shape fixed by the atom's trigonometry; not draggable</td></tr>
+</table></div>
+
+<div class="note"><b>Why do mirror-anchored cuts lose their twist?</b> A twist slides one side of a seam
+along the other before gluing. If the seam ends on a mirror boundary, the gluing must carry mirror to
+mirror, freezing the offset. The code chooses its cuts to route through mirrors early
+(&ldquo;option&nbsp;#2&rdquo; in the atomizer's own commentary) — fewer twist parameters, simpler domains.
+That choice is why <span class="sym">*34x</span> shows two plain lengths and no twist.</div>
+
+<div class="eyebrow prb">Part V &nbsp;·&nbsp; The code and its author</div>
+<h2>What Goodman-Strauss built in this repository</h2>
+
+<p>Chaim Goodman-Strauss — Conway's co-author on <i>The Symmetries of Things</i>, co-discoverer of
+the 2023 aperiodic monotiles (the &ldquo;hat&rdquo; and the &ldquo;Spectre&rdquo;, with Smith, Myers
+and Kaplan), and now outreach mathematician at the National Museum of Mathematics — generated many of
+the book's illustrations with symmetry software he wrote himself. SymmHub is a collaboration between
+Vladimir Bulatov and Goodman-Strauss (with Scott Vorthmann): Bulatov owns the WebGL rendering framework;
+Goodman-Strauss contributed the mathematical core, and the git history shows exactly how.</p>
+</div>
+
+<div class="timeline">
+  <div class="thread prb"><h3>Nov 2019 → Feb 2025</h3>
+    <p>The engine predates the repo. His first commit (<span class="kbd">6643dc1</span>, Feb&nbsp;2025)
+    says it plainly: <i>&ldquo;All the orbifold stuff, as it was working in Nov 2019(!)&rdquo;</i> —
+    the symbol parser, the Deaton-style geometrizer, the general wallpaper-group parameterization,
+    and a 451-line interaction controller.</p></div>
+  <div class="thread phy"><h3>2025 · 97 commits</h3>
+    <p>Mar: correctness fixes. Apr: fundamental-domain overlay and the automatic &ldquo;crown&rdquo;
+    texture machinery. May–Jul: texture dragging, distance tables, a large PatternTextures overhaul.
+    The hover-to-highlight / wheel-to-modify / re-anchor design was in the very first drop.</p></div>
+  <div class="thread syn"><h3>2026 · resurrection</h3>
+    <p>The group engine was migrated into the new SymPix app; the interactive editor stayed behind and
+    broke (a navigator refactor removed the API its re-anchoring used). In Aug&nbsp;2026 it was repaired
+    in the legacy app, true click-and-drag editing was added, and the whole interaction was ported into
+    SymPix as <span class="kbd">OrbifoldUITool</span>.</p></div>
+</div>
+
+<div class="prose">
+<p>Concretely, in today's tree: <span class="kbd">lib/orbilib/OrbifoldGeometrization.js</span>
+(2,200 lines — parser, Euler characteristic, atomizer, unfolder, assembler, generator factory),
+<span class="kbd">lib/orbilib/WallPaperGroup_General.js</span> (the parameter/slider layer),
+<span class="kbd">WallpaperGroups_NonNegative.js</span> (closed-form tables for the spherical and
+Euclidean groups), and the interaction model in
+<span class="kbd">apps/orbifold/js/SymmetryUIController.js</span> → <span class="kbd">lib/orbilib/OrbifoldUITool.js</span>
+are Goodman-Strauss's line of work; <span class="kbd">GroupRenderer.js</span> and the SymRenderer/SymPix
+pipeline are Bulatov's.</p>
+
+<div class="eyebrow syn">Part VI &nbsp;·&nbsp; Try it</div>
+<h2>Drag a hyperbolic orbifold yourself</h2>
+
+<p>The live app is embedded below (it needs this page to be served alongside the apps — on GitHub
+Pages or a local server). Colored arcs are the fundamental domain edges. <b>Hover</b> an orange or
+blue arc until it glows yellow, then <b>drag</b> — you are moving a Fenchel–Nielsen length.
+<b>Shift-drag</b> or <b>shift-wheel</b> moves the twist where one exists. Type a new symbol under
+<i>settings → symmetry → group params</i>; the <i>show edges</i> checkbox hides the overlay.</p>
+</div>
+
+<figure>
+  <iframe class="app" src="../apps/sympic/sympix_orbifold.html#%7B%22preset%22%3A%22presets%2Forbifold%2Fpar-26-05-11-16-54-33-010.json%22%7D"
+    title="SymPix orbifold app" loading="lazy"></iframe>
+  <figcaption>SymPix with orbifold symmetry <span class="sym">23x</span> — one draggable parameter,
+  <span class="kbd">cap_1_l</span>, the length of the miracle's glide edge. If the frame is empty,
+  open the app directly: <a href="../apps/sympic/sympix_orbifold.html">sympix_orbifold.html</a> ·
+  legacy app: <a href="../apps/orbifold/Symmetry.html">Symmetry.html</a> (Space toggles the domain overlay).</figcaption>
+</figure>
+
+<div class="prose">
+<h3>Suggested experiments</h3>
+<p>Four to start with:</p>
+<ul>
+<li><span class="sym">2223</span> — drag the dark-blue <span class="kbd">conePair</span> edge; shift-drag twists it. Two-dimensional Teichm&uuml;ller space.</li>
+<li><span class="sym">3456</span> — the orange <span class="kbd">tube</span> seam is a genuine pair-of-pants cut: length and twist.</li>
+<li><span class="sym">*34x</span> — two independent lengths (<span class="kbd">cap</span>, <span class="kbd">slice</span>), no twists: the mirrors froze them.</li>
+<li><span class="sym">*237</span> — nothing highlights. Rigid, as the dimension formula demands.</li>
+</ul>
+<div class="note"><b>Want more?</b> There is a full field guide of experiments —
+thirty-plus symbols organized from rigid warm-ups through one-knob families, twistable seams,
+Escher's actual symmetry groups, Deaton's own 1993 gallery, and six-dimensional monsters, each
+with its Euler characteristic, its moduli count, and what to watch for while dragging:
+<a href="orbifold-experiments.html"><b>A Field Guide of Orbifold Experiments&nbsp;→</b></a></div>
+
+<div class="eyebrow ink">Sources</div>
+<h2>References</h2>
+<ul style="font-size:15px">
+<li>J. H. Conway, <i>The orbifold notation for surface groups</i>, in Groups, Combinatorics and Geometry, LMS 165, CUP 1992, 438–447 (from the 1990 Durham symposium).</li>
+<li>J. H. Conway, D. H. Huson, <i>The Orbifold Notation for Two-Dimensional Groups</i>, Structural Chemistry 13 (2002) 247–257 — costs table, defect formula, hyperbolic examples. <a href="https://link.springer.com/article/10.1023/A:1015851621002">doi:10.1023/A:1015851621002</a></li>
+<li>J. H. Conway, H. Burgiel, C. Goodman-Strauss, <i>The Symmetries of Things</i>, A K Peters, 2008; and Burgiel, Conway, Goodman-Strauss, <i>The Magic Theorem</i>, CRC 2025 — <a href="https://themagictheorem.com/">themagictheorem.com</a>.</li>
+<li>W. P. Thurston, <i>The Geometry and Topology of Three-Manifolds</i>, ch. 13 (orbifolds; Euler characteristic 13.3.4, trichotomy 13.3.6, Teichm&uuml;ller dimension 13.3.7). <a href="https://library.slmath.org/nonmsri/gt3m/PDF/13.pdf">library.slmath.org</a></li>
+<li>A. M. Macbeath, <i>The Classification of Non-Euclidean Plane Crystallographic Groups</i>, Canad. J. Math. 19 (1967) 1192–1205 — the signature the symbol repackages.</li>
+<li>J. H. Conway, P. Doyle, J. Gilman, W. Thurston, <i>Geometry and the Imagination</i> (Geometry Center, 1991), §&ldquo;A field guide to the orbifolds&rdquo;. <a href="https://arxiv.org/abs/1804.03055">arXiv:1804.03055</a></li>
+<li>A. A. Deaton, <i>Hyperbolic Orbifolds and Patterns</i>, senior thesis, Princeton University, 1993
+(unpublished; scan held by the Seeley G. Mudd Manuscript Library, Princeton University Archives).
+Defines the nine cut rules, the twelve atoms, and the <i>lafite</i> program (&gt;4,000 lines of C)
+with interactive length/twist editing. Cited (as &ldquo;1994&rdquo;) in
+<span class="kbd">OrbifoldGeometrization.js</span> and at
+<a href="https://chaimgoodmanstrauss.com/orbifold-geometrization/">chaimgoodmanstrauss.com/orbifold-geometrization</a>.
+Its bibliography leans on Thurston's then-forthcoming book, Conway's then-forthcoming &ldquo;ZIP Up Your
+Surfaces,&rdquo; and D. Schattschneider's <i>Visions of Symmetry</i> (1990) for the Escher material.</li>
+<li>C. Goodman-Strauss — <a href="https://en.wikipedia.org/wiki/Chaim_Goodman-Strauss">bio</a>; aperiodic monotiles: <a href="https://arxiv.org/abs/2303.10798">arXiv:2303.10798</a>, <a href="https://arxiv.org/abs/2305.17743">arXiv:2305.17743</a>.</li>
+<li>This repository: <a href="https://github.com/SymmHub/SymmHub">github.com/SymmHub/SymmHub</a> — engine in <span class="kbd">lib/orbilib/</span>, legacy app in <span class="kbd">apps/orbifold/</span>, SymPix app in <span class="kbd">apps/sympic/</span>.</li>
+</ul>
+
+<div class="check">
+Written August 2026 alongside the resurrection of the interactive parameter editing.
+Historical claims verified against the primary sources linked above; code claims verified against
+the repository at the commit that introduced this page (the shop till below runs the same Euler-characteristic
+formula as <span class="kbd">hashOrbifoldString</span>, and its self-check recomputes χ(<span class="sym">*237</span>) = −1/84,
+χ(<span class="sym">4*3</span>) = −1/12, χ(<span class="sym">*632</span>) = 0 on every load).
+Two historical corrections are intentional, both checked against the scanned thesis itself:
+Deaton's thesis is an undergraduate senior thesis dated <b>1993</b> on its title page (often
+misremembered as a 1994 master's thesis — even the code comment in this repository says 1994); and
+&ldquo;A field guide to the orbifolds&rdquo; is by Conway–Doyle–Gilman–Thurston, excerpted (not
+authored) by Goodman-Strauss on his course pages. The thesis names no advisor, so none is claimed
+here.
+</div>
+</div>
+
+<script>
+(function(){
+  // — a faithful miniature of hashOrbifoldString's accounting —
+  function parseSymbol(s){
+    s = (s||'').trim();
+    var handles=0, crosscaps=0, cones=[], kaleidoscopes=[], cur=null, notOnKaleidoQ=true;
+    var i=0;
+    if(!s.length) return {err:'empty symbol'};
+    while(i<s.length){
+      var c=s[i];
+      if(c==='('){
+        var j=s.indexOf(')',i);
+        if(j<0) return {err:'unclosed parenthesis'};
+        var n=parseInt(s.slice(i+1,j),10);
+        if(!(n>=2)) return {err:'order must be ≥ 2'};
+        if(notOnKaleidoQ) cones.push(n); else cur.push(n);
+        i=j+1; continue;
+      }
+      if(c>='0'&&c<='9'){
+        var n=parseInt(c,10);
+        if(n<2) return {err:'cone/corner point of order '+n};
+        if(notOnKaleidoQ) cones.push(n); else cur.push(n);
+      }
+      else if(c==='x'||c==='X'||c==='×'){ crosscaps++; notOnKaleidoQ=true; }
+      else if(c==='o'||c==='O'){ handles++; notOnKaleidoQ=true; }
+      else if(c==='*'){ cur=[]; kaleidoscopes.push(cur); notOnKaleidoQ=false; }
+      else if(c===' '){ /* skip */ }
+      else return {err:'unexpected character "'+c+'"'};
+      i++;
+    }
+    // bad-orbifold detection (no handles/crosscaps)
+    var bad=null;
+    if(handles===0&&crosscaps===0){
+      if(kaleidoscopes.length===0){
+        if(cones.length===1) bad='a lone gyration — the “teardrop”, not a group of isometries';
+        if(cones.length===2&&cones[0]!==cones[1]) bad='unequal teardrop pair '+cones.join(',');
+      } else if(kaleidoscopes.length===1&&cones.length===0){
+        var k=kaleidoscopes[0];
+        if(k.length===1) bad='a lone corner point';
+        if(k.length===2&&k[0]!==k[1]) bad='unequal corner pair '+k.join(',');
+      }
+    }
+    return {handles:handles, crosscaps:crosscaps, cones:cones, kaleidoscopes:kaleidoscopes, bad:bad};
+  }
+  var wallpaperNames={'o':'p1','2222':'p2','**':'pm','xx':'pg','*x':'cm','*2222':'pmm','22*':'pmg',
+    '22x':'pgg','2*22':'cmm','442':'p4','*442':'p4m','4*2':'p4g','333':'p3','*333':'p3m1','3*3':'p31m',
+    '632':'p6','*632':'p6m'};
+  function fmt(x){
+    // pretty-print a rational-ish float
+    for(var d=1;d<=100000;d++){ var n=x*d; if(Math.abs(n-Math.round(n))<1e-7){
+      n=Math.round(n);
+      if(d===1) return String(n);
+      return n+'/'+d;
+    }}
+    return x.toFixed(4);
+  }
+  function analyze(s){
+    var p=parseSymbol(s);
+    if(p.err) return p;
+    var lines=[], cost=0;
+    for(var h=0;h<p.handles;h++){ lines.push(['o  (wonder)','2']); cost+=2; }
+    p.cones.forEach(function(n){ var c=(n-1)/n; lines.push([n+'  (gyration)',fmt(c)]); cost+=c; });
+    p.kaleidoscopes.forEach(function(k){
+      lines.push(['*  (kaleidoscope)','1']); cost+=1;
+      k.forEach(function(n){ var c=(n-1)/(2*n); lines.push([' '+n+' (corner)',fmt(c)]); cost+=c; });
+    });
+    for(var x=0;x<p.crosscaps;x++){ lines.push(['x  (miracle)','1']); cost+=1; }
+    var chi=2-cost;
+    var geom = p.bad ? 'bad' : (chi>0.005 ? 'spherical' : (chi>-0.001 ? 'euclidean' : 'hyperbolic'));
+    var corners=0; p.kaleidoscopes.forEach(function(k){corners+=k.length;});
+    var dim=-6+6*p.handles+3*p.crosscaps+2*p.cones.length+3*p.kaleidoscopes.length+corners;
+    return {lines:lines, cost:cost, chi:chi, geom:geom, dim:dim, bad:p.bad,
+            name:wallpaperNames[s.replace(/\s+/g,'').replace(/×/g,'x')]};
+  }
+  var inp=document.getElementById('symInput'), rec=document.getElementById('receipt'),
+      ver=document.getElementById('verdict');
+  function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function render(){
+    var s=inp.value, a=analyze(s);
+    if(a.err){ rec.innerHTML='<div class="line"><span>'+esc(a.err)+'</span></div>'; ver.innerHTML=''; return; }
+    var html='';
+    a.lines.forEach(function(l){ html+='<div class="line"><span>'+esc(l[0])+'</span><span>$'+esc(l[1])+'</span></div>'; });
+    html+='<div class="line total"><span>total</span><span>$'+esc(fmt(a.cost))+'</span></div>';
+    rec.innerHTML=html;
+    var v='χ<sub>orb</sub> = 2 − '+esc(fmt(a.cost))+' = <b>'+esc(fmt(a.chi))+'</b> &nbsp;→&nbsp; ';
+    if(a.geom==='bad'){ v+='<b class="bad">bad orbifold</b> — '+esc(a.bad)+'.'; }
+    else if(a.geom==='spherical'){
+      var g=2/a.chi;
+      v+='<b class="sph">spherical</b> — a finite group'+(Math.abs(g-Math.round(g))<1e-6?' of order '+Math.round(g):'')+'.';
+    }
+    else if(a.geom==='euclidean'){
+      v+='<b class="euc">Euclidean</b> — one of the 17 wallpaper groups'+(a.name?': <b>'+esc(a.name)+'</b>':'')+'. Exactly $2 — the Magic Theorem.';
+    }
+    else {
+      v+='<b class="hyp">hyperbolic</b> — area 2π·'+esc(fmt(-a.chi))+
+         '; Teichmüller dimension <b>'+Math.max(0,a.dim)+'</b>'+
+         (a.dim>0?' — that is how many length/twist sliders SymmHub gives you to drag.':' — rigid: nothing to drag.');
+    }
+    ver.innerHTML=v;
+  }
+  inp.addEventListener('input',render);
+  document.querySelectorAll('.exrow button').forEach(function(b){
+    b.addEventListener('click',function(){ inp.value=b.getAttribute('data-s'); render(); });
+  });
+  render();
+  // self-check
+  var ok=true, msgs=[];
+  [['*237',-1/84],['4*3',-1/12],['*632',0],['2223',-1/6],['o',0]].forEach(function(t){
+    var a=analyze(t[0]);
+    var pass=a&&!a.err&&Math.abs(a.chi-t[1])<1e-9;
+    ok=ok&&pass; msgs.push('χ('+t[0]+')='+(a&&fmt(a.chi))+(pass?' ✓':' ✗'));
+  });
+  var dims=[['2223',2],['34x',1],['*34x',2],['3456',2],['*237',0]];
+  dims.forEach(function(t){ var a=analyze(t[0]); var pass=a&&Math.max(0,a.dim)===t[1]; ok=ok&&pass;
+    msgs.push('dim('+t[0]+')='+(a&&Math.max(0,a.dim))+(pass?' ✓':' ✗')); });
+  document.getElementById('selfcheck').innerHTML=(ok?'<b>all pass</b> — ':'<b>FAIL</b> — ')+msgs.join(' · ');
+})();
+</script>
+
+</main>
+</body>
+</html>

@@ -27,6 +27,10 @@ import {
 const DEBUG = false;
 const MYNAME = 'SymmetryUIController';
 
+// parameter change per canvas pixel of drag
+const LENGTH_DRAG_SPEED = 0.005;
+const TWIST_DRAG_SPEED  = 0.002;
+
 /////////////////////
 //
 //
@@ -123,13 +127,6 @@ export class SymmetryUIController{
     this.onChanged = options.onChanged;
   }
   
-  updateSymmetryUI()
-  {
-    // this will all be fleshed out later; the task now is to try to get 
-    // the parameter controllers drawn and working.
-    
-  }
-  
   resetWheel(){
     this.midDist=-1000;
     this.activeFDPart = -1;
@@ -137,22 +134,41 @@ export class SymmetryUIController{
   
   handleEvent(evt){
     switch(evt.type) {
-    case 'keydown': // We'll take all the keydowns 
-      this.resetWheel();
-      this.onKeyDown(evt);
+    case 'keydown':
+      // Only react to keys we actually handle. Resetting the hover state on
+      // every keydown would kill shift+wheel twisting (pressing Shift used to
+      // clear activeFDPart before the wheel event arrived).
+      if(evt.code === "Space"){
+        this.resetWheel();
+        this.onKeyDown(evt);
+      }
       break;
     case 'mousemove':
     case 'pointermove':
-      this.resetWheel();
-      this.onMouseMove(evt);
+      if(this.draggingParam){
+        // dragging an edge of the fundamental domain: change its parameter
+        this.onParamDrag(evt);
+      } else if(evt.buttons){
+        // a button is held but we are not the ones dragging (navigation or
+        // texture drag in progress) — don't steal the pointer with hit-testing
+      } else {
+        this.resetWheel();
+        this.onMouseMove(evt);
+      }
       break;
     case 'wheel':
       this.onWheel(evt);
       break;
     case 'pointerdown':
     case 'mousedown':
-      this.resetWheel();
+      // NOTE: no resetWheel() here — onMouseDown needs activeFDPart
+      // to decide whether this press grabs a domain edge.
       this.onMouseDown(evt);
+      break;
+    case 'pointerup':
+    case 'mouseup':
+    case 'pointerleave':
+      this.onMouseUp(evt);
       break;
     case 'pointerenter':
     case 'mouseenter':
@@ -168,26 +184,139 @@ export class SymmetryUIController{
       this.resetWheel();
     }
   }
-  
-  onMouseDown(evt){
-    //for now, just grab the focus
-    this.renderer.getOverlay().focus();
+
+  //
+  // locate the splane of the currently active (highlighted) FD part;
+  // returns its label ([key, index]) or null.
+  //
+  getActiveEdgeLabel(){
+    let ap = this.activeFDPart;
+    if(ap < 0) return null;
+    let gp = this.groupMaker.getGroup();
+    let changing;
+    if(ap >= gp.s.length){
+      changing = gp.i[ap - gp.s.length];
+    } else {
+      changing = gp.s[ap];
+    }
+    if(changing == undefined || changing[0] == undefined) return null;
+    return changing[0].label;
   }
-  
+
+  //
+  //  commit a new value of parameter ls (e.g. "conePair_1_l").
+  //  Restores the transform stashed when the edge was grabbed, so that
+  //  setShift() re-anchors the grabbed point instead of accumulating error.
+  //
+  applyParamValue(ls, newvalue){
+    let gm = this.groupMaker;
+    let item = gm.paramGuiFolderItems ? gm.paramGuiFolderItems[ls] : undefined;
+    if(item == undefined) return;
+    this.transform.setInversiveTransform(getCopy(this.stashedTransforms));
+    gm.needsShiftQ = true;
+    // this will force a call to setShift before an update of the canvas
+    item.setValue(newvalue);
+  }
+
+  onMouseDown(evt){
+    this.renderer.getOverlay().focus();
+    // only the primary button starts a parameter drag
+    if(evt.button !== undefined && evt.button !== 0) return;
+    // a texture control point under the cursor has priority over edge grabbing
+    let pm = this.groupMaker.patternMaker;
+    if(pm && isFunction(pm.findActivePoint) && pm.editPoints
+        && isDefined(pm.findActivePoint([evt.canvasX, evt.canvasY], pm.editPoints, 5))){
+      return;
+    }
+    // the hover state may be stale (e.g. the pointer teleported without
+    // move events) — re-validate the hit at the press position
+    this.resetWheel();
+    this.onMouseMove(evt);
+    if(this.activeFDPart >= 0 && this.midDist != -1000){
+      // start dragging the highlighted edge: the drag changes its parameter
+      let label = this.getActiveEdgeLabel();
+      if(label == null) return;
+      this.draggingParam = true;
+      this.dragStart = [evt.canvasX, evt.canvasY];
+      this.dragStartValues = {};
+      let ls = label[0]+"_"+label[1].toString();
+      this.dragStartValues[ls+"_l"] = this.groupMaker.guiParams[ls+"_l"];
+      this.dragStartValues[ls+"_t"] = this.groupMaker.guiParams[ls+"_t"];
+      this.stashedTransforms = getCopy(this.transform.getInversiveTransform());
+      // stop a still-gliding pan animation: it would keep mutating the
+      // view transform every frame while we anchor against the stash
+      if(this.transform.mAnimatedPointer) this.transform.mAnimatedPointer.stop();
+      evt.grabInput = true;
+    }
+  }
+
+  onMouseUp(evt){
+    if(this.draggingParam){
+      this.draggingParam = false;
+      evt.grabInput = true;
+    }
+  }
+
+  //
+  //  dragging a highlighted edge: horizontal/vertical mouse movement
+  //  changes the length parameter (shift: the twist parameter) of the edge.
+  //
+  onParamDrag(evt){
+    if(!evt.buttons){
+      // the pointerup was lost (e.g. released outside the window)
+      this.draggingParam = false;
+      return;
+    }
+    let label = this.getActiveEdgeLabel();
+    if(label == null){
+      this.draggingParam = false;
+      return;
+    }
+    // dragging right or up increases the value
+    let d = (evt.canvasX - this.dragStart[0]) - (evt.canvasY - this.dragStart[1]);
+    let twistQ = evt.shiftKey && twistKeys.includes(label[0]);
+    let lengthQ = !twistQ && lengthKeys.includes(label[0]);
+    let ls = label[0]+"_"+label[1].toString();
+    let newvalue;
+    if(twistQ){
+      ls += "_t";
+      newvalue = this.dragStartValues[ls] + d*TWIST_DRAG_SPEED;
+      while(newvalue>TWISTMAXVALUE){
+        newvalue -= TWISTMAXVALUE-TWISTMINVALUE;
+      }
+      while(newvalue<TWISTMINVALUE){
+        newvalue += TWISTMAXVALUE-TWISTMINVALUE;
+      }
+    } else if(lengthQ){
+      ls += "_l";
+      newvalue = this.dragStartValues[ls] + d*LENGTH_DRAG_SPEED;
+      newvalue = Math.min(Math.max(newvalue, LENGTHMINVALUE), LENGTHMAXVALUE);
+    } else {
+      return;
+    }
+    this.applyParamValue(ls, newvalue);
+    evt.grabInput = true;
+  }
+
   onMouseOver(evt){
     //for now, just grab the focus
     this.renderer.getOverlay().focus();
   }
-  
-  
-  
-  
+
+
+
+
   onKeyDown(evt){
     switch(evt.code){
       case "Space": // toggle domain drawing
       this.domainShowingQ = !this.domainShowingQ;
-      if(!this.domainShowingQ){this.fdpts=[]}
-      this.renderer.config.controllers.domain.setValue(this.domainShowingQ)
+      if(!this.domainShowingQ){this.FDPoints=[]}
+      // the 'domain' controller no longer exists in GroupRendererConfig;
+      // update it when present, but do not depend on it
+      let domainCtrl = this.renderer && this.renderer.config && this.renderer.config.controllers
+            ? this.renderer.config.controllers.domain : undefined;
+      if(domainCtrl) domainCtrl.setValue(this.domainShowingQ);
+      if(isFunction(this.onChanged)) this.onChanged();
       evt.grabInput = true;
     }
   }
@@ -214,24 +343,23 @@ export class SymmetryUIController{
     while(i<this.FDPoints.length && !foundFDQ){
       // don't bother looking unless this is a value that can be changed -- does the corresponding
       // arc have a length parameter?
-      if(i>=gp.s.length){
-        edge = gp.i[i-gp.s.length][0];
-        check = edge.label[0];
-      }
-      else{
-        edge = gp.s[i][0];
-        check = edge.label[0];}
-      if(lengthKeys.includes(check)){
-        this.midDist= nearArcQ(getCanvasPnt(evt),this.FDPoints[i], this.transform,7);
-        //this returns the proportion along the edge, as a distance. 
+      // (defensive: after a group change fd may be shorter than FDPoints,
+      // and Euclidean/spherical faces carry no label)
+      let part = (i>=gp.s.length) ? gp.i[i-gp.s.length] : gp.s[i];
+      edge = part ? part[0] : undefined;
+      check = (edge && edge.label) ? edge.label[0] : undefined;
+      if(check && lengthKeys.includes(check)){
+        // note: not getCanvasPnt(evt) -- it throws on a legitimate 0 coordinate
+        this.midDist= nearArcQ([evt.canvasX, evt.canvasY],this.FDPoints[i], this.transform,7);
+        //this returns the proportion along the edge, as a distance.
         foundFDQ=!(this.midDist==-1000)}//-1000 is returned if not found
       if(!foundFDQ) i++;
     }//done looking; did we find anything?
     if(!foundFDQ){
-      //nope, we didn't, so just move on along. 
-      this.activeFDPart = -1; 
+      //nope, we didn't, so just move on along.
+      this.activeFDPart = -1;
       if(oldAp!=this.activeFDPart){
-        this.onChanged();}
+        this.requestRepaint();}
       return;}
     //otherwise, we did find something.
     // We need to save a copy of the original point, in transformed coordinates. 
@@ -260,33 +388,39 @@ export class SymmetryUIController{
       // a point distance 1 back towards the first end, from mid -- savedPt
       
       
-      evt.grabInput = true; 
-      this.onChanged();  
-      this.stashedTransforms = getCopy(this.transform.getInversiveTransform()); 
+      evt.grabInput = true;
+      // highlight feedback: a repaint is enough, the group itself is unchanged
+      if(oldAp!=this.activeFDPart){
+        this.requestRepaint();}
+      let overlay = this.renderer && isFunction(this.renderer.getOverlay) ? this.renderer.getOverlay() : null;
+      if(overlay) overlay.style.cursor = 'grab';
+      this.stashedTransforms = getCopy(this.transform.getInversiveTransform());
      // console.log("found "+this.activeFDPart.toString()+" "+this.midDist.toString());
-      
+
       return;}
   }
-  
+
+  //
+  // schedule an overlay repaint without recomputing the group
+  //
+  requestRepaint(){
+    if(this.renderer && isFunction(this.renderer.repaint)){
+      this.renderer.repaint();
+    } else if(isFunction(this.onChanged)){
+      this.onChanged();
+    }
+  }
+
   onWheel(evt){
     if(this.activeFDPart == -1){return;}
-    this.transform.setInversiveTransform(getCopy(this.stashedTransforms));
-    let delta = sign(evt.deltaY);
-    //let's locate the active part:
+    let label = this.getActiveEdgeLabel();
+    if(label == null){return;}
     let gm = this.groupMaker;
-    let gp = gm.getGroup();
-    let changing;
-    let ap = this.activeFDPart;
-    //gp.s is the boundaries; gp.i is the internals
-    if(ap>=gp.s.length){
-      changing = gp.i[gp.s.length-ap][0];}
-    else{changing = gp.s[ap][0];}
-    let label = changing.label;
+    let delta = sign(evt.deltaY);
     let twistQ = evt.shiftKey && twistKeys.includes(label[0]);
-    let lengthQ = lengthKeys.includes(label[0]);
+    let lengthQ = !twistQ && lengthKeys.includes(label[0]);
     let ls = label[0]+"_"+label[1].toString();
-    let updateQ=false;
-    let newvalue = 0;
+    let newvalue;
     if(twistQ){
       ls+="_t";
       newvalue = gm.guiParams[ls]+delta*.01;
@@ -296,7 +430,6 @@ export class SymmetryUIController{
       while(newvalue<TWISTMINVALUE){
         newvalue+=TWISTMAXVALUE-TWISTMINVALUE;
       }
-      updateQ=true;
     }
     else if(lengthQ){
       ls+="_l";
@@ -306,35 +439,19 @@ export class SymmetryUIController{
       if(newvalue>LENGTHMAXVALUE){
         newvalue = LENGTHMAXVALUE;
       }
-      updateQ=true;
+    } else {
+      return;
     }
-    
-    if(updateQ){
-      this.groupMaker.needsShiftQ= true; 
-      this.lastevt = evt;
-        // this will force a call to setShift before an update of the canvas
-      gm.paramGuiFolderItems[ls].setValue(newvalue);
-      evt.grabInput = true;
-    }
+
+    this.applyParamValue(ls, newvalue);
+    evt.grabInput = true;
   }
   
   setShift(){
-     //fix the location of the mouse
+     //fix the location of the grabbed point of the edge
     let gp = this.groupMaker.getGroup();
     let edge;
-    let evt = this.lastevt;
-    let pt = getCanvasPnt(evt);
-    let trans = this.transform;
-    let toscreen = ((isFunction(trans.transform2screen))? trans.transform2screen : trans.world2screen).bind(trans);
-    let toworld = ((isFunction(trans.transform2world))? trans.transform2world : trans.screen2world).bind(trans);
-    let pw = toworld(pt); 
-    // we must keep this pw inside the unit disk, or things go wrong:
-    let pwpw = sqrt(pw[0]*pw[0]+pw[1]*pw[1]);
-    if(pwpw>.99){
-      pw[0]/=pwpw/.995;
-      pw[1]/=pwpw/.995; //.995 * .995 = .99025
-    }
-    
+
     //where is this on the found edge?
     //preserve this point, moving along a geodesic to its new location
     let ap= this.activeFDPart;
@@ -376,41 +493,24 @@ export class SymmetryUIController{
     
       if(abs(mid.re-this.savedMid.re)>SHORTEPSILON && abs(mid.im-this.savedMid.im)>SHORTEPSILON)
       {
-      
+
         let newTransforms = sPlanesMovingEdge1ToEdge2(
           [mid,pt],
           [this.savedMid,this.savedPt]);
-    
-        this.transform.setInversiveTransform([...this.transform.transforms,...newTransforms]);
-        //if(this.transform.transforms.length >= 5){
-        //    this.transform.transforms = iGetFactorizationU4(this.transform.transforms);
-        //}
+
+        // NOTE: the navigator keeps its transform behind
+        // getInversiveTransform()/setInversiveTransform(); the old direct
+        // this.transform.transforms access does not exist any more.
+        let combined = [...this.transform.getInversiveTransform(), ...newTransforms];
+        if(combined.length >= 6){
+          // keep the transform list bounded — without this every gesture
+          // grows the list by 2 and rendering slows down until it dies
+          combined = iGetFactorizationU4(combined);
+        }
+        this.transform.setInversiveTransform(combined);
         this.transform.informListener();
       }
     }
-  
-    
-  /*  if(ppw[0]!=pw[0] && ppw[1]!=pw[1]){
-      let p= new complexN(ppw[0],ppw[1]);// this is just mid
-      let q = new complexN(pw[0],pw[1]); 
-     let s1=sPlaneSwapping(p,q);
-      this.transform.transforms.push(s1);
-      let s2=sPlaneThroughPerp(q,p);
-      this.transform.transforms.push(s2);
-     if(this.transform.transforms.length >= 5){
-        this.transform.transforms = iGetFactorizationU4(this.transform.transforms);
-      }*/
-    
-   /*   console.log(
-        "p="+p.toString(true,10)+";\n"+"q="+q.toString(true,10)+";\n"+
-        "s1="+objectToString(s1,true)+";\n"+
-        "s2="+objectToString(s2,true)+";\n"+this.transform.transforms.length.toString()+
-        "\n"
-        )
-       
-        
-      this.transform.informListener();
-    }*/
   }
   
   
@@ -507,6 +607,12 @@ export class SymmetryUIController{
         shadowwidth;
 
         // need to write fd's for spherical and euclidean
+        if (gm.curvature >= 0) {
+            // no drawable edges for these groups; drop stale hyperbolic
+            // FDPoints so the hover hit-test does not run against them
+            this.FDPoints = [];
+            return;
+        }
         if (gm.curvature < 0) {
             color = this.styles.activeColor.color;
             width = this.styles.activeColor.width;
@@ -523,8 +629,9 @@ export class SymmetryUIController{
             var i;
             this.FDPoints = [];
             for (i = 0; i < fd.length; i++) {
-                color = this.styles[fd[i][0].label[0]].color;
-                width = this.styles[fd[i][0].label[0]].width;
+                let st = (fd[i][0].label && this.styles[fd[i][0].label[0]]) || { color: "#92C4DD", width: 2 };
+                color = st.color;
+                width = st.width;
                 shadowwidth = 4;
                 this.FDPoints.push(
                     iDrawSplane(fd[i][0], context, transform, {

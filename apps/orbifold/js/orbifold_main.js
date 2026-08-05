@@ -167,7 +167,7 @@ const myPatternMaker = new PatternTextures({textures: [MyTextures, MyTextures, M
 var myGroupHandler = new WallPaperGroup_General({
     symmetryUI:
     new SymmetryUIController({
-        domainShowingQ: false,
+        domainShowingQ: true, // show the editable domain edges out of the box (Space toggles)
         overlayCanvas: document.getElementById('overlay'),
         styles: STYLES,
 
@@ -300,5 +300,13 @@ let myGroupRenderer = new GroupRenderer({
 
 
 myGroupRenderer.init();
+
+// debug access to the app internals from the browser console
+globalThis.ORBIFOLD_APP = {
+    groupRenderer: myGroupRenderer,
+    groupHandler:  myGroupHandler,
+    patternMaker:  myPatternMaker,
+    navigator:     myNavigator,
+};
 
 //  symmetryUI.init();
