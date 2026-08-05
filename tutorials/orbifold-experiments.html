@@ -406,7 +406,11 @@ Machine check of every table row: <span id="selfcheck">…</span>
     b.textContent = 'Visualize';
     b.title = 'Open ' + sym + ' in the SymPix app (reuses one window)';
     b.addEventListener('click', function(){
-      var w = window.open(APP_URL + vizHash(sym), 'symmhub-visualize');
+      // window features force a POPUP window (not a tab); the fixed name
+      // still means at most one such window ever exists — later clicks
+      // reuse it and switch the symbol in place via the hash.
+      var w = window.open(APP_URL + vizHash(sym), 'symmhub-visualize',
+        'popup=yes,width=1100,height=800,left=120,top=60');
       if (w) w.focus();
     });
     el.parentElement.appendChild(b);
