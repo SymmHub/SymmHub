@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Field Guide of Orbifold Experiments — thirty-plus symmetries to type, drag, and twist in SymmHub</title>
+<script>
+window.MathJax = {tex:{inlineMath:[['$','$']]}, chtml:{scale:0.96}};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{
+  --paper:#F2F4F6; --ink:#1B2733; --phy:#1F4E79; --prb:#B5443C;
+  --gold:#C9A227; --graphite:#5A6773; --card:#FFFFFF;
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;color:var(--ink);
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,"URW Palladio L",Georgia,serif;
+  font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
+main{max-width:1000px;margin:0 auto;padding:0 20px 90px}
+.prose{max-width:700px;margin:0 auto}
+h1{font-size:clamp(30px,5vw,44px);line-height:1.12;font-weight:600;letter-spacing:-0.01em;margin:.2em 0 .25em}
+h2{font-size:24px;font-weight:600;margin:2.6em 0 .5em;letter-spacing:-0.005em}
+.eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  font-family:ui-sans-serif,system-ui,sans-serif;font-weight:600;margin:3.4em 0 -0.2em}
+.eyebrow.phy{color:var(--phy)} .eyebrow.prb{color:var(--prb)} .eyebrow.syn{color:var(--gold)}
+.eyebrow.ink{color:var(--graphite)}
+p{margin:.85em 0}
+.hero{padding:66px 0 8px;text-align:center}
+.hero .sub{color:var(--graphite);font-size:18px;max-width:660px;margin:0 auto}
+.note{background:var(--card);border-left:3px solid var(--gold);padding:12px 18px;border-radius:0 8px 8px 0;
+  font-size:15.5px;max-width:700px;margin:1.4em auto}
+.check{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--graphite);
+  border-top:1px solid #DDE3E8;margin-top:70px;padding-top:18px;max-width:700px;margin-left:auto;margin-right:auto}
+.kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;
+  background:#EAEEF2;padding:1px 5px;border-radius:4px}
+.sym{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:600}
+a{color:var(--phy)}
+mjx-container{max-width:100%}
+table.pins{border-collapse:collapse;margin:1.2em auto 1.8em;font-size:14.5px;max-width:100%;width:100%}
+table.pins th{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--graphite);font-weight:600}
+table.pins th,table.pins td{border:1px solid #E2E6EA;padding:7px 12px;text-align:left;background:var(--card);
+  vertical-align:top}
+table.pins td.c{font-variant-numeric:tabular-nums;white-space:nowrap}
+table.pins td .sym{font-size:15px}
+table.pins tr.gold td{background:#FDF9EC}
+.tablewrap{overflow-x:auto;margin:0 -20px;padding:0 20px}
+iframe.app{width:100%;height:520px;border:1px solid #E2E6EA;border-radius:8px;background:#fff}
+figure{margin:1.6em auto;max-width:1000px;text-align:center}
+figcaption{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--graphite);
+  max-width:760px;margin:.6em auto 0;line-height:1.5}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;justify-content:center;margin:.6em auto 0;
+  font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--graphite)}
+.swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:baseline}
+.crumb{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13.5px;margin:20px 0 0}
+</style>
+</head>
+<body>
+<main>
+
+<div class="crumb prose" style="max-width:880px">← <a href="orbifold-notation.html">Two Dollars of Symmetry</a> (the tutorial this guide belongs to)</div>
+
+<div class="hero prose" style="max-width:880px">
+  <div class="eyebrow ink" style="margin-top:0">SymmHub &nbsp;·&nbsp; field guide &nbsp;·&nbsp; type the symbol, hover an edge, drag</div>
+  <h1>A Field Guide of Orbifold Experiments</h1>
+  <p class="sub">Thirty-plus symmetry groups worth visiting, from rigid triangle worlds to
+  six-dimensional moduli monsters — each with its Euler characteristic $\chi$, the number of
+  parameters you can drag, and what to watch while you drag them. Work with the app below, or open
+  it <a href="../apps/sympic/sympix_orbifold.html" target="_blank">in its own tab</a>.</p>
+</div>
+
+<figure>
+  <iframe class="app" src="../apps/sympic/sympix_orbifold.html#%7B%22preset%22%3A%22presets%2Forbifold%2Fpar-26-05-11-16-54-33-010.json%22%7D"
+    title="SymPix orbifold app" loading="lazy"></iframe>
+  <figcaption>Type any symbol from the tables into <i>settings → symmetry → group params → orbifold
+  symbol</i> and press Enter. Hover a colored arc until it glows yellow; <b>drag</b> to change its
+  length, <b>shift-drag</b> (or shift-wheel) to twist. Multi-digit orders need parentheses:
+  <span class="sym">(12)</span>. The legacy app works too: <a href="../apps/orbifold/Symmetry.html" target="_blank">Symmetry.html</a>
+  (Space toggles the edge overlay there).</figcaption>
+  <div class="legend">
+    <span><span class="swatch" style="background:#0000E1"></span>conePair</span>
+    <span><span class="swatch" style="background:#EBAD00"></span>tube / slice / band</span>
+    <span><span class="swatch" style="background:#0000FF"></span>handle</span>
+    <span><span class="swatch" style="background:#8C0072"></span>cap</span>
+    <span><span class="swatch" style="background:#DB0000"></span>fold / cornerPair</span>
+    <span><span class="swatch" style="background:#92C4DD"></span>cuttingEdge (not draggable)</span>
+    <span><span class="swatch" style="background:#FFFF00;border:1px solid #ccc"></span>active</span>
+  </div>
+</figure>
+
+<div class="prose">
+<p>Every entry lists the exact orbifold Euler characteristic $\chi$ (cost $= 2-\chi$; hyperbolic
+area $=2\pi|\chi|$) and <b>dim</b>, the dimension of the Teichm&uuml;ller space — the number of
+length/twist sliders SymmHub creates. A tiny script at the bottom of this page recomputes every
+$\chi$ and every dim from the symbol on each load and flags any row I got wrong, so the tables
+cannot silently rot.</p>
+
+<div class="eyebrow phy">I &nbsp;·&nbsp; Rigid worlds (dim 0)</div>
+<h2>Warm-ups: nothing to drag, everything to see</h2>
+<p>Triangle groups — three cone points ($pqr$) or a three-cornered kaleidoscope ($*pqr$) — have no
+moduli at all: the trigonometry pins every length. Hover all you like; nothing lights up. These
+calibrate your eye for what &ldquo;rigid&rdquo; looks like, and they contain the most famous
+hyperbolic groups.</p>
+</div>
+
+<div class="tablewrap"><table class="pins">
+<tr><th>symbol</th><th>χ</th><th>dim</th><th>what it is &amp; what to notice</th></tr>
+<tr class="gold"><td class="c"><span class="sym" data-sym="*237" data-chi="-1/84" data-dim="0">*237</span></td><td class="c">−1/84</td><td class="c">0</td>
+  <td>The cheapest possible overspend — the smallest hyperbolic orbifold, mirror triangle of the (2,3,7) group.
+  Its area $2\pi/84$ is the floor for all hyperbolic orbifolds; the Klein quartic is tiled by 336 copies of it.
+  Note how tiny the fundamental triangle is on screen.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="237" data-chi="-1/42" data-dim="0">237</span></td><td class="c">−1/42</td><td class="c">0</td>
+  <td>The same world without mirrors: the orientation-preserving (2,3,7) <i>Hurwitz</i> group — the symmetry
+  budget behind surfaces with the maximum possible 84(g−1) automorphisms. A doubled *237.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="*238" data-chi="-1/48" data-dim="0">*238</span></td><td class="c">−1/48</td><td class="c">0</td>
+  <td>The octagonal kaleidoscope: regular hyperbolic octagons come from here. Compare its triangle size with *237's.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="245" data-chi="-1/20" data-dim="0">245</span></td><td class="c">−1/20</td><td class="c">0</td>
+  <td>Deaton's opening gallery piece (1993): an &ldquo;almost Euclidean&rdquo; three-cornered pillow — χ is barely
+  below zero, so the tiling looks nearly flat near the center and only crushes toward the rim far out.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="344" data-chi="-1/6" data-dim="0">344</span></td><td class="c">−1/6</td><td class="c">0</td>
+  <td>Three cone points, no mirrors. Watch the three gyration centers in the pattern: 3-fold and two 4-folds.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="644" data-chi="-1/3" data-dim="0">644</span></td><td class="c">−1/3</td><td class="c">0</td>
+  <td>The group of the two Escher-style pictures opening Deaton's thesis — his stand-in for the <i>Circle Limit</i>
+  construction. A good one for the pattern tool: strong 6-fold center.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="*2345" data-chi="-43/120" data-dim="1">*2345</span></td><td class="c">−43/120</td><td class="c">1</td>
+  <td>Four corners on one mirror circle — the first kaleidoscope with a modulus. Deaton's own worked
+  example of a length parameter: his cut *2345 → *23∞ + *∞45. Drag the orange <span class="kbd">slice</span> seam
+  and watch a four-cornered hall of mirrors reshape. (In this row as a bridge to Part II.)</td></tr>
+</table></div>
+
+<div class="prose">
+<div class="eyebrow syn">II &nbsp;·&nbsp; One knob (dim 1)</div>
+<h2>Single-parameter families: pure lengths</h2>
+<p>One slider, no twist — every one of these is a single geodesic length, frozen against twisting
+by a mirror or by cross-cap symmetry. Drag slowly and watch the <em>area stay exactly constant</em>
+(it is $2\pi|\chi|$, a topological invariant!) while the proportions redistribute.</p>
+</div>
+
+<div class="tablewrap"><table class="pins">
+<tr><th>symbol</th><th>χ</th><th>dim</th><th>what it is &amp; what to notice</th></tr>
+<tr class="gold"><td class="c"><span class="sym" data-sym="23x" data-chi="-1/6" data-dim="1">23x</span></td><td class="c">−1/6</td><td class="c">1</td>
+  <td>The app's default preset, and a star of Deaton's gallery: he drew walking feet along the
+  <span class="kbd">cap</span> edge to make the hyperbolic glide-reflection visible — footprints
+  alternate left/right along the purple arc. Drag the cap and watch the glide axis stretch.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="34x" data-chi="-5/12" data-dim="1">34x</span></td><td class="c">−5/12</td><td class="c">1</td>
+  <td>A 3-fold, a 4-fold, and a miracle. One purple <span class="kbd">cap_1_l</span> edge; its glide is half its length.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="23*" data-chi="-1/6" data-dim="1">23*</span></td><td class="c">−1/6</td><td class="c">1</td>
+  <td>Deaton: &ldquo;no real Euclidean analogue&rdquo; — gyrations <em>plus</em> a plain mirror circle with no corners.
+  Same χ as 23x, utterly different geometry: compare them! The slider is the <span class="kbd">slice</span> from
+  the cones to the mirror.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="2*23" data-chi="-1/12" data-dim="1">2*23</span></td><td class="c">−1/12</td><td class="c">1</td>
+  <td>Escher's <i>Circle Limit I</i> has exactly this symmetry (per Deaton's gallery notes). One 2-fold gyration
+  off the mirror, corners 2 and 3 on it.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="4*3" data-chi="-1/12" data-dim="0">4*3</span></td><td class="c">−1/12</td><td class="c">0</td>
+  <td><i>Circle Limit IV</i> (angels &amp; devils), per Conway–Huson. Same price as 2*23, but rigid — a
+  reminder that χ alone does not decide whether you get a knob.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="*3333" data-chi="-1/3" data-dim="1">*3333</span></td><td class="c">−1/3</td><td class="c">1</td>
+  <td>Four 3-fold corners on one mirror — the hyperbolic cousin of the Euclidean *333. Ships as a preset.
+  Drag the slice: the four corner chambers trade area.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="*22222" data-chi="-1/4" data-dim="2">*22222</span></td><td class="c">−1/4</td><td class="c">2</td>
+  <td>Five right-angled corners — the right-angled hyperbolic pentagon! Adjacent 2-fold corners pair up
+  (<span class="kbd">cornerPair</span>, red), giving two draggable lengths. The all-right-angle pentagon
+  is the standard first example of hyperbolic flexibility.</td></tr>
+</table></div>
+
+<div class="prose">
+<div class="eyebrow prb">III &nbsp;·&nbsp; Length + twist (Fenchel–Nielsen proper)</div>
+<h2>Seams you can slide: the twistable families</h2>
+<p>Deaton proved the twist appears in exactly three situations — a cut around a <b>handle</b>,
+between two <b>order-2 cone points</b>, or around a <b>pair of cones</b> — and those are precisely
+the code's <span class="kbd">twistKeys</span>. Here the drag is two-dimensional: plain drag changes
+the seam's length, <b>shift-drag slides the two sides against each other</b>. The twist wraps
+around at ±½: watch the pattern shear, snap, and return.</p>
+</div>
+
+<div class="tablewrap"><table class="pins">
+<tr><th>symbol</th><th>χ</th><th>dim</th><th>what it is &amp; what to notice</th></tr>
+<tr class="gold"><td class="c"><span class="sym" data-sym="2223" data-chi="-1/6" data-dim="2">2223</span></td><td class="c">−1/6</td><td class="c">2</td>
+  <td>The classic first flexible orbifold: two of the 2-fold cones pair into a dark-blue
+  <span class="kbd">conePair</span> edge. Drag = the pair separates or approaches; shift-drag = the
+  half-turn center slides along the edge. Watch distant copies of the pattern whirl as you twist.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="3456" data-chi="-21/20" data-dim="2">3456</span></td><td class="c">−21/20</td><td class="c">2</td>
+  <td>Four cones of four different orders — the atomizer cuts them into two pillows joined by an
+  orange <span class="kbd">tube</span>: a genuine pair-of-pants seam. This is the textbook
+  Fenchel–Nielsen picture, live.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="o2" data-chi="-1/2" data-dim="2">o2</span></td><td class="c">−1/2</td><td class="c">2</td>
+  <td>Deaton's own twisting demo (his Figure 3.5): a handle plus one 2-fold cone. His rule
+  o → ∞<sub>ℓ</sub>∞<sub>ℓ</sub> makes the handle a circular cut with length <em>and</em> twist —
+  reproduce his figure by shift-dragging the blue <span class="kbd">handle</span> edge through a full wrap.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="o3" data-chi="-2/3" data-dim="2">o3</span></td><td class="c">−2/3</td><td class="c">2</td>
+  <td>The first hyperbolic example in Deaton's thesis (his Figure 2.3, drawn as a torus with one cone
+  point): hyperbolic &ldquo;stack bond&rdquo; brickwork. The two arrow-translations of the brick wall
+  become the handle gluing you are dragging.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="2224" data-chi="-1/4" data-dim="2">2224</span></td><td class="c">−1/4</td><td class="c">2</td>
+  <td>Like 2223 but with a 4-fold anchor: a conePair plus leftovers. Compare how the twist feels
+  against 2223 — the higher-order cone stiffens the picture.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="22*2" data-chi="-1/4" data-dim="2">22*2</span></td><td class="c">−1/4</td><td class="c">2</td>
+  <td>Two free 2-fold cones (they pair up — twistable!) plus a mirror with one corner. A rare
+  mix: one twistable conePair seam <em>and</em> mirror-frozen structure in the same picture.</td></tr>
+</table></div>
+
+<div class="prose">
+<div class="eyebrow phy">IV &nbsp;·&nbsp; Big moduli (dim ≥ 3)</div>
+<h2>Multi-dimensional Teichm&uuml;ller spaces</h2>
+<p>Now several edges highlight, each an independent coordinate. Try &ldquo;playing chords&rdquo;:
+set one length long, another short, twist a third — every combination is a genuinely different
+hyperbolic world with the same group signature. The area still never budges.</p>
+</div>
+
+<div class="tablewrap"><table class="pins">
+<tr><th>symbol</th><th>χ</th><th>dim</th><th>what it is &amp; what to notice</th></tr>
+<tr><td class="c"><span class="sym" data-sym="o*" data-chi="-1" data-dim="3">o*</span></td><td class="c">−1</td><td class="c">3</td>
+  <td>A handle and a bare mirror circle: handle length + twist, plus the band to the mirror. Non-orientable
+  meets orientable plumbing in one symbol.</td></tr>
+<tr class="gold"><td class="c"><span class="sym" data-sym="22222" data-chi="-1/2" data-dim="4">22222</span></td><td class="c">−1/2</td><td class="c">4</td>
+  <td>Five half-turns: two conePairs (each with length + twist) and a spare cone. Four sliders. Set the
+  two pair-lengths very unequal, then twist one — hyperbolic crystallography as a musical instrument.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="33333" data-chi="-4/3" data-dim="4">33333</span></td><td class="c">−4/3</td><td class="c">4</td>
+  <td>Five 3-folds: no 2-fold pairing available, so the atomizer carves it with <span class="kbd">tube</span>s —
+  two tubes, each length + twist. Same dimension as 22222, completely different mechanism: compare which
+  edges glow.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="o22" data-chi="-1" data-dim="4">o22</span></td><td class="c">−1</td><td class="c">4</td>
+  <td>Handle + a 2-fold conePair: two twistable seams of different species (blue handle, dark-blue conePair) in
+  one orbifold.</td></tr>
+<tr class="gold"><td class="c"><span class="sym" data-sym="oo" data-chi="-2" data-dim="6">oo</span></td><td class="c">−2</td><td class="c">6</td>
+  <td>No singular points at all: a plain genus-2 surface, the fundamental object of classical Teichm&uuml;ller
+  theory — dim = 6g−6 = 6. Every edge you see is a handle seam; you are hand-steering the full 6-dimensional
+  moduli space of genus-2 hyperbolic structures. The tiling is by right-angled octagons when everything is symmetric.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="2222222" data-chi="-3/2" data-dim="8">2222222</span></td><td class="c">−3/2</td><td class="c">8</td>
+  <td>Seven half-turns → three conePairs + one leftover: eight sliders. About as many knobs as the display
+  stays readable for — a stress test for the geometrizer (and for you).</td></tr>
+</table></div>
+
+<div class="prose">
+<div class="eyebrow syn">V &nbsp;·&nbsp; Escher's corner &amp; Deaton's gallery</div>
+<h2>Famous patterns to reconstruct</h2>
+<p>Symbols with documented pedigrees — load them and squint. For the Escher rows, Doris
+Schattschneider's <i>Visions of Symmetry</i> (Deaton's reference [S]) has the source prints.</p>
+</div>
+
+<div class="tablewrap"><table class="pins">
+<tr><th>symbol</th><th>χ</th><th>dim</th><th>pedigree</th></tr>
+<tr><td class="c"><span class="sym" data-sym="2*23" data-chi="-1/12" data-dim="1">2*23</span></td><td class="c">−1/12</td><td class="c">1</td>
+  <td>Escher, <i>Circle Limit I</i> (fish spines meet along mirrors; per Deaton's gallery notes).</td></tr>
+<tr><td class="c"><span class="sym" data-sym="334" data-chi="-1/12" data-dim="0">334</span></td><td class="c">−1/12</td><td class="c">0</td>
+  <td>Escher, <i>Circle Limit III</i> — ignoring the fish colors (with colors counted it is 22222, per Deaton).
+  The famous white spines are <em>not</em> geodesics, which is half the fun of checking it.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="4*3" data-chi="-1/12" data-dim="0">4*3</span></td><td class="c">−1/12</td><td class="c">0</td>
+  <td>Escher, <i>Circle Limit IV</i> (angels &amp; devils), per Conway–Huson 2002.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="644" data-chi="-1/3" data-dim="0">644</span></td><td class="c">−1/3</td><td class="c">0</td>
+  <td>Deaton's thesis frontispiece pair — his Escher-style opener.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="245" data-chi="-1/20" data-dim="0">245</span></td><td class="c">−1/20</td><td class="c">0</td>
+  <td>Deaton's red/blue half-pillows, shown in both the Poincar&eacute; and projective models in the thesis.</td></tr>
+<tr><td class="c"><span class="sym" data-sym="23x" data-chi="-1/6" data-dim="1">23x</span></td><td class="c">−1/6</td><td class="c">1</td>
+  <td>Deaton's walking-feet glide-reflection demo; today the SymmHub default preset.</td></tr>
+</table></div>
+
+<div class="prose">
+<div class="eyebrow prb">VI &nbsp;·&nbsp; The refusals</div>
+<h2>Symbols that push back (and why)</h2>
+<p>Just as instructive as the ones that work.</p>
+</div>
+
+<div class="tablewrap"><table class="pins">
+<tr><th>symbol</th><th>what happens</th><th>why</th></tr>
+<tr><td class="c"><span class="sym">5</span> or <span class="sym">34</span></td><td>rejected</td>
+  <td>Bad orbifolds — the teardrop and the unequal spindle are not quotients of any surface group;
+  Thurston's list of &ldquo;bad&rdquo; orbifolds, and the parser refuses them.</td></tr>
+<tr><td class="c"><span class="sym">*632</span>, <span class="sym">442</span>, <span class="sym">o</span></td><td>renders, nothing to drag</td>
+  <td>Cost exactly $2: Euclidean wallpaper (p6m, p4, p1). Flat groups are rigid up to scale, so the edge
+  overlay deactivates — the drag machinery is hyperbolic-only.</td></tr>
+<tr><td class="c"><span class="sym">532</span>, <span class="sym">*432</span></td><td>renders, nothing to drag</td>
+  <td>Under $2: spherical — icosahedral (order 60) and full octahedral (order 48) symmetry on the sphere.</td></tr>
+<tr><td class="c"><span class="sym">(12)3x</span></td><td>works!</td>
+  <td>Parenthesized multi-digit orders are fine — a 12-fold gyration, a 3-fold, and a miracle
+  (χ = −7/12, one cap length). Push orders higher and watch the cone tighten.</td></tr>
+<tr><td class="c"><span class="sym">23∞</span></td><td>not supported here</td>
+  <td>Deaton's flower-bouquet gallery pages use infinite-order cone points (∞); SymmHub's parser doesn't
+  accept ∞ — one of the places where <i>lafite</i>, 1993, still has the edge.</td></tr>
+</table></div>
+
+<div class="prose">
+<div class="eyebrow ink">VII &nbsp;·&nbsp; Watching the machinery</div>
+<h2>Experiments about the <em>interaction</em> itself</h2>
+<ul>
+<li><b>The anchor.</b> Grab an edge mid-arc and drag: the grabbed point stays pinned under your cursor
+while everything else flows around it. That is <span class="kbd">setShift()</span> re-solving a
+M&ouml;bius correction per frame — Deaton's &ldquo;recalculating the hyperbolic structure on the
+fly,&rdquo; thirty years on.</li>
+<li><b>Constant area.</b> Pick <span class="sym">3456</span>, note the size of the pink fundamental
+region, then drag its tube to an extreme. The region gets long and thin — but its hyperbolic area is
+pinned at $2\pi\cdot\tfrac{21}{20}$ by Gauss–Bonnet. The Euclidean screen-area lies to you;
+the geometry doesn't.</li>
+<li><b>Twist wrap-around.</b> Shift-drag any twistable edge steadily in one direction: at ±½ the twist
+wraps. On <span class="sym">o2</span> you can reproduce Deaton's Figure 3.5 exactly — twists of
+0 and 1 (a full wrap) give <em>the same picture</em> through different group representations.</li>
+<li><b>Degeneration.</b> Drive any length slider to its extremes (0.3 or 4.0) and watch the tiling
+approach collapse — this is walking toward the boundary of Teichm&uuml;ller space, where a curve
+pinches. The clamps exist because the geometry genuinely degenerates beyond them.</li>
+<li><b>Sliders vs. drags.</b> Open <i>settings → symmetry → group params</i> while dragging: the
+sliders track live. Then move a slider directly — same pipeline, no view re-anchoring. The drag's
+anchoring is the difference between &ldquo;editing a number&rdquo; and &ldquo;holding the pattern
+in your hand.&rdquo;</li>
+<li><b>Same price, different worlds.</b> <span class="sym">23x</span>, <span class="sym">23*</span>,
+<span class="sym">2223</span>, <span class="sym">334</span> all cost $2\tfrac16$ — identical χ, areas,
+and yet: one knob, one knob, two knobs, none. χ decides the geometry; the <em>features</em> decide
+the moduli.</li>
+</ul>
+
+<div class="note"><b>Where the numbers come from.</b> dim $=-6+6\,(\#o)+3\,(\#\times)+2\,(\#\text{cones})
++3\,(\#*)+(\#\text{corners})$ — Goodman-Strauss's bookkeeping of Thurston's Cor. 13.3.7, which SymmHub uses
+to build the sliders; χ from Conway's cost table. Both are recomputed for every row of this page on load
+(see the check line below), and both agree with Deaton's decomposition: one length per cut, one twist for
+each cut around a handle, between order-2 cones, or around a cone pair.</div>
+</div>
+
+<div class="check">
+Companion to <a href="orbifold-notation.html">Two Dollars of Symmetry</a>. Historical claims follow
+Adam A. Deaton, <i>Hyperbolic Orbifolds and Patterns</i> (Princeton senior thesis, 1993) — gallery
+attributions (644, 245, 23*, 23x, ∞-groups, <i>Circle Limit</i> identifications) are from its Chapter 5.
+Machine check of every table row: <span id="selfcheck">…</span>
+</div>
+
+<script>
+(function(){
+  function parseSymbol(s){
+    s = (s||'').trim();
+    var handles=0, crosscaps=0, cones=[], kaleidoscopes=[], cur=null, notOnKaleidoQ=true, i=0;
+    if(!s.length) return {err:'empty'};
+    while(i<s.length){
+      var c=s[i];
+      if(c==='('){
+        var j=s.indexOf(')',i); if(j<0) return {err:'paren'};
+        var n=parseInt(s.slice(i+1,j),10); if(!(n>=2)) return {err:'order'};
+        if(notOnKaleidoQ) cones.push(n); else cur.push(n);
+        i=j+1; continue;
+      }
+      if(c>='0'&&c<='9'){
+        var n=parseInt(c,10); if(n<2) return {err:'order'};
+        if(notOnKaleidoQ) cones.push(n); else cur.push(n);
+      }
+      else if(c==='x'||c==='X'||c==='×'){ crosscaps++; notOnKaleidoQ=true; }
+      else if(c==='o'||c==='O'){ handles++; notOnKaleidoQ=true; }
+      else if(c==='*'){ cur=[]; kaleidoscopes.push(cur); notOnKaleidoQ=false; }
+      else return {err:'char'};
+      i++;
+    }
+    return {handles:handles, crosscaps:crosscaps, cones:cones, kaleidoscopes:kaleidoscopes};
+  }
+  function fmt(x){
+    for(var d=1;d<=100000;d++){ var n=x*d; if(Math.abs(n-Math.round(n))<1e-7){
+      n=Math.round(n); return d===1?String(n):(n+'/'+d);
+    }}
+    return x.toFixed(4);
+  }
+  function chiOf(p){
+    var cost=2*p.handles+p.crosscaps+p.kaleidoscopes.length;
+    p.cones.forEach(function(n){cost+=(n-1)/n;});
+    p.kaleidoscopes.forEach(function(k){k.forEach(function(n){cost+=(n-1)/(2*n);});});
+    return 2-cost;
+  }
+  function dimOf(p){
+    var corners=0; p.kaleidoscopes.forEach(function(k){corners+=k.length;});
+    return Math.max(0,-6+6*p.handles+3*p.crosscaps+2*p.cones.length+3*p.kaleidoscopes.length+corners);
+  }
+  function parseFrac(t){
+    t=t.trim();
+    if(t.indexOf('/')>=0){var a=t.split('/');return parseFloat(a[0])/parseFloat(a[1]);}
+    return parseFloat(t);
+  }
+  var rows=document.querySelectorAll('[data-sym]');
+  var bad=[], n=0;
+  rows.forEach(function(el){
+    n++;
+    var p=parseSymbol(el.getAttribute('data-sym'));
+    if(p.err){ bad.push(el.getAttribute('data-sym')+' (parse)'); return; }
+    var chi=chiOf(p), dim=dimOf(p);
+    var wantChi=parseFrac(el.getAttribute('data-chi')), wantDim=parseInt(el.getAttribute('data-dim'),10);
+    if(Math.abs(chi-wantChi)>1e-9) bad.push(el.getAttribute('data-sym')+': χ='+fmt(chi)+' (page says '+el.getAttribute('data-chi')+')');
+    if(dim!==wantDim) bad.push(el.getAttribute('data-sym')+': dim='+dim+' (page says '+wantDim+')');
+  });
+  document.getElementById('selfcheck').innerHTML = bad.length
+    ? '<b style="color:#B5443C">'+bad.length+' MISMATCH</b> — '+bad.join(' · ')
+    : '<b>all '+n+' symbols verified</b> — χ and dim recomputed from each symbol at page load.';
+})();
+</script>
+
+</main>
+</body>
+</html>
