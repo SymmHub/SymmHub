@@ -47,7 +47,6 @@ table.pins td.c{font-variant-numeric:tabular-nums;white-space:nowrap}
 table.pins td .sym{font-size:15px}
 table.pins tr.gold td{background:#FDF9EC}
 .tablewrap{overflow-x:auto;margin:0 -20px;padding:0 20px}
-iframe.app{width:100%;height:520px;border:1px solid #E2E6EA;border-radius:8px;background:#fff}
 figure{margin:1.6em auto;max-width:1000px;text-align:center}
 figcaption{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--graphite);
   max-width:760px;margin:.6em auto 0;line-height:1.5}
@@ -70,17 +69,19 @@ figcaption{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:v
   <h1>A Field Guide of Orbifold Experiments</h1>
   <p class="sub">Thirty-plus symmetry groups worth visiting, from rigid triangle worlds to
   six-dimensional moduli monsters — each with its Euler characteristic $\chi$, the number of
-  parameters you can drag, and what to watch while you drag them. Work with the app below, or open
-  it <a href="../apps/sympic/sympix_orbifold.html" target="_blank">in its own tab</a>.</p>
+  parameters you can drag, and what to watch while you drag them. Every entry has a
+  <b>Visualize</b> button that opens the app in a popup with that symmetry already loaded.</p>
 </div>
 
 <figure>
-  <iframe class="app" src="../apps/sympic/sympix_orbifold.html#%7B%22preset%22%3A%22presets%2Forbifold%2Fpar-26-05-11-16-54-33-010.json%22%7D"
-    title="SymPix orbifold app" loading="lazy"></iframe>
-  <figcaption>Type any symbol from the tables into <i>settings → symmetry → group params → orbifold
-  symbol</i> and press Enter. Hover a colored arc until it glows yellow; <b>drag</b> to change its
-  length, <b>shift-drag</b> (or shift-wheel) to twist. Multi-digit orders need parentheses:
-  <span class="sym">(12)</span>. The legacy app works too: <a href="../apps/orbifold/Symmetry.html" target="_blank">Symmetry.html</a>
+  <a href="../apps/sympic/sympix_orbifold.html" target="_blank"><img
+    src="img/sympix-23x.jpg" alt="SymPix rendering the hyperbolic orbifold 23x with its fundamental domain edges drawn"
+    style="width:100%;height:auto;border:1px solid #E2E6EA;border-radius:8px"></a>
+  <figcaption>The SymPix app rendering <span class="sym">23x</span>, fundamental-domain edges drawn
+  over the pattern. In the app: hover a colored arc until it glows yellow; <b>drag</b> to change its
+  length, <b>shift-drag</b> (or shift-wheel) to twist. Symbols are typed under <i>settings → symmetry →
+  group params</i>; multi-digit orders need parentheses: <span class="sym">(12)</span>. The legacy app
+  works too: <a href="../apps/orbifold/Symmetry.html" target="_blank">Symmetry.html</a>
   (Space toggles the edge overlay there).</figcaption>
   <div class="legend">
     <span><span class="swatch" style="background:#0000E1"></span>conePair</span>
