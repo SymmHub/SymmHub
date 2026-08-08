@@ -80,7 +80,9 @@ figcaption{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:v
   <figcaption>The SymPix app rendering <span class="sym">23x</span> with the fundamental-domain edges
   drawn over the pattern. The Visualize buttons paint each orbifold with a letter <b>R</b>, because a
   chiral motif makes the symmetry readable: every copy that reads <b>Я</b> has been mirrored, every
-  upside-down one rotated. In the app: hover a colored arc until it glows yellow; <b>drag</b> to change
+  upside-down one rotated. (The tile's own "crown" compositing is switched off for these links —
+  with a photo texture it makes the image flow across the domain walls, but with a single glyph it
+  would stack a rotated R on top of each one.) In the app: hover a colored arc until it glows yellow; <b>drag</b> to change
   its length, <b>shift-drag</b> (or shift-wheel) to twist. Prefer a different look? Any of the 270
   textures under <i>pattern → pattern params → texture</i> works — the Haeckel plates are beautiful,
   though on large domains they blur. Symbols are typed under <i>settings → symmetry → group params</i>;
@@ -494,8 +496,12 @@ Machine check of every table row: <span id="selfcheck">…</span>
         pattern: {
           // patternParams carries a className, so it replaces the preset's
           // wholesale — every field it needs must be restated here.
+          // useCrown pre-composites each tile with its neighbours' transformed
+          // copies so a photographic texture flows across the domain walls. For
+          // a single glyph it just double-exposes the tile (an R with a rotated
+          // R on top of it), so keep it off — the app's own default.
           patternParams: { className: 'PatternImage', params: {
-            id: 'img1', transparency: 0, useCrown: true,
+            id: 'img1', transparency: 0, useCrown: false,
             transform: { centerX: 0, centerY: 0, scale: 1, angle: 0 },
             texture: { className: 'TextureFile', params: {
               texName: MOTIF, showFrame: false, texSize: 1024 } } } },
