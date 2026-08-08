@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>A Field Guide of Orbifold Experiments — thirty-plus symmetries to type, drag, and twist in SymmHub</title>
+<title>Orbifold Showcase — thirty-plus hyperbolic symmetries to type, drag, and twist in SymmHub</title>
 <script>
 window.MathJax = {tex:{inlineMath:[['$','$']]}, chtml:{scale:0.96}};
 </script>
@@ -62,11 +62,11 @@ figcaption{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:v
 <body>
 <main>
 
-<div class="crumb prose" style="max-width:880px">← <a href="orbifold-notation.html">Two Dollars of Symmetry</a> (the tutorial this guide belongs to)</div>
+<div class="crumb prose" style="max-width:880px">← <a href="orbifold-notation.html">Two Dollars of Symmetry</a> (the tutorial this showcase belongs to)</div>
 
 <div class="hero prose" style="max-width:880px">
-  <div class="eyebrow ink" style="margin-top:0">SymmHub &nbsp;·&nbsp; field guide &nbsp;·&nbsp; type the symbol, hover an edge, drag</div>
-  <h1>A Field Guide of Orbifold Experiments</h1>
+  <div class="eyebrow ink" style="margin-top:0">SymmHub &nbsp;·&nbsp; showcase &nbsp;·&nbsp; type the symbol, hover an edge, drag</div>
+  <h1>Orbifold Showcase</h1>
   <p class="sub">Thirty-plus symmetry groups worth visiting, from rigid triangle worlds to
   six-dimensional moduli monsters — each with its Euler characteristic $\chi$, the number of
   parameters you can drag, and what to watch while you drag them. Every entry has a
@@ -77,11 +77,17 @@ figcaption{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:v
   <a href="../apps/sympic/sympix_orbifold.html" target="_blank"><img
     src="img/sympix-23x.jpg" alt="SymPix rendering the hyperbolic orbifold 23x with its fundamental domain edges drawn"
     style="width:100%;height:auto;border:1px solid #E2E6EA;border-radius:8px"></a>
-  <figcaption>The SymPix app rendering <span class="sym">23x</span>, fundamental-domain edges drawn
-  over the pattern. In the app: hover a colored arc until it glows yellow; <b>drag</b> to change its
-  length, <b>shift-drag</b> (or shift-wheel) to twist. Symbols are typed under <i>settings → symmetry →
-  group params</i>; multi-digit orders need parentheses: <span class="sym">(12)</span>. The legacy app
-  works too: <a href="../apps/orbifold/Symmetry.html" target="_blank">Symmetry.html</a>
+  <figcaption>The SymPix app rendering <span class="sym">23x</span> with the fundamental-domain edges
+  drawn over the pattern. The Visualize buttons paint each orbifold with a letter <b>R</b>, because a
+  chiral motif makes the symmetry readable: every copy that reads <b>Я</b> has been mirrored, every
+  upside-down one rotated. (The tile's own "crown" compositing is switched off for these links —
+  with a photo texture it makes the image flow across the domain walls, but with a single glyph it
+  would stack a rotated R on top of each one.) In the app: hover a colored arc until it glows yellow; <b>drag</b> to change
+  its length, <b>shift-drag</b> (or shift-wheel) to twist. Prefer a different look? Any of the 270
+  textures under <i>pattern → pattern params → texture</i> works — the Haeckel plates are beautiful,
+  though on large domains they blur. Symbols are typed under <i>settings → symmetry → group params</i>;
+  multi-digit orders need parentheses: <span class="sym">(12)</span>. The legacy app works too:
+  <a href="../apps/orbifold/Symmetry.html" target="_blank">Symmetry.html</a>
   (Space toggles the edge overlay there).</figcaption>
   <div class="legend">
     <span><span class="swatch" style="background:#0000E1"></span>conePair</span>
@@ -95,11 +101,72 @@ figcaption{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:v
 </figure>
 
 <div class="prose">
-<p>Every entry lists the exact orbifold Euler characteristic $\chi$ (cost $= 2-\chi$; hyperbolic
+
+<div class="eyebrow phy">First &nbsp;·&nbsp; How to drive it</div>
+<h2>Finding a handle, and what every gesture does</h2>
+
+<p><b>Getting in.</b> Press any <b>Visualize</b> button below — it opens the app in a single reused
+popup with that symmetry already loaded. (Opening the app cold instead shows
+<span class="sym">*442</span>, which is Euclidean and therefore has nothing to drag; type a
+hyperbolic symbol or load a preset first.) To type a symbol yourself: gear icon →
+<i>symmetry</i> → <i>group params</i> → <b>orbifold symbol</b>, then press Enter. Multi-digit
+orders need parentheses, <span class="sym">(12)3x</span>.</p>
+
+<p><b>Finding a draggable handle.</b> The <b>move</b> tool — the four-arrows button, active by
+default — must be selected. Then glide the pointer slowly across the colored arcs. When you cross
+one that carries a parameter it lights up <b>yellow</b> and the cursor becomes a <b>grab hand</b>.
+That pair is the only reliable signal: color alone won't tell you, because red marks both the
+draggable <span class="kbd">fold</span>/<span class="kbd">cornerPair</span> and the inert
+<span class="kbd">mirrorRedundant</span>, and pale blue <span class="kbd">cuttingEdge</span>s are
+never draggable. The hit zone is about 7&nbsp;canvas pixels wide — on a Retina screen that is only
+3–4 pixels of actual mouse travel, narrower than the stroke you see, so aim at the middle of the
+arc and move slowly.</p>
+</div>
+
+<div class="tablewrap"><table class="pins">
+<tr><th>gesture</th><th>on a highlighted (yellow) edge</th><th>on empty space</th></tr>
+<tr class="gold"><td class="c">drag</td><td><b>changes that edge's length</b> — 0.005 per canvas pixel, clamped to 0.3…4.0.
+  Right/up increases, left/down decreases. The point you grabbed stays pinned under the cursor.</td>
+  <td>pans the view</td></tr>
+<tr class="gold"><td class="c">shift + drag</td><td><b>changes the twist</b> — 0.002 per canvas pixel, wrapping at ±0.5.
+  Only <span class="kbd">handle</span>, <span class="kbd">conePair</span> and <span class="kbd">tube</span>
+  edges have a twist; on any other edge shift-drag just changes the length.</td>
+  <td>elliptic rotation of the view</td></tr>
+<tr><td class="c">ctrl + drag</td><td>same as a plain drag (length)</td><td>hyperbolic translation of the view</td></tr>
+<tr><td class="c">wheel</td><td>length in steps of 0.03 per notch</td><td>zooms</td></tr>
+<tr><td class="c">shift + wheel</td><td>twist in steps of 0.01 per notch</td><td>elliptic rotation</td></tr>
+</table></div>
+
+<div class="prose">
+<p><b>Two quirks worth knowing.</b> The wheel only edits a parameter if the edge is <em>already</em>
+highlighted — move the pointer onto the arc first, then scroll without moving. And a full length
+sweep from 0.3 to 4.0 is about 740 canvas pixels of dragging (≈370 mouse pixels on a Retina
+display); a complete twist cycle is about 500. So drag boldly: small nudges barely move the
+geometry.</p>
+
+<p><b>Watching the numbers.</b> Open gear → <i>symmetry</i> → <i>group params</i> →
+<i>Parameters for &lt;symbol&gt;</i>. The sliders are named <span class="kbd">&lt;edge&gt;_&lt;n&gt;_l</span>
+for a length and <span class="kbd">&lt;edge&gt;_&lt;n&gt;_t</span> for a twist —
+<span class="kbd">tube_1_l</span>, <span class="kbd">cap_1_l</span>,
+<span class="kbd">handle_2_t</span> — and they track your dragging live. The <b>show edges</b>
+checkbox in the same folder hides the overlay (which also disables dragging entirely).</p>
+
+<p><b>No keyboard shortcuts</b> exist in this app — everything is mouse-driven. (In the older
+<a href="../apps/orbifold/Symmetry.html" target="_blank">Symmetry.html</a>, <span class="kbd">Space</span>
+toggles the domain overlay; that key does nothing here.)</p>
+
+<div class="note"><b>Nothing lights up?</b> In order of likelihood: the symbol is Euclidean or
+spherical (cost ≤ $2 — no moduli, the overlay switches itself off); the symbol is hyperbolic but
+<b>dim 0</b>, i.e. rigid, like every triangle group in Part I; <b>show edges</b> is unchecked; a
+different tool is selected in the toolbar; or you are simply missing the narrow hit zone. One
+genuine limitation: an edge that renders as a perfectly straight line through the disk centre
+cannot be grabbed at all — nudge the view with a pan and it becomes a circular arc again.</div>
+
+<p>Every entry below lists the exact orbifold Euler characteristic $\chi$ (cost $= 2-\chi$; hyperbolic
 area $=2\pi|\chi|$) and <b>dim</b>, the dimension of the Teichm&uuml;ller space — the number of
-length/twist sliders SymmHub creates. A tiny script at the bottom of this page recomputes every
-$\chi$ and every dim from the symbol on each load and flags any row I got wrong, so the tables
-cannot silently rot.</p>
+length/twist sliders SymmHub creates. A script at the bottom of this page recomputes every
+$\chi$ and every dim in the tables below from the symbol itself on each load, so those two columns
+cannot silently rot; the prose was checked separately by running all 36 symbols through the engine.</p>
 
 <div class="eyebrow phy">I &nbsp;·&nbsp; Rigid worlds (dim 0)</div>
 <h2>Warm-ups: nothing to drag, everything to see</h2>
@@ -145,15 +212,17 @@ by a mirror or by cross-cap symmetry. Drag slowly and watch the <em>area stay ex
 <div class="tablewrap"><table class="pins">
 <tr><th>symbol</th><th>χ</th><th>dim</th><th>what it is &amp; what to notice</th></tr>
 <tr class="gold"><td class="c"><span class="sym" data-sym="23x" data-chi="-1/6" data-dim="1">23x</span></td><td class="c">−1/6</td><td class="c">1</td>
-  <td>The app's default preset, and a star of Deaton's gallery: he drew walking feet along the
+  <td>The first of the shipped presets (a cold start with no link actually shows the Euclidean
+  <span class="sym">*442</span>), and a star of Deaton's gallery: he drew walking feet along the
   <span class="kbd">cap</span> edge to make the hyperbolic glide-reflection visible — footprints
   alternate left/right along the purple arc. Drag the cap and watch the glide axis stretch.</td></tr>
 <tr><td class="c"><span class="sym" data-sym="34x" data-chi="-5/12" data-dim="1">34x</span></td><td class="c">−5/12</td><td class="c">1</td>
   <td>A 3-fold, a 4-fold, and a miracle. One purple <span class="kbd">cap_1_l</span> edge; its glide is half its length.</td></tr>
 <tr><td class="c"><span class="sym" data-sym="23*" data-chi="-1/6" data-dim="1">23*</span></td><td class="c">−1/6</td><td class="c">1</td>
   <td>Deaton: &ldquo;no real Euclidean analogue&rdquo; — gyrations <em>plus</em> a plain mirror circle with no corners.
-  Same χ as 23x, utterly different geometry: compare them! The slider is the <span class="kbd">slice</span> from
-  the cones to the mirror.</td></tr>
+  Same χ as 23x, utterly different geometry: compare them! The one slider is
+  <span class="kbd">fold_1_l</span> — a red <span class="kbd">fold</span> edge (the leftover 2-fold point
+  folded onto the mirror), the same species as <span class="sym">2*23</span> below.</td></tr>
 <tr><td class="c"><span class="sym" data-sym="2*23" data-chi="-1/12" data-dim="1">2*23</span></td><td class="c">−1/12</td><td class="c">1</td>
   <td>Escher's <i>Circle Limit I</i> has exactly this symmetry (per Deaton's gallery notes). One 2-fold gyration
   off the mirror, corners 2 and 3 on it.</td></tr>
@@ -216,8 +285,9 @@ hyperbolic world with the same group signature. The area still never budges.</p>
 <div class="tablewrap"><table class="pins">
 <tr><th>symbol</th><th>χ</th><th>dim</th><th>what it is &amp; what to notice</th></tr>
 <tr><td class="c"><span class="sym" data-sym="o*" data-chi="-1" data-dim="3">o*</span></td><td class="c">−1</td><td class="c">3</td>
-  <td>A handle and a bare mirror circle: handle length + twist, plus the band to the mirror. Non-orientable
-  meets orientable plumbing in one symbol.</td></tr>
+  <td>A handle and a bare mirror circle: <span class="kbd">handle_1_l</span> + <span class="kbd">handle_1_t</span>,
+  plus an interior <span class="kbd">slice_1_l</span> cut out to the mirror. Orientable and mirror plumbing
+  in one symbol.</td></tr>
 <tr class="gold"><td class="c"><span class="sym" data-sym="22222" data-chi="-1/2" data-dim="4">22222</span></td><td class="c">−1/2</td><td class="c">4</td>
   <td>Five half-turns: two conePairs (each with length + twist) and a spare cone. Four sliders. Set the
   two pair-lengths very unequal, then twist one — hyperbolic crystallography as a musical instrument.</td></tr>
@@ -230,10 +300,13 @@ hyperbolic world with the same group signature. The area still never budges.</p>
   one orbifold.</td></tr>
 <tr class="gold"><td class="c"><span class="sym" data-sym="oo" data-chi="-2" data-dim="6">oo</span></td><td class="c">−2</td><td class="c">6</td>
   <td>No singular points at all: a plain genus-2 surface, the fundamental object of classical Teichm&uuml;ller
-  theory — dim = 6g−6 = 6. Every edge you see is a handle seam; you are hand-steering the full 6-dimensional
-  moduli space of genus-2 hyperbolic structures. The tiling is by right-angled octagons when everything is symmetric.</td></tr>
+  theory — dim = 6g−6 = 6. Two handle seams (<span class="kbd">handle_1</span>, <span class="kbd">handle_2</span>,
+  length + twist each) plus an interior <span class="kbd">tube_1</span> joining the halves make the six sliders;
+  most of the visible arcs are pale-blue <span class="kbd">cuttingEdge</span>s and stay inert. You are
+  hand-steering the full 6-dimensional moduli space of genus-2 hyperbolic structures.</td></tr>
 <tr><td class="c"><span class="sym" data-sym="2222222" data-chi="-3/2" data-dim="8">2222222</span></td><td class="c">−3/2</td><td class="c">8</td>
-  <td>Seven half-turns → three conePairs + one leftover: eight sliders. About as many knobs as the display
+  <td>Seven half-turns → three <span class="kbd">conePair</span>s plus a <span class="kbd">tube</span> around
+  the leftover cone, each with length and twist: eight sliders. About as many knobs as the display
   stays readable for — a stress test for the geometrizer (and for you).</td></tr>
 </table></div>
 
@@ -258,7 +331,7 @@ Schattschneider's <i>Visions of Symmetry</i> (Deaton's reference [S]) has the so
 <tr><td class="c"><span class="sym" data-sym="245" data-chi="-1/20" data-dim="0">245</span></td><td class="c">−1/20</td><td class="c">0</td>
   <td>Deaton's red/blue half-pillows, shown in both the Poincar&eacute; and projective models in the thesis.</td></tr>
 <tr><td class="c"><span class="sym" data-sym="23x" data-chi="-1/6" data-dim="1">23x</span></td><td class="c">−1/6</td><td class="c">1</td>
-  <td>Deaton's walking-feet glide-reflection demo; today the SymmHub default preset.</td></tr>
+  <td>Deaton's walking-feet glide-reflection demo; today the first of SymmHub's shipped presets.</td></tr>
 </table></div>
 
 <div class="prose">
@@ -308,7 +381,7 @@ sliders track live. Then move a slider directly — same pipeline, no view re-an
 anchoring is the difference between &ldquo;editing a number&rdquo; and &ldquo;holding the pattern
 in your hand.&rdquo;</li>
 <li><b>Same price, different worlds.</b> <span class="sym">23x</span>, <span class="sym">23*</span>,
-<span class="sym">2223</span>, <span class="sym">334</span> all cost $2\tfrac16$ — identical χ, areas,
+<span class="sym">2223</span>, <span class="sym">344</span> all cost $2\tfrac16$ — identical χ, areas,
 and yet: one knob, one knob, two knobs, none. χ decides the geometry; the <em>features</em> decide
 the moduli.</li>
 </ul>
@@ -392,12 +465,49 @@ Machine check of every table row: <span id="selfcheck">…</span>
   // ── "Visualize" buttons: open the SymPix app in ONE shared window with
   //    the symbol already selected (via the #{"params":...} deep link).
   var APP_URL = new URL('../apps/sympic/sympix_orbifold.html', window.location.href).href;
+  // Base the view on a known-good preset (texture, colours, camera) and
+  // override only the symmetry group — otherwise the app would render the
+  // symbol with default pattern settings, which look blank.
+  var VIZ_PRESET = 'presets/orbifold/par-26-05-11-16-54-33-010.json';
+  // The preset's own texture is a soft Haeckel plate tuned for the small 23x
+  // domain; stretched over a large fundamental domain it turns into a blur.
+  // For a showcase a chiral line-art motif is far better: the letter R
+  // shows at a glance which copies are rotated and which are mirrored, and it
+  // stays crisp under magnification. Its size has to track the domain, whose
+  // linear scale goes as sqrt(area) = sqrt(2*pi*|chi|).
+  var MOTIF = 'r';
+  var MOTIF_K = 0.30;         // calibrated on 22222 (|chi| = 1/2 -> 0.21)
+  function motifScale(sym){
+    var p = parseSymbol(sym);
+    if (p.err) return 0.30;
+    var chi = chiOf(p);
+    if (!(chi < 0)) return 0.30;   // non-hyperbolic: no draggable domain anyway
+    // capped at 0.32: past that the glyph outgrows the pattern box and clips
+    return +Math.min(0.32, Math.max(0.03, MOTIF_K * Math.sqrt(Math.abs(chi)))).toFixed(3);
+  }
   function vizHash(sym){
     return '#' + encodeURIComponent(JSON.stringify({
-      params: { symmetry: {
-        groupType: 'Orbifold',
-        group: { className: 'Group_Orbifold', params: { name: sym } }
-      }}
+      preset: VIZ_PRESET,
+      params: {
+        symmetry: {
+          groupType: 'Orbifold',
+          group: { className: 'Group_Orbifold', params: { name: sym } }
+        },
+        pattern: {
+          // patternParams carries a className, so it replaces the preset's
+          // wholesale — every field it needs must be restated here.
+          // useCrown pre-composites each tile with its neighbours' transformed
+          // copies so a photographic texture flows across the domain walls. For
+          // a single glyph it just double-exposes the tile (an R with a rotated
+          // R on top of it), so keep it off — the app's own default.
+          patternParams: { className: 'PatternImage', params: {
+            id: 'img1', transparency: 0, useCrown: false,
+            transform: { centerX: 0, centerY: 0, scale: 1, angle: 0 },
+            texture: { className: 'TextureFile', params: {
+              texName: MOTIF, showFrame: false, texSize: 1024 } } } },
+          patternTransform: { centerX: 0, centerY: 0, scale: motifScale(sym), angle: 0 }
+        }
+      }
     }));
   }
   document.querySelectorAll('[data-sym],[data-viz]').forEach(function(el){
