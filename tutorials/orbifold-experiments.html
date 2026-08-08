@@ -77,11 +77,15 @@ figcaption{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:v
   <a href="../apps/sympic/sympix_orbifold.html" target="_blank"><img
     src="img/sympix-23x.jpg" alt="SymPix rendering the hyperbolic orbifold 23x with its fundamental domain edges drawn"
     style="width:100%;height:auto;border:1px solid #E2E6EA;border-radius:8px"></a>
-  <figcaption>The SymPix app rendering <span class="sym">23x</span>, fundamental-domain edges drawn
-  over the pattern. In the app: hover a colored arc until it glows yellow; <b>drag</b> to change its
-  length, <b>shift-drag</b> (or shift-wheel) to twist. Symbols are typed under <i>settings → symmetry →
-  group params</i>; multi-digit orders need parentheses: <span class="sym">(12)</span>. The legacy app
-  works too: <a href="../apps/orbifold/Symmetry.html" target="_blank">Symmetry.html</a>
+  <figcaption>The SymPix app rendering <span class="sym">23x</span> with the fundamental-domain edges
+  drawn over the pattern. The Visualize buttons paint each orbifold with a letter <b>R</b>, because a
+  chiral motif makes the symmetry readable: every copy that reads <b>Я</b> has been mirrored, every
+  upside-down one rotated. In the app: hover a colored arc until it glows yellow; <b>drag</b> to change
+  its length, <b>shift-drag</b> (or shift-wheel) to twist. Prefer a different look? Any of the 270
+  textures under <i>pattern → pattern params → texture</i> works — the Haeckel plates are beautiful,
+  though on large domains they blur. Symbols are typed under <i>settings → symmetry → group params</i>;
+  multi-digit orders need parentheses: <span class="sym">(12)</span>. The legacy app works too:
+  <a href="../apps/orbifold/Symmetry.html" target="_blank">Symmetry.html</a>
   (Space toggles the edge overlay there).</figcaption>
   <div class="legend">
     <span><span class="swatch" style="background:#0000E1"></span>conePair</span>
@@ -463,13 +467,41 @@ Machine check of every table row: <span id="selfcheck">…</span>
   // override only the symmetry group — otherwise the app would render the
   // symbol with default pattern settings, which look blank.
   var VIZ_PRESET = 'presets/orbifold/par-26-05-11-16-54-33-010.json';
+  // The preset's own texture is a soft Haeckel plate tuned for the small 23x
+  // domain; stretched over a large fundamental domain it turns into a blur.
+  // For a field guide a chiral line-art motif is far better: the letter R
+  // shows at a glance which copies are rotated and which are mirrored, and it
+  // stays crisp under magnification. Its size has to track the domain, whose
+  // linear scale goes as sqrt(area) = sqrt(2*pi*|chi|).
+  var MOTIF = 'r';
+  var MOTIF_K = 0.30;         // calibrated on 22222 (|chi| = 1/2 -> 0.21)
+  function motifScale(sym){
+    var p = parseSymbol(sym);
+    if (p.err) return 0.30;
+    var chi = chiOf(p);
+    if (!(chi < 0)) return 0.30;   // non-hyperbolic: no draggable domain anyway
+    // capped at 0.32: past that the glyph outgrows the pattern box and clips
+    return +Math.min(0.32, Math.max(0.03, MOTIF_K * Math.sqrt(Math.abs(chi)))).toFixed(3);
+  }
   function vizHash(sym){
     return '#' + encodeURIComponent(JSON.stringify({
       preset: VIZ_PRESET,
-      params: { symmetry: {
-        groupType: 'Orbifold',
-        group: { className: 'Group_Orbifold', params: { name: sym } }
-      }}
+      params: {
+        symmetry: {
+          groupType: 'Orbifold',
+          group: { className: 'Group_Orbifold', params: { name: sym } }
+        },
+        pattern: {
+          // patternParams carries a className, so it replaces the preset's
+          // wholesale — every field it needs must be restated here.
+          patternParams: { className: 'PatternImage', params: {
+            id: 'img1', transparency: 0, useCrown: true,
+            transform: { centerX: 0, centerY: 0, scale: 1, angle: 0 },
+            texture: { className: 'TextureFile', params: {
+              texName: MOTIF, showFrame: false, texSize: 1024 } } } },
+          patternTransform: { centerX: 0, centerY: 0, scale: motifScale(sym), angle: 0 }
+        }
+      }
     }));
   }
   document.querySelectorAll('[data-sym],[data-viz]').forEach(function(el){
