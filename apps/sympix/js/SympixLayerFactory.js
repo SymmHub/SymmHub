@@ -7,7 +7,7 @@ import {
 //
 // SympixLayerFactory
 //
-// Standard layer factory for sympic apps: VisualizationImage + VisualizationOverlay.
+// Standard layer factory for sympix apps: VisualizationImage + VisualizationOverlay.
 // Signature: (getGLCtx, getOnChange, getChildren) => ObjectFactory
 //
 // Pass as options.layerFactory to VisualizationManager.
