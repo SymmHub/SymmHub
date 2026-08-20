@@ -45,6 +45,11 @@
     width : 100%;
     cursor: move;
     background-color: #BBB;
+    /* the header IS the drag surface: a finger must move the window, not
+       scroll the page. The interior deliberately has no touch-action, so its
+       own content still scrolls. */
+    touch-action: none;
+    user-select: none;
 }
 
 .header-style:hover  {
@@ -67,6 +72,33 @@
 
 .close-button-style:hover {
   background-color: #c42b1c;
+}
+
+/* Corner resize grip. Replaces CSS `resize: both`, which no finger can use and
+   whose affordance is a faint corner texture nobody finds. internalWindow.js
+   drives it with the same pointer-capture path as the header drag. */
+.drag-grip {
+  position: absolute;
+  right:  0;
+  bottom: 0;
+  width:  16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  cursor: nwse-resize;
+  color: #666;
+  touch-action: none;
+  z-index: 2;
+}
+
+.drag-grip svg {
+  width:  12px;
+  height: 12px;
+  display: block;
+}
+
+.drag-grip:hover {
+  color: #0078d4;
 }
 
 /* Remove DatGUI panel outer border, shadow, and rounded corners when hosted inside internalWindow */
