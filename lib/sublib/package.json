@@ -1,0 +1,31 @@
+{
+  "name": "sublib",
+  "version": "1.0.0",
+  "description": "Standalone subgroup enumeration for finitely presented groups; returns the permutations induced on cosets, in the SymmHub color_groups JSON format",
+  "type": "module",
+  "main": "src/sublib.js",
+  "exports": {
+    ".": "./src/sublib.js"
+  },
+  "bin": {
+    "sublib": "bin/sublib.mjs"
+  },
+  "files": [
+    "src",
+    "bin",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node ../../tests/sublib/smoke.mjs",
+    "validate": "node ../../tests/sublib/validate-corpus.mjs"
+  },
+  "keywords": [
+    "group-theory",
+    "subgroups",
+    "coset-table",
+    "low-index",
+    "wallpaper-groups",
+    "triangle-groups",
+    "color-groups"
+  ]
+}

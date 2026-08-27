@@ -1,0 +1,834 @@
+<title>sublib</title>
+<style>
+  /* ---- tokens: light is the base set, both dark states redefine only these -- */
+  :root {
+    --paper:      #f5f7f7;
+    --surface:    #ffffff;
+    --sunken:     #eef1f1;
+    --ink:        #14181a;
+    --muted:      #5b686c;
+    --faint:      #8c979b;
+    --line:       #dde3e3;
+    --accent:     #0c6b66;
+    --accent-ink: #08514d;
+    --accent-bg:  #e3efee;
+    --mark:       #8a5510;
+    --mark-bg:    #f6eddf;
+    --shadow:     0 1px 2px rgba(20, 24, 26, .05), 0 8px 24px -16px rgba(20, 24, 26, .3);
+
+    --serif: Charter, "Bitstream Charter", "Iowan Old Style", "Source Serif Pro", Georgia, serif;
+    --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    --measure: 68ch;
+    --step-0: 1rem;
+    --step-1: 1.125rem;
+    --step-2: 1.375rem;
+    --step-3: 1.75rem;
+    --step-4: 2.5rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0f1214;
+      --surface:    #171b1e;
+      --sunken:     #1c2124;
+      --ink:        #e4eaeb;
+      --muted:      #9aa6aa;
+      --faint:      #6d797d;
+      --line:       #2a3134;
+      --accent:     #5ac6bd;
+      --accent-ink: #7fd8d0;
+      --accent-bg:  #12302e;
+      --mark:       #d9a457;
+      --mark-bg:    #2e2517;
+      --shadow:     0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #0f1214;
+    --surface:    #171b1e;
+    --sunken:     #1c2124;
+    --ink:        #e4eaeb;
+    --muted:      #9aa6aa;
+    --faint:      #6d797d;
+    --line:       #2a3134;
+    --accent:     #5ac6bd;
+    --accent-ink: #7fd8d0;
+    --accent-bg:  #12302e;
+    --mark:       #d9a457;
+    --mark-bg:    #2e2517;
+    --shadow:     0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-0);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    max-width: 108ch;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 6rem;
+  }
+  @media (min-width: 62rem) {
+    .page { grid-template-columns: 15rem minmax(0, 1fr); align-items: start; padding-top: 4.5rem; }
+    .toc { position: sticky; top: 3rem; }
+  }
+
+  /* ---- masthead ---------------------------------------------------------- */
+  header.masthead { grid-column: 1 / -1; border-bottom: 1px solid var(--line); padding-bottom: 2rem; }
+  .wordmark {
+    font-family: var(--mono);
+    font-size: var(--step-4);
+    font-weight: 600;
+    letter-spacing: -.02em;
+    margin: 0;
+    color: var(--ink);
+  }
+  .wordmark .dot { color: var(--accent); }
+  .tagline {
+    font-family: var(--serif);
+    font-size: var(--step-2);
+    line-height: 1.4;
+    color: var(--muted);
+    max-width: 46ch;
+    margin: .6rem 0 0;
+    text-wrap: balance;
+  }
+  .facts {
+    /* a ul, so it has to opt out of the prose measure and the column stack */
+    display: flex; flex-flow: row wrap; gap: .5rem 1.75rem; max-width: none;
+    margin: 1.75rem 0 0; padding: 0; list-style: none;
+    font-family: var(--mono); font-size: .78rem; letter-spacing: .02em;
+    color: var(--faint);
+  }
+  .facts b { color: var(--ink); font-weight: 600; }
+
+  /* ---- table of contents ------------------------------------------------- */
+  .toc nav { border-left: 2px solid var(--line); }
+  .toc a {
+    display: block; padding: .3rem 0 .3rem 1rem;
+    color: var(--muted); text-decoration: none;
+    font-size: .875rem; border-left: 2px solid transparent; margin-left: -2px;
+  }
+  .toc a:hover, .toc a:focus-visible { color: var(--accent); border-left-color: var(--accent); }
+  .toc .label {
+    font-family: var(--mono); font-size: .7rem; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--faint); margin: 0 0 .75rem 1rem;
+  }
+
+  /* ---- prose ------------------------------------------------------------- */
+  main { min-width: 0; display: flex; flex-direction: column; gap: 3.5rem; }
+  section { display: flex; flex-direction: column; gap: 1rem; scroll-margin-top: 2rem; }
+
+  h2 {
+    font-family: var(--serif); font-size: var(--step-3); font-weight: 600;
+    line-height: 1.2; margin: 0; text-wrap: balance; letter-spacing: -.01em;
+  }
+  h3 {
+    font-family: var(--sans); font-size: var(--step-1); font-weight: 650;
+    margin: .75rem 0 0; text-wrap: balance;
+  }
+  p, ul, ol { margin: 0; max-width: var(--measure); }
+  ul, ol { padding-left: 1.25rem; display: flex; flex-direction: column; gap: .35rem; }
+  li::marker { color: var(--faint); }
+  a { color: var(--accent); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+  strong { font-weight: 650; }
+  code {
+    font-family: var(--mono); font-size: .875em;
+    background: var(--sunken); border: 1px solid var(--line);
+    border-radius: 3px; padding: .05em .3em;
+  }
+  .lede { font-family: var(--serif); font-size: var(--step-1); color: var(--muted); max-width: 60ch; }
+
+  /* ---- code blocks ------------------------------------------------------- */
+  pre {
+    margin: 0; overflow-x: auto;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+    padding: 1rem 1.15rem; box-shadow: var(--shadow);
+  }
+  pre code {
+    background: none; border: 0; padding: 0;
+    font-size: .82rem; line-height: 1.75; color: var(--ink);
+  }
+  .c { color: var(--faint); }
+
+  /* ---- callouts ---------------------------------------------------------- */
+  .note, .watch {
+    max-width: var(--measure); border-left: 3px solid var(--accent);
+    background: var(--accent-bg); border-radius: 0 5px 5px 0;
+    padding: .85rem 1.1rem; font-size: .94rem;
+  }
+  .watch { border-left-color: var(--mark); background: var(--mark-bg); }
+  .note p, .watch p { max-width: none; }
+  .note .tag, .watch .tag {
+    display: block; font-family: var(--mono); font-size: .68rem;
+    text-transform: uppercase; letter-spacing: .14em; margin-bottom: .3rem; color: var(--accent-ink);
+  }
+  .watch .tag { color: var(--mark); }
+
+  /* ---- data tables ------------------------------------------------------- */
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .875rem; }
+  th, td { text-align: left; padding: .55rem .85rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    font-family: var(--mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--faint); font-weight: 500; background: var(--sunken);
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td code { white-space: nowrap; }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; }
+
+  /* ---- the coset-table motif --------------------------------------------- */
+  figure { margin: 0; display: flex; flex-direction: column; gap: .75rem; }
+  figcaption { font-size: .85rem; color: var(--muted); max-width: var(--measure); }
+  .ctable {
+    display: inline-block; overflow-x: auto; max-width: 100%;
+    border: 1px solid var(--line); border-radius: 6px; background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .ctable table { width: auto; font-family: var(--mono); font-size: .95rem; }
+  .ctable th, .ctable td { padding: .3rem .6rem; text-align: center; border-bottom: 1px solid var(--line); }
+  .ctable tbody tr:last-child td, .ctable tbody tr:last-child th { border-bottom: 0; }
+  .ctable thead th { background: var(--sunken); font-family: var(--mono); font-size: .8rem; letter-spacing: 0; text-transform: none; }
+  .ctable tbody th { color: var(--accent); font-weight: 600; text-align: right; background: var(--surface); }
+  .ctable .corner { background: var(--sunken); }
+  .ctable td { color: var(--ink); }
+
+  .diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 1rem; box-shadow: var(--shadow); overflow-x: auto; }
+  .diagram svg { display: block; width: 100%; min-width: 30rem; height: auto; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; font-size: .8rem; color: var(--muted); font-family: var(--mono); }
+  .legend span { display: inline-flex; align-items: center; gap: .4rem; }
+  .swatch { width: 1.4rem; height: 0; border-top: 3px solid var(--accent); }
+  .swatch.thin { border-top: 1.5px solid var(--faint); }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <h1 class="wordmark">sublib<span class="dot">.</span></h1>
+    <p class="tagline">Subgroup enumeration for finitely presented groups — and the permutations each
+      subgroup induces on its cosets.</p>
+    <ul class="facts">
+      <li><b>ES modules</b> · no dependencies, no build</li>
+      <li><b>703 files</b> validated against GAP</li>
+      <li><b>index ≤ 62</b></li>
+    </ul>
+  </header>
+
+  <aside class="toc">
+    <p class="label">Contents</p>
+    <nav>
+      <a href="#start">Quick start</a>
+      <a href="#result">What comes back</a>
+      <a href="#cosets">Coset representatives</a>
+      <a href="#domain">Fundamental domains</a>
+      <a href="#canonical">What "canonical" means</a>
+      <a href="#presets">Presets</a>
+      <a href="#symmhub">Using it in sympix</a>
+      <a href="#cli">Command line</a>
+      <a href="#api">API</a>
+      <a href="#gap">Agreement with GAP</a>
+      <a href="#perf">Performance</a>
+      <a href="#how">How it works</a>
+    </nav>
+  </aside>
+
+  <main>
+
+    <section id="start">
+      <h2>Quick start</h2>
+      <p class="lede">Give it a presentation; it returns the conjugacy classes of subgroups of index
+        ≤ <em>n</em>, each described by the permutations its parent generators induce on the cosets.</p>
+
+      <p>Copy the folder and import from <code>src/sublib.js</code> — from a page, from node, or
+        through a bundler. That one module is the whole supported surface.</p>
+
+<pre><code><span class="c">// the group is given by generators and relators, as text</span>
+import { subgroupsData } from './sublib/src/sublib.js';
+
+const data = subgroupsData({
+  name:     '2222',
+  gens:     'a b c d',
+  relators: 'a^2, b^2, c*d, (c*a)^2, (c*b)^2',
+  maxIndex: 24,
+  maxSubgroups: 1000,          <span class="c">// budget: stop climbing when it is spent</span>
+});
+
+data.totalCount;               <span class="c">// 999</span>
+data.subgroups[1];
+<span class="c">// { subgroup: '2222.2.1', index: 2, generators: 'a b CC',</span>
+<span class="c">//   cosets: 'ab ab ba ba', invcos: 'ab ab ba ba' }</span>
+</code></pre>
+
+      <p>The 17 wallpaper groups and the triangle-group families are built in, so most calls are one
+        line:</p>
+
+<pre><code>subgroupsData({ preset: 'wallpaper:*632', maxIndex: 24 });
+subgroupsData({ preset: 'klm:237',        maxIndex: 24, maxSubgroups: 300 });
+subgroupsData({ preset: '2222',           maxIndex: 12 });   <span class="c">// bare orbifold works too</span>
+</code></pre>
+
+      <h3>Relator syntax</h3>
+      <p>Juxtaposition or <code>*</code>; <code>^n</code> with negative <code>n</code> allowed;
+        parentheses; <code>[a,b]</code> for the commutator <em>a</em>⁻¹<em>b</em>⁻¹<em>ab</em>;
+        uppercase for inverses; and <code>u = v</code> for a relation. Generators are single
+        lowercase letters.</p>
+
+      <h3>The three modules</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>file</th><th>holds</th></tr></thead>
+          <tbody>
+            <tr><td><code>src/sublib.js</code></td><td><strong>the public interface</strong> — import this, and only this</td></tr>
+            <tr><td><code>src/sublib_core.js</code></td><td>the engine: parsing, the coset-table search, classes, the wire format. Knows no particular group</td></tr>
+            <tr><td><code>src/groups_description.js</code></td><td>the catalogue: wallpaper, <code>klm</code> and <code>*klm</code> presentations. Computes nothing</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="result">
+      <h2>What comes back</h2>
+      <p>One object per group, in the JSON shape the sympix viewer already reads
+        (<code>color_groups/&lt;family&gt;/sub_&lt;name&gt;.json</code>):</p>
+
+      <div class="scroll">
+        <table>
+          <thead><tr><th>field</th><th>meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>name</code></td><td>group label, e.g. <code>2222</code>, <code>*237</code></td></tr>
+            <tr><td><code>group</code></td><td><code>Group( [ a, b, c, d ] )</code> — GAP's printed form</td></tr>
+            <tr><td><code>relators</code></td><td><code>[ a^2, b^2, c*d, (c*a)^2, (c*b)^2 ]</code></td></tr>
+            <tr><td><code>maxIndex</code></td><td>largest index actually enumerated</td></tr>
+            <tr><td><code>nextIndex</code></td><td>first index dropped for budget, else <code>null</code></td></tr>
+            <tr><td><code>nextIndexCount</code></td><td>how many subgroups that index would have added</td></tr>
+            <tr><td><code>totalCount</code></td><td>number of subgroups reported</td></tr>
+            <tr><td><code>countPerIndex</code></td><td><code>[{index, count}, …]</code>; indices with no subgroups are omitted</td></tr>
+            <tr><td><code>subgroups</code></td><td><code>[{subgroup, index, generators, cosets, invcos}, …]</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Reading <code>cosets</code> and <code>invcos</code></h3>
+      <p>These are the payload. Each is a space-separated list of blocks, one block per generator of
+        the parent group, in the order the generators are declared. A block has one character per
+        coset: the character at position <em>i</em> names the coset that coset <em>i</em> is mapped
+        to. <code>cosets</code> holds the generators, <code>invcos</code> their inverses.</p>
+
+      <figure>
+        <div class="ctable">
+          <table>
+            <thead>
+              <tr><th class="corner"></th><th>a</th><th>b</th></tr>
+            </thead>
+            <tbody>
+              <tr><th>a</th><td>a</td><td>b</td></tr>
+              <tr><th>b</th><td>a</td><td>b</td></tr>
+              <tr><th>c</th><td>b</td><td>a</td></tr>
+              <tr><th>d</th><td>b</td><td>a</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figcaption><code>2222.2.1</code>, <code>cosets: 'ab ab ba ba'</code>. Columns are the two
+          cosets, rows the four generators of p2. Generators <em>a</em> and <em>b</em> fix both
+          cosets; <em>c</em> and <em>d</em> swap them.</figcaption>
+      </figure>
+
+      <p>Cosets are named from a 62-symbol alphabet — <code>a…z A…Z 0…9</code> — so coset 0 is
+        <code>a</code> and the largest workable index is 62. To get plain arrays instead:</p>
+
+<pre><code>import { permStringToArrays } from './sublib/src/sublib.js';
+
+permStringToArrays('ab ab ba ba');   <span class="c">// [[0,1], [0,1], [1,0], [1,0]] — 0-based</span>
+</code></pre>
+
+      <div class="watch">
+        <span class="tag">Watch out</span>
+        <p>The <code>generators</code> field lists words that generate the subgroup, uppercase
+          meaning inverse — but written <em>right to left</em>, the convention of the GAP exporter
+          that produced the shipped files. Pass <code>generators: 'natural'</code> for un-reversed
+          words, or <code>'none'</code> to skip them. Coset representatives, below, always read left
+          to right.</p>
+      </div>
+
+      <p><strong>Subgroup ids</strong> are <code>&lt;name&gt;.&lt;index&gt;.&lt;k&gt;</code>, with
+        <code>k</code> numbering from 1 within each index.</p>
+    </section>
+
+    <section id="cosets">
+      <h2>Coset representatives</h2>
+      <p><code>cosetRepresentatives(data, id)</code> returns the <em>N</em> elements of a transversal
+        of a subgroup of index <em>N</em> — one representative per right coset, as words in the
+        parent generators, the first of them the identity.</p>
+
+<pre><code>import { subgroupsData, cosetRepresentatives } from './sublib/src/sublib.js';
+
+const data = subgroupsData({ preset: 'wallpaper:632', maxIndex: 12 });
+
+cosetRepresentatives(data, '632.6.1').map(r =&gt; r.word);
+<span class="c">// [ '1', 'b', 'B', 'Ba', 'Bab', 'BaB' ]</span>
+</code></pre>
+
+      <p>This falls straight out of the coset table: generator <em>x</em> sends coset <em>Hg</em> to
+        <em>Hgx</em>, so a word labelling a path from coset 0 to coset <em>i</em> is a representative
+        of coset <em>i</em>. Entry <em>i</em> of the returned array <em>is</em> coset <em>i</em>, so
+        it lines up with position <em>i</em> of every block in <code>cosets</code>.</p>
+
+      <div class="scroll">
+        <table>
+          <thead><tr><th>field</th><th>meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>coset</code></td><td>coset number, 0-based; equals the array position</td></tr>
+            <tr><td><code>symbol</code></td><td>the same coset as it appears in <code>cosets</code> / <code>invcos</code></td></tr>
+            <tr><td><code>word</code></td><td>the representative as text, uppercase for inverses, <code>'1'</code> for the identity</td></tr>
+            <tr><td><code>letters</code></td><td>the same word as signed generator numbers (<code>+k</code> / <code>−k</code>, 1-based)</td></tr>
+            <tr><td><code>length</code></td><td>number of letters</td></tr>
+            <tr><td><code>via</code></td><td><code>{from, letter, gen}</code> — the single generator reaching this coset from an already-built one; <code>null</code> for coset 0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="watch">
+        <span class="tag">Read left to right</span>
+        <p><code>'Bab'</code> means <em>b</em>⁻¹·<em>a</em>·<em>b</em>, applied in that order. This is
+          the opposite of the <code>generators</code> field; the reversal there is the GAP exporter's,
+          and it stops at this function.</p>
+      </div>
+
+      <p>It also accepts a bare subgroup entry, or a position in the list, and it reads generator
+        names from the result's presentation or from its <code>Group( [ … ] )</code> string — so it
+        works on a JSON file loaded straight from <code>color_groups</code>:</p>
+
+<pre><code>cosetRepresentatives(data, 3);                        <span class="c">// by position</span>
+cosetRepresentatives(data.subgroups[3]);              <span class="c">// the entry alone</span>
+cosetRepresentatives(entry, { gens: 'x y z' });       <span class="c">// or name the generators</span>
+</code></pre>
+    </section>
+
+    <section id="domain">
+      <h2>Fundamental domains</h2>
+      <p>This is what turns a fundamental domain for the group into one for the subgroup. If
+        <em>F</em> is a fundamental domain for <em>G</em> acting on the left, and the transversal
+        splits the group into right cosets</p>
+
+      <p style="font-family: var(--serif); font-size: var(--step-1); padding-left: 1.25rem;">
+        <em>G</em> = <em>H t</em><sub>0</sub> ⊔ <em>H t</em><sub>1</sub> ⊔ … ⊔
+        <em>H t</em><sub><em>N</em>−1</sub>,</p>
+
+      <p>then</p>
+
+      <p style="font-family: var(--serif); font-size: var(--step-1); padding-left: 1.25rem;">
+        <em>D</em> = <em>t</em><sub>0</sub>·<em>F</em> ∪ <em>t</em><sub>1</sub>·<em>F</em> ∪ … ∪
+        <em>t</em><sub><em>N</em>−1</sub>·<em>F</em></p>
+
+      <p>is a fundamental domain for <em>H</em> — <em>N</em> copies of the group's tile, one per
+        coset, with the identity contributing <em>F</em> itself.</p>
+
+      <p>Rather than evaluate each word from scratch, build the tiles in order and use
+        <code>via</code>, which names the single generator that reaches a coset from one already
+        built. Because the transversal is prefix-closed, <code>via.from</code> is always ready before
+        it is needed:</p>
+
+<pre><code>const reps = cosetRepresentatives(data, '632.6.1');
+const T = new Array(reps.length);
+
+T[0] = identityTransform();
+for (const r of reps.slice(1)) {
+  T[r.coset] = compose(T[r.via.from], transformOf(r.via.gen));
+}
+
+<span class="c">// tiles: T[i] applied to the group's fundamental domain F</span>
+</code></pre>
+
+      <p>One matrix multiply per tile, and no long products to accumulate error. Neighbours come from
+        the table itself: apply generator <em>g</em> to the tile of coset <em>i</em> and you land on
+        the tile of coset <code>permStringToArrays(entry.cosets)[g][i]</code>.</p>
+    </section>
+
+    <section id="canonical">
+      <h2>What "canonical" means here</h2>
+      <p>The words come from a breadth-first walk of the coset table in its own scan order — cosets
+        in numerical order, and within a coset the columns
+        <em>g</em><sub>1</sub>, <em>g</em><sub>1</sub><sup>−1</sup>,
+        <em>g</em><sub>2</sub>, <em>g</em><sub>2</sub><sup>−1</sup>, … Three things follow.</p>
+
+      <ul>
+        <li>Each <em>t<sub>i</sub></em> is a <strong>shortest</strong> word reaching coset <em>i</em>,
+          and the first such word in that column order.</li>
+        <li>Being shortest, they are freely reduced — no cancellation to clean up.</li>
+        <li>The set is <strong>prefix-closed</strong> — a Schreier transversal: every prefix of a
+          representative is itself a representative. That is what makes the <code>via</code>
+          construction above work.</li>
+      </ul>
+
+      <p>And because the table sublib hands out is the canonical one for its conjugacy class — the
+        lexicographically least over all choices of base point — the transversal depends only on the
+        subgroup, not on how the search happened to find it.</p>
+
+      <p>Shortest words also mean compact fundamental domains: the tiles cluster around the group's
+        own tile instead of straggling off in one direction.</p>
+
+      <figure>
+        <div class="diagram">
+          <svg viewBox="0 0 470 250" role="img" aria-labelledby="schreier-title schreier-desc">
+            <title id="schreier-title">Coset graph of subgroup 632.6.1</title>
+            <desc id="schreier-desc">Six cosets in two triangles joined by an edge. Bold edges form
+              the breadth-first tree rooted at the identity coset, and each coset is labelled with
+              its representative word.</desc>
+            <defs>
+              <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"></path>
+              </marker>
+              <marker id="arw-thin" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--faint)"></path>
+              </marker>
+            </defs>
+
+            <!-- non-tree edges: the third side of each b-triangle -->
+            <g fill="none" stroke="var(--faint)" stroke-width="1.5" marker-end="url(#arw-thin)">
+              <path d="M 152 90 L 152 150"></path>
+              <path d="M 339 110 L 289 78"></path>
+            </g>
+            <!-- non-tree self loops: a fixes these cosets -->
+            <g fill="none" stroke="var(--faint)" stroke-width="1.5">
+              <circle cx="46" cy="120" r="13"></circle>
+              <circle cx="152" cy="46" r="13"></circle>
+              <circle cx="380" cy="120" r="13"></circle>
+              <circle cx="274" cy="46" r="13"></circle>
+            </g>
+            <!-- tree edges -->
+            <g fill="none" stroke="var(--accent)" stroke-width="2.6" marker-end="url(#arw)">
+              <path d="M 88 111 L 138 79"></path>
+              <path d="M 88 130 L 137 163"></path>
+              <path d="M 170 172 L 256 172"></path>
+              <path d="M 288 163 L 338 130"></path>
+              <path d="M 274 154 L 274 86"></path>
+            </g>
+
+            <!-- edge labels -->
+            <g font-family="ui-monospace, Consolas, monospace" font-size="13" font-weight="600" text-anchor="middle">
+              <text x="103" y="82" fill="var(--accent)">b</text>
+              <text x="101" y="163" fill="var(--accent)">B</text>
+              <text x="213" y="162" fill="var(--accent)">a</text>
+              <text x="324" y="161" fill="var(--accent)">b</text>
+              <text x="261" y="124" fill="var(--accent)">B</text>
+              <text x="163" y="124" fill="var(--faint)">b</text>
+              <text x="328" y="84" fill="var(--faint)">b</text>
+              <text x="24" y="125" fill="var(--faint)">a</text>
+              <text x="152" y="26" fill="var(--faint)">a</text>
+              <text x="274" y="26" fill="var(--faint)">a</text>
+              <text x="402" y="125" fill="var(--faint)">a</text>
+            </g>
+
+            <!-- nodes -->
+            <g stroke="var(--accent)" stroke-width="2">
+              <circle cx="72" cy="120" r="18" fill="var(--accent-bg)"></circle>
+              <circle cx="152" cy="68"  r="18" fill="var(--surface)"></circle>
+              <circle cx="152" cy="172" r="18" fill="var(--surface)"></circle>
+              <circle cx="274" cy="172" r="18" fill="var(--surface)"></circle>
+              <circle cx="354" cy="120" r="18" fill="var(--surface)"></circle>
+              <circle cx="274" cy="68"  r="18" fill="var(--surface)"></circle>
+            </g>
+            <g font-family="ui-monospace, Consolas, monospace" font-size="14" font-weight="600"
+               text-anchor="middle" fill="var(--ink)">
+              <text x="72"  y="125">a</text>
+              <text x="152" y="73">b</text>
+              <text x="152" y="177">c</text>
+              <text x="274" y="177">d</text>
+              <text x="354" y="125">e</text>
+              <text x="274" y="73">f</text>
+            </g>
+            <!-- representative words -->
+            <g font-family="ui-monospace, Consolas, monospace" font-size="13"
+               text-anchor="middle" fill="var(--accent)">
+              <text x="72"  y="160">1</text>
+              <text x="196" y="73">b</text>
+              <text x="152" y="208">B</text>
+              <text x="274" y="208">Ba</text>
+              <text x="354" y="160">Bab</text>
+              <text x="234" y="73">BaB</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>
+          <span class="legend">
+            <span><span class="swatch"></span>tree edge — where the word comes from</span>
+            <span><span class="swatch thin"></span>other edges, including the loops where <em>a</em> fixes a coset</span>
+          </span>
+          The six cosets of <code>632.6.1</code>, with <code>cosets: 'abdcef bcaefd cabfde'</code>.
+          Coset <code>a</code> is the subgroup itself. Every word is a shortest path from it, and
+          every prefix — <code>B</code> before <code>Ba</code>, <code>Ba</code> before
+          <code>Bab</code> — is another representative.
+        </figcaption>
+      </figure>
+    </section>
+
+    <section id="presets">
+      <h2>Presets</h2>
+      <p>Three families are built in, keyed as <code>family:name</code>. Wallpaper groups also answer
+        to their bare orbifold symbol.</p>
+
+      <div class="scroll">
+        <table>
+          <thead><tr><th>key</th><th>group</th><th>example</th></tr></thead>
+          <tbody>
+            <tr><td><code>wallpaper:…</code></td><td>the 17 wallpaper groups, by orbifold symbol</td><td><code>wallpaper:*632</code></td></tr>
+            <tr><td><code>klm:…</code></td><td>the orientation-preserving triangle group (k,l,m)</td><td><code>klm:237</code></td></tr>
+            <tr><td><code>sklm:…</code></td><td>the full reflection triangle group *(k,l,m)</td><td><code>sklm:*237</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+<pre><code>import { getPreset, PRESETS, WALLPAPER_NAMES, klmPresentation } from './sublib/src/sublib.js';
+
+getPreset('wallpaper:632');   <span class="c">// { name: '632', family: 'wallpaper', gens: 'a b c', relators: 'a^2, b^3, (a*b)^6, b*c' }</span>
+klmPresentation(2, 3, 7);     <span class="c">// { name: '237', family: 'klm', … }</span>
+WALLPAPER_NAMES;              <span class="c">// ['o', '2222', '**', 'xx', '*x', '*2222', …]</span>
+</code></pre>
+
+      <p>The presentations are those in sympix's <code>gap/groups_wp.g</code> and
+        <code>gap/groups_klm.g</code>, character for character, so sublib reproduces the shipped
+        files rather than an equivalent-but-different enumeration. Anything you pass explicitly wins
+        over the preset, so <code>{ preset: 'klm:237', name: 'hurwitz' }</code> relabels the same
+        group.</p>
+
+      <div class="note">
+        <span class="tag">One caveat</span>
+        <p>The <code>3*3</code> presentation carries a <code>WRONG</code> comment in the GAP source.
+          sublib keeps it verbatim — see the <code>note</code> field on that preset — rather than
+          silently substituting a different group.</p>
+      </div>
+    </section>
+
+    <section id="symmhub">
+      <h2>Using it in sympix</h2>
+      <p><code>apps/sympix/js/Subgroups.js</code> fetches a JSON file and hands it to
+        <code>parseSubgroupsData(data, name, preferredSubgroup)</code>. sublib produces the same
+        object, so computing replaces fetching:</p>
+
+<pre><code>import { subgroupsData, getPreset } from './sublib/src/sublib.js';
+
+<span class="c">// instead of: const data = await (await fetch(url)).json();</span>
+const data = subgroupsData({ preset: 'wallpaper:2222', maxIndex: 24, maxSubgroups: 1000 });
+parseSubgroupsData(data, 'sublib:wallpaper:2222', preferredSubgroup);
+</code></pre>
+
+      <p>Everything downstream works unchanged — the index chips built from
+        <code>countPerIndex</code>, the subgroup list, the
+        <code>normalizePerms(s.invcos) === parentPerms</code> lookup.</p>
+
+      <p>For that last lookup, <code>findByPermutations</code> is more forgiving than an exact string
+        compare: with <code>{ upToConjugacy: true }</code> it finds the class even when the
+        permutations came from a different — but conjugate — representative, such as one of the
+        pre-generated files.</p>
+
+<pre><code>findByPermutations(data, parentPerms, { upToConjugacy: true });
+</code></pre>
+
+      <div class="watch">
+        <span class="tag">Ids are not portable</span>
+        <p>The <code>k</code> in <code>2222.6.13</code> is sublib's own numbering. GAP's within-index
+          order came from its search order passed through an unstable sort and is not reproducible,
+          so a saved id may name a different subgroup in a pre-generated file. Match on permutations,
+          not on ids, when both sources are in play.</p>
+      </div>
+
+      <div class="note">
+        <span class="tag">Long searches block</span>
+        <p>Everything runs synchronously on the calling thread. For interactive use, bound it with
+          <code>deadlineMs</code> — the result then carries <code>data.stats.aborted === true</code>
+          and is incomplete — or run the module in a Worker.</p>
+      </div>
+    </section>
+
+    <section id="cli">
+      <h2>Command line</h2>
+<pre><code>node bin/sublib.mjs wallpaper:2222 --max-index 24 --max-subgroups 1000 -o sub_2222.json
+node bin/sublib.mjs klm:237 --summary
+node bin/sublib.mjs --gens "a b" --relators "a^2, b^3, (a*b)^7" --name 237 --verify
+node bin/sublib.mjs wallpaper:632 --max-index 12 --reps 632.6.1
+node bin/sublib.mjs --all wallpaper --outdir ./out/wallpaper    <span class="c"># 17 files + groups.json</span>
+node bin/sublib.mjs --all klm --max-digit 8 --outdir ./out/klm  <span class="c"># 343 files + groups.json</span>
+</code></pre>
+
+      <p><code>--all</code> also writes the <code>groups.json</code> manifest, sorted exactly the way
+        sympix's <code>generate_manifests.js</code> sorts it. <code>--reps</code> prints one
+        subgroup's transversal:</p>
+
+<pre><code>632.6.1  index 6  cosets abdcef bcaefd cabfde
+  a    0  1               = identity
+  b    1  b               = b applied to coset 0
+  c    2  B               = B applied to coset 0
+  d    3  Ba              = a applied to coset 2
+  e    4  Bab             = b applied to coset 3
+  f    5  BaB             = B applied to coset 3
+</code></pre>
+
+      <p>There is also a demo page — <code>node bin/serve.mjs</code>, then
+        <code>localhost:8123/demo/</code> — for picking a group, enumerating it, and downloading the
+        JSON.</p>
+    </section>
+
+    <section id="api">
+      <h2>API</h2>
+      <p>Everything <code>src/sublib.js</code> exports, and nothing else. The engine and the
+        catalogue are reachable directly, but only this list is supported.</p>
+
+      <div class="scroll">
+        <table>
+          <thead><tr><th>export</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><code>subgroupsData(spec)</code></td><td>enumerate; returns the color_groups object</td></tr>
+            <tr><td><code>cosetRepresentatives(data, id)</code></td><td>a transversal of the right cosets, as words</td></tr>
+            <tr><td><code>subgroupClasses(pres, maxIndex, opts)</code></td><td>lower level: <code>{classes, stats}</code> with raw tables</td></tr>
+            <tr><td><code>makePresentation(gens, relators)</code></td><td>parse <code>'a b c'</code> + <code>'a^2, b^3, (a*b)^6'</code></td></tr>
+            <tr><td><code>ParseError</code></td><td>what bad generator, relator or preset input throws</td></tr>
+            <tr><td><code>getPreset(key)</code></td><td><code>'wallpaper:2222'</code>, <code>'klm:237'</code>, <code>'sklm:*237'</code>, or a bare orbifold</td></tr>
+            <tr><td><code>PRESETS</code>, <code>WALLPAPER_NAMES</code></td><td>the 17 wallpaper presets</td></tr>
+            <tr><td><code>wallpaperPresentation</code>, <code>klmPresentation</code>, <code>sklmPresentation</code></td><td>preset builders</td></tr>
+            <tr><td><code>fileStem(name)</code></td><td><code>'*2222'</code> → <code>'s2222'</code>, the color_groups file naming</td></tr>
+            <tr><td><code>COSET_SYMBOLS</code>, <code>MAX_COSETS</code></td><td>the 62-symbol coset alphabet</td></tr>
+            <tr><td><code>permStringToArrays</code>, <code>permArraysToString</code></td><td>wire format ⇄ 0-based arrays</td></tr>
+            <tr><td><code>findByPermutations(data, perms, opts)</code></td><td>look a subgroup up by its permutations</td></tr>
+            <tr><td><code>canonicalForm(tab, n, nCols)</code></td><td>the table that identifies a conjugacy class</td></tr>
+            <tr><td><code>verifyData(data, pres?)</code></td><td>self-check; returns an array of problems</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>The spec, in full</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>key</th><th>default</th><th>meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>preset</code></td><td>—</td><td>catalogue key, instead of gens/relators</td></tr>
+            <tr><td><code>name</code></td><td><code>'G'</code></td><td>label for the <code>name</code> field and the subgroup ids</td></tr>
+            <tr><td><code>gens</code></td><td>—</td><td><code>'a b c'</code>, or an array of names</td></tr>
+            <tr><td><code>relators</code></td><td>—</td><td><code>'a^2, b^3, b*c'</code>, or an array</td></tr>
+            <tr><td><code>presentation</code></td><td>—</td><td>a <code>makePresentation()</code> result, instead of gens/relators</td></tr>
+            <tr><td><code>maxIndex</code></td><td><code>24</code></td><td>largest index to search</td></tr>
+            <tr><td><code>maxSubgroups</code></td><td><code>0</code></td><td>budget; 0 means search all the way to <code>maxIndex</code></td></tr>
+            <tr><td><code>deadlineMs</code></td><td>∞</td><td>abort the search after this long</td></tr>
+            <tr><td><code>maxTables</code></td><td>∞</td><td>abort after this many subgroups have been accepted</td></tr>
+            <tr><td><code>generators</code></td><td><code>'gap'</code></td><td><code>'gap'</code> (reversed words) · <code>'natural'</code> · <code>'none'</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The result also carries three non-enumerable properties that survive in memory but not
+        through <code>JSON.stringify</code>: <code>stats</code> (timing and search counters),
+        <code>presentation</code>, and <code>generatorMode</code>.</p>
+    </section>
+
+    <section id="gap">
+      <h2>Agreement with GAP</h2>
+      <p>sublib is checked file by file against the corpus GAP produced for sympix: 17
+        <code>wallpaper</code> files, 343 <code>klm</code>, 343 <code>*klm</code>. For every one of
+        the 703 it recomputes the enumeration from the presentation recorded in that file and
+        compares. All 703 pass.</p>
+
+      <div class="scroll">
+        <table>
+          <thead><tr><th>family</th><th class="num">files</th><th class="num">subgroups</th><th class="num">permutations identical to GAP</th></tr></thead>
+          <tbody>
+            <tr><td><code>wallpaper</code></td><td class="num">17</td><td class="num">4 847</td><td class="num">4 847 · 100%</td></tr>
+            <tr><td><code>*klm</code></td><td class="num">343</td><td class="num">54 691</td><td class="num">54 691 · 100%</td></tr>
+            <tr><td><code>klm</code></td><td class="num">343</td><td class="num">50 986</td><td class="num">47 739 · 93.6%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ul>
+        <li><code>countPerIndex</code>, <code>maxIndex</code>, <code>nextIndex</code>,
+          <code>nextIndexCount</code> and <code>totalCount</code> are identical everywhere — the
+          budget walk reproduces GAP's <code>findMaxIndex</code> exactly.</li>
+        <li>Every subgroup in every GAP file is in exactly one of sublib's classes, matched by
+          canonical form: the two enumerations agree as sets of conjugacy classes.</li>
+        <li>Where the permutations differ, sublib and GAP picked different representatives of the
+          same class, so the two permutation sets are relabelings of each other. sublib picks the
+          lexicographically least standardized table, which is canonical and independent of search
+          order; GAP returns whichever representative its backtrack happened to accept.</li>
+      </ul>
+
+<pre><code>node test/smoke.mjs                                 <span class="c"># no corpus needed</span>
+node test/validate-corpus.mjs --family wallpaper    <span class="c"># 17 files, ~2 s</span>
+node test/validate-corpus.mjs --family sklm         <span class="c"># 343 files, ~4 min</span>
+node test/validate-corpus.mjs --family klm          <span class="c"># 343 files, ~25 min</span>
+</code></pre>
+
+      <p>The smoke suite needs no corpus. It checks σ(<em>n</em>) for ℤ², Marshall Hall's subgroup
+        counts for the free group of rank 2, GAP's published class counts for the (2,3,7) and *283
+        triangle groups, the 62-symbol alphabet, the budget walk, the transversal properties above,
+        and that pruning the search changes nothing about its answer.</p>
+    </section>
+
+    <section id="perf">
+      <h2>Performance</h2>
+      <p>Single-threaded, on the corpus presentations to index 24: the 17 wallpaper groups take
+        5–290&nbsp;ms each (<code>2222</code>, the largest at 999 subgroups, is 290&nbsp;ms). Triangle
+        groups are the expensive end — most <code>*klm</code> groups are under a second, while the
+        hardest <code>klm</code> ones take around 30&nbsp;s.</p>
+
+      <p>Two things do the work. The search prunes non-canonical branches as it goes, so it builds
+        one table per conjugacy class instead of one per subgroup — 3–8× fewer search nodes. And with
+        a <code>maxSubgroups</code> budget it climbs one index at a time and stops as soon as the
+        budget is spent, rather than enumerating to <code>maxIndex</code> and discarding the excess.
+        On <code>klm:346</code> that second point alone is 32&nbsp;ms instead of 14&nbsp;s.</p>
+
+      <div class="note">
+        <span class="tag">A budget is the cheapest bound</span>
+        <p>Cost grows steeply with the index. If you only need a few hundred subgroups, saying so
+          with <code>maxSubgroups</code> is far better than lowering <code>maxIndex</code> and
+          guessing.</p>
+      </div>
+    </section>
+
+    <section id="how">
+      <h2>How it works</h2>
+      <p>A Sims-style low-index backtrack over coset tables: extend a partial table at its first
+        undefined entry, propagate the consequences of every relator, and record each table that
+        comes out complete on ≤ <code>maxIndex</code> cosets. Complete standardized tables are in
+        bijection with the subgroups of that index, and restandardizing one from a different base
+        point gives the table of a conjugate subgroup — so the least table over all base points
+        identifies the conjugacy class, which is what GAP's <code>LowIndexSubgroupsFpGroup</code>
+        returns.</p>
+
+      <p>Rather than build every subgroup and group them afterwards, the search carries Sims'
+        canonicity test: at each node it compares the table with its restandardizations and abandons
+        the branch as soon as one of them is strictly smaller over the entries defined so far. A
+        prefix that already loses still loses however it is completed, so nothing canonical is ever
+        discarded, and what survives to completion is exactly one table per class. The class size is
+        then recovered from the representative alone, as the number of distinct restandardizations.</p>
+
+      <p>The coset-table conventions match GAP's: cosets are numbered in the order they are first
+        reached, scanning rows in order and, within a row, columns in the order
+        <em>g</em><sub>1</sub>, <em>g</em><sub>1</sub><sup>−1</sup>,
+        <em>g</em><sub>2</sub>, <em>g</em><sub>2</sub><sup>−1</sup>, … That is why the permutation
+        strings agree with GAP's verbatim rather than merely up to relabeling.</p>
+
+      <p>Pass <code>prune: false</code> to <code>subgroupClasses</code> to switch the test off and
+        enumerate every subgroup instead; the classes that come out are identical, which the smoke
+        suite checks group by group.</p>
+
+      <p><code>verifyData(data)</code> re-checks a result from scratch: every block a permutation,
+        <code>invcos</code> inverting <code>cosets</code>, every relator acting trivially on the
+        cosets, and every listed generator word stabilizing coset 0.</p>
+    </section>
+
+  </main>
+</div>

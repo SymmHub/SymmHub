@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Groups — subgroup enumeration</title>
+<meta name="description" content="playground for groups calculations">
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1a1a; --muted: #666; --line: #d8d8d8;
+    --accent: #0b5fa5; --chip: #eef3f8; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #16181c; --fg: #e8e8e8; --muted: #9aa0a6; --line: #33373d;
+            --accent: #62a8e8; --chip: #22262c; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 1.5rem; background: var(--bg); color: var(--fg);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.35rem; margin: 0 0 .25rem; }
+  p.lede { color: var(--muted); margin: 0 0 1.25rem; max-width: 60ch; }
+  fieldset { border: 1px solid var(--line); border-radius: 6px; padding: .9rem 1rem 1rem; margin: 0 0 1rem; }
+  legend { padding: 0 .4rem; color: var(--muted); font-size: .85rem; }
+  .row { display: flex; flex-wrap: wrap; gap: .75rem 1rem; align-items: flex-end; }
+  label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: .2rem; }
+  input, select, button { font: inherit; padding: .35rem .5rem; border-radius: 4px;
+                          border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+  input[type=text] { font-family: var(--mono); }
+  .grow { flex: 1 1 22ch; }
+  button { cursor: pointer; background: var(--accent); color: #fff; border-color: transparent; padding: .4rem .9rem; }
+  button.ghost { background: transparent; color: var(--accent); border-color: var(--line); }
+  button:disabled { opacity: .5; cursor: default; }
+  #status { margin: .25rem 0 1rem; color: var(--muted); font-size: .9rem; min-height: 1.4em; }
+  #status.err { color: #c0392b; }
+  .chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: 1rem; }
+  .chip { background: var(--chip); border: 1px solid var(--line); border-radius: 999px;
+          padding: .1rem .6rem; font-size: .82rem; cursor: pointer; font-family: var(--mono); }
+  .chip.on { background: var(--accent); color: #fff; border-color: transparent; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+  th, td { text-align: left; padding: .3rem .6rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { position: sticky; top: 0; background: var(--bg); color: var(--muted); font-weight: 600; }
+  td.mono, th.mono { font-family: var(--mono); }
+  tr:last-child td { border-bottom: none; }
+  .note { color: var(--muted); font-size: .82rem; margin-top: .6rem; }
+  footer { margin-top: 1.5rem; font-size: .9rem; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<h1>Groups</h1>
+<p class="lede">Enumerates the conjugacy classes of subgroups of a finitely presented group and
+shows the permutations each generator induces on the cosets — the
+<code>color_groups</code> JSON the sympix viewer consumes.</p>
+
+<fieldset>
+  <legend>group</legend>
+  <div class="row">
+    <div>
+      <label for="preset">preset</label>
+      <select id="preset"></select>
+    </div>
+    <div class="grow">
+      <label for="gens">generators</label>
+      <input type="text" id="gens" class="grow" style="width:100%" value="a b c">
+    </div>
+    <div class="grow" style="flex-basis:32ch">
+      <label for="rels">relators</label>
+      <input type="text" id="rels" style="width:100%" value="a^2, b^3, (a*b)^6, b*c">
+    </div>
+    <div>
+      <label for="name">name</label>
+      <input type="text" id="name" size="8" value="632">
+    </div>
+  </div>
+</fieldset>
+
+<fieldset>
+  <legend>search</legend>
+  <div class="row">
+    <div><label for="maxIndex">max index</label><input type="number" id="maxIndex" min="1" max="62" value="24" size="4"></div>
+    <div><label for="maxSubgroups">max subgroups (0 = no budget)</label><input type="number" id="maxSubgroups" min="0" value="1000" size="6"></div>
+    <button id="go">Enumerate</button>
+    <button id="download" class="ghost" disabled>Download JSON</button>
+    <button id="copy" class="ghost" disabled>Copy JSON</button>
+  </div>
+</fieldset>
+
+<div id="status"></div>
+<div class="chips" id="chips"></div>
+<div class="tablewrap"><table>
+  <thead><tr><th>subgroup</th><th>index</th><th class="mono">generators</th><th class="mono">cosets</th><th class="mono">invcos</th></tr></thead>
+  <tbody id="rows"></tbody>
+</table></div>
+<div class="note" id="note"></div>
+
+<footer>
+<a href='../../index.html'>SymmHub</a>
+</footer>
+
+<script type="module">
+import { subgroupsData, getPreset, WALLPAPER_NAMES, verifyData, fileStem } from '../../lib/sublib/src/sublib.js';
+
+const $ = (id) => document.getElementById(id);
+const MAX_ROWS = 400;
+let data = null, filterIndex = null;
+
+// --- presets ---------------------------------------------------------------
+const presetKeys = [
+  ...WALLPAPER_NAMES.map(n => ['wallpaper:' + n, `wallpaper  ${n}`]),
+  ...[[2,3,7],[2,3,8],[3,3,3],[2,4,4],[2,3,6],[4,4,4],[6,6,6]].map(([k,l,m]) =>
+    [`klm:${k}${l}${m}`, `klm  ${k}${l}${m}`]),
+  ...[[2,3,7],[2,3,8],[3,3,3],[2,4,4]].map(([k,l,m]) =>
+    [`sklm:*${k}${l}${m}`, `*klm  *${k}${l}${m}`]),
+];
+for (const [key, label] of presetKeys) {
+  const o = document.createElement('option');
+  o.value = key; o.textContent = label;
+  $('preset').appendChild(o);
+}
+$('preset').value = 'wallpaper:632';
+$('preset').addEventListener('change', () => {
+  const p = getPreset($('preset').value);
+  $('gens').value = p.gens;
+  $('rels').value = p.relators;
+  $('name').value = p.name;
+});
+
+// --- run -------------------------------------------------------------------
+function setStatus(text, isError = false) {
+  $('status').textContent = text;
+  $('status').classList.toggle('err', isError);
+}
+
+function render() {
+  const chips = $('chips');
+  chips.textContent = '';
+  for (const { index, count } of data.countPerIndex) {
+    const b = document.createElement('button');
+    b.className = 'chip' + (filterIndex === index ? ' on' : '');
+    b.textContent = `${index}(${count})`;
+    b.onclick = () => { filterIndex = filterIndex === index ? null : index; render(); };
+    chips.appendChild(b);
+  }
+  const shown = data.subgroups.filter(s => filterIndex === null || s.index === filterIndex);
+  const rows = $('rows');
+  rows.textContent = '';
+  for (const s of shown.slice(0, MAX_ROWS)) {
+    const tr = document.createElement('tr');
+    for (const [v, mono] of [[s.subgroup, false], [s.index, false], [s.generators || '—', true],
+                             [s.cosets, true], [s.invcos, true]]) {
+      const td = document.createElement('td');
+      if (mono) td.className = 'mono';
+      td.textContent = v;
+      tr.appendChild(td);
+    }
+    rows.appendChild(tr);
+  }
+  $('note').textContent = shown.length > MAX_ROWS
+    ? `showing the first ${MAX_ROWS} of ${shown.length} rows — the JSON download has them all`
+    : '';
+}
+
+function run() {
+  const spec = {
+    name: $('name').value.trim() || 'G',
+    gens: $('gens').value,
+    relators: $('rels').value,
+    maxIndex: Number($('maxIndex').value),
+    maxSubgroups: Number($('maxSubgroups').value),
+  };
+  setStatus('enumerating…');
+  $('go').disabled = true;
+  setTimeout(() => {
+    try {
+      const t0 = performance.now();
+      data = subgroupsData(spec);
+      const ms = Math.round(performance.now() - t0);
+      const problems = verifyData(data);
+      filterIndex = null;
+      render();
+      setStatus(`${data.totalCount} subgroups to index ${data.maxIndex}` +
+        (data.nextIndex ? ` (index ${data.nextIndex} would add ${data.nextIndexCount} more)` : '') +
+        ` — ${ms} ms, ${data.stats.nodesVisited.toLocaleString()} search nodes` +
+        (problems.length ? ` — ⚠ ${problems.length} verification problem(s)` : ' — verified'),
+        problems.length > 0);
+      $('download').disabled = $('copy').disabled = false;
+    } catch (e) {
+      data = null;
+      $('rows').textContent = ''; $('chips').textContent = ''; $('note').textContent = '';
+      $('download').disabled = $('copy').disabled = true;
+      setStatus(e.message, true);
+    } finally {
+      $('go').disabled = false;
+    }
+  }, 10);
+}
+
+$('go').addEventListener('click', run);
+$('download').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `sub_${fileStem(data.name)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+$('copy').addEventListener('click', async () => {
+  await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+  setStatus('JSON copied to the clipboard');
+});
+
+run();
+</script>
+</body>
+</html>
