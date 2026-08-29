@@ -2,12 +2,37 @@ import {
     ParamChoice,
     ParamString,
     ParamFunc,
+    ParamInt,
     openFile,
+    subgroupsData,
 } from './modules.js';
 
 const DEBUG = true;
 const MYNAME = 'Subgroups';
 const SELECT = '[select]';
+
+// Subgroups are enumerated on demand with sublib rather than loaded from the
+// shipped color_groups tables.  The tables were produced by hand from GAP for
+// one fixed presentation per group; computing them here keeps the subgroup data
+// tied to the presentation actually in use, which matters as soon as a group can
+// be given more than one fundamental domain.
+//
+// Verified against the shipped tables: all 17 wallpaper groups reproduce exactly
+// (same counts, same coset strings); klm / *klm reproduce the same conjugacy
+// classes, sometimes naming a class by a different representative.
+//
+// A colouring can use at most MAX_COLORS_COUNT (24) colours, so there is no
+// point enumerating past index 24.
+const DEFAULT_MAX_INDEX = 24;
+const MAX_MAX_INDEX = 24;
+
+/** sublib preset key for a (family, group name) pair from the manifests */
+function presetKeyFor(family, name) {
+    if (family === 'wallpaper') return 'wallpaper:' + name;
+    if (family === 'klm')       return 'klm:' + name;
+    if (family === '*klm')      return 'sklm:' + name;
+    return null;
+}
 
 function Subgroups(options = {}) {
     const mConfig = {
@@ -16,6 +41,7 @@ function Subgroups(options = {}) {
         fileName: '',
         index: '',
         subgroup: '',
+        maxIndex: DEFAULT_MAX_INDEX,
     };
 
     let mGroupTypes = [];
@@ -26,6 +52,12 @@ function Subgroups(options = {}) {
     let mSubgroupChoices = [SELECT];
     let mSubgroupsData = [];
     let mParams = null;
+    // Selecting a subgroup normally pushes its permutations onto the parent
+    // layer.  During a document restore that would clobber the permutations the
+    // document itself carries, so the callback is suppressed for the duration.
+    // (The old code got away with it by accident: it awaited a fetch, which let
+    // the rest of the layer restore first.)
+    let mRestoring = 0;
 
     const mInitPromise = loadGroupTypes();
 
@@ -96,15 +128,58 @@ function Subgroups(options = {}) {
         const folder = typeInfo.path.substring(0, typeInfo.path.lastIndexOf('/'));
         const fileRelativePath = folder + '/' + groupEntry.file;
 
-        await loadSubgroupFileByName(fileRelativePath, preferredSubgroup);
+        const computed = computeSubgroups(mConfig.groupType, mConfig.groupName);
+        if (computed) {
+            parseSubgroupsData(computed, describeSource(mConfig.groupName), preferredSubgroup);
+        } else {
+            // no preset for this group: fall back to the shipped table
+            await loadSubgroupFileByName(fileRelativePath, preferredSubgroup);
+        }
         if (options.onChange) {
             options.onChange();
         }
     }
 
+    function describeSource(name) {
+        return name + '  (computed, index <= ' + mConfig.maxIndex + ')';
+    }
+
+    /**
+     * Enumerate the subgroups of the named group with sublib.
+     *
+     * options.getPresentation, when supplied, wins over the catalogue preset:
+     * it should return {gens, relators} for the group as currently presented.
+     * That is the hook for fundamental-domain dependent presentations - a group
+     * given a different domain has different pairing transforms, hence different
+     * generators and relators, hence a different subgroup table.
+     *
+     * @returns {object|null} data in the color_groups shape, or null if the
+     *                        group is not in sublib's catalogue
+     */
+    function computeSubgroups(family, name) {
+        const maxIndex = Math.min(mConfig.maxIndex || DEFAULT_MAX_INDEX, MAX_MAX_INDEX);
+        try {
+            const custom = options.getPresentation && options.getPresentation();
+            if (custom && custom.gens && custom.relators) {
+                return subgroupsData({ name, gens: custom.gens,
+                                       relators: custom.relators, maxIndex });
+            }
+            const preset = presetKeyFor(family, name);
+            if (!preset) return null;
+            const t0 = Date.now();
+            const data = subgroupsData({ preset, maxIndex });
+            if (DEBUG) console.log(`${MYNAME}: ${preset} -> ${data.subgroups.length}` +
+                                   ` subgroups to index ${maxIndex} in ${Date.now()-t0}ms`);
+            return data;
+        } catch (e) {
+            console.warn(`${MYNAME}.computeSubgroups(${family}, ${name}):`, e.message);
+            return null;
+        }
+    }
+
     function onSubgroupChanged() {
         const subgroupData = mSubgroupsData.find(s => String(s.subgroup) === mConfig.subgroup);
-        if (options.onSubgroupSelected) {
+        if (options.onSubgroupSelected && mRestoring === 0) {
             options.onSubgroupSelected(subgroupData || null);
         }
     }
@@ -262,6 +337,7 @@ function Subgroups(options = {}) {
             groupType: ParamChoice({ obj: mConfig, key: 'groupType', choice: mGroupTypeChoices, name: 'Type', onChange: () => { onGroupTypeChanged(); } }),
             groupName: ParamChoice({ obj: mConfig, key: 'groupName', choice: mGroupNameChoices, name: 'Group', onChange: () => { onGroupNameChanged(); } }),
             fileName:  ParamString({ obj: mConfig, key: 'fileName', readOnly: true, name: 'File Name' }),
+            maxIndex:  ParamInt({ obj: mConfig, key: 'maxIndex', min: 1, max: MAX_MAX_INDEX, step: 1, name: 'Max Index', onChange: () => { onGroupNameChanged(mConfig.subgroup); } }),
             index:     ParamChoice({ obj: mConfig, key: 'index', choice: mIndexChoices, name: 'Index', onChange: () => { onIndexChanged(); if (options.onChange) options.onChange(); } }),
             subgroup:  ParamChoice({ obj: mConfig, key: 'subgroup', choice: mSubgroupChoices, name: 'Subgroup', onChange: () => { onSubgroupChanged(); if (options.onChange) options.onChange(); } }),
         };
@@ -277,6 +353,16 @@ function Subgroups(options = {}) {
     async function setParamsMap(params, initialize) {
         if (!params) return;
 
+        mRestoring++;
+        try {
+            await _setParamsMap(params, initialize);
+        } finally {
+            mRestoring--;
+        }
+    }
+
+    async function _setParamsMap(params, initialize) {
+
         // Wait for group types to finish loading
         await mInitPromise;
 
@@ -286,6 +372,12 @@ function Subgroups(options = {}) {
         const targetIndexVal = params.index !== undefined ? getActualIndex(String(params.index)) : (initialize ? '' : getActualIndex(mConfig.index));
         let targetSubgroup = params.subgroup !== undefined ? String(params.subgroup) : (initialize ? '' : mConfig.subgroup);
         if (targetSubgroup === SELECT) targetSubgroup = '';
+
+        // restore the enumeration depth first: the table is computed from it
+        if (params.maxIndex !== undefined) {
+            mConfig.maxIndex = Math.min(Number(params.maxIndex) || DEFAULT_MAX_INDEX, MAX_MAX_INDEX);
+            if (mParams && mParams.maxIndex) mParams.maxIndex.setValue(mConfig.maxIndex);
+        }
 
         if (targetGroupType === '') targetGroupType = SELECT;
         if (targetGroupName === '') targetGroupName = SELECT;
@@ -343,9 +435,13 @@ function Subgroups(options = {}) {
 
                 const groupEntry = mGroupNames.find(g => g.name === targetGroupName);
                 if (groupEntry && typeInfo) {
-                    const folder = typeInfo.path.substring(0, typeInfo.path.lastIndexOf('/'));
-                    const fileRelativePath = folder + '/' + groupEntry.file;
-                    await loadSubgroupFileByName(fileRelativePath, targetSubgroup);
+                    const computed = computeSubgroups(targetGroupType, targetGroupName);
+                    if (computed) {
+                        parseSubgroupsData(computed, describeSource(targetGroupName), targetSubgroup);
+                    } else {
+                        const folder = typeInfo.path.substring(0, typeInfo.path.lastIndexOf('/'));
+                        await loadSubgroupFileByName(folder + '/' + groupEntry.file, targetSubgroup);
+                    }
                 }
             }
         } else if (targetFileName) {

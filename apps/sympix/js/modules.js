@@ -110,4 +110,11 @@ export {
 
 export {
     Subgroups
-} from './Subgroups.js';
+} from './Subgroups.js';
+
+// subgroup enumeration, computed live instead of loaded from shipped tables
+export {
+    subgroupsData,
+    getPreset,
+    findByPermutations,
+} from '../../../lib/sublib/src/sublib.js';
