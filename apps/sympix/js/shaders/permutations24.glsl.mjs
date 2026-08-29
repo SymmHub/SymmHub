@@ -54,7 +54,7 @@ void iToFundamentalDomainSamplerPerm24(inout vec3 pnt,
                                       uvec4 permData[MAX_GEN_COUNT], 
                                       uint permSize, 
                                       inout uvec4 currentPerm, 
-                                      bool leftCoset,
+                                      bool useOrbit,
 
                                       inout int inDomain, 
                                       inout int refcount, 
@@ -109,7 +109,7 @@ void iToFundamentalDomainSamplerPerm24(inout vec3 pnt,
                 // To get the final color permutation we need to find the permutation which corresponds 
                 // to the sequence of _inverse_ transformations applied in _opposite_ order. 
                 // The reverse composition of permutations does exactly that
-                if(leftCoset) 
+                if(useOrbit) 
                     currentPerm = compose_perms(permData[g], currentPerm, permSize);
                 else 
                     currentPerm = compose_perms(currentPerm, permData[g], permSize);

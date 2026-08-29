@@ -17,7 +17,7 @@ uniform uint uPermSize;
 uniform bool uFillCells;
 uniform vec4 uCellColors[MAX_COLORS_COUNT];
 uniform uint uCellColorPermIndex;
-uniform bool uLeftCoset;
+uniform bool uUseOrbit;
 
 void main() {
 
@@ -46,7 +46,7 @@ void main() {
     uvec4 currentPerm = perm_identity(uPermSize);
 
     if(uSymmetry){
-        iToFundamentalDomainSamplerPerm24(wpnt, uGroupData, groupOffset, uPermData, uPermSize, currentPerm, uLeftCoset, inDomain, refcount, scale, uIterations);
+        iToFundamentalDomainSamplerPerm24(wpnt, uGroupData, groupOffset, uPermData, uPermSize, currentPerm, uUseOrbit, inDomain, refcount, scale, uIterations);
     }
     if(uSymmetry && inDomain == 0) {
         outColor = vec4(0,0,0,0);

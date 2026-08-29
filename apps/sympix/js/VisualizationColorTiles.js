@@ -32,7 +32,7 @@ function VisualizationColorTiles(par={}){
         enabled: true,
         opacity: 1,
         permutations: '',
-        leftCoset: false,
+        useOrbit: false,
         permIndex: 0,
         mask:      '',
     };
@@ -130,7 +130,7 @@ function VisualizationColorTiles(par={}){
             enabled:       ParamBool({obj: cf, key:'enabled', onChange: oc}),
             opacity:       ParamFloat({obj: cf, key: 'opacity', min: 0, max: 1, step: 0.001, onChange: oc}),
             permutations:  ParamString({obj: cf, key: 'permutations', onChange: onPermChanged}),
-            leftCoset:     ParamBool({obj: cf, key: 'leftCoset', onChange: oc}),
+            useOrbit:     ParamBool({obj: cf, key: 'useOrbit', onChange: oc}),
 
             permIndex:     ParamInt({obj: cf, key: 'permIndex', name: 'offset', min: 0, max: MAX_COLORS_COUNT - 1, step: 1, onChange: ocColors}),
             mask:          ParamString({obj: cf, key: 'mask', onChange: ocColors}),
@@ -154,7 +154,7 @@ function VisualizationColorTiles(par={}){
             uTransparency:       1. - cmCfg.opacity,
             uPermData:           mPermData,
             uPermSize:           mPermSize,
-            uLeftCoset:          cmCfg.leftCoset,
+            uUseOrbit:          cmCfg.useOrbit,
 
             uFillCells:          mColorTiles.enabled,
             uCellColors:         mColorTiles.getPremultColors(),

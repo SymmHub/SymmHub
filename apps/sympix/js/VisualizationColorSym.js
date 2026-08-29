@@ -56,7 +56,7 @@ function VisualizationColorSym(par={}){
         permutations: '',
         permIndex: 0,
         useCrown: false,
-        leftCoset: false,
+        useOrbit: false,
         mask: '',
         coloringType: 'none',
         patternTiltDirection: 0,
@@ -195,7 +195,7 @@ function VisualizationColorSym(par={}){
             imageId:       ParamString({obj: cf, key: 'imageId', name: 'images', onChange: oc}),
             permutations:  ParamString({obj: cf, key: 'permutations', onChange: onPermChanged}),
             permIndex:     ParamInt({obj: cf, key: 'permIndex', name:'offset', min: 0, max: 23, step: 1, onChange: oc}),
-            leftCoset:     ParamBool({obj: cf, key: 'leftCoset', onChange: oc}),
+            useOrbit:     ParamBool({obj: cf, key: 'useOrbit', onChange: oc}),
             mask:          ParamString({obj: cf, key: 'mask', onChange: onMaskChanged}),
             subgroups:     ParamObj({name: 'subgroups', obj: mSubgroups}),
             coloringType:  ParamChoice({obj: cf, key: 'coloringType', name: 'coloring', choice: COLORING_TYPE_NAMES, onChange: oc}),
@@ -277,11 +277,11 @@ function VisualizationColorSym(par={}){
         DataPacking.packGroupToSampler(gl, mCrownGroupData, crownGroup);
         const crownData = mCrownGroupData;
 
-        const crownPerms = transToPackedPerms(dirTrans, mGeneratorPerms, mInvGeneratorPerms, mConfig.leftCoset);
+        const crownPerms = transToPackedPerms(dirTrans, mGeneratorPerms, mInvGeneratorPerms, mConfig.useOrbit);
 
         if (DEBUG) {
             const crownPermsInfo = dirTrans.map(t => {
-                const perm = wordToPerm(t.getWord(), mGeneratorPerms, mInvGeneratorPerms, mConfig.leftCoset);
+                const perm = wordToPerm(t.getWord(), mGeneratorPerms, mInvGeneratorPerms, mConfig.useOrbit);
                 return `${t.getWord() || "identity"}: [${perm.join(",")}]`;
             }).join(", ");
             console.log(`Crown Permutations: ${crownPermsInfo}`);
@@ -339,7 +339,7 @@ function VisualizationColorSym(par={}){
             uPermSize:      mPermSize,
             uTexPermIndex:  cmCfg.permIndex,
             uUseCrown:      cmCfg.useCrown,
-            uLeftCoset:     cmCfg.leftCoset,
+            uUseOrbit:     cmCfg.useOrbit,
             uTexAlpha:      mTexAlpha,
             uCrownData:     crownData,
             uCrownPermData: crownPerms,

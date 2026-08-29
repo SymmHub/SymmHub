@@ -35,7 +35,7 @@ uniform vec4 uCellColors[MAX_COLORS_COUNT];
 uniform uint uCellColorPermIndex;
 uniform uint uTexPermIndex;
 uniform bool uUseCrown;
-uniform bool uLeftCoset;
+uniform bool uUseOrbit;
 // 0 = none, 1 = multiply image by cell color, 2 = 1-(cellColor*(1-imgColor))
 uniform int uColoringType;
 
@@ -121,7 +121,7 @@ vec4 getImageArrayCrown(vec3 pnt,
                         uvec4 permData[MAX_CROWN_COUNT], 
                         uint permSize, 
                         uvec4 currentPerm, 
-                        bool leftCoset,
+                        bool useOrbit,
                         uint texIndex, 
                         float blurWidth,
                         int coloringType,
@@ -147,7 +147,7 @@ vec4 getImageArrayCrown(vec3 pnt,
         }
         uvec4 gperm = permData[g];
         uvec4 perm;
-        if(leftCoset) {
+        if(useOrbit) {
             perm = compose_perms(gperm, currentPerm, permSize);
         } else {
             perm = compose_perms(currentPerm, gperm, permSize);
@@ -181,7 +181,7 @@ vec4 getImageArrayCrownSorted(vec3 pnt,
                               uvec4 permData[MAX_CROWN_COUNT], 
                               uint permSize, 
                               uvec4 currentPerm, 
-                              bool leftCoset,
+                              bool useOrbit,
                               uint texIndex, 
                               float blurWidth,
                               int coloringType,
@@ -213,7 +213,7 @@ vec4 getImageArrayCrownSorted(vec3 pnt,
         }
         uvec4 gperm = permData[g];
         uvec4 perm;
-        if(leftCoset) {
+        if(useOrbit) {
             perm = compose_perms(gperm, currentPerm, permSize);
         } else {
             perm = compose_perms(currentPerm, gperm, permSize);
@@ -286,7 +286,7 @@ void main() {
     uvec4 currentPerm = perm_identity(uPermSize);
 
     if(uSymmetry){
-        iToFundamentalDomainSamplerPerm24(wpnt, uGroupData, groupOffset, uPermData, uPermSize, currentPerm, uLeftCoset, inDomain, refcount, scale, uIterations);
+        iToFundamentalDomainSamplerPerm24(wpnt, uGroupData, groupOffset, uPermData, uPermSize, currentPerm, uUseOrbit, inDomain, refcount, scale, uIterations);
 
     }
     if(uSymmetry && inDomain == 0) {
@@ -304,9 +304,9 @@ void main() {
         // Crown: accumulate neighbour-cell contributions.
         vec4 crownColor;
         if(uUseTilt) {
-            crownColor = getImageArrayCrownSorted(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth, uColoringType, uCellColors, uTiltVector, uUseMipmap);
+            crownColor = getImageArrayCrownSorted(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uUseOrbit, uTexPermIndex, blurWidth, uColoringType, uCellColors, uTiltVector, uUseMipmap);
         } else {
-            crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uLeftCoset, uTexPermIndex, blurWidth, uColoringType, uCellColors, uUseMipmap);
+            crownColor = getImageArrayCrown(wpnt, uImageArray, uTexAlpha, uBufScale, uBufCenter, uCrownData, groupOffset, scale, uCrownPermData, uPermSize, currentPerm, uUseOrbit, uTexPermIndex, blurWidth, uColoringType, uCellColors, uUseMipmap);
         }
         color = overlayColor(color, crownColor);
     } else {
