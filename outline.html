@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SymmHub — Architecture & Project Outline</title>
+  <meta name="description" content="Comprehensive architecture, mathematical foundations, and module overview of SymmHub — a WebGL platform for discrete symmetry visualization.">
+  <link rel="icon" type="image/svg+xml" href="./css/icon_symmhub.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      chtml: { scale: 0.95 }
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-elevated: #161b22;
+      --bg-card: rgba(22, 27, 34, 0.85);
+      --bg-card-hover: rgba(33, 38, 45, 0.95);
+      --border: #30363d;
+      --border-accent: #388bfd40;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --text-bright: #ffffff;
+      --accent: #58a6ff;
+      --accent-glow: rgba(88, 166, 255, 0.15);
+      --teal: #39c5bb;
+      --purple: #bc8cff;
+      --gold: #e3b341;
+      --coral: #f78166;
+      --code-bg: #10141b;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f8fa;
+        --bg-elevated: #ffffff;
+        --bg-card: rgba(255, 255, 255, 0.95);
+        --bg-card-hover: #ffffff;
+        --border: #d0d7de;
+        --border-accent: #0969da30;
+        --text: #1f2328;
+        --text-muted: #656d76;
+        --text-bright: #091e42;
+        --accent: #0969da;
+        --accent-glow: rgba(9, 105, 218, 0.1);
+        --teal: #1b7c75;
+        --purple: #8250df;
+        --gold: #9a6700;
+        --coral: #d1242f;
+        --code-bg: #eaeef2;
+        --shadow: 0 8px 24px rgba(140, 149, 159, 0.15);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 0;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Navigation Banner */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      background: rgba(13, 17, 23, 0.85);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    @media (prefers-color-scheme: light) {
+      .top-nav {
+        background: rgba(246, 248, 250, 0.88);
+      }
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--text-bright);
+      text-decoration: none;
+    }
+
+    .brand img {
+      width: 26px;
+      height: 26px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.2rem;
+      list-style: none;
+      font-size: 0.88rem;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 6rem;
+    }
+
+    /* Hero Header */
+    .hero {
+      text-align: center;
+      padding: 2.5rem 0 3rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.75rem;
+      background: var(--accent-glow);
+      color: var(--accent);
+      border: 1px solid var(--border-accent);
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.2rem;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--text-bright);
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+
+    .hero-lead {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 760px;
+      margin: 0 auto 1.8rem;
+      line-height: 1.55;
+    }
+
+    .authors-bar {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    .authors-bar a {
+      color: var(--text);
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px dashed var(--border);
+      transition: all 0.15s ease;
+    }
+
+    .authors-bar a:hover {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* Quick Jump Pills */
+    .quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1.8rem;
+    }
+
+    .quick-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .quick-chip:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--bg-elevated);
+      transform: translateY(-1px);
+    }
+
+    /* Section Styles */
+    section {
+      margin-bottom: 3.5rem;
+    }
+
+    .section-title {
+      font-size: 1.65rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      color: var(--text-bright);
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Card Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.35rem 1.45rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .card h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-bright);
+      margin-bottom: 0.45rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .card ul {
+      margin: 0.6rem 0 0 1.2rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .card li {
+      margin-bottom: 0.3rem;
+    }
+
+    /* Tags */
+    .tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 0.15rem 0.45rem;
+      border-radius: var(--radius-sm);
+      letter-spacing: 0.03em;
+    }
+
+    .tag-blue { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+    .tag-teal { background: rgba(57, 197, 187, 0.15); color: var(--teal); }
+    .tag-purple { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+    .tag-gold { background: rgba(227, 179, 65, 0.15); color: var(--gold); }
+    .tag-coral { background: rgba(247, 129, 102, 0.15); color: var(--coral); }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      margin-top: 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.92rem;
+    }
+
+    th {
+      background: var(--bg-elevated);
+      color: var(--text-bright);
+      font-weight: 600;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--bg-card-hover);
+    }
+
+    /* Code Block / Tree */
+    .code-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #7ee787;
+      overflow-x: auto;
+    }
+
+    .code-comment {
+      color: #8b949e;
+    }
+
+    .code-dir {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .code-file {
+      color: var(--text);
+    }
+
+    /* Callout Alert */
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-glow);
+      padding: 1rem 1.25rem;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin: 1.25rem 0;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .callout strong {
+      color: var(--text-bright);
+    }
+
+    /* App Item with Thumbnail */
+    .app-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      overflow: hidden;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .app-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    }
+
+    .app-card .app-body {
+      padding: 1.25rem;
+    }
+
+    .app-card .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+
+    .app-card .app-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-bright);
+    }
+
+    .app-card .app-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .app-card .app-footer {
+      padding: 0.75rem 1.25rem;
+      background: var(--bg-elevated);
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Links */
+    a.text-link {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a.text-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 0 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      margin: 0 0.5rem;
+    }
+
+    footer a:hover {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="top-nav">
+    <a href="index.html" class="brand">
+      <img src="./css/icon_symmhub.svg" alt="SymmHub Logo" onerror="this.style.display='none'">
+      <span>SymmHub Outline</span>
+    </a>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="index.html">Portal</a></li>
+        <li><a href="#math">Mathematics</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#modules">Libraries</a></li>
+        <li><a href="#apps">Applications</a></li>
+        <li><a href="#tutorials">Tutorials</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="container">
+
+    <!-- Hero Header -->
+    <header class="hero">
+      <div class="badge-pill">Symmetry &amp; Geometry Engine</div>
+      <h1>SymmHub Project Outline</h1>
+      <p class="hero-lead">
+        A web-native laboratory for computing, simulating, and visualizing discrete symmetries across Euclidean, spherical, and hyperbolic spaces using WebGL2 GPU shaders.
+      </p>
+
+      <div class="authors-bar">
+        <span><strong>Vladimir Bulatov</strong> (<a href="https://bulatov.org" target="_blank" rel="noopener">bulatov.org</a>)</span>
+        <span><strong>Chaim Goodman-Strauss</strong> (<a href="https://chaimgoodmanstrauss.com" target="_blank" rel="noopener">co-author of <em>The Symmetries of Things</em></a>)</span>
+        <span><strong>Scott Vorthmann</strong> (<a href="https://www.vzome.com/" target="_blank" rel="noopener">creator of <em>vZome</em></a>)</span>
+      </div>
+
+      <nav class="quick-links" aria-label="Section Quick Links">
+        <a class="quick-chip" href="#math">&sect; 1. Mathematics</a>
+        <a class="quick-chip" href="#architecture">&sect; 2. Architecture</a>
+        <a class="quick-chip" href="#modules">&sect; 3. Library Modules</a>
+        <a class="quick-chip" href="#apps">&sect; 4. Applications</a>
+        <a class="quick-chip" href="#tutorials">&sect; 5. Tutorials</a>
+        <a class="quick-chip" href="#testing">&sect; 6. Tests &amp; Tooling</a>
+      </nav>
+    </header>
+
+    <!-- Section 1: Mathematical Foundations -->
+    <section id="math">
+      <h2 class="section-title">1. Core Mathematical Foundations</h2>
+      <p class="section-desc">
+        SymmHub unifies classical group theory with inversive differential geometry and numerical simulation.
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>
+            Discrete Symmetry Groups
+            <span class="tag tag-blue">Groups</span>
+          </h3>
+          <p>
+            Implements exact discrete isometry groups across geometries:
+          </p>
+          <ul>
+            <li><strong>Wallpaper Groups:</strong> All 17 planar crystallographic groups ($*632$, $2222$, $442$, etc.).</li>
+            <li><strong>Frieze Groups:</strong> The 7 infinite 1D periodic symmetry groups.</li>
+            <li><strong>Spherical Groups:</strong> Polyhedral, dihedral, and cyclic symmetries on $S^2$.</li>
+            <li><strong>Triangle &amp; Coxeter Groups:</strong> Spherical, Euclidean, and Hyperbolic triangle groups ($klm$, reflection groups $*klm$) and quadrangle groups ($*klmn$).</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>
+            Conway Orbifold Notation
+            <span class="tag tag-gold">Topology</span>
+          </h3>
+          <p>
+            Employs John H. Conway’s orbifold signatures and the <em>Magic Theorem</em>:
+          </p>
+          <ul>
+            <li><strong>Topological Cost System:</strong> Orbifolds cost topological budget (Sphere = $\$2$, Euclidean plane = $\$0$, Hyperbolic plane &lt; $\$0$).</li>
+            <li><strong>Deaton's Thesis &amp; Thurston Geometrization:</strong> Computes conformal metric metrics and builds hyperbolic polygon realizations with draggable boundary parameters.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>
+            Inversive Geometry &amp; S-Planes
+            <span class="tag tag-teal">Geometry</span>
+          </h3>
+          <p>
+            Spheres, circles, and planes are represented uniformly in the conformal model:
+          </p>
+          <ul>
+            <li><strong>4-Vector S-Planes:</strong> Unifies hyperplanes and circles into $(a, b, c, d)$ vectors.</li>
+            <li><strong>Circle Inversions:</strong> Reflections and Möbius transformations calculated with clean linear algebraic inner products.</li>
+            <li><strong>Dirichlet Domains:</strong> Algorithmic generation of fundamental domains from generator sets.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>
+            Subgroup Enumeration &amp; Color
+            <span class="tag tag-purple">Combinatorics</span>
+          </h3>
+          <p>
+            Standalone permutation engine for color symmetry:
+          </p>
+          <ul>
+            <li><strong>Coset Table Enumeration:</strong> Finitely presented groups enumerated up to index $N$ via Todd&ndash;Coxeter methods.</li>
+            <li><strong>Permutation Representations:</strong> Action on coset classes mapped to color palettes, producing $N$-color symmetric tessellations.</li>
+            <li><strong>GAP-Free:</strong> Pure ES module engine running inside browser without server dependencies.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: 1.5rem;">
+        <strong>GPU Domain Folding:</strong> Instead of generating millions of polygonal geometry tiles, SymmHub renders in reverse. Shaders evaluate every screen coordinate $(x, y)$, iteratively reflecting/inverting it back into the fundamental domain, and then sample textures, colormaps, or PDEs at that mapped coordinate.
+      </div>
+    </section>
+
+    <!-- Section 2: Architecture & Zero-Build Philosophy -->
+    <section id="architecture">
+      <h2 class="section-title">2. System Architecture &amp; Zero-Build Philosophy</h2>
+      <p class="section-desc">
+        Built strictly with web standards: runs directly in any modern browser without npm installs, bundlers, transpilers, or build steps.
+      </p>
+
+      <div class="code-box">
+<span class="code-comment"># SymmHub Repository File Structure</span>
+<span class="code-dir">SymmHub/</span>
+├── <span class="code-file">index.html</span>                 <span class="code-comment"># Main landing portal and application gallery</span>
+├── <span class="code-dir">apps/</span>                      <span class="code-comment"># Standalone interactive applications</span>
+│   ├── <span class="code-dir">sympix/</span>                <span class="code-comment"># Image &amp; video symmetry explorer + color symmetry</span>
+│   ├── <span class="code-dir">symsim/</span>                <span class="code-comment"># Gray-Scott &amp; Ginzburg-Landau symmetric PDEs</span>
+│   ├── <span class="code-dir">attractors/</span>            <span class="code-comment"># Chaotic symmetric dynamical systems (SymChaos)</span>
+│   ├── <span class="code-dir">orbifold/</span>              <span class="code-comment"># General hyperbolic orbifolds with draggable edges</span>
+│   ├── <span class="code-dir">groups/</span>                <span class="code-comment"># Subgroup enumeration playground</span>
+│   └── <span class="code-dir">sample/</span>                <span class="code-comment"># Minimal starter template for new apps</span>
+├── <span class="code-dir">tutorials/</span>                 <span class="code-comment"># Interactive educational guides with MathJax</span>
+│   ├── <span class="code-file">orbifold-notation.html</span> <span class="code-comment"># "Two Dollars of Symmetry" (Conway &amp; Deaton)</span>
+│   └── <span class="code-file">orbifold-showcase.html</span> <span class="code-comment"># 30+ clickable hyperbolic orbifold models</span>
+├── <span class="code-dir">lib/</span>                       <span class="code-comment"># Reusable core mathematical &amp; graphics libraries</span>
+│   ├── <span class="code-dir">symhublib/</span>             <span class="code-comment"># Pipeline coordinator, renderer, document management</span>
+│   ├── <span class="code-dir">sublib/</span>                <span class="code-comment"># Standalone coset enumeration engine</span>
+│   ├── <span class="code-dir">invlib/</span>                <span class="code-comment"># Inversive geometry, complex arithmetic &amp; Dirichlet domains</span>
+│   ├── <span class="code-dir">grouplib/</span>              <span class="code-comment"># Group constructors (Wallpaper, Frieze, KLM, Spherical)</span>
+│   ├── <span class="code-dir">orbilib/</span>               <span class="code-comment"># Hyperbolic orbifold geometrization solver</span>
+│   ├── <span class="code-dir">shaders/</span>               <span class="code-comment"># Modular WebGL2 GLSL shaders</span>
+│   └── <span class="code-dir">uilib/</span>                 <span class="code-comment"># UI controls, Dat.GUI mod, image/video recorders</span>
+└── <span class="code-dir">tests/</span>                     <span class="code-comment"># Unit and integration test suites</span>
+      </div>
+    </section>
+
+    <!-- Section 3: Library Modules Breakdown -->
+    <section id="modules">
+      <h2 class="section-title">3. Core Library Modules (<a href="lib/" class="text-link">lib/</a>)</h2>
+      <p class="section-desc">
+        Modular JavaScript libraries exposing clean ES module APIs.
+      </p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Module</th>
+              <th>Key Components</th>
+              <th>Role &amp; Responsibilities</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong><a href="lib/symhublib/symhublib.js" class="text-link">symhublib</a></strong></td>
+              <td><code>SymRenderer</code>, <code>VisualizationManager</code>, <code>CrownCalculator</code>, <code>SymDocumentManager</code></td>
+              <td>Central rendering and state coordination. Handles multi-pass WebGL framebuffers, layer composition (textures, colormaps, bumpmaps), and preset JSON serialization.</td>
+            </tr>
+            <tr>
+              <td><strong><a href="lib/sublib/README.md" class="text-link">sublib</a></strong></td>
+              <td><code>subgroupsData</code>, <code>sublib_core.js</code>, <code>bin/sublib.mjs</code></td>
+              <td>GAP-independent coset table subgroup enumerator. Computes conjugacy classes of subgroups up to index $N$ and outputs permutation JSON data for color symmetry.</td>
+            </tr>
+            <tr>
+              <td><strong><a href="lib/invlib/invlib.js" class="text-link">invlib</a></strong></td>
+              <td><code>ISplane</code>, <code>Inversive</code>, <code>ComplexArithmetic</code>, <code>DirichletDomainBuilder</code></td>
+              <td>Inversive geometry calculations, Möbius transformations, conformal disk-to-band projections, and uniform data packing for WebGL shaders.</td>
+            </tr>
+            <tr>
+              <td><strong><a href="lib/grouplib/grouplib.js" class="text-link">grouplib</a></strong></td>
+              <td><code>WallpaperGroups</code>, <code>Group_KLM</code>, <code>Group_Spherical</code>, <code>Group_Frieze</code></td>
+              <td>Generators, matrices, fundamental domains, and subgroup domain constructions across the 17 wallpaper groups, Coxeter triangle groups, and spherical groups.</td>
+            </tr>
+            <tr>
+              <td><strong><a href="lib/orbilib/orbilib.js" class="text-link">orbilib</a></strong></td>
+              <td><code>OrbifoldGeometrization</code>, <code>Group_Orbifold</code>, <code>OrbifoldUITool</code></td>
+              <td>Implements hyperbolic metric calculations for arbitrary Conway orbifold signatures. Calculates side lengths, cone angles, and polygon vertices for hyperbolic orbifolds.</td>
+            </tr>
+            <tr>
+              <td><strong><a href="lib/shaders/modules.js" class="text-link">shaders</a></strong></td>
+              <td><code>inversiveSampler</code>, <code>fundDomainShader</code>, <code>projection</code>, <code>bufferVisBumpmap</code></td>
+              <td>Modular GLSL fragment shaders assembled dynamically at runtime for GPU-accelerated domain folding, procedural noise, colormapping, and heightmap rendering.</td>
+            </tr>
+            <tr>
+              <td><strong><a href="lib/uilib/uilib.js" class="text-link">uilib</a></strong></td>
+              <td><code>ParamUI</code>, <code>ImageSelector</code>, <code>BinaryStore</code>, <code>VideoRecorder</code></td>
+              <td>UI widgets, modified <code>dat.gui</code> controls, color palette pickers, file import/export handlers, and canvas WebM video export.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 4: Interactive Applications Suite -->
+    <section id="apps">
+      <h2 class="section-title">4. Interactive Applications Suite (<a href="apps/" class="text-link">apps/</a>)</h2>
+      <p class="section-desc">
+        Specialized applications highlighting different mathematical aspects of symmetry.
+      </p>
+
+      <div class="grid-3">
+        <a href="apps/sympix/index.html" class="app-card">
+          <div class="app-body">
+            <div class="app-header">
+              <span class="app-title">SymPix</span>
+              <span class="tag tag-blue">Flagship</span>
+            </div>
+            <p class="app-desc">
+              Transform photographs, live video camera streams, and procedural patterns into symmetric wallpaper, frieze, spherical, and hyperbolic tessellations with multi-color coset symmetry.
+            </p>
+          </div>
+          <div class="app-footer">
+            <span>Launch SymPix &rarr;</span>
+          </div>
+        </a>
+
+        <a href="apps/symsim/index.html" class="app-card">
+          <div class="app-body">
+            <div class="app-header">
+              <span class="app-title">SymSim</span>
+              <span class="tag tag-teal">PDEs</span>
+            </div>
+            <p class="app-desc">
+              Simulate non-linear partial differential equations on GPU floating-point textures folded into symmetry groups. Includes Gray&ndash;Scott reaction-diffusion and Ginzburg&ndash;Landau models.
+            </p>
+          </div>
+          <div class="app-footer">
+            <span>Launch SymSim &rarr;</span>
+          </div>
+        </a>
+
+        <a href="apps/attractors/index.html" class="app-card">
+          <div class="app-body">
+            <div class="app-header">
+              <span class="app-title">SymChaos</span>
+              <span class="tag tag-coral">Attractors</span>
+            </div>
+            <p class="app-desc">
+              Real-time visualization of symmetric chaotic attractors (Field &amp; Golubitsky polynomial systems) exhibiting discrete rotational, reflectional, and wallpaper symmetries.
+            </p>
+          </div>
+          <div class="app-footer">
+            <span>Launch SymChaos &rarr;</span>
+          </div>
+        </a>
+
+        <a href="apps/orbifold/Symmetry.html" class="app-card">
+          <div class="app-body">
+            <div class="app-header">
+              <span class="app-title">Orbifold Explorer</span>
+              <span class="tag tag-gold">Hyperbolic</span>
+            </div>
+            <p class="app-desc">
+              Interactive laboratory for general hyperbolic orbifolds. Users can interactively drag edges and cone points of fundamental domains in real-time.
+            </p>
+          </div>
+          <div class="app-footer">
+            <span>Launch Explorer &rarr;</span>
+          </div>
+        </a>
+
+        <a href="apps/groups/index.html" class="app-card">
+          <div class="app-body">
+            <div class="app-header">
+              <span class="app-title">Groups Playground</span>
+              <span class="tag tag-purple">Algebra</span>
+            </div>
+            <p class="app-desc">
+              Interactive interface for <code>sublib</code>: input custom generators and relators or choose presets to compute and inspect subgroup conjugacy classes and coset permutations.
+            </p>
+          </div>
+          <div class="app-footer">
+            <span>Open Playground &rarr;</span>
+          </div>
+        </a>
+
+        <a href="apps/sample/index.html" class="app-card">
+          <div class="app-body">
+            <div class="app-header">
+              <span class="app-title">Sample App</span>
+              <span class="tag tag-blue">Starter</span>
+            </div>
+            <p class="app-desc">
+              A clean, minimal boilerplate demonstrating how to initialize <code>SymRenderer</code>, manage double-buffered FBOs, and load shader programs for custom apps.
+            </p>
+          </div>
+          <div class="app-footer">
+            <span>View Sample &rarr;</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Section 5: Educational Tutorials -->
+    <section id="tutorials">
+      <h2 class="section-title">5. Interactive Educational Tutorials (<a href="tutorials/" class="text-link">tutorials/</a>)</h2>
+      <p class="section-desc">
+        Rigorous mathematical expositions integrated with live WebGL widgets.
+      </p>
+
+      <div class="grid-2">
+        <a href="tutorials/orbifold-notation.html" class="app-card">
+          <div class="app-body">
+            <div class="app-header">
+              <span class="app-title">Two Dollars of Symmetry</span>
+              <span class="tag tag-gold">Tutorial</span>
+            </div>
+            <p class="app-desc">
+              A comprehensive essay detailing Conway's orbifold notation, the Magic Theorem, Euler characteristic cost budgeting, and the exact geometric meaning of dragging edges in fundamental domains according to Derek Deaton's thesis.
+            </p>
+          </div>
+          <div class="app-footer">
+            <span>Read Tutorial &rarr;</span>
+          </div>
+        </a>
+
+        <a href="tutorials/orbifold-showcase.html" class="app-card">
+          <div class="app-body">
+            <div class="app-header">
+              <span class="app-title">Orbifold Showcase</span>
+              <span class="tag tag-teal">Showcase</span>
+            </div>
+            <p class="app-desc">
+              A curated catalog of thirty-plus hyperbolic symmetry groups. Displays each orbifold's signature, Euler characteristic, draggable parameters, and direct one-click visualization links.
+            </p>
+          </div>
+          <div class="app-footer">
+            <span>Open Showcase &rarr;</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Section 6: Testing & Quality Assurance -->
+    <section id="testing">
+      <h2 class="section-title">6. Test Suites &amp; Tooling (<a href="tests/" class="text-link">tests/</a>)</h2>
+      <p class="section-desc">
+        Automated regression test suites and interactive diagnostic runners:
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>sublib Tests</h3>
+          <p>
+            Validates coset table calculations and subgroup counts against verified GAP algebra benchmarks across wallpaper and triangle groups.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Splane &amp; Inversive Tests</h3>
+          <p>
+            Ensures numerical precision of 4-vector circle reflections, Möbius transformations, and conformal projections.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Shader &amp; FBO Tests</h3>
+          <p>
+            Validates WebGL2 floating point texture support, multi-target framebuffers, and pixel read-back routines.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How to Run Locally -->
+    <section id="running">
+      <h2 class="section-title">7. Running SymmHub Locally</h2>
+      <p class="section-desc">
+        Since SymmHub uses ES modules, start any static web server in the repository root directory:
+      </p>
+
+      <div class="code-box">
+<span class="code-comment"># Python 3 built-in HTTP server:</span>
+python -m http.server 8000
+
+<span class="code-comment"># Or using Node http-server / npx:</span>
+npx serve .
+
+<span class="code-comment"># Then open your browser at:</span>
+http://localhost:8000/outline.html  <span class="code-comment"># (This document)</span>
+http://localhost:8000/index.html    <span class="code-comment"># (Main Portal)</span>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; SymmHub Project &mdash; Authored by Vladimir Bulatov, Chaim Goodman-Strauss, and Scott Vorthmann.</p>
+    <p style="margin-top: 0.4rem;">
+      <a href="index.html">Main Portal</a> &bull;
+      <a href="https://github.com/SymmHub/SymmHub" target="_blank" rel="noopener">GitHub Repository</a> &bull;
+      <a href="tutorials/orbifold-notation.html">Orbifold Tutorial</a>
+    </p>
+  </footer>
+
+</body>
+</html>
