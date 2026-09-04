@@ -58,6 +58,9 @@ function Subgroups(options = {}) {
     // (The old code got away with it by accident: it awaited a fetch, which let
     // the rest of the layer restore first.)
     let mRestoring = 0;
+    // the presentation the tables were computed with, see presentationKey()
+    let mPresentationKey = null;
+    let mCustomLabel = null;
 
     const mInitPromise = loadGroupTypes();
 
@@ -141,7 +144,7 @@ function Subgroups(options = {}) {
     }
 
     function describeSource(name) {
-        return name + '  (computed, index <= ' + mConfig.maxIndex + ')';
+        return (mCustomLabel || name) + '  (computed, index <= ' + mConfig.maxIndex + ')';
     }
 
     /**
@@ -160,9 +163,15 @@ function Subgroups(options = {}) {
         const maxIndex = Math.min(mConfig.maxIndex || DEFAULT_MAX_INDEX, MAX_MAX_INDEX);
         try {
             const custom = options.getPresentation && options.getPresentation();
+            mPresentationKey = presentationKey(custom);
+            mCustomLabel = (custom && custom.label) ? custom.label : null;
             if (custom && custom.gens && custom.relators) {
-                return subgroupsData({ name, gens: custom.gens,
-                                       relators: custom.relators, maxIndex });
+                const t0 = Date.now();
+                const data = subgroupsData({ name: custom.name || name, gens: custom.gens,
+                                             relators: custom.relators, maxIndex });
+                if (DEBUG) console.log(MYNAME + ': ' + (mCustomLabel || name) + ' <' + custom.gens + ' | ' + custom.relators + '>' +
+                                       ' -> ' + data.subgroups.length + ' subgroups to index ' + maxIndex + ' in ' + (Date.now()-t0) + 'ms');
+                return data;
             }
             const preset = presetKeyFor(family, name);
             if (!preset) return null;
@@ -331,6 +340,28 @@ function Subgroups(options = {}) {
         }
     }
 
+    /** identifies the presentation the tables are computed with */
+    function presentationKey(custom) {
+        return (custom && custom.gens && custom.relators)
+            ? custom.gens + ' | ' + custom.relators
+            : 'catalogue';
+    }
+
+    /**
+     * The renderer's group changed.  Another fundamental domain of the same
+     * group has other generators, so tables computed for the previous
+     * presentation no longer apply: recompute them when the presentation
+     * differs, keeping the selected subgroup when it still exists.
+     */
+    function onGroupChanged() {
+        if (!options.getPresentation) return;
+        if (mRestoring > 0) return;
+        if (!mConfig.groupType || mConfig.groupType === SELECT) return;
+        if (!mConfig.groupName || mConfig.groupName === SELECT) return;
+        if (presentationKey(options.getPresentation()) === mPresentationKey) return;
+        onGroupNameChanged(mConfig.subgroup);
+    }
+
     function makeParams() {
         return {
             load:      ParamFunc({ name: 'Load Subgroups', func: loadSubgroupFile }),
@@ -493,6 +524,7 @@ function Subgroups(options = {}) {
     return {
         getParams,
         setParamsMap,
+        onGroupChanged,
         getClassName: () => MYNAME,
         get enabled() { return true; }
     };

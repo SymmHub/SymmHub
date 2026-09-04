@@ -18,8 +18,8 @@ import {
 } from './presets_color.js';
 
 // ── Custom layer factory for sympix_color ─────────────────────────────────────
-// Signature: (getGLCtx, getOnChange, getChildren) => ObjectFactory
-function SympixLayerFactory(getGLCtx, getOnChange, getChildren) {
+// Signature: (getGLCtx, getOnChange, getChildren, getInitPar) => ObjectFactory
+function SympixLayerFactory(getGLCtx, getOnChange, getChildren, getInitPar) {
     function makeUniqueName(baseName) {
         const existing = getChildren().map(l => l.getId()).filter(Boolean);
         if (!existing.includes(baseName)) return baseName;
@@ -32,7 +32,7 @@ function SympixLayerFactory(getGLCtx, getOnChange, getChildren) {
             const id    = makeUniqueName(baseName);
             const layer = ctor({ config: { enabled: false }, id });
             const ctx   = getGLCtx();
-            if (ctx) layer.init({ glCtx: ctx, onChange: getOnChange() });
+            if (ctx) layer.init({ ...(getInitPar ? getInitPar() : {}), glCtx: ctx, onChange: getOnChange() });
             return layer;
         };
     }
