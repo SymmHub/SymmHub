@@ -1,6 +1,9 @@
 import {
     VisualizationImage,
     VisualizationOverlay,
+    OverlayIsolines,
+    OverlayWorldGrid,
+    OverlayScreenGrid,
     ObjectFactory,
 } from './modules.js';
 
@@ -25,10 +28,10 @@ function SympixLayerFactory(getGLCtx, getOnChange, getChildren, getInitPar) {
         while (existing.includes(baseName + n)) n++;
         return baseName + n;
     }
-    function make(ctor, baseName) {
+    function make(ctor, baseName, enabled = false) {
         return () => {
             const id    = makeUniqueName(baseName);
-            const layer = ctor({ config: { enabled: false }, id });
+            const layer = ctor({ config: { enabled }, id });
             const ctx   = getGLCtx();
             if (ctx) layer.init({ ...(getInitPar ? getInitPar() : {}), glCtx: ctx, onChange: getOnChange() });
             return layer;
@@ -39,6 +42,10 @@ function SympixLayerFactory(getGLCtx, getOnChange, getChildren, getInitPar) {
         infoArray: [
             { name: 'VisualizationImage',   creator: make(VisualizationImage,   'image'  ) },
             { name: 'VisualizationOverlay', creator: make(VisualizationOverlay, 'overlay') },
+            // general overlay items, usable as layers of their own
+            { name: 'OverlayIsolines',   label: 'isolines',    creator: make(OverlayIsolines,   'isolines',   true) },
+            { name: 'OverlayWorldGrid',  label: 'world grid',  creator: make(OverlayWorldGrid,  'worldGrid',  true) },
+            { name: 'OverlayScreenGrid', label: 'screen grid', creator: make(OverlayScreenGrid, 'screenGrid', true) },
         ],
     });
 }

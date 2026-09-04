@@ -4,6 +4,9 @@ import {
     InversiveNavigator,
     VisualizationManager,
     VisualizationOverlay,
+    OverlayIsolines,
+    OverlayWorldGrid,
+    OverlayScreenGrid,
     VisualizationColorSym,
     VisualizationColorTiles,
     VisualizationImage,
@@ -45,10 +48,10 @@ function SympixLayerFactory(getGLCtx, getOnChange, getChildren, getInitPar) {
         while (existing.includes(baseName + n)) n++;
         return baseName + n;
     }
-    function make(ctor, baseName) {
+    function make(ctor, baseName, enabled = false) {
         return () => {
             const id    = makeUniqueName(baseName);
-            const layer = ctor({ config: { enabled: false }, id });
+            const layer = ctor({ config: { enabled }, id });
             const ctx   = getGLCtx();
             if (ctx) layer.init({ ...(getInitPar ? getInitPar() : {}), glCtx: ctx, onChange: getOnChange() });
             return layer;
@@ -61,6 +64,10 @@ function SympixLayerFactory(getGLCtx, getOnChange, getChildren, getInitPar) {
             { name: 'VisualizationColorTiles', label: 'Color Tiles',  creator: make(VisualizationColorTiles, 'Color Tiles') },
             { name: 'VisualizationImage',      label: 'Image',        creator: make(VisualizationImage,    'image'        ) },
             { name: 'VisualizationOverlay',    label: 'Overlay',      creator: make(VisualizationOverlay,  'overlay'      ) },
+            // general overlay items, usable as layers of their own (e.g. isolines between the image and the colour tiles)
+            { name: 'OverlayIsolines',         label: 'isolines',     creator: make(OverlayIsolines,   'isolines',   true) },
+            { name: 'OverlayWorldGrid',        label: 'world grid',   creator: make(OverlayWorldGrid,  'worldGrid',  true) },
+            { name: 'OverlayScreenGrid',       label: 'screen grid',  creator: make(OverlayScreenGrid, 'screenGrid', true) },
         ],
     });
 }
