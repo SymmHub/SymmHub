@@ -5,13 +5,13 @@
 
   An item drawn from group data may use a subgroup H of the renderer's group G
   instead of G, given by its coset table.  Without GL the sampler is never made,
-  so the checks stop at the group H the item builds (rebuild/getGroup); packing
+  so the checks stop at the domain of H the item builds (rebuild/getDomain); packing
   it into the sampler and the uniform are what the browser adds.
 
   1. the group using kinds serialize a symmetry block, the others do not
   2. with the catalogue presentation of 632 (default domain) the table of
      subgroups is computed by sublib; choosing index 3 sets the cosets of the
-     first index 3 subgroup and H is a group of index 3
+     first index 3 subgroup and H has index 3
   3. a restored document selects its subgroup in the choices again; the
      serialization round trips
   4. a presentation change (the kite domain of 632, generators and relators
@@ -98,19 +98,19 @@ let cosets3 = null;
           `cosets of the first index 3 subgroup: '${cosets3}'`);
 
     sym.rebuild(G632);
-    const H = sym.getGroup();
-    check(H && H.subgroupDomain && H.subgroupDomain.n === 3 && H.getFundDomain().length >= 3,
-          `H is a group of index 3 with ${H && H.getFundDomain().length} sides`);
-    check(same(sym.getUniforms({ group: G632 }), {}), 'no sampler without GL: no uniform');
+    const H = sym.getDomain();
+    check(H && H.n === 3 && H.pairings.length >= 3,
+          `H has index 3 with ${H && H.pairings.length} pairings`);
+    check(same(sym.getUniforms({ group: G632 }), { uSubEnabled: false }), 'no sampler without GL: no uniform');
 
     sym.setSubgroup('632.3.2');
     check(it.getConfig().symmetry.cosets !== cosets3, 'the other index 3 subgroup has other cosets');
     sym.rebuild(G632);
-    check(sym.getGroup() && sym.getGroup().subgroupDomain.n === 3, 'H of the other subgroup');
+    check(sym.getDomain() && sym.getDomain().n === 3, 'H of the other subgroup');
 
     // back to the renderer's group
     setParamValues(it.getParams(), { symmetry: { type: 'renderer' } });
-    check(same(sym.getUniforms({ group: G632 }), {}), 'renderer symmetry: no uniform');
+    check(same(sym.getUniforms({ group: G632 }), { uSubEnabled: false }), 'renderer symmetry: no uniform');
 }
 
 // ── 3. restore ────────────────────────────────────────────────────────────────
@@ -125,14 +125,14 @@ say('3. restore of a document');
     const v = getParamValues(it.getParams());
     check(same(v.symmetry, { type: 'subgroup', maxIndex: 8, cosets: cosets3 }), 'serialization round trip');
     sym.rebuild(G632);
-    check(sym.getGroup() && sym.getGroup().subgroupDomain.n === 3, 'H rebuilt after the restore');
+    check(sym.getDomain() && sym.getDomain().n === 3, 'H rebuilt after the restore');
 
     // a fresh item restored before the group is known builds on the first frame
     const it2 = OverlayTiling({ id: 't2' });
     it2.init(initPar(catalogue632));
     setParamValues(it2.getParams(), { symmetry: { type: 'subgroup', cosets: cosets3 } });
     it2.getSymmetry().getUniforms({ group: G632 });
-    check(it2.getSymmetry().getGroup() && it2.getSymmetry().getGroup().subgroupDomain.n === 3, 'getUniforms builds H on demand');
+    check(it2.getSymmetry().getDomain() && it2.getSymmetry().getDomain().n === 3, 'getUniforms builds H on demand');
 }
 
 // ── 4. a presentation change ──────────────────────────────────────────────────
@@ -157,8 +157,8 @@ say('4. presentation change: the kite domain of 632');
     const cosetsKite = it.getConfig().symmetry.cosets;
     check(cosetsKite.split(' ').length === (kitePres.gens.split(/\s+/).length), `cosets have one permutation per generator: '${cosetsKite}' for gens '${kitePres.gens}'`);
     sym.rebuild(G632kite);
-    const H = sym.getGroup();
-    check(H && H.subgroupDomain.n === 3, `H of index 3 from the kite group with ${H && H.getFundDomain().length} sides`);
+    const H = sym.getDomain();
+    check(H && H.n === 3, `H of index 3 from the kite group with ${H && H.pairings.length} pairings`);
 
     // back to the default domain: the table follows, the kite cosets no longer match a choice
     pres = catalogue632;
@@ -176,8 +176,8 @@ say('5. unusable cosets');
     let threw = false;
     try { it.getSymmetry().rebuild(G632); } catch (e) { threw = true; }
     console.warn = quiet.warn;
-    check(!threw && it.getSymmetry().getGroup() === null && warned > 0, 'bad cosets: no group, a warning, no throw');
-    check(same(it.getSymmetry().getUniforms({ group: G632 }), {}), 'bad cosets: the renderer group stays in use');
+    check(!threw && it.getSymmetry().getDomain() === null && warned > 0, 'bad cosets: no group, a warning, no throw');
+    check(same(it.getSymmetry().getUniforms({ group: G632 }), { uSubEnabled: false }), 'bad cosets: the renderer group stays in use');
     check(it.getSymmetry().getChoices().subgroup === '[select]', 'bad cosets select nothing');
 }
 
@@ -203,7 +203,7 @@ say('7. group changes through the overlay');
     check(!threw, 'onGroupChanged forwarded to the items');
     const sym = ov.getItem('tiling').getSymmetry();
     sym.rebuild(G632);
-    check(sym.getGroup() && sym.getGroup().subgroupDomain.n === 3, 'the tiling item of the overlay builds H');
+    check(sym.getDomain() && sym.getDomain().n === 3, 'the tiling item of the overlay builds H');
     const saved = getParamValues(ov.getParams());
     const tiling = saved.overlays.params.children[0].params;
     check(tiling.symmetry.type === 'subgroup' && tiling.symmetry.cosets === cosets3, 'the overlay saves the item symmetry');
