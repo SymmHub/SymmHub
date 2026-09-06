@@ -5,21 +5,20 @@
     node tests/subgroups/catalog_names.mjs
 
   1. for every wallpaper group, the names makeSubgroupNamer() gives the
-     subgroups of the catalogue presentation with the catalogue's own order
-     (classInvariant: false, the key of the representative) are the names of
-     the catalogue manifests (catalog_names.json: 250117_colorsym/catalog/data
-     as of 2026-09-05, all subgroups to index 6, 632 to index 8), and so are
-     the types and the geometric keys
-  2. with the default order (the key of the conjugacy class) the types are
-     the same and the names differ from the manifests only in the ordinal;
-     how many names differ is reported per group
-  3. another fundamental domain of the same group (632 kite, 442 square, 2222
-     parallelogram, 3*3 kite): the presentation derived from the geometry
-     gives other coset tables, but the same names: a subgroup gets the same
-     name under both presentations (matched by its class key), every index
-     has the same multiset of names, and the class keys of the default
-     presentation are the same set as those of the other domain
-  4. a group outside the catalogue (klm:237) keeps the sublib ids
+     subgroups of the catalogue presentation are the names of the catalogue
+     manifests (catalog_names.json: 250117_colorsym/catalog/data/*.json as
+     regenerated on 2026-09-05 with the key of the conjugacy class, all
+     subgroups to index 6, 632 to index 8), and so are the types and the
+     keys; the manifests' representativeKey is the key of the representative
+     (classInvariant: false), which orders some buckets differently: how many
+     names get another ordinal that way is reported per group
+  2. another fundamental domain of the same group (632 kite, 442 square,
+     2222 parallelogram, 3*3 kite): the presentation derived from the
+     geometry gives other coset tables, but the same names: a subgroup gets
+     the same name under both presentations (matched by its class key),
+     every index has the same multiset of names, and the class keys of the
+     default presentation are the same set as those of the other domain
+  3. a group outside the catalogue (klm:237) keeps the sublib ids
 */
 
 import { readFileSync } from 'node:fs';
@@ -36,7 +35,7 @@ const catalog = JSON.parse(readFileSync(FIXTURE, 'utf8'));
 let failures = 0;
 function check(ok, msg){ if(!ok){ failures++; console.log('  FAIL:', msg); } return ok; }
 
-// ---- 1, 2. the catalogue presentations ----------------------------------------
+// ---- 1. the catalogue presentations -------------------------------------------
 
 console.log('=== catalogue names ===');
 let total = 0, changed = 0;
@@ -47,9 +46,9 @@ for(const name of WALLPAPER_NAMES){
   const t0 = Date.now();
   const data = subgroupsData({ preset: 'wallpaper:' + name, maxIndex: ref.maxIndex, generators: 'none' });
   const pres = { name, preset: 'wallpaper:' + name };
-  const asCatalogue = makeSubgroupNamer({ data, presentation: pres, classInvariant: false });
   const namer = makeSubgroupNamer({ data, presentation: pres });
-  check(asCatalogue.isCatalogue && namer.isCatalogue, `${name}: catalogue naming not in effect`);
+  const asRepresentative = makeSubgroupNamer({ data, presentation: pres, classInvariant: false });
+  check(namer.isCatalogue && asRepresentative.isCatalogue, `${name}: catalogue naming not in effect`);
   check(namer.groupName === name, `${name}: group name ${namer.groupName}`);
   check(data.subgroups.length === ref.subgroups.length,
         `${name}: ${data.subgroups.length} subgroups, fixture has ${ref.subgroups.length}`);
@@ -59,23 +58,24 @@ for(const name of WALLPAPER_NAMES){
   for(const s of data.subgroups){
     const want = byCosets.get(s.cosets);
     if(!check(!!want, `${name}: ${s.subgroup} (${s.cosets}) not in the fixture`)) continue;
-    // 1. the catalogue's own order
-    const info = asCatalogue.infoOf(s);
+    // the manifests: the class order
+    const info = namer.infoOf(s);
     const ok = info.name === want.name && info.type === want.type && info.key === want.geoKey;
     if(!ok){
       bad++;
       if(bad <= 5) console.log(`  MISMATCH ${name} ${s.subgroup} ${s.cosets}: got ${info.name} (${info.type}, ${info.key}) want ${want.name} (${want.type}, ${want.geoKey})`);
     }
-    check(asCatalogue.entryByName(want.name) === s, `${name}: entryByName(${want.name})`);
-    check(asCatalogue.entryByName(s.subgroup) === s, `${name}: entryByName(${s.subgroup})`);
-    // 2. the class order: same type, the name differs at most in the ordinal
-    const cinfo = namer.infoOf(s);
-    check(cinfo.type === want.type, `${name} ${s.subgroup}: class order gives type ${cinfo.type}, want ${want.type}`);
-    check(cinfo.name.replace(/#\d+$/, '') === want.name.replace(/#\d+$/, ''), `${name} ${s.subgroup}: class order gives ${cinfo.name}, want ${want.name} up to the ordinal`);
-    check(!!cinfo.key && cinfo.key <= want.geoKey, `${name} ${s.subgroup}: class key ${cinfo.key} is not the least`);
-    check(namer.entryByName(cinfo.name) === s, `${name}: entryByName(${cinfo.name})`);
-    if(cinfo.name !== want.name) moved++;
-    infos.set(cinfo.key, { name: cinfo.name, entry: s });
+    check(namer.entryByName(want.name) === s, `${name}: entryByName(${want.name})`);
+    check(namer.entryByName(s.subgroup) === s, `${name}: entryByName(${s.subgroup})`);
+    // the representative order: same type, the representative's key, the name differs at most in the ordinal
+    const rinfo = asRepresentative.infoOf(s);
+    check(rinfo.type === want.type, `${name} ${s.subgroup}: representative order gives type ${rinfo.type}, want ${want.type}`);
+    check(rinfo.key === want.representativeKey, `${name} ${s.subgroup}: representative key ${rinfo.key}, want ${want.representativeKey}`);
+    check(rinfo.key >= info.key, `${name} ${s.subgroup}: class key ${info.key} is not the least`);
+    check(rinfo.name.replace(/#\d+$/, '') === want.name.replace(/#\d+$/, ''), `${name} ${s.subgroup}: representative order gives ${rinfo.name}, want ${want.name} up to the ordinal`);
+    check(asRepresentative.entryByName(rinfo.name) === s, `${name}: entryByName(${rinfo.name}) in the representative order`);
+    if(rinfo.name !== want.name) moved++;
+    infos.set(info.key, { name: info.name, entry: s });
     total++;
   }
   check(infos.size === data.subgroups.length, `${name}: class keys are not distinct`);
@@ -83,11 +83,11 @@ for(const name of WALLPAPER_NAMES){
   check(bad === 0, `${name}: ${bad} names differ from the catalogue`);
   changed += moved;
   console.log(`  ${name.padEnd(6)} ${String(data.subgroups.length).padStart(3)} subgroups to index ${ref.maxIndex}: ` +
-              `${bad === 0 ? 'catalogue order reproduced' : bad + ' differ'}; class order moves ${moved} ordinal${moved === 1 ? '' : 's'}  (${Date.now() - t0}ms)`);
+              `${bad === 0 ? 'catalogue names reproduced' : bad + ' differ'}; the representative order moves ${moved} ordinal${moved === 1 ? '' : 's'}  (${Date.now() - t0}ms)`);
 }
-console.log(`  ${total} subgroups compared, ${changed} names get another ordinal in the class order`);
+console.log(`  ${total} subgroups compared, ${changed} names get another ordinal in the representative order`);
 
-// ---- 3. other domain shapes ----------------------------------------------------
+// ---- 2. other domain shapes ----------------------------------------------------
 
 console.log('\n=== other domain shapes ===');
 const SHAPES = [
@@ -131,7 +131,7 @@ for(const [name, domainShape] of SHAPES){
   console.log(`  ${name.padEnd(5)} [${domainShape}] ${data.subgroups.length} subgroups: ${bad === 0 && same ? 'same names as the default domain' : 'DIFFERENT'}  (${Date.now() - t0}ms)`);
 }
 
-// ---- 4. outside the catalogue -------------------------------------------------
+// ---- 3. outside the catalogue -------------------------------------------------
 
 console.log('\n=== outside the catalogue ===');
 {
