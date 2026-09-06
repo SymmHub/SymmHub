@@ -18,7 +18,11 @@
      the same name under both presentations (matched by its class key),
      every index has the same multiset of names, and the class keys of the
      default presentation are the same set as those of the other domain
-  3. a group outside the catalogue (klm:237) keeps the sublib ids
+  3. beyond the catalogue's indices: 632 to index 16 gets a type for every
+     subgroup from the geometry of the key (the catalogue's fingerprint fails
+     from index 13 on): 632/632[16], two 632/632[13], two 632/333[14], two
+     632/2222[15]
+  4. a group outside the catalogue (klm:237) keeps the sublib ids
 */
 
 import { readFileSync } from 'node:fs';
@@ -131,7 +135,27 @@ for(const [name, domainShape] of SHAPES){
   console.log(`  ${name.padEnd(5)} [${domainShape}] ${data.subgroups.length} subgroups: ${bad === 0 && same ? 'same names as the default domain' : 'DIFFERENT'}  (${Date.now() - t0}ms)`);
 }
 
-// ---- 3. outside the catalogue -------------------------------------------------
+// ---- 3. beyond the catalogue's indices ----------------------------------------
+//
+// the type comes from the geometry of the key (wallpaperTypeOfKey), so it is
+// available at any index; the catalogue's fingerprint fails from index 13 on
+
+console.log('\n=== 632 to index 16 ===');
+{
+  const t0 = Date.now();
+  const data = subgroupsData({ preset: 'wallpaper:632', maxIndex: 16, generators: 'none' });
+  const namer = makeSubgroupNamer({ data, presentation: { name: '632', preset: 'wallpaper:632' } });
+  const names = data.subgroups.map(s => namer.nameOf(s));
+  check(names.every(n => !n.includes('?')), `632 to 16: a subgroup without a type: ${names.filter(n => n.includes('?')).join(' ')}`);
+  const at = index => data.subgroups.filter(s => s.index === index).map(s => namer.nameOf(s)).sort();
+  check(JSON.stringify(at(16)) === JSON.stringify(['632/632[16]']), `index 16: ${at(16)}`);
+  check(JSON.stringify(at(13)) === JSON.stringify(['632/632[13]#1', '632/632[13]#2']), `index 13: ${at(13)}`);
+  check(JSON.stringify(at(14)) === JSON.stringify(['632/333[14]#1', '632/333[14]#2']), `index 14: ${at(14)}`);
+  check(JSON.stringify(at(15)) === JSON.stringify(['632/2222[15]#1', '632/2222[15]#2']), `index 15: ${at(15)}`);
+  console.log(`  ${data.subgroups.length} subgroups named in ${Date.now() - t0}ms: ` + data.subgroups.filter(s => s.index >= 13).map(s => namer.nameOf(s)).join(' '));
+}
+
+// ---- 4. outside the catalogue -------------------------------------------------
 
 console.log('\n=== outside the catalogue ===');
 {
