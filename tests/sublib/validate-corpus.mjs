@@ -14,11 +14,11 @@
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import {
   makePresentation, subgroupsData, permStringToArrays, canonicalForm, verifyData,
 } from '../../lib/sublib/src/sublib.js';
 
+import { fileURLToPath } from 'node:url';
 // The corpus lives in this repo; resolve relative to this file so the test
 // works from any working directory.
 const DEFAULT_CORPUS = fileURLToPath(new URL('../../apps/sympix/color_groups', import.meta.url));

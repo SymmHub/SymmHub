@@ -6,6 +6,7 @@ import {
     openFile,
     subgroupsData,
 } from './modules.js';
+import { makeSubgroupNamer, compareSubgroupNames } from '../../../lib/grouplib/SubgroupNames.js';
 
 const DEBUG = true;
 const MYNAME = 'Subgroups';
@@ -23,6 +24,11 @@ const SELECT = '[select]';
 //
 // A colouring can use at most MAX_COLORS_COUNT (24) colours, so there is no
 // point enumerating past index 24.
+//
+// The subgroups are listed under the names of the colour group catalogue,
+// G/H[n]#k for a wallpaper group and the sublib ids otherwise (see
+// lib/grouplib/SubgroupNames.js); the name is what a document stores.  Documents
+// saved with the sublib ids restore by id, and by the layer's permutations first.
 const DEFAULT_MAX_INDEX = 24;
 const MAX_MAX_INDEX = 24;
 
@@ -61,6 +67,10 @@ function Subgroups(options = {}) {
     // the presentation the tables were computed with, see presentationKey()
     let mPresentationKey = null;
     let mCustomLabel = null;
+    // the presentation of the current table (null for the catalogue's or a file's)
+    // and the names its subgroups are listed under
+    let mCustomPresentation = null;
+    let mNamer = null;
 
     const mInitPromise = loadGroupTypes();
 
@@ -165,6 +175,7 @@ function Subgroups(options = {}) {
             const custom = options.getPresentation && options.getPresentation();
             mPresentationKey = presentationKey(custom);
             mCustomLabel = (custom && custom.label) ? custom.label : null;
+            mCustomPresentation = custom || null;
             if (custom && custom.gens && custom.relators) {
                 const t0 = Date.now();
                 const data = subgroupsData({ name: custom.name || name, gens: custom.gens,
@@ -187,7 +198,7 @@ function Subgroups(options = {}) {
     }
 
     function onSubgroupChanged() {
-        const subgroupData = mSubgroupsData.find(s => String(s.subgroup) === mConfig.subgroup);
+        const subgroupData = findSubgroup(mConfig.subgroup);
         if (options.onSubgroupSelected && mRestoring === 0) {
             options.onSubgroupSelected(subgroupData || null);
         }
@@ -202,6 +213,24 @@ function Subgroups(options = {}) {
     function normalizePerms(str) {
         if (!str) return '';
         return str.trim().split(/\s+/).join(' ');
+    }
+
+    /** the name a subgroup entry is listed under */
+    function subgroupName(s) {
+        return mNamer ? mNamer.nameOf(s) : String(s.subgroup);
+    }
+
+    /** the entry listed under the name, or with the sublib id (documents saved before the names) */
+    function findSubgroup(str) {
+        if (!str || str === SELECT) return null;
+        if (mNamer) return mNamer.entryByName(str);
+        return mSubgroupsData.find(s => String(s.subgroup) === str) || null;
+    }
+
+    /** the choice string for a name or an id: the name of the entry when it is known */
+    function choiceOf(str) {
+        const entry = findSubgroup(str);
+        return entry ? subgroupName(entry) : str;
     }
 
     function onIndexChanged(preferredSubgroup) {
@@ -220,10 +249,14 @@ function Subgroups(options = {}) {
         }
 
         const subgroupsWithIndex = mSubgroupsData.filter(s => String(s.index) === actualIndex);
-        mSubgroupChoices = [SELECT, ...subgroupsWithIndex.map(s => String(s.subgroup))];
+        const names = subgroupsWithIndex.map(s => subgroupName(s));
+        // catalogue names in their order: by type, then by ordinal
+        if (mNamer && mNamer.isCatalogue) names.sort(compareSubgroupNames);
+        mSubgroupChoices = [SELECT, ...names];
         if (mParams && mParams.subgroup) {
             mParams.subgroup.updateChoices(mSubgroupChoices);
         }
+        if (preferredSubgroup !== undefined) preferredSubgroup = choiceOf(preferredSubgroup);
         const firstValidSubgroup = mSubgroupChoices.find(s => s !== SELECT) || SELECT;
         const activeSubgroup = (preferredSubgroup !== undefined && mSubgroupChoices.includes(preferredSubgroup))
             ? preferredSubgroup
@@ -244,6 +277,7 @@ function Subgroups(options = {}) {
                 throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
             }
             const data = await response.json();
+            mCustomPresentation = null;
             parseSubgroupsData(data, name, preferredSubgroup);
         } catch (e) {
             console.error('Error auto-loading subgroup file:', e);
@@ -263,6 +297,14 @@ function Subgroups(options = {}) {
         } else {
             mSubgroupsData = [];
         }
+
+        mNamer = makeSubgroupNamer({
+            data: (data && Array.isArray(data.subgroups)) ? data : { subgroups: mSubgroupsData },
+            presentation: mCustomPresentation,
+            family: (mConfig.groupType && mConfig.groupType !== SELECT) ? mConfig.groupType : null,
+            name: (data && data.name) || mConfig.groupName,
+        });
+        if (preferredSubgroup !== undefined) preferredSubgroup = choiceOf(preferredSubgroup);
 
         if (data && Array.isArray(data.countPerIndex)) {
             mIndexChoices = [SELECT, ...data.countPerIndex.map(item => `${item.index}(${item.count})`)];
@@ -289,7 +331,7 @@ function Subgroups(options = {}) {
         }
 
         if (matchedSubgroup) {
-            preferredSubgroup = String(matchedSubgroup.subgroup);
+            preferredSubgroup = subgroupName(matchedSubgroup);
         }
 
         if (preferredSubgroup === '' || preferredSubgroup === SELECT) {
@@ -306,7 +348,7 @@ function Subgroups(options = {}) {
             return;
         }
 
-        const prefSub = mSubgroupsData.find(s => String(s.subgroup) === preferredSubgroup);
+        const prefSub = findSubgroup(preferredSubgroup);
         const preferredIdxVal = prefSub ? String(prefSub.index) : '';
         const firstValidIndexChoice = mIndexChoices.find(c => c !== SELECT) || SELECT;
         const preferredIndexChoice = mIndexChoices.find(c => getActualIndex(c) === preferredIdxVal)
@@ -330,6 +372,7 @@ function Subgroups(options = {}) {
             mConfig.groupName = SELECT;
             if (mParams && mParams.groupType) mParams.groupType.setValue(SELECT);
             if (mParams && mParams.groupName) mParams.groupName.setValue(SELECT);
+            mCustomPresentation = null;
             parseSubgroupsData(data, file.name);
             if (options.onChange) {
                 options.onChange();
@@ -512,10 +555,10 @@ function Subgroups(options = {}) {
                 mParams.index.setValue(targetIndexChoice);
             }
             onIndexChanged(targetSubgroup || SELECT);
-        } else if (targetSubgroup && targetSubgroup !== mConfig.subgroup) {
-            mConfig.subgroup = targetSubgroup;
+        } else if (targetSubgroup && choiceOf(targetSubgroup) !== mConfig.subgroup) {
+            mConfig.subgroup = choiceOf(targetSubgroup);
             if (mParams && mParams.subgroup) {
-                mParams.subgroup.setValue(targetSubgroup);
+                mParams.subgroup.setValue(mConfig.subgroup);
             }
             onSubgroupChanged();
         }

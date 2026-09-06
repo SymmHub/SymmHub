@@ -92,7 +92,8 @@ let cosets3 = null;
 
     sym.setIndex('3(2)');
     const ch3 = sym.getChoices();
-    check(same(ch3.subgroups, ['[select]', '632.3.1', '632.3.2']) && ch3.subgroup === '632.3.1', `subgroup choices of index 3: ${ch3.subgroups}`);
+    // the subgroups are listed under the catalogue names (SubgroupNames.js), the first of index 3 is 632.3.1 = 632/2222[3]
+    check(same(ch3.subgroups, ['[select]', '632/2222[3]', '632/632[3]']) && ch3.subgroup === '632/2222[3]', `subgroup choices of index 3: ${ch3.subgroups}`);
     cosets3 = it.getConfig().symmetry.cosets;
     check(cosets3 === table.subgroups.find(s => s.subgroup === '632.3.1').cosets && cosets3.split(' ').length === 3,
           `cosets of the first index 3 subgroup: '${cosets3}'`);
@@ -103,7 +104,7 @@ let cosets3 = null;
           `H has index 3 with ${H && H.pairings.length} pairings`);
     check(same(sym.getUniforms({ group: G632 }), { uSubEnabled: false }), 'no sampler without GL: no uniform');
 
-    sym.setSubgroup('632.3.2');
+    sym.setSubgroup('632/632[3]');
     check(it.getConfig().symmetry.cosets !== cosets3, 'the other index 3 subgroup has other cosets');
     sym.rebuild(G632);
     check(sym.getDomain() && sym.getDomain().n === 3, 'H of the other subgroup');
@@ -121,7 +122,7 @@ say('3. restore of a document');
     setParamValues(it.getParams(), { symmetry: { type: 'subgroup', maxIndex: 8, cosets: cosets3 } });
     const sym = it.getSymmetry();
     const ch = sym.getChoices();
-    check(ch.index === '3(2)' && ch.subgroup === '632.3.1', `restored cosets select their subgroup: ${ch.index} ${ch.subgroup}`);
+    check(ch.index === '3(2)' && ch.subgroup === '632/2222[3]', `restored cosets select their subgroup: ${ch.index} ${ch.subgroup}`);
     const v = getParamValues(it.getParams());
     check(same(v.symmetry, { type: 'subgroup', maxIndex: 8, cosets: cosets3 }), 'serialization round trip');
     sym.rebuild(G632);

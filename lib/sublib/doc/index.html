@@ -238,6 +238,7 @@
       <a href="#cosets">Coset representatives</a>
       <a href="#domain">Fundamental domains</a>
       <a href="#canonical">What "canonical" means</a>
+      <a href="#structure">What a subgroup contains</a>
       <a href="#presets">Presets</a>
       <a href="#symmhub">Using it in sympix</a>
       <a href="#cli">Command line</a>
@@ -578,6 +579,112 @@ for (const r of reps.slice(1)) {
       </figure>
     </section>
 
+    <section id="structure">
+      <h2>What a subgroup contains</h2>
+      <p><code>subgroupStructure(data, id)</code> says what kind of subgroup it is — above all,
+        whether any elliptic elements survive in it. That is the question behind "which subgroup has
+        the simplest structure": for a wallpaper or space group you want the smallest one made of
+        translations alone, and for a hyperbolic group the smallest one with no elliptics at all.</p>
+
+<pre><code>import { subgroupsData, subgroupStructure } from './sublib/src/sublib.js';
+
+const data = subgroupsData({ preset: 'wallpaper:632', maxIndex: 12 });
+
+subgroupStructure(data, '632.6.1');
+<span class="c">// { index: 6, torsionFree: false, orders: [2, 2, 2, 2],</span>
+<span class="c">//   torsion: [ { order: 2, word: 'a',   coset: 0, cycleLength: 1, from: {word:'a', order:2} },</span>
+<span class="c">//              { order: 2, word: 'baB', coset: 1, ... }, ... ],</span>
+<span class="c">//   abelianization: { rank: 0, torsion: [2,2,2], text: 'Z^0 + Z/2 + Z/2 + Z/2' },</span>
+<span class="c">//   dimension: 2, translationsOnly: false }</span>
+</code></pre>
+
+      <div class="scroll">
+        <table>
+          <thead><tr><th>field</th><th>meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>torsionFree</code></td><td>no elliptic elements: only translations and glides, or in the hyperbolic case only hyperbolic and loxodromic ones</td></tr>
+            <tr><td><code>orders</code></td><td>the orders of the elliptic elements it keeps, sorted</td></tr>
+            <tr><td><code>torsion</code></td><td>one entry per conjugacy class of them, each an explicit word in the parent generators</td></tr>
+            <tr><td><code>abelianization</code></td><td>first homology, as <code>{rank, torsion, text}</code></td></tr>
+            <tr><td><code>translationsOnly</code></td><td>translations and nothing else — for Euclidean parents, where a dimension is known</td></tr>
+            <tr><td><code>elliptics</code></td><td>the parent's elliptic generators, for reference</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>How it is read off the cosets</h3>
+      <p>Nothing beyond the coset permutations is needed. In an orbifold presentation — wallpaper,
+        triangle, crystallographic — every element of finite order is conjugate to a power of one of
+        the <em>elliptic generators</em>, and those are exactly the relators that are proper powers:
+        <code>a^2</code>, <code>(c*a)^2</code>, <code>(a*b)^6</code>. <code>ellipticElements(pres)</code>
+        reads them straight off the presentation. Then the whole question becomes combinatorial:</p>
+
+      <div class="note">
+        <span class="tag">The criterion</span>
+        <p><em>H</em> contains a conjugate of <em>u</em><sup>j</sup> exactly when the permutation of
+          <em>u</em><sup>j</sup> fixes a coset. So an elliptic <em>u</em> of order <em>n</em> leaves
+          <em>H</em> an element of order <em>n</em>/<em>d</em> for every cycle of length
+          <em>d</em> &lt; <em>n</em> it has on the cosets — and <em>H</em> is torsion-free exactly
+          when every cycle of every elliptic generator has full length <em>n</em>.</p>
+      </div>
+
+      <p>Each leftover comes with its anchor: the word is <em>t</em>·<em>u</em><sup>d</sup>·<em>t</em>⁻¹
+        with <em>t</em> the representative of the coset the cycle starts at, so you get the element
+        itself, not just its order. For an orientation-preserving group these are precisely the cone
+        points of the quotient orbifold; for a reflection group the mirror generators are in the list
+        too, which is what you want — a reflection is no more a translation than a rotation is.</p>
+
+      <h3>Telling a lattice from the glides</h3>
+      <p>Torsion-free is not yet "translations only", because pg — the group of glide reflections —
+        is torsion-free as well. <code>abelianInvariants</code> settles it, again from the
+        permutations alone, by Reidemeister–Schreier and Smith normal form. A finite-index subgroup
+        of a crystallographic group consists of translations only exactly when it is abelian, and
+        since the point group acts faithfully on the lattice, that happens exactly when it is
+        torsion-free with homology free of full rank <em>n</em>. In the plane the two torsion-free
+        wallpaper groups part company right there: the lattice p1 has ℤ², while pg, the Klein-bottle
+        group, has ℤ ⊕ ℤ/2.</p>
+
+<pre><code>node lib/sublib/bin/sublib.mjs wallpaper:22x --max-index 12 --simplest
+<span class="c">// 22x  searched to index 12  (elliptic generators: bc^2 bd^2 ac^2 ad^2)</span>
+<span class="c">//   no elliptic elements  : 22x.2.1   index 2   H1 Z^1 + Z/2</span>
+<span class="c">//   translations only     : 22x.4.3   index 4   H1 Z^2</span>
+</code></pre>
+
+      <p>pgg is one of the four wallpaper groups where those two answers differ — the others are pg,
+        pmg and p4g, and they are exactly the four that contain glide reflections.</p>
+
+      <h3>What it gets right</h3>
+      <ul>
+        <li>Each of the 17 wallpaper groups reads back its own orbifold at index 1: 632 gives orders
+          2, 3, 6; 442 gives 2, 4, 4; p1 and pg give none.</li>
+        <li>The least index of a translations-only subgroup equals the order of the point group, for
+          all 17 — and the four groups with glides reach torsion-free strictly earlier, while the
+          other thirteen reach both at once.</li>
+        <li>Homology matches the published values: H₁(p1) = ℤ², H₁(p2) = (ℤ/2)³, H₁(p6) = ℤ/6,
+          H₁(pg) = ℤ ⊕ ℤ/2.</li>
+        <li>In the hyperbolic case Riemann–Hurwitz comes out: a torsion-free subgroup of a cocompact
+          triangle group is a surface group with 2 − 2<em>g</em> = <em>N</em>·χ<sub>orb</sub>, and for
+          (3,3,4) and (2,4,6) the least torsion-free index is 24 — the genus-2 one — with homology
+          ℤ⁴, as a genus-2 surface should have.</li>
+      </ul>
+
+      <div class="watch">
+        <span class="tag">Torsion is read off the given presentation</span>
+        <p>For an arbitrary finitely presented group, elements of finite order need not be conjugate
+          into the proper-power relators, and <code>torsionFree</code> then only means "free of the
+          torsion those relators name". For the orbifold presentations in the catalogue it is the
+          real thing.</p>
+      </div>
+
+      <div class="watch">
+        <span class="tag">Hyperbolic groups can need a higher index than sublib reaches</span>
+        <p>A torsion-free subgroup of the (k,l,m) triangle group has index divisible by lcm(k,l,m),
+          and the smallest is 2/−χ<sub>orb</sub>. For (2,3,7) that is 84 — beyond both a practical
+          <code>maxIndex</code> and the 62-symbol coset alphabet, so <code>--simplest</code> reports
+          none in range rather than a wrong answer. (3,3,4) and (2,4,6) land at 24 and are found.</p>
+      </div>
+    </section>
+
     <section id="presets">
       <h2>Presets</h2>
       <p>Three families are built in, keyed as <code>family:name</code>. Wallpaper groups also answer
@@ -658,12 +765,13 @@ parseSubgroupsData(data, 'sublib:wallpaper:2222', preferredSubgroup);
 
     <section id="cli">
       <h2>Command line</h2>
-<pre><code>node bin/sublib.mjs wallpaper:2222 --max-index 24 --max-subgroups 1000 -o sub_2222.json
-node bin/sublib.mjs klm:237 --summary
-node bin/sublib.mjs --gens "a b" --relators "a^2, b^3, (a*b)^7" --name 237 --verify
-node bin/sublib.mjs wallpaper:632 --max-index 12 --reps 632.6.1
-node bin/sublib.mjs --all wallpaper --outdir ./out/wallpaper    <span class="c"># 17 files + groups.json</span>
-node bin/sublib.mjs --all klm --max-digit 8 --outdir ./out/klm  <span class="c"># 343 files + groups.json</span>
+<pre><code>node lib/sublib/bin/sublib.mjs wallpaper:2222 --max-index 24 --max-subgroups 1000 -o sub_2222.json
+node lib/sublib/bin/sublib.mjs klm:237 --summary
+node lib/sublib/bin/sublib.mjs --gens "a b" --relators "a^2, b^3, (a*b)^7" --name 237 --verify
+node lib/sublib/bin/sublib.mjs wallpaper:632 --max-index 12 --reps 632.6.1
+node lib/sublib/bin/sublib.mjs wallpaper:22x --max-index 12 --simplest
+node lib/sublib/bin/sublib.mjs --all wallpaper --outdir ./out/wallpaper    <span class="c"># 17 files + groups.json</span>
+node lib/sublib/bin/sublib.mjs --all klm --max-digit 8 --outdir ./out/klm  <span class="c"># 343 files + groups.json</span>
 </code></pre>
 
       <p><code>--all</code> also writes the <code>groups.json</code> manifest, sorted exactly the way
@@ -705,6 +813,11 @@ node bin/sublib.mjs --all klm --max-digit 8 --outdir ./out/klm  <span class="c">
             <tr><td><code>COSET_SYMBOLS</code>, <code>MAX_COSETS</code></td><td>the 62-symbol coset alphabet</td></tr>
             <tr><td><code>permStringToArrays</code>, <code>permArraysToString</code></td><td>wire format ⇄ 0-based arrays</td></tr>
             <tr><td><code>findByPermutations(data, perms, opts)</code></td><td>look a subgroup up by its permutations</td></tr>
+            <tr><td><code>subgroupStructure(data, id, opts)</code></td><td>elliptic elements, homology, torsion-free / translations-only</td></tr>
+            <tr><td><code>abelianInvariants(data, id, opts)</code></td><td>first homology, as <code>{rank, torsion, text}</code></td></tr>
+            <tr><td><code>ellipticElements(pres)</code></td><td>the parent's finite-order generators, from its proper-power relators</td></tr>
+            <tr><td><code>presentationOf(data)</code></td><td>the presentation behind a result, rebuilt from its GAP strings if need be</td></tr>
+            <tr><td><code>triangleGeometry(k, l, m)</code></td><td><code>'spherical'</code> / <code>'euclidean'</code> / <code>'hyperbolic'</code></td></tr>
             <tr><td><code>canonicalForm(tab, n, nCols)</code></td><td>the table that identifies a conjugacy class</td></tr>
             <tr><td><code>verifyData(data, pres?)</code></td><td>self-check; returns an array of problems</td></tr>
           </tbody>
@@ -765,10 +878,10 @@ node bin/sublib.mjs --all klm --max-digit 8 --outdir ./out/klm  <span class="c">
           order; GAP returns whichever representative its backtrack happened to accept.</li>
       </ul>
 
-<pre><code>node test/smoke.mjs                                 <span class="c"># no corpus needed</span>
-node test/validate-corpus.mjs --family wallpaper    <span class="c"># 17 files, ~2 s</span>
-node test/validate-corpus.mjs --family sklm         <span class="c"># 343 files, ~4 min</span>
-node test/validate-corpus.mjs --family klm          <span class="c"># 343 files, ~25 min</span>
+<pre><code>node tests/sublib/smoke.mjs                                 <span class="c"># no corpus needed</span>
+node tests/sublib/validate-corpus.mjs --family wallpaper    <span class="c"># 17 files, ~2 s</span>
+node tests/sublib/validate-corpus.mjs --family sklm         <span class="c"># 343 files, ~4 min</span>
+node tests/sublib/validate-corpus.mjs --family klm          <span class="c"># 343 files, ~25 min</span>
 </code></pre>
 
       <p>The smoke suite needs no corpus. It checks σ(<em>n</em>) for ℤ², Marshall Hall's subgroup

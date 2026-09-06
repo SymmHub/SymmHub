@@ -3,6 +3,7 @@ import {
   makePresentation, subgroupClasses, subgroupsData, verifyData,
   permStringToArrays, permArraysToString, findByPermutations, cosetRepresentatives,
   getPreset, klmPresentation, sklmPresentation, COSET_SYMBOLS,
+  subgroupStructure, abelianInvariants, ellipticElements, WALLPAPER_NAMES, triangleGeometry,
 } from '../../lib/sublib/src/sublib.js';
 
 let failures = 0;
@@ -248,6 +249,101 @@ console.log('\ncoset representatives');
   try { cosetRepresentatives(data.subgroups[3], { gens: 'a b' }); } catch { threw++; }
   try { cosetRepresentatives({ nothing: true }, 0); } catch { threw++; }
   eq('bad input throws', threw, 3);
+}
+
+console.log('\nelliptic elements and subgroup structure');
+{
+  const g632 = subgroupsData({ preset: 'wallpaper:632', maxIndex: 6 });
+  eq('elliptic generators of 632',
+    ellipticElements(g632.presentation).map(e => e.word + '^' + e.order).join(' '), 'a^2 b^3 ab^6');
+  eq('p1 has none', ellipticElements(subgroupsData({ preset: 'wallpaper:o', maxIndex: 2 }).presentation).length, 0);
+  eq('pg has none', ellipticElements(subgroupsData({ preset: 'wallpaper:xx', maxIndex: 2 }).presentation).length, 0);
+
+  // the whole group is its own index-1 subgroup: its torsion orders are the orbifold's
+  for (const [key, orders] of [['wallpaper:632', '2,3,6'], ['wallpaper:442', '2,4,4'],
+                               ['wallpaper:333', '3,3,3'], ['wallpaper:2222', '2,2,2,2'],
+                               ['wallpaper:o', ''], ['wallpaper:xx', '']]) {
+    const data = subgroupsData({ preset: key, maxIndex: 2 });
+    eq(`${key} reads back its own orbifold`, subgroupStructure(data, 0).orders.join(','), orders);
+  }
+
+  // every element listed as torsion must actually be in the subgroup, with that order
+  const data = subgroupsData({ preset: 'wallpaper:*632', maxIndex: 8 });
+  let inside = true, rightOrder = true, minimal = true;
+  for (const entry of data.subgroups) {
+    const fwd = permStringToArrays(entry.cosets), bwd = permStringToArrays(entry.invcos);
+    const walk = (letters, c) => {
+      for (const x of letters) c = x > 0 ? fwd[x - 1][c] : bwd[-x - 1][c];
+      return c;
+    };
+    for (const t of subgroupStructure(data, entry.subgroup).torsion) {
+      if (walk(t.letters, 0) !== 0) inside = false;                       // t is in H
+      const power = [];
+      for (let i = 0; i < t.order; i++) power.push(...t.letters);
+      for (let c = 0; c < entry.index; c++) if (walk(power, c) !== c) rightOrder = false;
+      if (t.order < 2) minimal = false;
+    }
+  }
+  check('torsion elements stabilize coset 0, so they lie in the subgroup', inside);
+  check('raising one to its order acts trivially on every coset', rightOrder);
+  check('every listed order is at least 2', minimal);
+}
+
+console.log('\ntranslation subgroups: least index is the order of the point group');
+{
+  const POINT = { o: 1, '2222': 2, '**': 2, xx: 2, '*x': 2, '*2222': 4, '22*': 4, '22x': 4,
+    '2*22': 4, '442': 4, '*442': 8, '4*2': 8, '333': 3, '*333': 6, '3*3': 6, '632': 6, '*632': 12 };
+  const glide = new Set(['xx', '22*', '22x', '4*2']);   // the ones with glide reflections
+  let allMatch = true, glidesDiffer = true, othersAgree = true;
+  for (const name of WALLPAPER_NAMES) {
+    const data = subgroupsData({ preset: 'wallpaper:' + name, maxIndex: 12 });
+    let tf = null, tr = null;
+    for (const s of data.subgroups) {
+      const st = subgroupStructure(data, s.subgroup);
+      if (tf === null && st.torsionFree) tf = s.index;
+      if (tr === null && st.translationsOnly) tr = s.index;
+      if (tf !== null && tr !== null) break;
+    }
+    if (tr !== POINT[name]) { allMatch = false; console.log(`    ${name}: ${tr} != ${POINT[name]}`); }
+    // where the group has glides, a torsion-free subgroup can be a Klein-bottle
+    // group, and so appears earlier than any lattice does
+    if (glide.has(name) ? !(tf < tr) : !(tf === tr)) {
+      if (glide.has(name)) glidesDiffer = false; else othersAgree = false;
+    }
+  }
+  check('all 17 match the order of the point group', allMatch);
+  check('the four groups with glides reach torsion-free before they reach a lattice', glidesDiffer);
+  check('the other thirteen reach both at once', othersAgree);
+}
+
+console.log('\nhomology, and Riemann-Hurwitz in the hyperbolic case');
+{
+  for (const [key, text] of [['wallpaper:o', 'Z^2'], ['wallpaper:2222', 'Z^0 + Z/2 + Z/2 + Z/2'],
+                             ['wallpaper:632', 'Z^0 + Z/2 + Z/3'], ['wallpaper:xx', 'Z^1 + Z/2']]) {
+    const data = subgroupsData({ preset: key, maxIndex: 2 });
+    eq(`H1 of ${key}`, abelianInvariants(data, 0).text, text);
+  }
+
+  // A torsion-free subgroup of a cocompact triangle group is a surface group:
+  // 2 - 2g = index * chi_orb, so genus 2 needs index 2 / -chi_orb, and its
+  // homology is Z^(2g).
+  for (const [key, k, l, m] of [['klm:334', 3, 3, 4], ['klm:246', 2, 4, 6]]) {
+    eq(`(${k},${l},${m}) is hyperbolic`, triangleGeometry(k, l, m), 'hyperbolic');
+    const chi = -(1 - 1 / k - 1 / l - 1 / m);
+    const expect = Math.round(2 / -chi);
+    const data = subgroupsData({ preset: key, maxIndex: 24 });
+    const tf = data.subgroups.map(s => subgroupStructure(data, s.subgroup, { abelianization: false }))
+      .filter(s => s.torsionFree);
+    const least = tf.length ? Math.min(...tf.map(s => s.index)) : null;
+    eq(`least torsion-free index in ${key} is the genus-2 one`, least, expect);
+    eq('and it is a genus-2 surface group',
+      abelianInvariants(data, tf.find(s => s.index === least).subgroup).text, 'Z^4');
+  }
+
+  // (2,3,7) needs index 84 for that, so nothing shows up in range
+  const h = subgroupsData({ preset: 'klm:237', maxIndex: 24 });
+  check('(2,3,7) has no torsion-free subgroup of index <= 24 (the least is 84)',
+    h.subgroups.every(s => !subgroupStructure(h, s.subgroup, { abelianization: false }).torsionFree));
 }
 
 console.log('\npresets');
