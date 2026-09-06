@@ -7,10 +7,11 @@
  *  - Folder selection via OS picker
  *  - JSON preset listing (filter: 'json') with .json.png thumbnails
  *  - Image listing (filter: 'image')
- *  - Subfolder navigation and '..' parent navigation
+ *  - Subfolder navigation and '..' parent navigation (double click)
+ *  - Right click on a file: rename..., move to..., delete; new folder...
  *  - Re-selecting a different folder
  *  - Reloading the current folder
- *  - onSelect callback output
+ *  - onSelect callback output (double click on a file)
  */
 
 import { createFileSelectionDialog } from '../../../lib/uilib/uilib.js';

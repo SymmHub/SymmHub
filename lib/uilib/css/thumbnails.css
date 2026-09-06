@@ -30,6 +30,7 @@ img.thumbnail {
     text-align: center;
     font: 12px "Helvetica Neue", sans-serif;
     text-overflow: ellipsis;
+    user-select: none;   /* a double click opens the tile, it must not select the text */
     /*pointer-events: none;  */
 }
 
