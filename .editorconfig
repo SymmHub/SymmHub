@@ -1,0 +1,9 @@
+# Editors that honour EditorConfig write LF, like git expects (.gitattributes)
+root = true
+
+[*]
+end_of_line = lf
+charset = utf-8
+
+[*.bat]
+end_of_line = crlf

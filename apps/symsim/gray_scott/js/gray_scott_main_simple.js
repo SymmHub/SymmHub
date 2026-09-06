@@ -6,4 +6,4 @@ runGrayScott({
     ...samples,
     groupName: 'Wallpaper',
     rendererOpts: { useSimpleUI: true },
-});
+});
