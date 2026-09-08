@@ -38,3 +38,6 @@ const app = SymRenderer({
 
 app.run();
 
+// debugging convenience
+if (typeof window !== 'undefined') window.app = app;
+

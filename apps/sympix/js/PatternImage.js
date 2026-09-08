@@ -306,20 +306,46 @@ function PatternImage(options){
         }
         return mRenderedBuffer;
     }
-        
+
+    // Live read of this image's placement in buffer/pattern space.
+    // The texture occupies the square centred at (centerX,centerY), half-side
+    // = scale, rotated by `angle` degrees (see renderImage.glsl getImageData()).
+    function getTransform(){
+        return {
+            centerX: mConfig.centerX || 0,
+            centerY: mConfig.centerY || 0,
+            scale:   (mConfig.scale === undefined ? 1 : mConfig.scale),
+            angle:   mConfig.angle || 0,
+        };
+    }
+
+    // Write-back for the interactive transform tool. Accepts any subset of
+    // {centerX,centerY,scale,angle}; mirrors an onParamChanged().
+    function setTransform(partial){
+        if (!partial) return;
+        for (const k of ['centerX', 'centerY', 'scale', 'angle']) {
+            if (partial[k] !== undefined && Number.isFinite(partial[k])) mConfig[k] = partial[k];
+        }
+        if (mParams && mParams.transform && mParams.transform.updateDisplay)
+            mParams.transform.updateDisplay();
+        onParamChanged();
+    }
+
     let myself = {
         getClassName    : () => MYNAME,
         getName         : () => MYNAME,
         getId           : () => mConfig.id,
         setOnIdChange   : (cb) => { mOnIdChange = cb; },
-        addEventListener: addEventListener, 
-        setGroup        : setGroup, 
+        addEventListener: addEventListener,
+        setGroup        : setGroup,
         init            : init,
         getValue        : getValue,
         getParams       : getParams,
         setParamsMap    : setParamsMap,
         getSimBuffer    : getSimBuffer,
         getPatternData  : getPatternData,
+        getTransform    : getTransform,
+        setTransform    : setTransform,
     };
 
     return myself;

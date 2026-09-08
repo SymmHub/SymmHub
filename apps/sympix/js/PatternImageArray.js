@@ -183,6 +183,35 @@ function PatternImageArray(options = {}) {
         return v;
     }
 
+    // ── overlay geometry ─────────────────────────────────────────────────────
+    //
+    //  One entry per child image, describing its texture box in buffer/pattern
+    //  space so an overlay can outline it. Consumed by PatternTransformRenderer
+    //  via SymRenderer when the pattern-transform tool is active.
+    //
+    function getImageBoxes() {
+        return mConfig.images.getChildren().map((img, i) => {
+            const t = img.getTransform ? img.getTransform() : { centerX: 0, centerY: 0, scale: 1, angle: 0 };
+            return {
+                id:      img.getId ? img.getId() : `image_${i}`,
+                centerX: t.centerX,
+                centerY: t.centerY,
+                scale:   t.scale,
+                angle:   t.angle,
+            };
+        });
+    }
+
+    // Editable handles for the interactive transform tool: one per child,
+    // each a live get/set pair over that image's placement transform.
+    function getImageTransforms() {
+        return mConfig.images.getChildren().map((img, i) => ({
+            id:  img.getId ? img.getId() : `image_${i}`,
+            get: () => (img.getTransform ? img.getTransform() : { centerX: 0, centerY: 0, scale: 1, angle: 0 }),
+            set: (partial) => { if (img.setTransform) img.setTransform(partial); },
+        }));
+    }
+
     // ── PatternData ───────────────────────────────────────────────────────────
 
     function getPatternData() {
@@ -209,6 +238,8 @@ function PatternImageArray(options = {}) {
         getParams,
         setParamsMap,
         getPatternData,
+        getImageBoxes,
+        getImageTransforms,
     };
 
     return myself;
