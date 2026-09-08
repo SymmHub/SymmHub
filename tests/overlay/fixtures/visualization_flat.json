@@ -1,0 +1,104 @@
+{
+  "source": "apps/sympix/presets/5splanes/par-25-11-09-10-04-09-060.json",
+  "visualization": {
+    "image": {
+      "enabled": true,
+      "opacity": 1,
+      "dataSource": "u",
+      "useMipmap": false
+    },
+    "overlay": {
+      "enabled": true,
+      "opacity": 1,
+      "fundDomain": {
+        "fill": {
+          "enabled": true,
+          "color": "#ff00001c"
+        },
+        "outline": {
+          "enabled": false,
+          "width": 1,
+          "color": "#000000AA",
+          "shadowsWidth": 10,
+          "shadowsColor": "#0000FFAA"
+        }
+      },
+      "buffer": {
+        "fill": {
+          "enabled": true,
+          "color": "#00ff350c"
+        },
+        "outline": {
+          "enabled": false,
+          "width": 7,
+          "color": "#513b44f7"
+        }
+      },
+      "isolines": {
+        "enabled": false,
+        "type": "u",
+        "step": 0.1,
+        "offset": 0,
+        "width": 1,
+        "levels": 1,
+        "color": "#000000ff"
+      },
+      "tiling": {
+        "fill": {
+          "enabled": false,
+          "color": "#FFFF0055"
+        },
+        "outline": {
+          "enabled": true,
+          "width": 1,
+          "color": "#000000FF"
+        }
+      },
+      "limitset": {
+        "enabled": false,
+        "color": "#000000ff",
+        "width": 1
+      },
+      "generators": {
+        "enabled": false,
+        "width": 2,
+        "color": "#0000AAAA",
+        "shadow": {
+          "enabled": true,
+          "color": "#0000AA55",
+          "width": 10
+        }
+      },
+      "worldGrid": {
+        "enabled": false,
+        "type": "cartesian",
+        "stepx": 0.1,
+        "stepy": 0.1,
+        "offsetx": 0,
+        "offsety": 0,
+        "levels": 1,
+        "color": "#000000ff",
+        "width": 1
+      },
+      "screenGrid": {
+        "enabled": false,
+        "step": 0.02,
+        "stepAuto": true,
+        "color": "#000000ff",
+        "width": 1
+      },
+      "ruler": {
+        "enabled": false,
+        "color": "#000000ff",
+        "background": "#AAAAAAAA",
+        "width": 20
+      }
+    },
+    "options": {
+      "visualComponent": 0,
+      "interpolation": "biquadratic",
+      "showChecker": false,
+      "useMipmap": false
+    }
+  }
+}

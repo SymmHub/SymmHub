@@ -10,7 +10,7 @@ No dependencies, no GAP, no build step. Plain ES modules that run in a browser
 or in node.
 
 ```js
-import { subgroupsData } from './sublib/src/sublib.js';
+import { subgroupsData } from '../../lib/sublib/src/sublib.js';
 
 const data = subgroupsData({
   name: '2222',
@@ -44,6 +44,7 @@ In this repo the pieces live at:
 | `lib/sublib/src/sublib.js` | **the public interface** — import this, and only this |
 | `lib/sublib/src/sublib_core.js` | the engine: parsing, the coset-table search, classes, the wire format. Knows no particular group |
 | `lib/sublib/src/groups_description.js` | the catalogue: wallpaper, `klm` and `*klm` presentations, verbatim from the GAP sources. Computes nothing |
+| `lib/sublib/src/reidemeister.js` | Reidemeister-Schreier presentation of a subgroup from its coset table |
 | `lib/sublib/bin/sublib.mjs` | command line |
 | `apps/groups/index.html` | interactive page |
 | `tests/sublib/` | the two suites below |
@@ -169,6 +170,106 @@ From the command line:
 ```bash
 node lib/sublib/bin/sublib.mjs wallpaper:632 --max-index 12 --reps 632.6.1
 ```
+
+## What a subgroup contains
+
+`subgroupStructure(data, id)` says what kind of subgroup it is — above all,
+whether any elliptic elements survive in it:
+
+```js
+const data = subgroupsData({ preset: 'wallpaper:632', maxIndex: 12 });
+
+subgroupStructure(data, '632.6.1');
+// { index: 6, torsionFree: false, orders: [2, 2, 2, 2],
+//   torsion: [ { order: 2, word: 'a',   coset: 0, cycleLength: 1, from: {word:'a', order:2} },
+//              { order: 2, word: 'baB', coset: 1, ... }, ... ],
+//   abelianization: { rank: 0, torsion: [2, 2, 2], text: 'Z^0 + Z/2 + Z/2 + Z/2' },
+//   dimension: 2, translationsOnly: false }
+```
+
+| field | |
+| --- | --- |
+| `torsionFree` | no elliptic elements: only translations and glides, or in the hyperbolic case only hyperbolic and loxodromic ones |
+| `orders` | the orders of the elliptic elements it keeps, sorted |
+| `torsion` | one entry per conjugacy class of them, each an explicit word in the parent generators |
+| `abelianization` | first homology, as `{rank, torsion, text}` |
+| `translationsOnly` | translations and nothing else — only for Euclidean parents, where a dimension is known |
+| `elliptics` | the parent's elliptic generators, for reference |
+
+`translationsOnly` is what picks out the "simplest" subgroup of a wallpaper or
+space group; `torsionFree` is the corresponding thing for a hyperbolic group,
+where there is no lattice to ask for. From the command line:
+
+```bash
+node lib/sublib/bin/sublib.mjs wallpaper:22x --max-index 12 --simplest
+# 22x  searched to index 12  (elliptic generators: bc^2 bd^2 ac^2 ad^2)
+#   no elliptic elements  : 22x.2.1   index 2   H1 Z^1 + Z/2
+#   translations only     : 22x.4.3   index 4   H1 Z^2
+
+node lib/sublib/bin/sublib.mjs wallpaper:632 --max-index 12 --structure 632.6.1
+```
+
+### How it is read off the cosets
+
+Nothing beyond the coset permutations is needed. In an orbifold presentation —
+wallpaper, triangle, crystallographic — every element of finite order is
+conjugate to a power of one of the *elliptic generators*, and those are exactly
+the relators that are proper powers: `a^2`, `(c*a)^2`, `(a*b)^6`. So
+`ellipticElements(pres)` reads them straight off the presentation, and then:
+
+> *H* contains a conjugate of *u*ʲ exactly when the permutation of *u*ʲ fixes a
+> coset.
+
+An elliptic *u* of order *n* therefore leaves *H* an element of order *n*/*d*
+for every cycle of length *d* < *n* it has on the cosets, anchored at that
+cycle: the word is *t·u*ᵈ·*t*⁻¹ with *t* the coset representative. **H is
+torsion-free exactly when every cycle of every elliptic generator has full
+length n.** For an orientation-preserving group those leftovers are precisely
+the cone points of the quotient orbifold; for a reflection group the mirror
+generators are in the list too, which is what you want — a reflection is no
+more a translation than a rotation is.
+
+Telling a lattice from the glides needs one more invariant, because pg is
+torsion-free as well. `abelianInvariants` computes first homology by
+Reidemeister–Schreier and Smith normal form, again from the permutations alone.
+A finite-index subgroup of a crystallographic group consists of translations
+only exactly when it is abelian, and — since the point group acts faithfully on
+the lattice — that happens exactly when it is torsion-free with homology free
+of full rank *n*. In the plane the two torsion-free wallpaper groups part
+company right there: the lattice p1 has ℤ², while pg, the Klein-bottle group of
+glides, has ℤ ⊕ ℤ/2.
+
+### What it gets right
+
+Checked in the smoke suite:
+
+- Each of the 17 wallpaper groups reads back its own orbifold at index 1 — 632
+  gives orders 2, 3, 6; 442 gives 2, 4, 4; p1 and pg give none.
+- The least index of a translations-only subgroup equals the order of the point
+  group, for all 17. The four groups that contain glide reflections — pg, pmg,
+  pgg, p4g — reach torsion-free strictly earlier than they reach a lattice; the
+  other thirteen reach both at once.
+- Homology matches the published values: H₁(p1) = ℤ², H₁(p2) = (ℤ/2)³,
+  H₁(p6) = ℤ/6, H₁(pg) = ℤ ⊕ ℤ/2.
+- In the hyperbolic case Riemann–Hurwitz comes out: a torsion-free subgroup of
+  a cocompact triangle group is a surface group with 2 − 2*g* = *N*·χ_orb, and
+  for (3,3,4) and (2,4,6) the least torsion-free index is 24 — the genus-2 one
+  — with homology ℤ⁴, as a genus-2 surface should have.
+
+### Two limits worth knowing
+
+**Torsion is read off the given presentation.** For an arbitrary finitely
+presented group, elements of finite order need not be conjugate into the
+proper-power relators, and `torsionFree` then only means "free of the torsion
+those relators name". For the orbifold presentations in the catalogue it is the
+real thing.
+
+**Hyperbolic groups may need a higher index than sublib can reach.** A
+torsion-free subgroup of the (k,l,m) triangle group has index divisible by
+lcm(k,l,m), and by Riemann–Hurwitz the smallest is 2/−χ_orb. For (2,3,7) that
+is 84 — beyond both a practical `maxIndex` and the 62-symbol coset alphabet, so
+`--simplest` reports none in range rather than a wrong answer. (3,3,4) and
+(2,4,6) land at 24 and are found.
 
 ## Using it from SymmHub's `Subgroups.js`
 
@@ -312,6 +413,11 @@ Everything `src/sublib.js` exports, and nothing else:
 | `permStringToArrays`, `permArraysToString` | wire format ⇄ 0-based arrays |
 | `findByPermutations(data, perms, opts)` | look a subgroup up by its permutations |
 | `cosetRepresentatives(data, id)` | a transversal of the right cosets, as words |
+| `subgroupStructure(data, id, opts)` | elliptic elements, homology, torsion-free / translations-only |
+| `abelianInvariants(data, id, opts)` | first homology, as `{rank, torsion, text}` |
+| `ellipticElements(pres)` | the parent's finite-order generators, from its proper-power relators |
+| `presentationOf(data)` | the presentation behind a result, rebuilt from its GAP strings if need be |
+| `triangleGeometry(k, l, m)` | `'spherical'` / `'euclidean'` / `'hyperbolic'` |
 | `canonicalForm(tab, n, nCols)` | the table that identifies a conjugacy class |
 | `verifyData(data, pres?)` | self-check; returns an array of problems |
 

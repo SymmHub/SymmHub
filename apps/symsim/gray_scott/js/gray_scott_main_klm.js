@@ -1,4 +1,4 @@
 import { runGrayScott } from './gray_scott_app.js';
 import { presets }      from './presets_klm.js';
 
-runGrayScott({ presets, presetsPath: 'presets/klm/', groupName: 'KLM' });
+runGrayScott({ presets, presetsPath: 'presets/klm/', groupName: 'KLM' });

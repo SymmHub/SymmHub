@@ -1,0 +1,31 @@
+# Line endings.
+#
+# The repository stores LF, and the working tree is LF as well - on every
+# machine, whatever core.autocrlf says there: the eol attribute takes
+# precedence over that setting. Editors, scripts and Claude write LF, so git
+# never has anything to convert, never warns "LF will be replaced by CRLF",
+# and diffs show content only.
+* text=auto eol=lf
+
+# cmd.exe wants batch files with CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# never converted
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.avif  binary
+*.ico   binary
+*.pdf   binary
+*.bin   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.mp4   binary
+*.webm  binary
+*.zip   binary
+*.wasm  binary

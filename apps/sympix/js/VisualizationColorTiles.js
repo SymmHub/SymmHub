@@ -57,8 +57,13 @@ function VisualizationColorTiles(par={}){
         getPermIndex: () => mConfig.permIndex,
     });
 
+    // presentation of the renderer's group (its generators are the sides of the
+    // fundamental domain), handed over by the renderer at init
+    let mGetGroupPresentation = null;
+
     const mSubgroups = Subgroups({
         getParentPermutations: () => mConfig.permutations,
+        getPresentation: () => (mGetGroupPresentation ? mGetGroupPresentation() : null),
         onSubgroupSelected: (subgroup) => {
             if (subgroup) {
                 const params = getParams();
@@ -178,7 +183,8 @@ function VisualizationColorTiles(par={}){
     function init(par){
        if(DEBUG) console.log(`${MYNAME}.init()`, par);
         mGLCtx = par.glCtx;        
-        mOnChange = par.onChange;        
+        mOnChange = par.onChange;
+        mGetGroupPresentation = par.getGroupPresentation || null;        
         mPrograms = Sympix_programs;
         mColorTiles.setOnChange(() => {
             const count = mColorTiles.getCount();
@@ -204,6 +210,9 @@ function VisualizationColorTiles(par={}){
         setOnIdChange:(fn) => { mOnIdChange = fn; },
         init:         init,
         render:       render,
+        // another group (or another domain shape of the same group) has other
+        // generators: let the subgroup tables follow
+        onGroupChanged: () => mSubgroups.onGroupChanged(),
         get enabled(){ return mConfig.enabled; },
     }
 

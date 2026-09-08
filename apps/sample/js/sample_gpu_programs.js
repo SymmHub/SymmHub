@@ -82,4 +82,4 @@ export function makeBufferRenderer(gl){
         throw new Error(`makeBufferRenderer(): failed to compile renderBuffer program`);
     console.log('makeBufferRenderer() success');
     return prog;
-}
+}
