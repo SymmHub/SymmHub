@@ -7,6 +7,7 @@ import {
     ParamString,
     ParamBool,
     ParamFloat,
+    setParamValues,
     PatternImage,
     PatternImageCreator,
 } from './modules.js';
@@ -140,6 +141,48 @@ function PatternImageArray(options = {}) {
         return mParams;
     }
 
+    // ── serialization / backward-compat ──────────────────────────────────────
+    //
+    //  ParamObj calls setParamsMap() with the saved `params` object whenever an
+    //  object exposes it. We use it purely to migrate legacy presets, then hand
+    //  off to the normal key-matched param apply.
+    //
+    function setParamsMap(values, initialize = false) {
+        setParamValues(mParams, upgradeData(values), initialize);
+    }
+
+    //
+    //  Old presets serialized the pattern as a bare PatternImage:
+    //      { id, transparency, useCrown, transform:{…}, texture:{…}, adjust:{…} }
+    //  The current format nests each image inside an `images` ObjArray. Detect
+    //  the old shape (per-image keys at top level, no `images`) and wrap the
+    //  whole thing as images.children[0] so nothing is silently dropped.
+    //
+    function upgradeData(v) {
+        if (!v || typeof v !== 'object') return v;
+
+        const PER_IMAGE_KEYS = ['texture', 'transform', 'useCrown', 'adjust', 'flipX', 'flipY'];
+        const ARRAY_KEYS     = ['id', 'active'];
+        const looksLegacy = !v.images && PER_IMAGE_KEYS.some(k => k in v);
+        if (!looksLegacy) return v;
+
+        if (DEBUG) console.log(`${MYNAME}.upgradeData(): wrapping legacy single-image preset`);
+
+        const childParams = {};
+        for (const k of Object.keys(v)) {
+            if (ARRAY_KEYS.includes(k)) continue;          // stays on the array
+            childParams[k] = v[k];
+            delete v[k];
+        }
+        if (v.id && childParams.id === undefined) childParams.id = v.id;
+
+        v.images = {
+            className: 'ObjArray',
+            params: { id: '', children: [ { className: 'PatternImage', params: childParams } ] },
+        };
+        return v;
+    }
+
     // ── PatternData ───────────────────────────────────────────────────────────
 
     function getPatternData() {
@@ -159,11 +202,12 @@ function PatternImageArray(options = {}) {
 
     const myself = {
         getName:        () => MYNAME,
-        getClassName:   () => MYNAME, 
+        getClassName:   () => MYNAME,
         addEventListener,
         setGroup,
         init,
         getParams,
+        setParamsMap,
         getPatternData,
     };
 

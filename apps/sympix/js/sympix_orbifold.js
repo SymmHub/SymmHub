@@ -7,7 +7,7 @@ import {
     VisualizationOverlay,
     SymRenderer,
     makeSamplesArray,
-    PatternImageCreator,
+    PatternImageArrayCreator,
 } from "./modules.js";
 
 import {
@@ -29,7 +29,7 @@ const visManager = VisualizationManager({
 });
 
 const app = SymRenderer({
-      patternCreator:    PatternImageCreator,
+      patternCreator:    PatternImageArrayCreator,
       visualization:     visManager, 
       groupMakerFactory: GroupMakerFactory({defaultName:'Orbifold'}),
       navigator:         new InversiveNavigator(),
