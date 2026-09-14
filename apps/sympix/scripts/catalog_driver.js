@@ -36,10 +36,103 @@ export default function catalogDriver(api) {
     // catalog images are square; 800 matches the hand built entry's PNGs
     const DEFAULT_SIZE = 800;
 
-    // presets carry a texture sidecar, so give each load a moment to settle
-    const SETTLE_MS = 1600;
+    // a preset's texture sidecar loads asynchronously, but only once per job -
+    // the image cache keys by content hash, so later loads of the same preset
+    // hit it.  Wait for the real signal (no loads in flight, one frame drawn)
+    // instead of sleeping a fixed interval.
+    const SETTLE_CAP_MS = 4000;
 
     const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    /**
+     * Resolve once pending texture loads have drained and a frame can be
+     * drawn.  Returns the milliseconds waited, for the job report.
+     */
+    async function waitForIdle(capMs = SETTLE_CAP_MS) {
+        const t0 = performance.now();
+        const cache = (typeof window !== 'undefined') && window.__symCustomImageCache;
+        while (cache && cache.loadingImages.size > 0 &&
+               performance.now() - t0 < capMs)
+            await sleep(20);
+        // yield one frame when the tab is visible - but never wait on it: a
+        // hidden tab (batch rendering with the pane closed) fires no
+        // animation frames at all, and renderToCanvas draws offscreen anyway.
+        await Promise.race([
+            new Promise(r => requestAnimationFrame(() => r())),
+            sleep(50),
+        ]);
+        return performance.now() - t0;
+    }
+
+    /**
+     * Read a live params tree into a plain values object - the mirror of
+     * applyParams(), which walks the same shape writing setValue() at leaves.
+     */
+    function snapshotParams(params) {
+        const out = {};
+        for (const key of Object.keys(params)) {
+            const t = params[key];
+            if (!t || typeof t !== 'object') continue;
+            if (typeof t.getValue === 'function') {
+                if (t.serializable === false) continue;
+                try {
+                    const v = t.getValue();
+                    out[key] = (v === null || typeof v !== 'object') ? v
+                             : structuredClone(v);
+                } catch (e) { /* not readable: leave this one alone */ }
+            } else {
+                const sub = snapshotParams(t);
+                if (Object.keys(sub).length) out[key] = sub;
+            }
+        }
+        return out;
+    }
+
+    /** ids of the renderer's layers, e.g. ['colorTiles', 'arrows', 'overlay'] */
+    function layerIds() {
+        const root = api.getVisualization();
+        const layers = (root && typeof root.getLayers === 'function')
+                     ? root.getLayers() : [];
+        return layers.map(l => l && l.id).filter(Boolean);
+    }
+
+    /**
+     * The state a preset reload used to reset: every layer's params.  Taken
+     * once, just after the template loads, and restored before each item.
+     */
+    function snapshotLayers() {
+        const out = {};
+        for (const id of layerIds()) {
+            const layer = api.getVisualization(id);
+            if (layer && layer.getParams) out[id] = snapshotParams(layer.getParams());
+        }
+        return out;
+    }
+
+    function restoreLayers(snap) {
+        for (const [id, values] of Object.entries(snap)) setLayer(id, values);
+    }
+
+    /** flatten a nested patch object into dot paths, for global params */
+    function paramPaths(obj, trail = '') {
+        const out = [];
+        for (const [k, v] of Object.entries(obj)) {
+            const path = trail ? trail + '.' + k : k;
+            if (v !== null && typeof v === 'object' && !Array.isArray(v))
+                out.push(...paramPaths(v, path));
+            else out.push(path);
+        }
+        return out;
+    }
+
+    function valueAt(tree, path) {
+        let node = tree;
+        for (const part of path.split('.')) {
+            if (node === null || node === undefined) return undefined;
+            node = node[part];
+        }
+        return node;
+    }
 
     function listParams(path) {
         let node = api.getParams();
@@ -664,12 +757,70 @@ export default function catalogDriver(api) {
         const report = [];
         let jobView = job.view || null;
 
+        // Encoding a PNG costs far more than drawing one (~650 ms against
+        // ~10 ms) but runs off the main thread, and renderToCanvas hands back
+        // a fresh canvas each call - so image n is encoded and uploaded while
+        // n+1 is being rendered.  The in-flight cap bounds memory; report rows
+        // keep item order through pre-assigned slots, though the '[catalog]'
+        // log lines may interleave.
+        //
+        // Measured at 800x800 (per item, 32 item job): 3 -> 404 ms,
+        // 6 -> 238 ms, 10 -> 180 ms, 16 -> 134 ms, 24 -> 134 ms.  16 is the
+        // knee, and holds only ~12 MB of heap.
+        const maxInFlight = job.maxInFlight || 16;
+        const pending = new Set();
+
+        function queueSave(cnv, file, slot, size, missing) {
+            const task = (async () => {
+                const blob = await new Promise(r => cnv.toBlob(r, 'image/png'));
+                const resp = await fetch('/save?path=' + encodeURIComponent(file),
+                                         { method: 'POST', body: blob });
+                const out = await resp.json();
+                report[slot] = { file: out.saved, bytes: out.bytes,
+                                 size: size + 'x' + size,
+                                 ...(missing.length ? { missingParams: missing } : {}) };
+                console.log('[catalog]', out.saved, out.bytes, 'bytes',
+                            missing.length ? ' MISSING: ' + missing.join(',') : '');
+            })().catch(err => {
+                report[slot] = { file, error: String(err && err.message || err) };
+                console.warn('[catalog] FAILED', file, err);
+            });
+            const p = task.finally(() => pending.delete(p));
+            pending.add(p);
+        }
+
+        // The template preset is loaded once (again only when an item names a
+        // different one, or job.reloadPerItem forces it).  Between items the
+        // layer baseline taken after that load is restored, which is what the
+        // reload did - it resets layer params and nothing else the driver
+        // relies on.  Global params are restored only where an item's `params`
+        // patch touched them.
+        let loadedPreset = null;
+        let layerBaseline = null;
+        let globalBaseline = null;
+        const touchedGlobals = new Set();
+
         for (const item of job.items) {
             const preset = item.preset || job.preset;
-            if (preset) {
+            if (preset && (preset !== loadedPreset || job.reloadPerItem)) {
                 await api.loadPreset(preset);
-                await sleep(SETTLE_MS);
+                await waitForIdle(job.settleMs);
+                loadedPreset = preset;
+                layerBaseline = snapshotLayers();
+                globalBaseline = api.getParams();
+                touchedGlobals.clear();
+            } else {
+                if (layerBaseline) restoreLayers(layerBaseline);
+                for (const path of touchedGlobals) {
+                    const v = valueAt(globalBaseline, path);
+                    if (v !== undefined) api.setParam(path, v);
+                }
             }
+
+            // remember which global params this item disturbs, so the next one
+            // starts from the template's values
+            for (const cfg of item.compose || [item])
+                if (cfg.params) paramPaths(cfg.params).forEach(x => touchedGlobals.add(x));
 
             // an autoView is resolved after the first preset load, when the
             // group parameters are known, and then shared by every item
@@ -681,7 +832,6 @@ export default function catalogDriver(api) {
             const size = item.size || job.size || DEFAULT_SIZE;
             const file = (job.outDir ? job.outDir + '/' : '') + item.file;
             const missing = [];
-            let res;
 
             let cnv;
             if (item.compose) {
@@ -719,16 +869,12 @@ export default function catalogDriver(api) {
                                 effView, item.markers.scale || 1);
             }
 
-            const blob = await new Promise(r => cnv.toBlob(r, 'image/png'));
-            const resp = await fetch('/save?path=' + encodeURIComponent(file),
-                                     { method: 'POST', body: blob });
-            res = { ...(await resp.json()), width: size, height: size };
-            report.push({ file: res.saved, bytes: res.bytes,
-                          size: res.width + 'x' + res.height,
-                          ...(missing.length ? { missingParams: missing } : {}) });
-            console.log('[catalog]', res.saved, res.bytes, 'bytes',
-                        missing.length ? ' MISSING: ' + missing.join(',') : '');
+            while (pending.size >= maxInFlight) await Promise.race(pending);
+            const slot = report.length;
+            report.push(null);
+            queueSave(cnv, file, slot, size, missing);
         }
+        await Promise.all(pending);
         return report;
     }
 
