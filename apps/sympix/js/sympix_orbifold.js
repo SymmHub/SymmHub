@@ -34,6 +34,9 @@ const app = SymRenderer({
       groupMakerFactory: GroupMakerFactory({defaultName:'Orbifold'}),
       navigator:         new InversiveNavigator(),
       samples:           makeSamplesArray(presets, 'presets/orbifold/'),
+      // preset the app opens with, so it starts on a real pattern rather
+      // than the bare PatternImageArray defaults
+      preset:            'presets/orbifold/basic_default.json',
 });
 
 app.run();
