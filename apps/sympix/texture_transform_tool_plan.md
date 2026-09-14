@@ -8,12 +8,13 @@ display) below, then the plan for the interactive tool.
 ## Done so far — per-image texture boundaries (read-only)
 
 When the **pattern transform** tool is active you now see, in addition to the
-solid global pattern box + corner handles + pivot:
+pattern box + corner handles + pivot, one box per image in the pattern, at
+`center + scale·R(angle)·u`, `u ∈ [±1,±1]` (buffer/pattern space), then through
+the global pattern transform.
 
-- one **dashed orange box** per image in the pattern, drawn at
-  `center + scale·R(angle)·u`, `u ∈ [±1,±1]` (buffer/pattern space), then
-  through the global pattern transform, then to screen — with a dot at the
-  image's centre.
+**Superseded:** the tool's UI is no longer drawn on the 2D overlay at all. See
+"WebGL / splane rewrite" below — the boxes are now bounding splanes and the
+appearance is translucent gray veils plus hairlines, not coloured outlines.
 
 Wiring (all additive, backward-compatible):
 
@@ -158,3 +159,52 @@ and updates the dropdown.
 - **D** — `editing:` dropdown + active-target handle rendering.
 - **E** — filter image targets to the layer's `imageId` (shown == editable);
   pattern target always present.
+
+---
+
+## WebGL / splane rewrite (shipped)
+
+`PatternTransformRenderer` no longer touches the 2D overlay context. It is a
+WebGL renderer built with `{gl}` and drawing straight onto the pattern canvas
+in two full-screen blits, the same way `OrbifoldEdgeGLRenderer` draws the
+fundamental domain. `renderUI(ctx, canvasTransform)` keeps its signature so
+`SymRenderer`'s overlay pass is unchanged, but `ctx` is ignored.
+
+Every rectangle is stored as its **four bounding splanes**, oriented so the
+interior is each one's solid (negative-`iDistance`) side. The box is then the
+intersection of four half-planes, its signed distance is the max of the four,
+and that single number gives fill, outline and antialiasing at once — no
+tessellation, no corner cases, exact at any zoom. Because they are splanes and
+not corners, a box survives a Mobius transform (`iTransformU4` turns a bounding
+line into a bounding circle, `iDistance` reads either), which is how the
+fundamental-domain preview of the pattern box is drawn by the same shader.
+
+Point marks are splanes too: a corner handle or the pivot is a sphere splane
+(`iDistance` is already `|p − c| − r`), and a pivot tick is a line splane
+carrying a parametric extent along its own tangent — a bounded splane, written
+for a line instead of a circle.
+
+### Appearance
+
+| region | veil |
+|---|---|
+| outside every image box | `VEIL_OUT` (darkest) |
+| inside the selected image | none, wherever it reaches |
+| inside *k* ≥ 1 unselected boxes | `VEIL_ONE` at *k* = 1, approaching `VEIL_OUT` geometrically as *k* grows, never reaching it |
+
+so overlapping unselected images stack up darker but always stay lighter than
+the bare background, and the selected image is the only fully unveiled region.
+Outlines are pale hairlines over a slightly wider dark halo (the pattern box
+gets a narrower halo so it stays quieter than the image boxes it encloses).
+
+| file | change |
+|---|---|
+| `lib/shaders/patternBoxOverlayShader.glsl.mjs` | new — veil composite + box outlines from splanes |
+| `lib/shaders/patternMarkOverlayShader.glsl.mjs` | new — ring handles and bounded-line ticks from splanes |
+| `lib/shaders/modules.js` | registers both fragments |
+| `lib/symhublib/PatternTransformRenderer.js` | rewritten: no 2D drawing, builds splanes and drives the two programs |
+| `lib/symhublib/SymRenderer.js` | passes `gl: mGLCtx.gl` into the renderer |
+
+Splanes reach the shaders as `vec4[]` arrays rather than one flat `float[]`:
+GLSL packing gives every element of a `float[]` its own uniform vector on many
+drivers, so the flat form costs four times the uniform space.
