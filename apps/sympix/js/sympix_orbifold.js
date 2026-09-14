@@ -14,7 +14,8 @@ import {
     presets
 } from './presets_orbifold.js';
 import { SympixLayerFactory } from './SympixLayerFactory.js';
- 
+import { buildOrbifoldMenu } from './OrbifoldMenu.js';
+
 
 const visManager = VisualizationManager({
     layerFactory: SympixLayerFactory,
@@ -37,6 +38,8 @@ const app = SymRenderer({
       // preset the app opens with, so it starts on a real pattern rather
       // than the bare PatternImageArray defaults
       preset:            'presets/orbifold/basic_default.json',
+      // forked settings-panel layout, orbifold-only — see OrbifoldMenu.js
+      menuBuilder:       buildOrbifoldMenu,
 });
 
 app.run();
