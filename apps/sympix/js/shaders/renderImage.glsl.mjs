@@ -25,10 +25,39 @@ uniform bool uNegative;
 uniform sampler2D uCrownData;
 uniform bool uUseCrown;
 
+// ── geometric placement ──────────────────────────────────────────────────────
+//
+//  With uUseImageTransform the image is not a Euclidean rectangle: it is the
+//  image, under a motion T of the hyperbolic / spherical / Euclidean plane, of
+//  the square of half-side uImageHalf about the origin. T arrives as a word of at
+//  most four reflections (see ImagePlacement.js); applying them in reverse order
+//  applies T^-1, which is what carries a buffer point back into the image's own
+//  coordinates, where the box test below is the same as it ever was.
+//
+//  T carries rotation and translation only — the scale stays Euclidean at the
+//  origin, as uImageHalf = 0.5/scale — so the source image really is a
+//  rectangle and everything curved about it lives in T.
+//
+#define IMAGE_TRANS_MAX 4
+uniform bool  uUseImageTransform;
+uniform vec4  uImageTrans[IMAGE_TRANS_MAX];
+uniform int   uImageTransType[IMAGE_TRANS_MAX];
+uniform int   uImageTransCount;
+uniform float uImageHalf;
+
+vec2 imageCoordsOf(vec2 pnt){
+    vec3 v = vec3(pnt, 0.);
+    float ss = 1.;
+    for(int r = uImageTransCount - 1; r >= 0; r--)
+        iReflect(iGeneralSplane(uImageTrans[r], uImageTransType[r]), v, ss);
+    return v.xy * uImageHalf;
+}
+
 vec4 getImageData(vec2 pnt, sampler2D image, vec2 imageScale,  vec2 imageCenter){
 
     // map world point into sampler coordinates
-    vec2 tc = cMul(imageScale,(pnt.xy - imageCenter));
+    vec2 tc = uUseImageTransform ? imageCoordsOf(pnt)
+                                 : cMul(imageScale,(pnt.xy - imageCenter));
     vec2 tx = tc;
     if(uFlipX) tx.x = -tc.x;
     if(uFlipY) tx.y = -tc.y;

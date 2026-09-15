@@ -20,6 +20,7 @@ import {
     Sympix_programs,
 
     makePatternData,
+    makePlacement,
 }
 from './modules.js';
 
@@ -83,6 +84,17 @@ function PatternImage(options){
 
     let mGroupData = null;
     let mGroup = null;
+    // Geometric placement: the plane the image is placed in, and the pattern
+    // transform that relates buffer coordinates to world. null placement = the
+    // flat Euclidean-similarity placement this app has always used. Set only by
+    // SymRenderer when the app asks for geometric image placement.
+    let mPlacement = null;
+
+    // T packed for the shader: at most IMAGE_TRANS_MAX reflections as vec4 +
+    // type. See renderImage.glsl / ImagePlacement.js.
+    const IMAGE_TRANS_MAX = 4;
+    const mTransVecs  = new Float32Array(IMAGE_TRANS_MAX * 4);
+    const mTransTypes = new Int32Array(IMAGE_TRANS_MAX);
 
     // Created eagerly; GL init is deferred to mTextureMaker.init(glContext).
     const mTextureMaker = new TextureFile({
@@ -112,6 +124,45 @@ function PatternImage(options){
 
     }
 
+
+    //
+    //  Switch this image to geometric placement in a plane of curvature k
+    //  (-1 hyperbolic, 0 Euclidean, +1 spherical), placed relative to the given
+    //  pattern transform. k undefined / null restores the flat placement.
+    //
+    function setPlacement(k, patternTransform){
+        const kk = (typeof k === 'number' && isFinite(k)) ? k : null;
+        mPlacement = (kk === null) ? null
+                   : makePlacement({curvature: kk, patternTransform});
+        mNeedToRender = true;
+        informListeners();
+    }
+
+    //
+    //  Pack T into the shader arrays; returns how many reflections were written.
+    //
+    function packImageTransform(){
+        mTransVecs.fill(0);
+        mTransTypes.fill(0);
+        if (!mPlacement) return 0;
+
+        // image coordinates -> buffer coordinates, which is what the shader
+        // samples in; the shader applies its inverse
+        const T = mPlacement.buildT(mConfig);
+        const n = Math.min(T.length, IMAGE_TRANS_MAX);
+        if (T.length > IMAGE_TRANS_MAX)
+            console.warn(`${MYNAME}: image transform has ${T.length} reflections, `
+                         + `only ${IMAGE_TRANS_MAX} fit the shader`);
+        for (let i = 0; i < n; i++){
+            const v = T[i].v;
+            mTransVecs[i*4]     = v[0];
+            mTransVecs[i*4 + 1] = v[1];
+            mTransVecs[i*4 + 2] = v[2];
+            mTransVecs[i*4 + 3] = v[3];
+            mTransTypes[i]      = T[i].type;
+        }
+        return n;
+    }
 
     function setGroup(group){
         if(DEBUG)console.log(`${MYNAME}.setGroup()`, group);
@@ -246,7 +297,18 @@ function PatternImage(options){
         let a = -cfg.angle*TORADIANS;
         let scale = 0.5/cfg.scale;
 
+        // Geometric placement carries the rotation and the centre inside T, so
+        // uImageScale/uImageCenter go unused on that path — the shader takes the
+        // uImageTrans branch instead.
+        const transCount = packImageTransform();
+        const halfInv = mPlacement ? 0.5 / mPlacement.worldScale(cfg.scale) : scale;
+
         let imgUni = {
+            uUseImageTransform: transCount > 0,
+            uImageTrans:        mTransVecs,
+            uImageTransType:    mTransTypes,
+            uImageTransCount:   transCount,
+            uImageHalf:         halfInv,
             uImageScale: [scale * Math.cos(a), scale*Math.sin(a)],
             uImageCenter: [cfg.centerX, cfg.centerY],
             uImageTransparency: cfg.transparency,
@@ -310,6 +372,17 @@ function PatternImage(options){
     // Live read of this image's placement in buffer/pattern space.
     // The texture occupies the square centred at (centerX,centerY), half-side
     // = scale, rotated by `angle` degrees (see renderImage.glsl getImageData()).
+    //  What the shader is actually doing with this image's placement — flat, or
+    //  geometric with this many reflections. For tests and debugging.
+    function getPlacementInfo(){
+        return {
+            geometric: !!mPlacement,
+            curvature: mPlacement ? mPlacement.curvature : null,
+            refCount:  mPlacement ? mPlacement.buildT(mConfig).length : 0,
+            worldScale: mPlacement ? mPlacement.worldScale(mConfig.scale) : null,
+        };
+    }
+
     function getTransform(){
         return {
             centerX: mConfig.centerX || 0,
@@ -338,6 +411,7 @@ function PatternImage(options){
         setOnIdChange   : (cb) => { mOnIdChange = cb; },
         addEventListener: addEventListener,
         setGroup        : setGroup,
+        setPlacement    : setPlacement,
         init            : init,
         getValue        : getValue,
         getParams       : getParams,
@@ -345,6 +419,7 @@ function PatternImage(options){
         getSimBuffer    : getSimBuffer,
         getPatternData  : getPatternData,
         getTransform    : getTransform,
+        getPlacementInfo: getPlacementInfo,
         setTransform    : setTransform,
     };
 

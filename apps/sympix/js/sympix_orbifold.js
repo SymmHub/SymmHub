@@ -40,6 +40,11 @@ const app = SymRenderer({
       preset:            'presets/orbifold/basic_default.json',
       // forked settings-panel layout, orbifold-only — see OrbifoldMenu.js
       menuBuilder:       buildOrbifoldMenu,
+      // Place each image by a motion of the plane the group lives in, rather
+      // than by a Euclidean similarity: an image is the image of a rectangle
+      // under that motion, it drags natively in the geometry, and releasing it
+      // snaps it into the fundamental domain. See ImagePlacement.js.
+      geometricImages:   true,
 });
 
 app.run();

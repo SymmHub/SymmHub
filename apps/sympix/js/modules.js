@@ -64,6 +64,7 @@ export {
     MAX_COLORS_COUNT,
     transToPackedPerms,
     strToPermutations,
+    makePlacement,
 } from "../../../lib/symhublib/symhublib.js";
 
 

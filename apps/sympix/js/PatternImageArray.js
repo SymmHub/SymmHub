@@ -71,6 +71,7 @@ function PatternImageArray(options = {}) {
             getObject: (name) => {
                 const image = mPatternFactory.getObject(name);
                 image.init(glContext);
+                applyPlacement(image);
                 image.addEventListener('imageChanged', onImageChanged);
                 return image;
             },
@@ -118,6 +119,25 @@ function PatternImageArray(options = {}) {
         if (DEBUG) console.log(`${MYNAME}.setGroup()`, group);
         mConfig.images.getChildren().forEach(image => image.setGroup(group));
         informListeners();
+    }
+
+    // Geometric placement, forwarded to each child: the curvature of the plane
+    // the images are placed in and the pattern transform relating buffer
+    // coordinates to world. A null curvature restores flat
+    // (Euclidean-similarity) placement. Children created later pick the
+    // current setting up in makeInitializingFactory().
+    let mCurvature = null;
+    let mPatternTransform = null;
+
+    function setPlacement(k, patternTransform) {
+        mCurvature = (typeof k === 'number' && isFinite(k)) ? k : null;
+        mPatternTransform = patternTransform || null;
+        mConfig.images.getChildren().forEach(applyPlacement);
+        informListeners();
+    }
+
+    function applyPlacement(image) {
+        if (image.setPlacement) image.setPlacement(mCurvature, mPatternTransform);
     }
 
     // ── params ────────────────────────────────────────────────────────────────
@@ -204,6 +224,15 @@ function PatternImageArray(options = {}) {
 
     // Editable handles for the interactive transform tool: one per child,
     // each a live get/set pair over that image's placement transform.
+    //  Per-image report of what the shader is doing with the placement.
+    //  For tests and debugging; see PatternImage.getPlacementInfo().
+    function getPlacementInfo() {
+        return mConfig.images.getChildren().map((img, i) => ({
+            id: img.getId ? img.getId() : `image_${i}`,
+            ...(img.getPlacementInfo ? img.getPlacementInfo() : { geometric: false }),
+        }));
+    }
+
     function getImageTransforms() {
         return mConfig.images.getChildren().map((img, i) => ({
             id:  img.getId ? img.getId() : `image_${i}`,
@@ -234,12 +263,14 @@ function PatternImageArray(options = {}) {
         getClassName:   () => MYNAME,
         addEventListener,
         setGroup,
+        setPlacement,
         init,
         getParams,
         setParamsMap,
         getPatternData,
         getImageBoxes,
         getImageTransforms,
+        getPlacementInfo,
     };
 
     return myself;
