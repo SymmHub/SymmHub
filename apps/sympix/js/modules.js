@@ -22,6 +22,10 @@ export {
     setParamValues,
     getParamValues,
     ParamImage,
+    ParamColorStrip,
+    ParamButtons,
+    ParamFloatVector,
+    createPromptDialog,
     openFile,
 } from '../../../lib/uilib/uilib.js';
 

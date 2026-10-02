@@ -5,12 +5,16 @@ import {
     ParamChoice,
     ParamString,
     ParamGroup,
-    ParamImage,
     ParamFunc,
+    ParamColorStrip,
+    ParamButtons,
+    ParamFloatVector,
+    createPromptDialog,
     MAX_COLORS_COUNT,
 } from './modules.js';
 
-import { adjustColorRGB, adjustColorRGB_OKLCH } from './color_uitils.js';
+import { adjustColorRGB, adjustColorRGB_OKLCH, rgbToHex, hexToRgb } from './color_uitils.js';
+import { Palettes } from './Palettes.js';
 
 
 const MYNAME = 'ColorTiles';
@@ -19,28 +23,14 @@ const DEBUG = false;
 
 const TWO_PI = 2.0 * Math.PI;
 
-const PALETTES = {
-    pastel: {
-        a: [0.5, 0.5, 0.5],
-        b: [0.5, 0.5, 0.5],
-        c: [1.0, 1.0, 1.0],
-        d: [0.0, 0.33, 0.67],
-    },
-    sunset: {
-        a: [0.5, 0.5, 0.5],
-        b: [0.5, 0.5, 0.5],
-        c: [1.0, 1.0, 1.0],
-        d: [0.3, 0.2, 0.2],
-    },
-    highContrast: {
-        a: [0.5, 0.5, 0.5],
-        b: [0.5, 0.5, 0.5],
-        c: [1.0, 1.0, 1.0],
-        d: [0.0, 0.1, 0.2],
-    },
-};
+const CUSTOM = Palettes.CUSTOM;
 
-const PALETTE_NAMES = Object.keys(PALETTES);
+// one prompt dialog for the names of all the palettes of all the layers
+let sPrompt = null;
+function getPrompt() {
+    if (!sPrompt) sPrompt = createPromptDialog();
+    return sPrompt;
+}
 
 //
 //  ColorTiles — generates a flat Float32Array of RGBA colors using the
@@ -56,7 +46,7 @@ function ColorTiles(options = {}) {
 
     let mConfig = {
         count:     6,
-        palette:   PALETTE_NAMES[0],
+        palette:   Palettes.builtinNames()[0],
         permIndex: 0,
         alpha:     1.0,
         colorMask: '',
@@ -83,6 +73,17 @@ function ColorTiles(options = {}) {
     // mPremultColors — premultiplied RGBA, safe to upload directly as uCellColors.
     const mColors        = new Float32Array(MAX_COLORS_COUNT * 4);
     const mPremultColors = new Float32Array(MAX_COLORS_COUNT * 4);
+
+    // Colors set by hand ('#rrggbb', null = follows the palette), by slot index.
+    // They are final: the adjustments and Randomize do not touch them, and they
+    // stay when the color count changes. A palette picked in the choice replaces
+    // them (a palette is the whole look, see Palettes.js).
+    const mEdited = new Array(MAX_COLORS_COUNT).fill(null);
+
+    // Alpha (opacity) of each color, by slot index, 1 = opaque. It multiplies the
+    // alpha the host layer gives (its mask, 0 or 1) and stays with the slot like
+    // the colors set by hand.
+    const mAlpha = new Array(MAX_COLORS_COUNT).fill(1);
 
     _updateColors();
 
@@ -116,14 +117,17 @@ function ColorTiles(options = {}) {
         for (let i = 0; i < n; i++) {
             const t     = i / n;
             const idx   = i * 4;
-            const alpha = alphaVal * maskFactors[i];
+            const alpha = alphaVal * maskFactors[i] * mAlpha[i];
 
-            // Cosine palette: compute raw RGB, then apply HSL adjustments
-            let r  = _clamp(a[0] + b[0] * Math.cos(TWO_PI * (c[0] * t + d[0])));
-            let g  = _clamp(a[1] + b[1] * Math.cos(TWO_PI * (c[1] * t + d[1])));
-            let bv = _clamp(a[2] + b[2] * Math.cos(TWO_PI * (c[2] * t + d[2])));
-            //const rgb = adjustColorRGB(r, g, bv, adj);
-            const rgb = adjustColorRGB_OKLCH(r, g, bv, adj);
+            let rgb = mEdited[i] ? hexToRgb(mEdited[i]) : null;
+            if (!rgb) {
+                // Cosine palette: compute raw RGB, then apply HSL adjustments
+                let r  = _clamp(a[0] + b[0] * Math.cos(TWO_PI * (c[0] * t + d[0])));
+                let g  = _clamp(a[1] + b[1] * Math.cos(TWO_PI * (c[1] * t + d[1])));
+                let bv = _clamp(a[2] + b[2] * Math.cos(TWO_PI * (c[2] * t + d[2])));
+                //rgb = adjustColorRGB(r, g, bv, adj);
+                rgb = adjustColorRGB_OKLCH(r, g, bv, adj);
+            }
 
             mColors[idx + 0] = rgb.r;
             mColors[idx + 1] = rgb.g;
@@ -159,97 +163,352 @@ function ColorTiles(options = {}) {
     }
 
 
-    function generateColorStripCanvas() {
-        const { count: n } = mConfig;
-        const canvas = document.createElement('canvas');
-        const W = canvas.width = 128;
-        const H = canvas.height = 64;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return canvas;
-
-        // Read straight (non-premultiplied) RGBA directly from mColors.
-        for (let i = 0; i < n; i++) {
-            const idx   = i * 4;
-            const r     = mColors[idx + 0];
-            const g     = mColors[idx + 1];
-            const b     = mColors[idx + 2];
-            const alpha = mColors[idx + 3];
-
-            const x0 = Math.round(i * W / n);
-            const x1 = Math.round((i + 1) * W / n);
-
-            ctx.fillStyle = `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha})`;
-            ctx.fillRect(x0, 0, x1 - x0, H);
+    // Swatches of the color strip, from the straight (non-premultiplied) RGBA in mColors.
+    // opacity is what the color comes out as (a color masked out by the host is
+    // transparent), alpha is the value of the color's own alpha bar.
+    function _stripItems() {
+        const items = [];
+        for (let i = 0; i < mConfig.count; i++) {
+            const idx = i * 4;
+            items.push({
+                color:   rgbToHex(mColors[idx], mColors[idx + 1], mColors[idx + 2]),
+                opacity: mColors[idx + 3],
+                alpha:   mAlpha[i],
+                marked:  !!mEdited[i],
+            });
         }
-        return canvas;
+        return items;
     }
 
+    // colors set by hand or alphas other than 1
+    function _hasEdited() { return mEdited.some(Boolean) || mAlpha.some(a => a !== 1); }
 
-    function _updateColorStrip() {
-        if (!mParams || !mParams.colormap) return;
-        const canvas = generateColorStripCanvas();
-        mParams.colormap.setDisplayImage(canvas.toDataURL(), '');
+    function _updateStrip() {
+        if (!mParams) return;
+        mParams.strip.updateDisplay();
+        mParams.strip.setResetEnabled(_hasEdited());
     }
 
     function _onChange() {
         _updateColors();
-        _updateColorStrip();
+        _syncPaletteName();
+        _updateStrip();
         if (mOnChange) mOnChange();
     }
 
+    function _onPickColor(index, hex) {
+        if (index < 0 || index >= MAX_COLORS_COUNT) return;
+        mEdited[index] = hex;
+        _onChange();
+    }
+
+    function _onResetColor(index) {
+        mEdited[index] = null;
+        _onChange();
+    }
+
+    function _onPickAlpha(index, alpha) {
+        if (index < 0 || index >= MAX_COLORS_COUNT || !Number.isFinite(alpha)) return;
+        mAlpha[index] = _clamp(alpha);
+        _onChange();
+    }
+
+    function _onResetAlpha(index) {
+        mAlpha[index] = 1;
+        _onChange();
+    }
+
+    // gives all the colors edited by hand and all the alphas back
+    function _resetEdited() {
+        if (!_hasEdited()) return;
+        _pushUndo();
+        mEdited.fill(null);
+        mAlpha.fill(1);
+        _onChange();
+    }
+
+    // The colors set by hand, { "3": "#ff0000" }.
+    function _getEdited() {
+        const out = {};
+        mEdited.forEach((hex, i) => { if (hex) out[i] = hex; });
+        return out;
+    }
+
+    // The alphas other than 1, { "3": 0.5 }.
+    function _getAlphas() {
+        const out = {};
+        mAlpha.forEach((a, i) => { if (a !== 1) out[i] = a; });
+        return out;
+    }
+
+    // Serialization of the hand-set colors. It is saved even when empty: a
+    // document then replaces the colors of the palette it names completely.
+    const mEditedParam = {
+        getValue: _getEdited,
+        setValue: (value) => {
+            mEdited.fill(null);
+            for (const key in (value || {})) {
+                const i = parseInt(key, 10);
+                if (i >= 0 && i < MAX_COLORS_COUNT && hexToRgb(value[key])) mEdited[i] = value[key];
+            }
+            _onChange();
+        },
+        // a document replaces the colors, the history belongs to the one before
+        init: () => { mEdited.fill(null); _clearHistory(); _updateColors(); },
+        serializable: true,
+    };
+
+    // Serialization of the alphas, saved even when empty for the same reason.
+    const mAlphasParam = {
+        getValue: _getAlphas,
+        setValue: (value) => {
+            mAlpha.fill(1);
+            for (const key in (value || {})) {
+                const i = parseInt(key, 10);
+                const a = Number(value[key]);
+                if (i >= 0 && i < MAX_COLORS_COUNT && Number.isFinite(a)) mAlpha[i] = _clamp(a);
+            }
+            _onChange();
+        },
+        init: () => { mAlpha.fill(1); _updateColors(); },
+        serializable: true,
+    };
+
+    // Which parts of the cosine palette Randomize changes (not saved). The
+    // colors set by hand stay, and so do the alphas and the adjustments.
+    const mVary = { a: true, b: true, c: false, d: true };
+
     function _randomize() {
+        if (!(mVary.a || mVary.b || mVary.c || mVary.d)) return;
+        _pushUndo();
+
         const r3 = (lo, hi) => Math.round((lo + Math.random() * (hi - lo)) * 1000) / 1000;
         const frac = (v) => ((v % 1) + 1) % 1; // positive modulo 1
+        const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
-        // b: amplitude → controls contrast. Allow some per-channel variation for tint.
-        const bBase = r3(0.35, 0.5);
-        mConfig.bR = Math.min(0.5, bBase + r3(-0.08, 0.08));
-        mConfig.bG = Math.min(0.5, bBase + r3(-0.08, 0.08));
-        mConfig.bB = Math.min(0.5, bBase + r3(-0.08, 0.08));
+        if (mVary.b) {
+            // b: amplitude → controls contrast. Allow some per-channel variation for tint.
+            const bBase = r3(0.35, 0.5);
+            mConfig.bR = Math.min(0.5, bBase + r3(-0.08, 0.08));
+            mConfig.bG = Math.min(0.5, bBase + r3(-0.08, 0.08));
+            mConfig.bB = Math.min(0.5, bBase + r3(-0.08, 0.08));
+        }
 
-        // a: DC offset. Per-channel variation introduces warm/cool cast.
-        const aBase = r3(0.3, 0.5);
-        mConfig.aR = Math.min(1, aBase + r3(-0.1, 0.1));
-        mConfig.aG = Math.min(1, aBase + r3(-0.1, 0.1));
-        mConfig.aB = Math.min(1, aBase + r3(-0.1, 0.1));
+        if (mVary.a) {
+            // a: DC offset. Per-channel variation introduces warm/cool cast.
+            const aBase = r3(0.3, 0.5);
+            mConfig.aR = Math.min(1, aBase + r3(-0.1, 0.1));
+            mConfig.aG = Math.min(1, aBase + r3(-0.1, 0.1));
+            mConfig.aB = Math.min(1, aBase + r3(-0.1, 0.1));
+        }
 
-        // c: not randomized — left at current value.
+        if (mVary.c) {
+            // c: how many times a channel cycles over the colors. Whole cycles close
+            // the loop (the last color comes round to the first), the others open it.
+            const cycles = [0.5, 1, 1, 1, 1.5, 2];
+            mConfig.cR = pick(cycles);
+            mConfig.cG = pick(cycles);
+            mConfig.cB = pick(cycles);
+        }
 
-        // d: phase spread between channels controls saturation:
-        //   spread ≈ 0      → near-monochrome (highContrast style)
-        //   spread ≈ 0.1    → warm/tinted (sunset style)
-        //   spread ≈ 0.33   → full rainbow saturation (pastel style)
-        // Full range [0, 0.45] gives equal chance of each style.
-        const base   = Math.random();
-        const spread = r3(0, 0.45);
-        const sign   = Math.random() < 0.5 ? 1 : -1;
+        if (mVary.d) {
+            // d: phase spread between channels controls saturation:
+            //   spread ≈ 0      → near-monochrome (highContrast style)
+            //   spread ≈ 0.1    → warm/tinted (sunset style)
+            //   spread ≈ 0.33   → full rainbow saturation (pastel style)
+            // Full range [0, 0.45] gives equal chance of each style.
+            const base   = Math.random();
+            const spread = r3(0, 0.45);
+            const sign   = Math.random() < 0.5 ? 1 : -1;
 
-        mConfig.dR = Math.round(frac(base)                    * 1000) / 1000;
-        mConfig.dG = Math.round(frac(base + sign * spread)     * 1000) / 1000;
-        mConfig.dB = Math.round(frac(base + sign * spread * 2) * 1000) / 1000;
+            mConfig.dR = Math.round(frac(base)                    * 1000) / 1000;
+            mConfig.dG = Math.round(frac(base + sign * spread)     * 1000) / 1000;
+            mConfig.dB = Math.round(frac(base + sign * spread * 2) * 1000) / 1000;
+        }
 
-        // Refresh UI sliders (skip c — it was not changed).
+        // Refresh the UI of the changed parts.
         if (mParams) {
-            ['a', 'b', 'd'].forEach(k => mParams[k]?.updateDisplay());
+            ['a', 'b', 'c', 'd'].filter(k => mVary[k]).forEach(k => mParams[k].updateDisplay());
         }
 
         _onChange();
     }
 
-    function _onPaletteChanged() {
-        const p = PALETTES[mConfig.palette];
-        if (!p) return;
-        mConfig.aR = p.a[0]; mConfig.aG = p.a[1]; mConfig.aB = p.a[2];
-        mConfig.bR = p.b[0]; mConfig.bG = p.b[1]; mConfig.bB = p.b[2];
-        mConfig.cR = p.c[0]; mConfig.cG = p.c[1]; mConfig.cB = p.c[2];
-        mConfig.dR = p.d[0]; mConfig.dG = p.d[1]; mConfig.dB = p.d[2];
-
-        // Refresh UI widgets for all channel params so sliders show new values.
-        if (mParams) {
-            ['a', 'b', 'c', 'd'].forEach(k => mParams[k]?.updateDisplay());
-        }
-
+    // Reset adjust: no hue shift, saturation and contrast as they come, no offset.
+    function _resetAdjust() {
+        const n = Palettes.NEUTRAL_ADJUST;
+        if (mConfig.adjHueShift === n.hueShift && mConfig.adjSatMult === n.satMult &&
+            mConfig.adjLightOffset === n.lightOffset && mConfig.adjContrastMult === n.contrastMult) return;
+        _pushUndo();
+        mConfig.adjHueShift     = n.hueShift;
+        mConfig.adjSatMult      = n.satMult;
+        mConfig.adjLightOffset  = n.lightOffset;
+        mConfig.adjContrastMult = n.contrastMult;
+        if (mParams) mParams.adjust.updateDisplay();
         _onChange();
+    }
+
+    // ------------------------------------------------------------------ //
+    //  Undo / redo of the big steps: Randomize, a palette picked in the
+    //  choice, the two resets. Each step keeps the palette recipe from before.
+    // ------------------------------------------------------------------ //
+
+    const MAX_HISTORY = 50;
+    const mUndo = [];
+    const mRedo = [];
+
+    function _updateHistoryButtons() {
+        if (!mParams) return;
+        mParams.actions.setEnabled('undo', mUndo.length > 0);
+        mParams.actions.setEnabled('redo', mRedo.length > 0);
+    }
+
+    // call it before the step changes the colors
+    function _pushUndo() {
+        mUndo.push(_getRecipe());
+        if (mUndo.length > MAX_HISTORY) mUndo.shift();
+        mRedo.length = 0;
+        _updateHistoryButtons();
+    }
+
+    function _clearHistory() {
+        mUndo.length = 0;
+        mRedo.length = 0;
+        _updateHistoryButtons();
+    }
+
+    function _undo() {
+        if (!mUndo.length) return;
+        mRedo.push(_getRecipe());
+        _applyRecipe(mUndo.pop());
+        _updateHistoryButtons();
+    }
+
+    function _redo() {
+        if (!mRedo.length) return;
+        mUndo.push(_getRecipe());
+        _applyRecipe(mRedo.pop());
+        _updateHistoryButtons();
+    }
+
+    // ------------------------------------------------------------------ //
+    //  Palettes (see Palettes.js)
+    // ------------------------------------------------------------------ //
+
+    // The colors of this layer as a palette recipe.
+    function _getRecipe() {
+        return {
+            a: [mConfig.aR, mConfig.aG, mConfig.aB],
+            b: [mConfig.bR, mConfig.bG, mConfig.bB],
+            c: [mConfig.cR, mConfig.cG, mConfig.cB],
+            d: [mConfig.dR, mConfig.dG, mConfig.dB],
+            adjust: {
+                hueShift:     mConfig.adjHueShift,
+                satMult:      mConfig.adjSatMult,
+                lightOffset:  mConfig.adjLightOffset,
+                contrastMult: mConfig.adjContrastMult,
+            },
+            edited: _getEdited(),
+            alphas: _getAlphas(),
+        };
+    }
+
+    // Replaces all the colors of this layer by the palette recipe.
+    function _applyRecipe(recipe) {
+        const r = Palettes.normalize(recipe);
+        if (!r) return;
+        [mConfig.aR, mConfig.aG, mConfig.aB] = r.a;
+        [mConfig.bR, mConfig.bG, mConfig.bB] = r.b;
+        [mConfig.cR, mConfig.cG, mConfig.cB] = r.c;
+        [mConfig.dR, mConfig.dG, mConfig.dB] = r.d;
+        mConfig.adjHueShift     = r.adjust.hueShift;
+        mConfig.adjSatMult      = r.adjust.satMult;
+        mConfig.adjLightOffset  = r.adjust.lightOffset;
+        mConfig.adjContrastMult = r.adjust.contrastMult;
+        mEdited.fill(null);
+        for (const key in r.edited) {
+            if (+key < MAX_COLORS_COUNT) mEdited[+key] = r.edited[key];
+        }
+        mAlpha.fill(1);
+        for (const key in r.alphas) {
+            if (+key < MAX_COLORS_COUNT) mAlpha[+key] = r.alphas[key];
+        }
+        // Refresh the UI widgets so that they show the new values.
+        if (mParams) {
+            ['a', 'b', 'c', 'd', 'adjust'].forEach(k => mParams[k].updateDisplay());
+        }
+        _onChange();
+    }
+
+    // The palette choice shows the palette that makes exactly the colors of this
+    // layer, or 'custom' when there is none (the colors were edited).
+    function _syncPaletteName() {
+        const recipe = _getRecipe();
+        const matches = (name) => {
+            const p = Palettes.get(name);
+            return !!p && Palettes.same(p, recipe);
+        };
+        let name = mConfig.palette;
+        if (!matches(name)) name = Palettes.names().find(matches) ?? CUSTOM;
+        if (name !== mConfig.palette) {
+            mConfig.palette = name;
+            if (mParams) mParams.palette.updateDisplay();
+        }
+        if (mParams) mParams.paletteButtons.setEnabled('delete', Palettes.isUser(mConfig.palette));
+    }
+
+    // The palette choice changed. `picked` is the new value when the user picked
+    // it in the choice (dat.gui passes it on), a document or a script sets the
+    // choice without arguments: no undo step for those.
+    function _onPaletteChanged(picked) {
+        const recipe = Palettes.get(mConfig.palette);
+        if (recipe) {
+            if (picked !== undefined) _pushUndo();
+            _applyRecipe(recipe);
+        } else if (mConfig.palette !== CUSTOM) {
+            _syncPaletteName();    // a name this browser does not know
+        }
+        // 'custom' keeps the colors as they are
+    }
+
+    async function _savePalette() {
+        const dialog  = getPrompt();
+        const current = mConfig.palette;
+        const name = await dialog.prompt({
+            title:    'Save palette',
+            label:    'Name:',
+            value:    Palettes.isUser(current) ? current : '',
+            okLabel:  'Save',
+            message:  'Keeps these colors, the adjustments, the colors set by hand and the alphas in this browser, for all layers and documents.',
+            validate: async (v) => Palettes.validateName(v),
+        });
+        if (name === null) return;
+
+        const recipe = _getRecipe();
+        if (Palettes.isUser(name) && !Palettes.same(Palettes.get(name), recipe)) {
+            const replace = await dialog.confirm({
+                title: 'Save palette', message: `Replace the palette "${name}"?`, okLabel: 'Replace',
+            });
+            if (!replace) return;
+        }
+        mConfig.palette = name;               // these colors are the palette now
+        Palettes.saveUser(name, recipe);      // every layer refreshes its list
+    }
+
+    async function _deletePalette() {
+        const name = mConfig.palette;
+        if (!Palettes.isUser(name)) return;
+        const yes = await getPrompt().confirm({
+            title: 'Delete palette', message: `Delete the palette "${name}"?`, okLabel: 'Delete',
+        });
+        if (yes) Palettes.removeUser(name);
+    }
+
+    // a user palette was saved or deleted, here or in another layer
+    function onPalettesChanged() {
+        if (!mParams) return;
+        mParams.palette.updateChoices([CUSTOM, ...Palettes.names()]);
+        _syncPaletteName();
     }
 
 
@@ -264,43 +523,46 @@ function ColorTiles(options = {}) {
         const cf = mConfig;
         return {
             count:     ParamInt   ({obj: cf, key: 'count',     min: 1, max: MAX_COLORS_COUNT, step: 1, onChange: oc}),
-            colormap:  ParamImage ({width: 128, height: 64, stretch: true, serializable: false}),
-            palette:   ParamChoice({obj: cf, key: 'palette',   choice: PALETTE_NAMES, onChange: _onPaletteChanged}),
+            strip:     ParamColorStrip({getItems: _stripItems, onPick: _onPickColor, onReset: _onResetColor,
+                                        onAlpha: _onPickAlpha, onAlphaReset: _onResetAlpha,
+                                        onResetAll: _resetEdited,
+                                        resetTooltip: 'Reset colors: give all the colors edited by hand and all the alphas set in the strip their palette values back'}),
+            palette:   ParamChoice({obj: cf, key: 'palette',   choice: [CUSTOM, ...Palettes.names()], onChange: _onPaletteChanged}),
+            paletteButtons: ParamButtons({buttons: [
+                {key: 'save',   name: 'Save…',  func: _savePalette,   tooltip: 'Keep these colors as a palette with a name'},
+                {key: 'delete', name: 'Delete', func: _deletePalette, tooltip: 'Delete the saved palette shown above'},
+            ]}),
 
-            a: ParamGroup({
-                name: 'a',
-                params: {
-                    R: ParamFloat({obj: cf, key: 'aR', min: 0, max: 1, step: 0.001, name: 'R', onChange: oc}),
-                    G: ParamFloat({obj: cf, key: 'aG', min: 0, max: 1, step: 0.001, name: 'G', onChange: oc}),
-                    B: ParamFloat({obj: cf, key: 'aB', min: 0, max: 1, step: 0.001, name: 'B', onChange: oc}),
-                }
-            }),
-            b: ParamGroup({
-                name: 'b',
-                params: {
-                    R: ParamFloat({obj: cf, key: 'bR', min: 0, max: 1, step: 0.001, name: 'R', onChange: oc}),
-                    G: ParamFloat({obj: cf, key: 'bG', min: 0, max: 1, step: 0.001, name: 'G', onChange: oc}),
-                    B: ParamFloat({obj: cf, key: 'bB', min: 0, max: 1, step: 0.001, name: 'B', onChange: oc}),
-                }
-            }),
-            c: ParamGroup({
-                name: 'c',
-                params: {
-                    R: ParamFloat({obj: cf, key: 'cR', step: 0.001, name: 'R', onChange: oc}),
-                    G: ParamFloat({obj: cf, key: 'cG', step: 0.001, name: 'G', onChange: oc}),
-                    B: ParamFloat({obj: cf, key: 'cB', step: 0.001, name: 'B', onChange: oc}),
-                }
-            }),
-            d: ParamGroup({
-                name: 'd',
-                params: {
-                    R: ParamFloat({obj: cf, key: 'dR', min: 0, max: 1, step: 0.001, name: 'R', onChange: oc}),
-                    G: ParamFloat({obj: cf, key: 'dG', min: 0, max: 1, step: 0.001, name: 'G', onChange: oc}),
-                    B: ParamFloat({obj: cf, key: 'dB', min: 0, max: 1, step: 0.001, name: 'B', onChange: oc}),
-                }
-            }),
+            // the cosine palette  a + b * cos(2π (c * t + d))  per channel, one row each
+            a: ParamFloatVector({name: 'a', obj: cf, keys: ['aR', 'aG', 'aB'], labels: ['R', 'G', 'B'],
+                                 min: 0, max: 1, step: 0.001, onChange: oc,
+                                 tooltip: 'a: the middle of each channel (R, G, B) of the palette'}),
+            b: ParamFloatVector({name: 'b', obj: cf, keys: ['bR', 'bG', 'bB'], labels: ['R', 'G', 'B'],
+                                 min: 0, max: 1, step: 0.001, onChange: oc,
+                                 tooltip: 'b: how far each channel swings around its middle (contrast)'}),
+            c: ParamFloatVector({name: 'c', obj: cf, keys: ['cR', 'cG', 'cB'], labels: ['R', 'G', 'B'],
+                                 step: 0.001, onChange: oc,
+                                 tooltip: 'c: how many times each channel cycles over the colors'}),
+            d: ParamFloatVector({name: 'd', obj: cf, keys: ['dR', 'dG', 'dB'], labels: ['R', 'G', 'B'],
+                                 min: 0, max: 1, step: 0.001, onChange: oc,
+                                 tooltip: 'd: where each channel starts its cycle; the shifts between R, G and B make the hues'}),
 
-            randomize: ParamFunc({ name: 'Randomize', func: _randomize }),
+            actions: ParamButtons({buttons: [
+                {key: 'randomize', name: 'Randomize', func: _randomize,
+                 tooltip: 'A random palette. Only the parts ticked in "randomize" change; the colors edited by hand, the alphas and the adjustments stay'},
+                {key: 'undo', name: 'Undo', func: _undo, tooltip: 'Undo the last randomize, palette pick or reset'},
+                {key: 'redo', name: 'Redo', func: _redo, tooltip: 'Redo what was undone'},
+            ]}),
+            vary: ParamGroup({
+                name: 'randomize',
+                serializable: false,
+                params: {
+                    a: ParamBool({obj: mVary, key: 'a', name: 'a: offset',   serializable: false}),
+                    b: ParamBool({obj: mVary, key: 'b', name: 'b: contrast', serializable: false}),
+                    c: ParamBool({obj: mVary, key: 'c', name: 'c: cycles',   serializable: false}),
+                    d: ParamBool({obj: mVary, key: 'd', name: 'd: phase',    serializable: false}),
+                }
+            }),
 
             adjust: ParamGroup({
                 name: 'adjust',
@@ -309,15 +571,23 @@ function ColorTiles(options = {}) {
                     satMult:      ParamFloat({obj: cf, key: 'adjSatMult',      name: 'satMult',      min: 0,    max: 4,   step: 0.01, onChange: oc}),
                     lightOffset:  ParamFloat({obj: cf, key: 'adjLightOffset',  name: 'lightOffset',  min: -1,   max: 1,   step: 0.01, onChange: oc}),
                     contrastMult: ParamFloat({obj: cf, key: 'adjContrastMult', name: 'contrastMult', min: 0,    max: 4,   step: 0.01, onChange: oc}),
+                    reset:        ParamFunc({name: 'Reset adjust', func: _resetAdjust,
+                                             tooltip: 'No hue shift, saturation and contrast as they are, no offset'}),
                 }
             }),
+
+            // no UI, only the saved form of the colors edited by hand and of the alphas
+            edited: mEditedParam,
+            alphas: mAlphasParam,
         };
     }
 
     function getParams() {
         if (!mParams) {
             mParams = makeParams();
-            _updateColorStrip();
+            _syncPaletteName();
+            _updateStrip();
+            _updateHistoryButtons();
         }
         return mParams;
     }
@@ -340,7 +610,7 @@ function ColorTiles(options = {}) {
     /** Index into the permutation used to look up the active cell color. */
     function getPermIndex() { return getPermIndexVal(); }
 
-    return {
+    const self = {
         getParams,
         getColors,
         getPremultColors,
@@ -348,9 +618,14 @@ function ColorTiles(options = {}) {
         getPermIndex,
         setOnChange,
         update:          _onChange,
+        onPalettesChanged,
         getClassName:    () => MYNAME,
         get enabled() { return true; },
     };
+
+    Palettes.subscribe(self);
+
+    return self;
 
 
 } // ColorTiles

@@ -262,5 +262,30 @@ function adjustColorRGB_OKLCH(r, g, b, adj) {
     return oklchToRgb(adjustedOklch.L, adjustedOklch.C, adjustedOklch.H);
 }
 
+// ==========================================
+// HEX STRINGS
+// ==========================================
 
-export { adjustColorHSL, adjustColorRGB, adjustColorRGB_OKLCH, rgbToHsl, hslToRgb };
+/**
+ * Converts normalized RGB [0-1] to a '#rrggbb' string.
+ */
+function rgbToHex(r, g, b) {
+    const h = (v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, '0');
+    return '#' + h(r) + h(g) + h(b);
+}
+
+/**
+ * Converts '#rrggbb' or '#rgb' to normalized RGB [0-1].
+ * @returns {Object|null} { r, g, b }, or null when the string is no color
+ */
+function hexToRgb(hex) {
+    const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex).trim());
+    if (!m) return null;
+    let s = m[1];
+    if (s.length === 3) s = s[0] + s[0] + s[1] + s[1] + s[2] + s[2];
+    const v = parseInt(s, 16);
+    return { r: ((v >> 16) & 255) / 255, g: ((v >> 8) & 255) / 255, b: (v & 255) / 255 };
+}
+
+
+export { adjustColorHSL, adjustColorRGB, adjustColorRGB_OKLCH, rgbToHsl, hslToRgb, rgbToHex, hexToRgb };

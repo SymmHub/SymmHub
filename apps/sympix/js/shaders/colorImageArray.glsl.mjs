@@ -83,26 +83,33 @@ vec3 oklch2rgb(vec3 oklch);
 //   coloringType 2: screen blend — black pixels become cellColor, white stays white
 //   coloringType 3: hueShift — shift image hue by cellColor hue
 //
+// cellColor is premultiplied, its alpha is the opacity of the cell: the color
+// takes part in the coloring as it is, and the colored image fades by the alpha
+// (nothing changes for alpha 1).
 //
 vec4 applyColoring(vec4 imgColor, vec4 cellColor, int coloringType) {
+    if(coloringType == 0) {
+        return imgColor;
+    }
+    float cellAlpha = cellColor.w;
+    vec3 cell = cellAlpha > 0.0 ? cellColor.xyz / cellAlpha : vec3(0.0);
     if(coloringType == 1) {
-        // premult multiply: imgColor.xyz *= cell.xyz
-        imgColor.xyz *= cellColor.xyz;
+        // premult multiply: imgColor.xyz *= cell
+        imgColor.xyz *= cell;
     } else if(coloringType == 2) {
         // premult screen blend: a*cell + imgColor.xyz*(1-cell)  (a = imgColor.w)
-        imgColor.xyz = cellColor.xyz * imgColor.w + imgColor.xyz * (1.0 - cellColor.xyz);
+        imgColor.xyz = cell * imgColor.w + imgColor.xyz * (1.0 - cell);
     } else if(coloringType == 3) {
         vec3 straightImg = imgColor.w > 0.0 ? imgColor.xyz / imgColor.w : vec3(0.0);
         vec3 imgOklch = rgb2oklch(straightImg);
-        vec3 straightCell = cellColor.w > 0.0 ? cellColor.xyz / cellColor.w : vec3(0.0);
-        vec3 cellOklch = rgb2oklch(straightCell);
-        
+        vec3 cellOklch = rgb2oklch(cell);
+
         imgOklch.z = fract(imgOklch.z + cellOklch.z);
-        
+
         vec3 shiftedRgb = oklch2rgb(imgOklch);
         imgColor.xyz = shiftedRgb * imgColor.w;
     }
-    return imgColor;
+    return imgColor * cellAlpha;
 }
 
 //
