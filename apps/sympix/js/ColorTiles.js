@@ -7,8 +7,8 @@ import {
     ParamGroup,
     ParamFunc,
     ParamColorStrip,
-    ParamButtons,
     ParamFloatVector,
+    ParamUiFolder,
     createPromptDialog,
     writeClipboardText,
     readClipboardText,
@@ -281,8 +281,10 @@ function ColorTiles(options = {}) {
     // colors set by hand stay, and so do the alphas and the adjustments.
     const mVary = { a: true, b: true, c: false, d: true };
 
+    function _canRandomize() { return mVary.a || mVary.b || mVary.c || mVary.d; }
+
     function _randomize() {
-        if (!(mVary.a || mVary.b || mVary.c || mVary.d)) return;
+        if (!_canRandomize()) return;
         _pushUndo();
 
         const r3 = (lo, hi) => Math.round((lo + Math.random() * (hi - lo)) * 1000) / 1000;
@@ -361,38 +363,28 @@ function ColorTiles(options = {}) {
     const mUndo = [];
     const mRedo = [];
 
-    function _updateHistoryButtons() {
-        if (!mParams) return;
-        mParams.actions.setEnabled('undo', mUndo.length > 0);
-        mParams.actions.setEnabled('redo', mRedo.length > 0);
-    }
-
     // call it before the step changes the colors
     function _pushUndo() {
         mUndo.push(_getRecipe());
         if (mUndo.length > MAX_HISTORY) mUndo.shift();
         mRedo.length = 0;
-        _updateHistoryButtons();
     }
 
     function _clearHistory() {
         mUndo.length = 0;
         mRedo.length = 0;
-        _updateHistoryButtons();
     }
 
     function _undo() {
         if (!mUndo.length) return;
         mRedo.push(_getRecipe());
         _applyRecipe(mUndo.pop());
-        _updateHistoryButtons();
     }
 
     function _redo() {
         if (!mRedo.length) return;
         mUndo.push(_getRecipe());
         _applyRecipe(mRedo.pop());
-        _updateHistoryButtons();
     }
 
     // ------------------------------------------------------------------ //
@@ -458,7 +450,6 @@ function ColorTiles(options = {}) {
             mConfig.palette = name;
             if (mParams) mParams.palette.updateDisplay();
         }
-        if (mParams) mParams.paletteButtons.setEnabled('delete', Palettes.isUser(mConfig.palette));
     }
 
     // The palette choice changed. `picked` is the new value when the user picked
@@ -610,10 +601,22 @@ function ColorTiles(options = {}) {
         return lines.join('\n');
     }
 
-    // the items of the menu button of the strip
+    // The commands of the palette, in the menu button of the strip: the editing,
+    // this palette, the saved palettes. The items are asked each time the menu
+    // opens, what does not apply is dimmed.
     function _stripMenu() {
         const saved = Palettes.userNames().length;
+        const own   = Palettes.isUser(mConfig.palette);
         return [
+            {label: 'Randomize', disabled: !_canRandomize(), action: _randomize,
+             title: _canRandomize()
+                 ? 'A random palette. Only the parts ticked under "randomize parameters" change; the colors edited by hand, the alphas and the adjustments stay'
+                 : 'Tick at least one part under "randomize parameters" first'},
+            {label: 'Undo', disabled: mUndo.length === 0, action: _undo,
+             title: 'Undo the last randomize, palette pick, paste or reset'},
+            {label: 'Redo', disabled: mRedo.length === 0, action: _redo,
+             title: 'Redo what was undone'},
+            {separator: true},
             {label: 'Reset colors', disabled: !_hasEdited(), action: _resetEdited,
              title: 'Give all the colors edited by hand and all the alphas set in the strip their palette values back'},
             {label: 'Copy palette', action: _copyPalette,
@@ -621,9 +624,14 @@ function ColorTiles(options = {}) {
             {label: 'Paste palette', action: _pastePalette,
              title: 'Replace all the colors of this layer by the palette on the clipboard, copied here, in another document or from a text editor'},
             {separator: true},
+            {label: 'Save palette…', action: _savePalette,
+             title: 'Keep these colors as a palette with a name, in this browser; Export palettes… keeps all the saved palettes in a file'},
+            {label: 'Delete palette', disabled: !own, action: _deletePalette,
+             title: own ? `Delete the saved palette "${mConfig.palette}"`
+                        : 'Only a palette you saved can be deleted: pick one in the palette choice first'},
             {label: 'Export palettes…', disabled: saved === 0, action: _exportPalettes,
              title: saved ? 'Save all the palettes saved in this browser to a file, to keep them for good or to use them in another browser'
-                          : 'There are no saved palettes to export: use Save… to save one'},
+                          : 'There are no saved palettes to export: use Save palette… to save one'},
             {label: 'Import palettes…', action: _importPalettes,
              title: 'Add the palettes of a file written by Export palettes… to the ones saved in this browser; none is deleted'},
         ];
@@ -646,40 +654,30 @@ function ColorTiles(options = {}) {
     function makeParams() {
         const oc = _onChange;
         const cf = mConfig;
+        // the folder of a, b, c and d: only their UI goes into it, the saved values
+        // stay a, b, c and d of the params, where documents have them
+        const paletteFolder = ParamUiFolder({name: 'palette parameters'});
+        const row = (name, range, tooltip) => paletteFolder.contain(ParamFloatVector({
+            name, obj: cf, keys: [name + 'R', name + 'G', name + 'B'], labels: ['R', 'G', 'B'],
+            ...range, step: 0.001, onChange: oc, tooltip,
+        }));
         return {
             count:     ParamInt   ({obj: cf, key: 'count',     min: 1, max: MAX_COLORS_COUNT, step: 1, onChange: oc}),
             strip:     ParamColorStrip({getItems: _stripItems, onPick: _onPickColor, onReset: _onResetColor,
                                         onAlpha: _onPickAlpha, onAlphaReset: _onResetAlpha,
                                         menu: _stripMenu,
-                                        menuTooltip: 'Palette menu: reset colors, copy or paste the palette, export or import the saved palettes'}),
+                                        menuTooltip: 'Palette menu: randomize, undo, reset, copy, paste, save, delete, export, import'}),
             palette:   ParamChoice({obj: cf, key: 'palette',   choice: [CUSTOM, ...Palettes.names()], onChange: _onPaletteChanged}),
-            paletteButtons: ParamButtons({buttons: [
-                {key: 'save',   name: 'Save…',  func: _savePalette,   tooltip: 'Keep these colors as a palette with a name, in this browser (Export palettes… in the ☰ menu keeps all of them in a file)'},
-                {key: 'delete', name: 'Delete', func: _deletePalette, tooltip: 'Delete the saved palette shown above'},
-            ]}),
 
             // the cosine palette  a + b * cos(2π (c * t + d))  per channel, one row each
-            a: ParamFloatVector({name: 'a', obj: cf, keys: ['aR', 'aG', 'aB'], labels: ['R', 'G', 'B'],
-                                 min: 0, max: 1, step: 0.001, onChange: oc,
-                                 tooltip: 'a: the middle of each channel (R, G, B) of the palette'}),
-            b: ParamFloatVector({name: 'b', obj: cf, keys: ['bR', 'bG', 'bB'], labels: ['R', 'G', 'B'],
-                                 min: 0, max: 1, step: 0.001, onChange: oc,
-                                 tooltip: 'b: how far each channel swings around its middle (contrast)'}),
-            c: ParamFloatVector({name: 'c', obj: cf, keys: ['cR', 'cG', 'cB'], labels: ['R', 'G', 'B'],
-                                 step: 0.001, onChange: oc,
-                                 tooltip: 'c: how many times each channel cycles over the colors'}),
-            d: ParamFloatVector({name: 'd', obj: cf, keys: ['dR', 'dG', 'dB'], labels: ['R', 'G', 'B'],
-                                 min: 0, max: 1, step: 0.001, onChange: oc,
-                                 tooltip: 'd: where each channel starts its cycle; the shifts between R, G and B make the hues'}),
+            paletteFolder,
+            a: row('a', {min: 0, max: 1}, 'a: the middle of each channel (R, G, B) of the palette'),
+            b: row('b', {min: 0, max: 1}, 'b: how far each channel swings around its middle (contrast)'),
+            c: row('c', {},               'c: how many times each channel cycles over the colors'),
+            d: row('d', {min: 0, max: 1}, 'd: where each channel starts its cycle; the shifts between R, G and B make the hues'),
 
-            actions: ParamButtons({buttons: [
-                {key: 'randomize', name: 'Randomize', func: _randomize,
-                 tooltip: 'A random palette. Only the parts ticked in "randomize" change; the colors edited by hand, the alphas and the adjustments stay'},
-                {key: 'undo', name: 'Undo', func: _undo, tooltip: 'Undo the last randomize, palette pick, paste or reset'},
-                {key: 'redo', name: 'Redo', func: _redo, tooltip: 'Redo what was undone'},
-            ]}),
             vary: ParamGroup({
-                name: 'randomize',
+                name: 'randomize parameters',
                 serializable: false,
                 params: {
                     a: ParamBool({obj: mVary, key: 'a', name: 'a: offset',   serializable: false}),
@@ -712,7 +710,6 @@ function ColorTiles(options = {}) {
             mParams = makeParams();
             _syncPaletteName();
             _updateStrip();
-            _updateHistoryButtons();
         }
         return mParams;
     }
