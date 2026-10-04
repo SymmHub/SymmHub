@@ -26,7 +26,10 @@ export {
     ParamButtons,
     ParamFloatVector,
     createPromptDialog,
+    writeClipboardText,
+    readClipboardText,
     openFile,
+    saveTextFileAs,
 } from '../../../lib/uilib/uilib.js';
 
 export {

@@ -10,6 +10,10 @@ import {
     ParamButtons,
     ParamFloatVector,
     createPromptDialog,
+    writeClipboardText,
+    readClipboardText,
+    openFile,
+    saveTextFileAs,
     MAX_COLORS_COUNT,
 } from './modules.js';
 
@@ -186,7 +190,6 @@ function ColorTiles(options = {}) {
     function _updateStrip() {
         if (!mParams) return;
         mParams.strip.updateDisplay();
-        mParams.strip.setResetEnabled(_hasEdited());
     }
 
     function _onChange() {
@@ -350,7 +353,8 @@ function ColorTiles(options = {}) {
 
     // ------------------------------------------------------------------ //
     //  Undo / redo of the big steps: Randomize, a palette picked in the
-    //  choice, the two resets. Each step keeps the palette recipe from before.
+    //  choice or pasted, the two resets. Each step keeps the palette recipe
+    //  from before.
     // ------------------------------------------------------------------ //
 
     const MAX_HISTORY = 50;
@@ -504,6 +508,127 @@ function ColorTiles(options = {}) {
         if (yes) Palettes.removeUser(name);
     }
 
+    // The palette as text on the clipboard: it goes to another document, or to a
+    // text editor and back (JSON, see Palettes.toText).
+    async function _copyPalette() {
+        const text = Palettes.toText(_getRecipe());
+        if (await writeClipboardText(text)) {
+            mParams?.strip.flash();
+            return;
+        }
+        // this page may not use the clipboard: show the text selected, to copy by hand
+        await getPrompt().prompt({
+            title:   'Copy palette',
+            label:   'Palette:',
+            value:   text,
+            okLabel: 'Close',
+            message: 'The browser did not let this page use the clipboard. Press Ctrl+C to copy the text of the palette.',
+        });
+    }
+
+    // Replaces all the colors of this layer by the palette on the clipboard, one undo
+    // step. When the clipboard can not be read or holds no palette, the text is asked
+    // for in the prompt dialog (Ctrl+V), which refuses text that is no palette.
+    async function _pastePalette() {
+        let text  = await readClipboardText();
+        let found = (text === null) ? null : Palettes.fromText(text);
+        if (!found?.recipe) {
+            const why = (text === null)
+                ? 'The browser did not let this page read the clipboard.'
+                : `The clipboard holds no palette. ${found.error}`;
+            text = await getPrompt().prompt({
+                title:    'Paste palette',
+                label:    'Palette:',
+                value:    text ?? '',
+                okLabel:  'Paste',
+                message:  `${why} Paste the text of a palette here (Ctrl+V):`,
+                validate: async (v) => Palettes.fromText(v).error,
+            });
+            if (text === null) return;
+            found = Palettes.fromText(text);
+        }
+        if (!Palettes.same(found.recipe, _getRecipe())) {
+            _pushUndo();
+            _applyRecipe(found.recipe);
+        }
+        mParams?.strip.flash();
+    }
+
+    // All the palettes saved in this browser to a file the user keeps: the browser's
+    // storage is no place for the long term.
+    async function _exportPalettes() {
+        const result = await saveTextFileAs('sympix-palettes.json', Palettes.libraryToText(), 'application/json');
+        if (result?.success) mParams?.strip.flash();
+    }
+
+    // The palettes of a palette file are added to the saved ones, none is deleted.
+    // When a saved palette has the name of one in the file but other colors, the user
+    // chooses once: keep both (the imported one gets a new name) or replace.
+    async function _importPalettes() {
+        const file = await openFile([{ description: 'Palette files', accept: { 'application/json': ['.json'] } }]);
+        if (!file) return;
+        const dialog  = getPrompt();
+        const title   = 'Import palettes';
+        const library = Palettes.libraryFromText(await file.text());
+        if (library.error) {
+            await dialog.alert({ title, message: `${file.name}\n\n${library.error}` });
+            return;
+        }
+        let replace = false;
+        const conflicts = Palettes.conflicts(library.entries);
+        if (conflicts.length) {
+            const how = await dialog.choose({
+                title,
+                message:  `Saved palettes with these names have other colors than the ones in the file: ` +
+                          `${_quoted(conflicts)}.\n\nKeep both, the imported ones under a new name, ` +
+                          `or replace the saved ones?`,
+                okLabel:  'Keep both',
+                altLabel: 'Replace',
+            });
+            if (how === null) return;
+            replace = (how === 'alt');
+        }
+        const done = Palettes.merge(library.entries, { replace });
+        await dialog.alert({ title, message: `${file.name}\n\n${_importSummary(done, library.skipped)}` });
+    }
+
+    // "a", "b", "c" and 2 more
+    function _quoted(names) {
+        const shown = names.slice(0, 3).map(name => `"${name}"`).join(', ');
+        return names.length > 3 ? `${shown} and ${names.length - 3} more` : shown;
+    }
+
+    // what an import did, in words
+    function _importSummary(done, skipped) {
+        const lines = [];
+        if (done.added.length)    lines.push(`Added ${done.added.length}: ${_quoted(done.added)}.`);
+        if (done.replaced.length) lines.push(`Replaced ${done.replaced.length}: ${_quoted(done.replaced)}.`);
+        if (done.renamed.length)  lines.push(`Kept both, the imported under a new name: ${_quoted(done.renamed.map(r => r.to))}.`);
+        if (done.same.length)     lines.push(`Left alone, saved already with the same colors: ${done.same.length}.`);
+        for (const s of skipped.slice(0, 3)) lines.push(`Skipped: ${s.reason}`);
+        if (skipped.length > 3)   lines.push(`${skipped.length - 3} more skipped.`);
+        return lines.join('\n');
+    }
+
+    // the items of the menu button of the strip
+    function _stripMenu() {
+        const saved = Palettes.userNames().length;
+        return [
+            {label: 'Reset colors', disabled: !_hasEdited(), action: _resetEdited,
+             title: 'Give all the colors edited by hand and all the alphas set in the strip their palette values back'},
+            {label: 'Copy palette', action: _copyPalette,
+             title: 'Copy the palette to the clipboard as text: the colors, the adjustments, the colors edited by hand and the alphas'},
+            {label: 'Paste palette', action: _pastePalette,
+             title: 'Replace all the colors of this layer by the palette on the clipboard, copied here, in another document or from a text editor'},
+            {separator: true},
+            {label: 'Export palettes…', disabled: saved === 0, action: _exportPalettes,
+             title: saved ? 'Save all the palettes saved in this browser to a file, to keep them for good or to use them in another browser'
+                          : 'There are no saved palettes to export: use Save… to save one'},
+            {label: 'Import palettes…', action: _importPalettes,
+             title: 'Add the palettes of a file written by Export palettes… to the ones saved in this browser; none is deleted'},
+        ];
+    }
+
     // a user palette was saved or deleted, here or in another layer
     function onPalettesChanged() {
         if (!mParams) return;
@@ -525,11 +650,11 @@ function ColorTiles(options = {}) {
             count:     ParamInt   ({obj: cf, key: 'count',     min: 1, max: MAX_COLORS_COUNT, step: 1, onChange: oc}),
             strip:     ParamColorStrip({getItems: _stripItems, onPick: _onPickColor, onReset: _onResetColor,
                                         onAlpha: _onPickAlpha, onAlphaReset: _onResetAlpha,
-                                        onResetAll: _resetEdited,
-                                        resetTooltip: 'Reset colors: give all the colors edited by hand and all the alphas set in the strip their palette values back'}),
+                                        menu: _stripMenu,
+                                        menuTooltip: 'Palette menu: reset colors, copy or paste the palette, export or import the saved palettes'}),
             palette:   ParamChoice({obj: cf, key: 'palette',   choice: [CUSTOM, ...Palettes.names()], onChange: _onPaletteChanged}),
             paletteButtons: ParamButtons({buttons: [
-                {key: 'save',   name: 'Save…',  func: _savePalette,   tooltip: 'Keep these colors as a palette with a name'},
+                {key: 'save',   name: 'Save…',  func: _savePalette,   tooltip: 'Keep these colors as a palette with a name, in this browser (Export palettes… in the ☰ menu keeps all of them in a file)'},
                 {key: 'delete', name: 'Delete', func: _deletePalette, tooltip: 'Delete the saved palette shown above'},
             ]}),
 
@@ -550,7 +675,7 @@ function ColorTiles(options = {}) {
             actions: ParamButtons({buttons: [
                 {key: 'randomize', name: 'Randomize', func: _randomize,
                  tooltip: 'A random palette. Only the parts ticked in "randomize" change; the colors edited by hand, the alphas and the adjustments stay'},
-                {key: 'undo', name: 'Undo', func: _undo, tooltip: 'Undo the last randomize, palette pick or reset'},
+                {key: 'undo', name: 'Undo', func: _undo, tooltip: 'Undo the last randomize, palette pick, paste or reset'},
                 {key: 'redo', name: 'Redo', func: _redo, tooltip: 'Redo what was undone'},
             ]}),
             vary: ParamGroup({
