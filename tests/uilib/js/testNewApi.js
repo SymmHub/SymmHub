@@ -5,7 +5,7 @@ import {
     InstantHelp,
     BooleanButton
 }
-from "../../../lib/uilib/modules.js";
+from "../../../lib/extlib/paramGui/modules.js";
 
 const gui = new ParamGui({
     name: "gui with new api",

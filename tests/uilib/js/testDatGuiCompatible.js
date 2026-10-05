@@ -2,7 +2,7 @@ import {
     ParamGui,
     InstantHelp
 }
-from "../../../lib/uilib/modules.js";
+from "../../../lib/extlib/paramGui/modules.js";
 
 //ParamGui.logConversion = true;
 

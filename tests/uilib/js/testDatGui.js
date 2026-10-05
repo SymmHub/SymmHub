@@ -1,6 +1,5 @@
 import {
     DatGUI,
-    InstantHelp
 }
 from "../../../lib/uilib/modules.js";
 

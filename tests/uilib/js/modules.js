@@ -4,7 +4,6 @@
 
 export {
     DatGUI,
-    ParamGui,
     ParamBool,
     ParamFunc,
     ParamFloat,

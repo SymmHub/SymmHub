@@ -1,6 +1,5 @@
 import {
     DatGUI,
-    ParamGui,
     ParamBool, 
     ParamFunc, 
     ParamFloat,
@@ -24,7 +23,6 @@ import {
 
 const APP_NAME = 'TestParamApi';
 let guiName = DatGUI;
-//let guiName = ParamGui;
 
 // Objects factory — maps class name → constructor.
 // factory.getObject('TestObj1')  → new TestObj1 instance
@@ -236,7 +234,8 @@ function TestApp(){
     return {
         getValue: getValue,
         setValue: setValue,
-        createUI: createUI
+        createUI: createUI,
+        uiparams: uiparams,
     }
 }
 
@@ -330,7 +329,7 @@ app.createUI(gui);
 // Test the new Param helper functions
 setTimeout(() => {
     console.log("=== RUNNING PARAM UI HELPERS TESTS ===");
-    const widthParam = uiparams.width; // ParamInt
+    const widthParam = app.uiparams.width; // ParamInt
 
     console.log("widthParam has setError:", typeof widthParam.setError === 'function');
     console.log("widthParam has focus:", typeof widthParam.focus === 'function');
@@ -341,7 +340,9 @@ setTimeout(() => {
     // Test error styling
     console.log("Testing setError(true)");
     widthParam.setError(true);
-    const input = gui.domElement.querySelector('input');
+    // the input of the width row (the first input in the gui is the 'cold' checkbox)
+    const input = [...gui.domElement.querySelectorAll('.property-name')]
+        .find(el => el.textContent === 'width')?.parentElement.querySelector('input');
     if (input) {
         console.log("Input border color after setError(true):", input.style.borderColor);
         // Test clear on typing/input
