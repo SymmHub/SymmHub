@@ -1125,7 +1125,7 @@ export class GroupRenderer {
             this.animationControl = new AnimationControl({
                 startTime: this.timeStamp,
                 framePrefix: par.animationFramePrefix,
-                frameInterval: par.animationFrameInterval,
+                frameInterval: par.animationFrameTime,
                 startFrame: par.animationStartFrame,
                 endFrame: par.animationEndFrame,
             });
