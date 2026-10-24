@@ -1,8 +1,11 @@
 
 
 import {
-    makeTransformClassificationU4
     Group_KLMN
+} from '../../../lib/grouplib/modules.js';
+
+import {
+    makeTransformClassificationU4
 } from '../../../lib/symhublib/modules.js';
 
 
