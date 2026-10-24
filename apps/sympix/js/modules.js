@@ -22,14 +22,6 @@ export {
     setParamValues,
     getParamValues,
     ParamImage,
-    ParamColorStrip,
-    ParamFloatVector,
-    ParamUiFolder,
-    createPromptDialog,
-    writeClipboardText,
-    readClipboardText,
-    openFile,
-    saveTextFileAs,
 } from '../../../lib/uilib/uilib.js';
 
 export {
@@ -63,14 +55,8 @@ export {
     InterpolationNames,
     getInterpolationId,
     programBuilder,
-    CrownCalculator,
-    composePerms,
-    invertPerm,
-    wordToPerm,
-    packPerm,
-    MAX_COLORS_COUNT,
-    transToPackedPerms,
-    strToPermutations,
+    VisualizationColorSym,
+    VisualizationColorTiles,
 } from "../../../lib/symhublib/symhublib.js";
 
 
@@ -101,30 +87,3 @@ export {
 export {
     Sympix_programs
 } from './sympix_programs.js';
-
-
-
-
-
-export {
-    VisualizationColorSym
-} from './VisualizationColorSym.js';
-
-export {
-    VisualizationColorTiles
-} from './VisualizationColorTiles.js';
-
-export {
-    ColorTiles
-} from './ColorTiles.js';
-
-export {
-    Subgroups
-} from './Subgroups.js';
-
-// subgroup enumeration, computed live instead of loaded from shipped tables
-export {
-    subgroupsData,
-    getPreset,
-    findByPermutations,
-} from '../../../lib/sublib/src/sublib.js';

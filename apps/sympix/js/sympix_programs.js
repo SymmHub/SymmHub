@@ -17,13 +17,10 @@ const fragComplex           = {obj:LibShaders, id: 'complex'};
 const fragTexUtils          = {obj:LibShaders, id: 'texUtils'};
 const fragProjection        = {obj:LibShaders, id: 'projection'};
 const fragBufferToScreenImageArray = {obj:LibShaders, id: 'bufferToScreenImageArray'};
+const fragColorUtils        = {obj:LibShaders, id: 'colorUtils'};
 
 const renderImageFragMain   = {obj:LocalShaders, id:'renderImage'};
 const fragBaseVertex        = {obj:LocalShaders, id: 'canvasVertexShader'};
-const fragPermutations24    = {obj:LocalShaders, id: 'permutations24'};
-const colorImageArrayFrag   = {obj:LocalShaders, id: 'colorImageArray'};
-const colorTilesFrag        = {obj:LocalShaders, id: 'colorTiles'};
-const fragColorUtils        = {obj:LocalShaders, id: 'colorUtils'};
 
 
 
@@ -44,28 +41,12 @@ const progBufferToScreenImageArray = {
     }
 };
 
-const colorImageArrayProgram = {
-    name: 'ColorImageArray',
-    vs: {frags: [renderImageVertMain]}, 
-    fs: {
-        frags: [fragIsplane, inversiveFrag, fragComplex, utilsFrag, fragTexUtils, fragProjection, fragPermutations24, fragColorUtils, colorImageArrayFrag]
-    }
-};
+// the programs of Color Images and Color Tiles are in lib/symhublib/ColorSymPrograms.js
 
-const colorTilesProgram = {
-    name: 'ColorTiles',
-    vs: {frags: [renderImageVertMain]}, 
-    fs: {
-        frags: [fragIsplane, inversiveFrag, fragComplex, utilsFrag, fragProjection, fragPermutations24, colorTilesFrag]
-    }
-};
-
-const programs = 
+const programs =
 {
-    'renderImage':              renderImageProgram, 
+    'renderImage':              renderImageProgram,
     'bufferToScreenImageArray': progBufferToScreenImageArray,
-    'colorImageArray':          colorImageArrayProgram,
-    'colorTiles':               colorTilesProgram,
 };
 
 export const Sympix_programs = programBuilder(programs);
