@@ -1,7 +1,7 @@
 @echo off
 setlocal enableextensions
 cd /d "%~dp0"
-set SRC=..\gap\sub
+set SRC=..\..\apps\sympix\gap\sub
 echo Copying generated subgroups from GAP...
 rem xcopy /y /s /i "%SRC%\klm\*" .\klm\
 rem xcopy /y /s /i "%SRC%\sklm\*" .\sklm\
