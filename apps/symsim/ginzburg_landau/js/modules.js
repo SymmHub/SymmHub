@@ -14,8 +14,12 @@ export {
     ShaderFragments
 }
 //from '../../../../lib/shaders/modules.js';
-from '../../../../lib/shaders/modules.js';
+from '../../../../lib/shaders/shaders.js';
 
+export {
+    GL_programs,
+    gsFragments,
+} from './ginzburg_landau_programs.js';
 
 
 export {
@@ -27,11 +31,19 @@ export {
 } from './GinzburgLandauInitializer.js';
 
 export {
+    GinzburgLandauUpgradeData,
+} from './GinzburgLandauUpgradeData.js';
+
+export {
+    runGinzburgLandau,
+} from './ginzburg_landau_app.js';
+
+export {
     PipelineManager,
     makePipelineManagerCreator,
     SymmetrizationWorker,
-} from '../../../../lib/symhublib/modules.js';
-
+    MaskWorker,
+} from '../../../../lib/symhublib/symhublib.js';
 
 
 export {
@@ -104,4 +116,4 @@ export {
     loadBufferData,
 
 }
-from '../../../../lib/uilib/modules.js';
+from '../../../../lib/uilib/uilib.js';

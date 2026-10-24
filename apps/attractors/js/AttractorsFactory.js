@@ -5,9 +5,6 @@ import {
     FieldIconsAttractor,
     MandelbrotAttractor,
     TinkerbellAttractor,
-} from './attractors.js';
-
-import {
     ObjectFactory
 } from './modules.js';
 

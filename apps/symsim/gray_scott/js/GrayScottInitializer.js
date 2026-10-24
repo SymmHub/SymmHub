@@ -29,9 +29,8 @@ import {
     DataPacking,
     GroupUtils,
     gs_uniformUV,
+    GS_programs,
 } from './modules.js';
-
-import { GS_programs } from './gray_scott_programs.js';
 
 const MYNAME = 'GrayScottInitializer';
 const DEBUG  = false;

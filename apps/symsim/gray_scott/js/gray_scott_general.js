@@ -6,7 +6,9 @@
  * gray_scott_app.js; only the variant-specific config is supplied here.
  */
 
-import { runGrayScott } from './gray_scott_app.js';
+import {
+    runGrayScott,
+} from './modules.js';
 import { presets }      from './presets_klm.js';
 
 runGrayScott({ presets, presetsPath: 'presets/klm/', groupName: 'KLM' });

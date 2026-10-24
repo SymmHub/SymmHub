@@ -9,7 +9,17 @@ export {
     ShaderFragments
 }
 //from '../../../../lib/shaders/modules.js';
-from '../../../../lib/shaders/modules.js';
+from '../../../../lib/shaders/shaders.js';
+
+export {
+    GrayScottPresets
+}
+from './gray_scott_presets.js';
+
+export {
+    GS_programs,
+    gsFragments,
+} from './gray_scott_programs.js';
 
 export {
     GrayScottWorker,
@@ -23,7 +33,8 @@ export {
     PipelineManager,
     makePipelineManagerCreator,
     SymmetrizationWorker,
-} from '../../../../lib/symhublib/modules.js';
+    MaskWorker,
+} from '../../../../lib/symhublib/symhublib.js';
 
 
 export {
@@ -96,18 +107,18 @@ export {
     saveBufferData,
     loadBufferData,
 }
-from '../../../../lib/uilib/modules.js';
+from '../../../../lib/uilib/uilib.js';
 
-
-
-
-
-export {
-    GrayScottPresets
-}
-from './gray_scott_presets.js';
 
 export {
     gs_uniformUV
 } from './gs_util.js';
+
+export {
+    GrayScottUpgradeData,
+} from './GrayScottUpgradeData.js';
+
+export {
+    runGrayScott,
+} from './gray_scott_app.js';
 

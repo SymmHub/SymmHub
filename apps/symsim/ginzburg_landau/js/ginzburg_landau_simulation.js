@@ -29,10 +29,9 @@ import {
 
   saveBufferData,
   loadBufferData,
-  
+  GL_programs,
+  gsFragments,
 } from './modules.js';
-
-import { GL_programs, gsFragments } from './ginzburg_landau_programs.js';
 
 
 const DEBUG = false;

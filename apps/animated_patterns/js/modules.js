@@ -1,6 +1,6 @@
 export { 
     Group_WP
-} from "../../../lib/grouplib/Group_WP.js";
+} from "../../../lib/grouplib/grouplib.js";
 
 
 export { 

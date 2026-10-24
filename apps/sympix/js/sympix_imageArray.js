@@ -8,12 +8,12 @@ import {
     SymRenderer,
     makeSamplesArray,
     PatternImageArrayCreator,
+    SympixLayerFactory,
 } from "./modules.js";
 
 import {
     presets
 } from './presets_imageArray.js';
-import { SympixLayerFactory } from './SympixLayerFactory.js';
 
 
 const visManager = VisualizationManager({

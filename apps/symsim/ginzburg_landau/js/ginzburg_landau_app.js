@@ -15,15 +15,13 @@ import {
     InversiveNavigator,
     GroupMakerFactory,
     ObjectFactory,
+    makePipelineManagerCreator,
+    SymmetrizationWorker,
+    MaskWorker,
+    GinzburgLandauWorker,
+    GinzburgLandauInitializer,
+    GinzburgLandauUpgradeData,
 } from './modules.js';
-
-import { makePipelineManagerCreator } from '../../../../lib/symhublib/PipelineManager.js';
-import { SymmetrizationWorker }       from '../../../../lib/symhublib/SymmetrizationWorker.js';
-import { MaskWorker }                 from '../../../../lib/symhublib/MaskWorker.js';
-
-import { GinzburgLandauWorker }      from './GinzburgLandauWorker.js';
-import { GinzburgLandauInitializer } from './GinzburgLandauInitializer.js';
-import { GinzburgLandauUpgradeData } from './GinzburgLandauUpgradeData.js';
 
 // ── Worker factory (shared across all variants) ────────────────────────────────
 

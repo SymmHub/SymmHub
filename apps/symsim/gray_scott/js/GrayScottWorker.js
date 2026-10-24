@@ -24,12 +24,11 @@ import {
     ParamObj,
     ParamChoice,
     createDataPlot,
+    GS_programs,
 } from './modules.js';
 
 import { GrayScottPresets } from './gray_scott_presets.js';
 
-
-import { GS_programs } from './gray_scott_programs.js';
 
 const MYNAME  = 'GrayScottWorker';
 const DEBUG   = false;

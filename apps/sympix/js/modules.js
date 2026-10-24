@@ -60,7 +60,6 @@ export {
 } from "../../../lib/symhublib/symhublib.js";
 
 
-
 export { 
     GroupMakerFactory, 
 } from "../../../lib/grouplib/grouplib.js";
@@ -78,7 +77,7 @@ export {
 
 export {
     ShaderFragments as LibShaders,
-} from '../../../lib/shaders/modules.js';
+} from '../../../lib/shaders/shaders.js';
 
 export {
     Shaders as ImgShaders,
@@ -87,3 +86,7 @@ export {
 export {
     Sympix_programs
 } from './sympix_programs.js';
+
+export {
+    SympixLayerFactory,
+} from './SympixLayerFactory.js';

@@ -1,6 +1,6 @@
 import {
-    runTests
-} from './iGetFactorizationU4.js';
+    runTests,
+} from './modules.js';
 
 
 runTests();

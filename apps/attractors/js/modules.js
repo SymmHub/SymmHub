@@ -36,7 +36,7 @@ export {
 
 export {
     ShaderFragments as LibShaders
-} from '../../../lib/shaders/modules.js';
+} from '../../../lib/shaders/shaders.js';
 
 
 export { 
@@ -64,6 +64,30 @@ export {
 } from "../../../lib/grouplib/grouplib.js";
 
    
+
+export {
+    CliffordAttractor,
+} from './attractor_clifford.js';
+
+export {
+    DeJongAttractor,
+} from './attractor_dejong.js';
+
+export {
+    ConradiAttractor,
+} from './attractor_conradi.js';
+
+export {
+    FieldIconsAttractor,
+} from './attractor_field_icons.js';
+
+export {
+    MandelbrotAttractor,
+} from './attractor_mandelbrot.js';
+
+export {
+    TinkerbellAttractor,
+} from './attractor_tinkerbell.js';
 
 export {
     AttractorsFactory

@@ -15,9 +15,8 @@ import {
     createExportImageDialog,
     createFileSelectionDialog,
     canvasToLocalFile,
+    Overlay_programs,
 } from './modules.js'
-
-import { Overlay_programs } from './OverlayExtractorPrograms.js';
 
 
 

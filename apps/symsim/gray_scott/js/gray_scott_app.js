@@ -16,15 +16,13 @@ import {
     InversiveNavigator,
     GroupMakerFactory,
     ObjectFactory,
+    makePipelineManagerCreator,
+    SymmetrizationWorker,
+    MaskWorker,
+    GrayScottWorker,
+    GrayScottInitializer,
+    GrayScottUpgradeData,
 } from './modules.js';
-
-import { makePipelineManagerCreator } from '../../../../lib/symhublib/PipelineManager.js';
-import { SymmetrizationWorker }       from '../../../../lib/symhublib/SymmetrizationWorker.js';
-import { MaskWorker }                 from '../../../../lib/symhublib/MaskWorker.js';
-
-import { GrayScottWorker }      from './GrayScottWorker.js';
-import { GrayScottInitializer } from './GrayScottInitializer.js';
-import { GrayScottUpgradeData } from './GrayScottUpgradeData.js';
 
 // ── Worker factory (shared across all variants) ────────────────────────────────
 

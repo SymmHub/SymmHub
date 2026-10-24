@@ -15,10 +15,17 @@
   4. file-level cycles (strongly connected sets of files), with the number of
      them that pass through an aggregator;
   5. relative imports of files that do not exist;
-  6. direct imports: a code file importing a code file that is not an
-     aggregator (shader sources *.glsl.mjs and data modules count as code
-     files too), split into imports from another package and inside one;
-     tests are listed apart, since a test may import the file it tests.
+  6. direct imports: inside a package, a code file importing a code file that
+     is not an aggregator (shader sources *.glsl.mjs count as code files too);
+     from another package, an import of anything but that package's public
+     module (lib/<name>/<name>.js, lib/sublib/src/sublib.js), also when the
+     importing file is an aggregator; split into imports from another package
+     and inside one; tests are listed apart, since a test may import the file
+     it tests, and so are the exceptions of ALLOWED_DIRECT, with their reasons.
+     Exempt inside a package (counted only): imports of data modules (preset
+     lists presets*.js and *_presets.js, apps/sympix/res/*, and modules that
+     define no function or class and import nothing) and the vendored dat.gui
+     source in lib/datgui (Vladimir, 2026-10-24).
   Exit code 1 when 1, 2, 3 or 5 has entries; file-level cycles are reported
   only, since the aggregator pattern (a file importing its own library's
   modules.js) makes them everywhere; direct imports are reported only, as
@@ -38,6 +45,12 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const SCAN = ['apps', 'lib', 'tests'];
 const SKIP_DIRS = new Set(['extlib', 'node_modules', '.git']);
+
+/** direct imports kept on purpose: imported file -> reason */
+const ALLOWED_DIRECT = new Map([
+  ['lib/symhublib/appendThumbnails.js',
+   'the thumbnail pages import it through their app\'s appendThumbnails.js and must not load the whole symhublib'],
+]);
 const showFiles = process.argv.includes('--files');
 const showDirect = process.argv.includes('--direct');
 
@@ -108,6 +121,26 @@ function isAggregator(relPath){
       || relPath === 'lib/sublib/src/sublib.js';
 }
 
+/** a data module: a preset list, a sympix resource list, or a module of literals only */
+const DATA_NAME = /(^|\/)presets[^/]*\.js$|_presets\.js$|^apps\/sympix\/res\//;
+function isData(relPath){
+  if(DATA_NAME.test(relPath)) return true;
+  if(relPath.endsWith('.glsl.mjs')) return false;
+  const code = stripComments(readFileSync(join(ROOT, relPath), 'utf8'))
+                 .replace(/(['"`])(?:\\.|(?!\1)[^\\])*\1/gs, '""');
+  return !/\bimport\b|\bfunction\b|\bclass\b|=>/.test(code);
+}
+
+/** packages whose sources are vendored as they are */
+const VENDORED = new Set(['lib/datgui']);
+
+/** lib/<name>/<name>.js, lib/sublib/src/sublib.js: what other packages import */
+function isPublic(relPath){
+  const parts = relPath.split('/');
+  return (parts[0] === 'lib' && parts.length === 3 && parts[2] === parts[1] + '.js')
+      || relPath === 'lib/sublib/src/sublib.js';
+}
+
 /** 'apps/sympix', 'lib/uilib', 'tests/uilib' */
 function packageOf(relPath){
   const parts = relPath.split('/');
@@ -143,7 +176,7 @@ const files = SCAN.filter(d => existsSync(join(ROOT, d)))
 const fileEdges = new Map();
 const pkgEdges = new Map();
 const crossApp = [], libToApp = [], missing = [];
-const directCross = [], directInside = [], directTests = [];
+const directCross = [], directInside = [], directTests = [], directAllowed = [], directExempt = [];
 
 for(const file of files){
   const from = rel(file);
@@ -156,10 +189,13 @@ for(const file of files){
     if(!/\.(m?js)$/.test(to) || to.split('/').includes('extlib')) continue;
     deps.add(to);
     const pf = packageOf(from), pt = packageOf(to);
-    if(!isAggregator(from) && !isAggregator(to)){
+    const direct = pf !== pt ? !isPublic(to) : !isAggregator(from) && !isAggregator(to);
+    if(direct){
       const line = `${from} -> ${to}`;
       if(pf.startsWith('tests')) directTests.push(line);
+      else if(ALLOWED_DIRECT.has(to)) directAllowed.push(`${line}  (${ALLOWED_DIRECT.get(to)})`);
       else if(pf !== pt) directCross.push(line);
+      else if(VENDORED.has(pf) || isData(to)) directExempt.push(line);
       else directInside.push(line);
     }
     if(pf !== pt){
@@ -192,10 +228,12 @@ section('missing relative imports', missing);
 console.log(`file-level cycles: ${fileCycles.length} (${viaAggregator} through an aggregator)`);
 if(showFiles) for(const c of fileCycles) console.log('  ' + c.sort().join(' | '));
 console.log(`direct imports: ${directCross.length} from another package, `
-          + `${directInside.length} inside a package, ${directTests.length} in tests`);
+          + `${directInside.length} inside a package, ${directTests.length} in tests, `
+          + `${directAllowed.length} allowed, ${directExempt.length} exempt (data modules, lib/datgui)`);
 if(showDirect){
   for(const [title, list] of [['from another package', directCross],
-                              ['inside a package', directInside], ['in tests', directTests]]){
+                              ['inside a package', directInside], ['in tests', directTests],
+                              ['allowed', directAllowed], ['exempt', directExempt]]){
     console.log(`  ${title}:`);
     for(const s of list) console.log('    ' + s);
   }

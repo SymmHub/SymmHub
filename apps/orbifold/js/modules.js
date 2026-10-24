@@ -80,6 +80,10 @@ export {
 } from '../../../lib/symhublib/symhublib.js';
 
 export {
+    GroupRendererConfig,
+} from './GroupRendererConfig.js';
+
+export {
     GroupRenderer,
 } from './GroupRenderer.js';
 
@@ -96,11 +100,15 @@ export {
     setParamValues,
     getParamValues,
     
-} from '../../../lib/uilib/modules.js'
+} from '../../../lib/uilib/uilib.js'
 
 export {
     createLayeredCanvas
 } from './ui_utils.js';     
+
+export {
+    runTests,
+} from './iGetFactorizationU4.js';
 export {
     GUI 
 } from '../../../lib/datgui/datgui.js';
@@ -111,7 +119,7 @@ export {
     twgl
 }
 
-// ── Extra Utilities (not re-exported by invlib.js) ────────────────────────
+// ── Extra Utilities ───────────────────────────────────────────────────────
 export {
     objectToString,
     transformToString,
@@ -122,7 +130,7 @@ export {
     normalizeAngle,
     asin,
     log,
-} from '../../../lib/invlib/Utilities.js';
+} from '../../../lib/invlib/invlib.js';
 
 // ── Extra Inversive symbols ───────────────────────────────────────────────
 export {
@@ -134,14 +142,14 @@ export {
     iCumPackTransforms,
     iMakeDefaultTransforms,
     iPackRefCumulativeCount,
-} from '../../../lib/invlib/Inversive.js';
+} from '../../../lib/invlib/invlib.js';
 
 // ── Extra IDrawing symbols ────────────────────────────────────────────────
 export {
     iDrawLargeCircle,
     iDrawPoint,
     iDrawSegment,
-} from '../../../lib/invlib/IDrawing.js';
+} from '../../../lib/invlib/invlib.js';
 
 // ── ISplane ───────────────────────────────────────────────────────────────
 export {
@@ -150,14 +158,14 @@ export {
     SPLANE_POINT,
     SPLANE_PLANE,
     SPLANE_SPHERE,
-} from '../../../lib/invlib/ISplane.js';
+} from '../../../lib/invlib/invlib.js';
 
 // ── Extra LinearAlgebra symbols ───────────────────────────────────────────
 export {
     getCopy,
     distance1,
     eDistance,
-} from '../../../lib/invlib/LinearAlgebra.js';
+} from '../../../lib/invlib/invlib.js';
 
 // ── Extra ComplexArithmetic symbols ──────────────────────────────────────
 export {
@@ -169,7 +177,7 @@ export {
     sPlanesMovingEdge1ToEdge2,
     poincareMobiusFromSPlanesList,
     transformFromCenterToPoint,
-} from '../../../lib/invlib/ComplexArithmetic.js';
+} from '../../../lib/invlib/invlib.js';
 
 // ── orbilib — WallPaperGroup_General constants & keys ────────────────────
 export {

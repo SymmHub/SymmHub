@@ -1,10 +1,5 @@
 
 import {
-    GroupRendererConfig
-}
-from './GroupRendererConfig.js'
-
-import {
     getParam,
     isFunction,
     isDefined,
@@ -25,6 +20,7 @@ import {
     createDoubleFBO,
     createFBO,
     CanvasTransform,
+    GroupRendererConfig,
 }
 
 from './modules.js';

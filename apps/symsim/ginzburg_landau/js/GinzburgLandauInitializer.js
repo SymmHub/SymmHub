@@ -27,9 +27,8 @@ import {
     DataPacking,
     ParamChoice,
     ParamFloat,
+    GL_programs,
 } from './modules.js';
-
-import { GL_programs } from './ginzburg_landau_programs.js';
 
 const MYNAME = 'GinzburgLandauInitializer';
 

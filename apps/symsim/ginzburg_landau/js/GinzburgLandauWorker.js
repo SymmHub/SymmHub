@@ -20,12 +20,11 @@ import {
     ParamInt,
     ParamObj,
     createDataPlot,
+    GL_programs,
 } from './modules.js';
 
 import { GinzburgLandauPresets } from './ginzburg_landau_presets.js';
 
-
-import { GL_programs } from './ginzburg_landau_programs.js';
 
 const MYNAME  = 'GinzburgLandauWorker';
 const DEBUG   = false;

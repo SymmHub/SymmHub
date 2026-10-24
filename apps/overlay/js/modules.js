@@ -38,6 +38,10 @@ export {
 }
 from './shaders/modules.js';
 
+export {
+    Overlay_programs,
+} from './OverlayExtractorPrograms.js';
+
 // ── App modules ───────────────────────────────────────────────────────────────
 
 export {

@@ -29,10 +29,9 @@ import {
 
   saveBufferData,
   loadBufferData,
-
+  GS_programs,
+  gsFragments,
 } from './modules.js';
-
-import { GS_programs, gsFragments } from './gray_scott_programs.js';
 
 
 const DEBUG = false;

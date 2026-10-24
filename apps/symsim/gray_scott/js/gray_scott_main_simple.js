@@ -1,4 +1,6 @@
-import { runGrayScott } from './gray_scott_app.js';
+import {
+    runGrayScott,
+} from './modules.js';
 import { presets }      from './presets_wp.js';
 
 const samples = { presets, presetsPath: 'presets/wp/' };

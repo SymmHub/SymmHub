@@ -8,12 +8,12 @@ import {
     SymRenderer,
     makeSamplesArray,
     PatternImageCreator,
+    SympixLayerFactory,
 } from "./modules.js";
 
 import {
     presets
 } from './presets_orbifold.js';
-import { SympixLayerFactory } from './SympixLayerFactory.js';
  
 
 const visManager = VisualizationManager({
