@@ -2,6 +2,7 @@ import {
     SymRenderer,
     VisualizationManager,
     VisualizationColorSym,
+    VisualizationColorTiles,
     VisualizationImage,
     VisualizationOverlay,
     InversiveNavigator,
@@ -19,6 +20,7 @@ import {
 //  opt.groupType      default group maker, e.g. 'Wallpaper', 'KLM'
 //  opt.presetsFolder  folder of the page's presets
 //  opt.presets        their file names, one per line (a presets_*.js list)
+//  opt.colorTiles     a Color Tiles layer under the drawing, as in sympix_color
 //
 
 // a page opened without a document in its hash starts with the symmetry on,
@@ -32,11 +34,15 @@ function startSymdraw(opt = {}) {
     const visManager = VisualizationManager({
         layerFactory: SymdrawLayerFactory,
         upgradeMapping: [
-            { key: 'drawing', cls: 'VisualizationColorSym' },
-            { key: 'image',   cls: 'VisualizationImage'    },
-            { key: 'overlay', cls: 'VisualizationOverlay'  },
+            { key: 'colorTiles', cls: 'VisualizationColorTiles' },
+            { key: 'drawing',    cls: 'VisualizationColorSym'   },
+            { key: 'image',      cls: 'VisualizationImage'      },
+            { key: 'overlay',    cls: 'VisualizationOverlay'    },
         ],
         visLayers: [
+            ...(opt.colorTiles
+                ? [{ name: 'colorTiles', visLayer: VisualizationColorTiles({ config: { enabled: true } }) }]
+                : []),
             { name: 'drawing', visLayer: VisualizationColorSym({ config: { enabled: true,  useCrown: true } }) },
             { name: 'image',   visLayer: VisualizationImage(   { config: { enabled: false } }) },
             { name: 'overlay', visLayer: VisualizationOverlay( { config: { enabled: false } }) },
