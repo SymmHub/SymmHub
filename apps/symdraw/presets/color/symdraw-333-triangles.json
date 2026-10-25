@@ -53,12 +53,12 @@
                                                 "id": "p3",
                                                 "closed": true,
                                                 "points": [
-                                                    -0.05155451586740911,
-                                                    0.11255777389281307,
-                                                    0.07426484796383818,
-                                                    -0.09603941451148038,
-                                                    0.10423156753412514,
-                                                    0.10143015102661351
+                                                    -0.11735197032116657,
+                                                    0.10646707876549738,
+                                                    0.008467393510080752,
+                                                    -0.10213010963879607,
+                                                    0.03843411308036771,
+                                                    0.09533945589929782
                                                 ],
                                                 "style": {
                                                     "stroke": {
@@ -94,7 +94,7 @@
             "patternTransform": {
                 "centerX": 0,
                 "centerY": 0,
-                "scale": 0.5,
+                "scale": 2,
                 "angle": 0,
                 "pivotX": 0,
                 "pivotY": 0
@@ -299,6 +299,23 @@
                                                     }
                                                 },
                                                 {
+                                                    "className": "OverlayBuffer",
+                                                    "params": {
+                                                        "id": "buffer",
+                                                        "enabled": true,
+                                                        "opacity": 1,
+                                                        "fill": {
+                                                            "enabled": false,
+                                                            "color": "#00FF0022"
+                                                        },
+                                                        "outline": {
+                                                            "enabled": true,
+                                                            "width": 1,
+                                                            "color": "#00AA00AA"
+                                                        }
+                                                    }
+                                                },
+                                                {
                                                     "className": "OverlayGenerators",
                                                     "params": {
                                                         "id": "generators",
@@ -493,10 +510,10 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0.0638940036227215,
-                        "centerY": -0.26021636112270363,
+                        "centerX": 0.016053445445836693,
+                        "centerY": -0.37423310773027846,
                         "zoom": [
-                            0.48675312690762246
+                            0.3263003540344856
                         ]
                     },
                     "options": {
