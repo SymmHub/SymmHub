@@ -18,11 +18,13 @@ import {
 //
 //  opt.groupType      default group maker, e.g. 'Wallpaper', 'KLM'
 //  opt.presetsFolder  folder of the page's presets
+//  opt.presets        their file names, one per line (a presets_*.js list)
 //
 
-// a page opened without a document in its hash starts with the symmetry on
+// a page opened without a document in its hash starts with the symmetry on,
+// folding with enough steps to fill a hyperbolic disk to its rim
 const START_PARAMS = {
-    symmetry: { options: { useSymm: true } },
+    symmetry: { options: { useSymm: true, iterations: 40 } },
 };
 
 function startSymdraw(opt = {}) {
@@ -47,7 +49,7 @@ function startSymdraw(opt = {}) {
         visualization:     visManager,
         groupMakerFactory: GroupMakerFactory({ defaultName: opt.groupType || 'Wallpaper' }),
         navigator:         new InversiveNavigator(),
-        samples:           makeSamplesArray('', opt.presetsFolder || ''),
+        samples:           makeSamplesArray(opt.presets || '', opt.presetsFolder || ''),
         docFolderId:       'symdraw_doc_folder',
         params:            (hash.preset || hash.params) ? undefined : START_PARAMS,
     });

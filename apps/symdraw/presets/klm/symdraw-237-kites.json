@@ -1,0 +1,412 @@
+{
+    "name": "symdraw-237-kites",
+    "appInfo": {
+        "appName": "SymRenderer.Group_KLM.PatternDrawing.InversiveNavigator_v1",
+        "fileFormatRelease": 1
+    },
+    "params": {
+        "pattern": {
+            "patternParams": {
+                "className": "PatternDrawing",
+                "params": {
+                    "id": "drawing1",
+                    "resolution": "1024",
+                    "useCrown": false,
+                    "layer": "layer1",
+                    "style": {
+                        "stroke": "#cc1a1a",
+                        "strokeOpacity": 1,
+                        "width": 0.02,
+                        "filled": false,
+                        "fill": "#3366e6",
+                        "fillOpacity": 1,
+                        "cap": "round",
+                        "join": "round",
+                        "snap": true
+                    },
+                    "layers": {
+                        "className": "ObjArray",
+                        "params": {
+                            "id": "layers",
+                            "children": [
+                                {
+                                    "className": "DrawingLayer",
+                                    "params": {
+                                        "id": "layer1",
+                                        "enabled": true,
+                                        "locked": false,
+                                        "opacity": 1,
+                                        "items": [
+                                            {
+                                                "type": "polyline",
+                                                "closed": true,
+                                                "points": [0.1, 0.06, 0.2, 0.1, 0.16, 0.2, 0.07, 0.13],
+                                                "style": {
+                                                    "stroke": {
+                                                        "rgba": [0.1, 0.25, 0.1, 1]
+                                                    },
+                                                    "strokeWidth": 0.006,
+                                                    "lineCap": "round",
+                                                    "lineJoin": "round",
+                                                    "fill": {
+                                                        "rgba": [0.35, 0.75, 0.35, 1]
+                                                    },
+                                                    "opacity": 1
+                                                },
+                                                "id": "p3"
+                                            },
+                                            {
+                                                "type": "polyline",
+                                                "closed": false,
+                                                "points": [0.05, 0.02, 0.0625, 0.0434947, 0.075, 0.0665874, 0.0875, 0.088883, 0.1, 0.11, 0.1125, 0.129577, 0.125, 0.147279, 0.1375, 0.162804, 0.15, 0.175885, 0.1625, 0.186298, 0.175, 0.193867, 0.1875, 0.19846, 0.2, 0.2, 0.2125, 0.19846, 0.225, 0.193867, 0.2375, 0.186298, 0.25, 0.175885, 0.2625, 0.162804, 0.275, 0.147279, 0.2875, 0.129577, 0.3, 0.11, 0.3125, 0.088883, 0.325, 0.0665874, 0.3375, 0.0434947, 0.35, 0.02],
+                                                "style": {
+                                                    "stroke": {
+                                                        "rgba": [0.8, 0.2, 0.45, 1]
+                                                    },
+                                                    "strokeWidth": 0.012,
+                                                    "lineCap": "round",
+                                                    "lineJoin": "round",
+                                                    "fill": null,
+                                                    "opacity": 1
+                                                },
+                                                "id": "p4"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "patternTransform": {
+                "centerX": 0,
+                "centerY": 0,
+                "scale": 0.5,
+                "angle": 0,
+                "pivotX": 0,
+                "pivotY": 0
+            }
+        },
+        "visualization": {
+            "className": "VisualizationManager",
+            "params": {
+                "layers": {
+                    "className": "ObjArray",
+                    "params": {
+                        "id": "layers",
+                        "children": [
+                            {
+                                "className": "VisualizationColorSym",
+                                "params": {
+                                    "id": "drawing",
+                                    "enabled": true,
+                                    "opacity": 1,
+                                    "imageId": "",
+                                    "permutations": "",
+                                    "permIndex": 0,
+                                    "useOrbit": false,
+                                    "mask": "",
+                                    "subgroups": {
+                                        "className": "Subgroups",
+                                        "params": {
+                                            "groupType": "[select]",
+                                            "groupName": "[select]",
+                                            "fileName": "",
+                                            "maxIndex": 24,
+                                            "index": "",
+                                            "subgroup": ""
+                                        }
+                                    },
+                                    "coloringType": "none",
+                                    "colorTiles": {
+                                        "className": "ColorTiles",
+                                        "params": {
+                                            "count": 6,
+                                            "palette": "pastel",
+                                            "a": {
+                                                "R": 0.5,
+                                                "G": 0.5,
+                                                "B": 0.5
+                                            },
+                                            "b": {
+                                                "R": 0.5,
+                                                "G": 0.5,
+                                                "B": 0.5
+                                            },
+                                            "c": {
+                                                "R": 1,
+                                                "G": 1,
+                                                "B": 1
+                                            },
+                                            "d": {
+                                                "R": 0,
+                                                "G": 0.33,
+                                                "B": 0.67
+                                            },
+                                            "adjust": {
+                                                "hueShift": 0,
+                                                "satMult": 1,
+                                                "lightOffset": 0,
+                                                "contrastMult": 1
+                                            },
+                                            "edited": {},
+                                            "alphas": {}
+                                        }
+                                    },
+                                    "useCrown": true,
+                                    "useTilt": false,
+                                    "patternTiltDirection": 0,
+                                    "useMipmap": false,
+                                    "interpolation": "linear"
+                                }
+                            },
+                            {
+                                "className": "VisualizationImage",
+                                "params": {
+                                    "id": "image",
+                                    "enabled": false,
+                                    "opacity": 1,
+                                    "interpolation": "linear",
+                                    "dataSource": "u",
+                                    "useMipmap": false,
+                                    "imageId": ""
+                                }
+                            },
+                            {
+                                "className": "VisualizationOverlay",
+                                "params": {
+                                    "id": "overlay",
+                                    "enabled": false,
+                                    "opacity": 1,
+                                    "overlays": {
+                                        "className": "ObjArray",
+                                        "params": {
+                                            "id": "overlays",
+                                            "children": [
+                                                {
+                                                    "className": "OverlayTiling",
+                                                    "params": {
+                                                        "id": "tiling",
+                                                        "enabled": false,
+                                                        "opacity": 1,
+                                                        "width": 1,
+                                                        "color": "#000000FF",
+                                                        "symmetry": {
+                                                            "type": "renderer",
+                                                            "maxIndex": 8,
+                                                            "cosets": ""
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "className": "OverlayFundDomain",
+                                                    "params": {
+                                                        "id": "fundDomain",
+                                                        "enabled": false,
+                                                        "opacity": 1,
+                                                        "fill": {
+                                                            "enabled": false,
+                                                            "color": "#FF0000AA"
+                                                        },
+                                                        "outline": {
+                                                            "enabled": true,
+                                                            "width": 1,
+                                                            "color": "#000000AA",
+                                                            "shadowsWidth": 10,
+                                                            "shadowsColor": "#0000FFAA"
+                                                        },
+                                                        "walls": {
+                                                            "enabled": false,
+                                                            "width": 1,
+                                                            "color": "#00000055"
+                                                        },
+                                                        "symmetry": {
+                                                            "type": "renderer",
+                                                            "maxIndex": 8,
+                                                            "cosets": ""
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "className": "OverlayGenerators",
+                                                    "params": {
+                                                        "id": "generators",
+                                                        "enabled": false,
+                                                        "opacity": 1,
+                                                        "showSides": true,
+                                                        "width": 2,
+                                                        "color": "#0000AAAA",
+                                                        "shadow": {
+                                                            "enabled": true,
+                                                            "color": "#0000AA55",
+                                                            "width": 10
+                                                        },
+                                                        "elements": {
+                                                            "enabled": true,
+                                                            "width": 2,
+                                                            "cone": {
+                                                                "enabled": true,
+                                                                "size": 12,
+                                                                "color2": "#283CDCCC",
+                                                                "color3": "#F08C14CC",
+                                                                "color4": "#14AA78CC",
+                                                                "color6": "#E61EC8CC",
+                                                                "color": "#808080CC",
+                                                                "outline": "#000000C0"
+                                                            },
+                                                            "mirror": {
+                                                                "enabled": true,
+                                                                "color": "#AA0000FF"
+                                                            },
+                                                            "glide": {
+                                                                "enabled": true,
+                                                                "color": "#AA00AAFF",
+                                                                "dash": 8
+                                                            },
+                                                            "translation": {
+                                                                "enabled": true,
+                                                                "color": "#008888FF"
+                                                            }
+                                                        },
+                                                        "symmetry": {
+                                                            "type": "renderer",
+                                                            "maxIndex": 8,
+                                                            "cosets": ""
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "symmetry": {
+            "groupType": "KLM",
+            "group": {
+                "className": "Group_KLM",
+                "params": {
+                    "s": false,
+                    "K": 2,
+                    "L": 3,
+                    "M": 7,
+                    "hasR": false
+                }
+            },
+            "transform": {
+                "translationX": 0,
+                "translationY": 0,
+                "rotation": 0,
+                "scale": 1
+            },
+            "options": {
+                "useSymm": true,
+                "iterations": 40
+            }
+        },
+        "tools": {
+            "transform": {
+                "className": "InversiveNavigator_v1",
+                "params": {
+                    "projection": {
+                        "className": "ProjectionTransform",
+                        "params": {
+                            "enabled": true,
+                            "fpdMap": {
+                                "className": "FixedPointTransform",
+                                "params": {
+                                    "enabled": false,
+                                    "showUI": false,
+                                    "animate": false,
+                                    "word": "ac",
+                                    "orientation": "none",
+                                    "fp0x": -1,
+                                    "fp0y": 0,
+                                    "fp1x": 1,
+                                    "fp1y": 0,
+                                    "basex": 0,
+                                    "basey": 0,
+                                    "translation": 1,
+                                    "rotation": 0,
+                                    "fraction": 0,
+                                    "loopTime": 5
+                                }
+                            },
+                            "bandMap": {
+                                "enabled": false,
+                                "fraction": 1
+                            },
+                            "logMap": {
+                                "enabled": false
+                            },
+                            "periodicMap": {
+                                "enabled": false,
+                                "a1x": 1,
+                                "a1y": 0,
+                                "a2x": 0,
+                                "a2y": 1,
+                                "cx": 0,
+                                "cy": 0
+                            },
+                            "scaleMap": {
+                                "enabled": false,
+                                "a1x": 1,
+                                "a1y": 0,
+                                "a2x": 0,
+                                "a2y": 1,
+                                "n1": 10,
+                                "n2": 0,
+                                "shift1": 0,
+                                "shift2": 0
+                            },
+                            "expMap": {
+                                "enabled": false
+                            },
+                            "loxMap": {
+                                "enabled": false
+                            },
+                            "uhpMap": {
+                                "enabled": false
+                            },
+                            "rationalMap": {
+                                "enabled": false,
+                                "x1": 1,
+                                "y1": 0,
+                                "n1": 1,
+                                "x2": 0,
+                                "y2": 1,
+                                "n2": -1,
+                                "x3": -1,
+                                "y3": 0,
+                                "n3": 1,
+                                "x4": 0,
+                                "y4": -1,
+                                "n4": -1
+                            }
+                        }
+                    },
+                    "inversive": {
+                        "enabled": true,
+                        "itrans": []
+                    },
+                    "spherical": {
+                        "enabled": false
+                    },
+                    "euclidean": {
+                        "centerX": 0.1,
+                        "centerY": 0.2,
+                        "zoom": 1
+                    },
+                    "options": {
+                        "animation": true
+                    }
+                }
+            }
+        }
+    }
+}
