@@ -12,6 +12,7 @@ export {
     VisualizationOverlay,
     InversiveNavigator,
     makeSamplesArray,
+    appendThumbnails2,
 } from '../../../lib/symhublib/symhublib.js';
 
 export {
