@@ -22,6 +22,12 @@
      sides; the twisted 22222 group of the Orb preset set_14 is not discrete (an image of
      the base lies inside the original domain), so there the search only has to stop and
      report
+  7. the bent KLMN group of the symdraw preset par_s2223-4: the group survives the data
+     round trip of the worker (same folds, same automatic sides), the deadline ends a
+     slow search soon after it, startDirichletSearch without Worker searches in place,
+     and the preset's long words on deformed groups leave out what overflows instead
+     of throwing; the generator elements of such a domain take milliseconds (the
+     isometry classification recursed without end there)
 */
 
 import {
@@ -40,6 +46,11 @@ import {
   dirichletCell,
   sideArcPoint,
   selectDirichletSides,
+  Group_KLMN,
+  generatorElements,
+  groupToData,
+  groupFromData,
+  startDirichletSearch,
 } from '../../lib/grouplib/grouplib.js';
 import { ITransform, iPoint, iTransformU4, iGetBisectorU4, iDistanceU4, GroupUtils } from '../../lib/invlib/invlib.js';
 import { U4 } from '../../lib/invlib/U4.js';
@@ -281,6 +292,80 @@ console.log('6. *22222 and 22222');
   check(dgp && isStrictlyInside(dgp.getFundDomain(), [base2.v[0], base2.v[1]], 1e-9), '22222 twisted: the base is inside the preset\'s domain');
   const pcell = dirichletCell(dgp.getFundDomain());
   console.log(`   the preset's first ${presetWords.length} words: ${pcell.length} of ${dgp.getFundDomain().length} sides bound their cell`);
+}
+
+// ---- 7. the group as data (for the worker), the deadline, deformed words ------------
+
+console.log('7. the group as data, the deadline, the words of a deformed group');
+{
+  // the bent KLMN group of the symdraw preset par_s2223-4, with its base and words
+  const klmn = new Group_KLMN();
+  const params = { s: false, K: 3, L: 2, M: 2, N: 2, twist: 0.0169, aspect: 0.49, bend: 34, uhp: true };
+  klmn.setParamsMap(params);
+  const group = klmn.getGroup();
+  const base = dirichletBase({ baseX: 0.13563514348191294, baseY: 0.12021362958994072, baseW: 0.01 });
+
+  // the data round trip gives the same group: the same folds and the same automatic sides
+  const copy = groupFromData(JSON.parse(JSON.stringify(groupToData(group))));
+  check(copy.getGenNames().join('') === group.getGenNames().join(''), 'data: the same generator names');
+  let sameFolds = true;
+  for (let i = 0; i < 200; i++) {
+    const p = pnt([rnd() - 0.5, rnd() * 0.8]);
+    const a = group.toFundDomain({ pnt: p, maxIterations: 200 }), b = copy.toFundDomain({ pnt: p, maxIterations: 200 });
+    if (a.word !== b.word || a.inDomain !== b.inDomain) sameFolds = false;
+  }
+  check(sameFolds, 'data: 200 random points fold with the same words');
+  const r1 = selectDirichletSides(group, { base, depth: 2 });
+  const r2 = selectDirichletSides(copy, { base, depth: 2 });
+  check(r1.words.join(' ') === r2.words.join(' '), 'data: the same automatic sides');
+  console.log(`   ${r1.words.length} sides, longest word ${Math.max(...r1.words.map(w => w.length))}`);
+
+  // the deadline: a barely discrete bending (aspect 0.3, bend 30: about 3 s unlimited)
+  // answers soon after it with the sides found so far
+  klmn.setParamsMap({ ...params, twist: 0, aspect: 0.3, bend: 30 });
+  const slow = klmn.getGroup();
+  let t = Date.now();
+  const r3 = selectDirichletSides(slow, { base, depth: 2, deadline: Date.now() + 300 });
+  const ms = Date.now() - t;
+  console.log(`   deadline 300 ms: answered in ${ms} ms, ${r3.words.length} sides from ${r3.candidates} candidates, timed out: ${r3.timedOut}`);
+  check(r3.timedOut && ms < 1500, 'deadline: the search answers within 1.5 s of a 300 ms deadline');
+  t = Date.now();
+  const r4 = selectDirichletSides(slow, { base, depth: 2, deadline: Date.now() - 1 });
+  check(r4.timedOut && Date.now() - t < 1000, 'deadline: a passed deadline answers at once');
+
+  // startDirichletSearch without Worker (Node) searches in place and resolves
+  const s = startDirichletSearch(group, { base, depth: 2, minScale: 0.01, maxIterations: 200, timeLimit: 5 });
+  const r5 = await s.promise;
+  check(r5.words && r5.words.join(' ') === r1.words.join(' '), 'startDirichletSearch: in place without a worker, the same sides');
+
+  // the preset's long words on deformed groups: sides lost to overflow are left out,
+  // nothing throws (the factorization reflected an undefined image before)
+  const words = parseWords('bAcBcBcBcAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcA bAcBcBcbcbcaBacbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcacbcbcbcaB bAcBcBcBcAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcAbAcBcBcbcbcaB bAcBcBcBcAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcAbAcBcBcbcbcaBacbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcacbcbcbcaB bAcBcBcbcbcaB bAcBcBcBcAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcA bAcBcBcbcaB bAcBcbcbcaB bAcBcBcBcB acbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcaB bAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcA bAcBcBcBcBcB');
+  const dg = makeDirichletGroup(group, { base, words });
+  check(dg && dg.getFundDomain().length === 12, 'preset words: all 12 sides at the preset\'s parameters');
+  for (const change of [{ K: 6 }, { twist: 0.3 }, { bend: 30 }]) {
+    klmn.setParamsMap({ ...params, ...change });
+    let dgc = null, threw = null;
+    try { dgc = makeDirichletGroup(klmn.getGroup(), { base, words }); } catch (e) { threw = e.message; }
+    check(!threw, `preset words with ${JSON.stringify(change)}: no exception (${threw})`);
+    console.log(`   ${JSON.stringify(change)}: ${dgc ? dgc.getFundDomain().length : 0} sides kept`);
+  }
+
+  // the generators overlay on the domain left of those words after twist 0.3 and
+  // aspect 0.3: classifyIsometry squared a reversing pairing, found the square
+  // reversing again (rounding) and recursed with doubling reflection lists - a frame
+  // of 21 s in the page, or the memory exhausted (2026-10-29)
+  klmn.setParamsMap({ ...params, twist: 0.3, aspect: 0.3 });
+  const dgw = makeDirichletGroup(klmn.getGroup(), { base, words });
+  check(dgw, 'twist 0.3, aspect 0.3: a Dirichlet group from the remaining words');
+  if(dgw){
+    t = Date.now();
+    let threw = null;
+    try { generatorElements({ group: dgw }); } catch (e) { threw = e.message; }
+    const gms = Date.now() - t;
+    console.log(`   twist 0.3, aspect 0.3: ${dgw.getFundDomain().length} sides, generator elements in ${gms} ms`);
+    check(!threw && gms < 2000, `generator elements of the deformed domain within 2 s, no exception (${threw})`);
+  }
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nall passed');
