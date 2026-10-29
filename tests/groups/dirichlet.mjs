@@ -28,6 +28,11 @@
      and the preset's long words on deformed groups leave out what overflows instead
      of throwing; the generator elements of such a domain take milliseconds (the
      isometry classification recursed without end there)
+  8. the limit bisector (the base on the plane, 2026-10-29): the bisector of the points
+     at height w above the base and its image is exactly N(a) - T N(a) + w^2/2 (e_inf -
+     T e_inf) in H4 and tends to the side like w^2; the side is the Apollonius circle
+     |x - T(a)|^2 = |T'(a)| |x - a|^2, for the unbent KLMN group (upper half plane) the
+     hyperbolic bisector of a and T(a), for the wallpaper group o the euclidean one
 */
 
 import {
@@ -39,6 +44,7 @@ import {
   reduceWord,
   involutionLetters,
   dirichletBase,
+  dirichletImage,
   dirichletSide,
   makeDirichletGroup,
   dirichletImages,
@@ -52,7 +58,7 @@ import {
   groupFromData,
   startDirichletSearch,
 } from '../../lib/grouplib/grouplib.js';
-import { ITransform, iPoint, iTransformU4, iGetBisectorU4, iDistanceU4, GroupUtils } from '../../lib/invlib/invlib.js';
+import { ITransform, iPoint, iTransformU4, iTransformH4, iGetBisectorU4, iDistanceU4, U4toH4, GroupUtils } from '../../lib/invlib/invlib.js';
 import { U4 } from '../../lib/invlib/U4.js';
 import { SPLANE_SPHERE, SPLANE_PLANE } from '../../lib/invlib/ISplane.js';
 
@@ -140,7 +146,7 @@ console.log('1. cyclic group, the words of the preset Cyclic/set_7');
 const cyc = new Group_Cyclic();
 cyc.setParamsMap({ AbsLambda: 1.022, ArgLambda: 19.2, finiteFP: false });
 const cycGroup = cyc.getGroup();
-const base7 = dirichletBase({ baseX: 0.7160210667, baseY: -0.0054142308, baseW: 0.0001 });
+const base7 = dirichletBase({ baseX: 0.7160210667, baseY: -0.0054142308 });
 // the preset's words reversed (single letters, so unchanged)
 const words7 = parseWords('a aaaaaaaaa aaaaaaaaaa b bbbbbbbbb bbbbbbbbbb');
 const dg7 = makeDirichletGroup(cycGroup, { base: base7, words: words7 });
@@ -169,7 +175,7 @@ console.log('2. the Orb letter convention: old word == reversed word here');
   const g22 = new Group_22222();
   g22.setParamsMap({ R1: 0.2, R2: 0.2, R3: 1.1, A2: 47.15, A3: 0, A4: 0, T0: -0.394, T1: -0.011, uhp: true });
   const group = g22.getGroup();
-  const base = dirichletBase({ baseX: 0.0109922034, baseY: 0.8030285596, baseW: 0.01 });
+  const base = dirichletBase({ baseX: 0.0109922034, baseY: 0.8030285596 });
   const oldWords = parseWords('e d cd c fffffffffffa beffffffffffa ffffffffffacfffffffffffacfffffffffffa fffffffffffaeffffffffffacfffffffffffacfffffffffffa fffffffffffae de ebe a aebe b cebe');
   const names = group.getGenNames();
   const rtrans = group.getReverseTransforms();
@@ -178,8 +184,7 @@ console.log('2. the Orb letter convention: old word == reversed word here');
     // Orb: the letters name the pairing transforms t_i, applied in the order written
     let P = [];
     for(const ch of w) P = P.concat(rtrans[names.indexOf(ch)]);
-    const tdc = iTransformU4(GroupUtils.getInverseTransform(P), base);  // P^{-1}(base)
-    const oldSide = iGetBisectorU4(base, tdc);
+    const oldSide = dirichletImage(base, GroupUtils.getInverseTransform(P)).side;   // the side of P^{-1}(base)
     const here = dirichletSide(group, base, w.split('').reverse().join(''));
     ok = check(here && sameSplane(here.side, oldSide, 1e-7), `old word '${w.length > 20 ? w.slice(0, 20) + '…' : w}' == reversed word here`) && ok;
   }
@@ -232,7 +237,7 @@ console.log('5. wallpaper group o');
 {
   const wp = new Group_WP({ type: 'o', a: 0.5, b: 0.6, angle_b: 70 });
   const group = wp.getGroup();
-  const base = dirichletBase({ baseX: 0.03, baseY: 0.07, baseW: 0.01 });
+  const base = dirichletBase({ baseX: 0.03, baseY: 0.07 });
   const res = selectDirichletSides(group, { base, depth: 2 });
   console.log(`   oblique: ${res.words.length} sides from ${res.candidates} candidates: ${res.words.join(' ')}`);
   check(res.words.length === 6, 'oblique lattice: hexagon');
@@ -255,7 +260,7 @@ console.log('6. *22222 and 22222');
 {
   const s5 = new Group_s22222();
   const group = s5.getGroup();
-  const base = dirichletBase({ baseX: 0.1, baseY: 0.5, baseW: 0.01 });
+  const base = dirichletBase({ baseX: 0.1, baseY: 0.5 });
   const t0 = Date.now();
   const res = selectDirichletSides(group, { base, depth: 2 });
   console.log(`   *22222: ${res.words.length} sides from ${res.candidates} candidates in ${Date.now() - t0} ms: ${res.words.join(' ')}`);
@@ -266,7 +271,7 @@ console.log('6. *22222 and 22222');
   const g22 = new Group_22222();
   g22.setParamsMap({ R1: 0.2, R2: 0.2, R3: 1.1, A2: 47.15, A3: 0, A4: 0, T0: 0, T1: 0, uhp: true });
   const group2 = g22.getGroup();
-  const base2 = dirichletBase({ baseX: 0.0109922034, baseY: 0.8030285596, baseW: 0.01 });
+  const base2 = dirichletBase({ baseX: 0.0109922034, baseY: 0.8030285596 });
   const t1 = Date.now();
   const res2 = selectDirichletSides(group2, { base: base2, depth: 2, maxIterations: 1000 });
   console.log(`   22222 untwisted: ${res2.words.length} sides from ${res2.candidates} candidates in ${Date.now() - t1} ms: ${res2.words.join(' ')}`);
@@ -303,7 +308,7 @@ console.log('7. the group as data, the deadline, the words of a deformed group')
   const params = { s: false, K: 3, L: 2, M: 2, N: 2, twist: 0.0169, aspect: 0.49, bend: 34, uhp: true };
   klmn.setParamsMap(params);
   const group = klmn.getGroup();
-  const base = dirichletBase({ baseX: 0.13563514348191294, baseY: 0.12021362958994072, baseW: 0.01 });
+  const base = dirichletBase({ baseX: 0.13563514348191294, baseY: 0.12021362958994072 });
 
   // the data round trip gives the same group: the same folds and the same automatic sides
   const copy = groupFromData(JSON.parse(JSON.stringify(groupToData(group))));
@@ -366,6 +371,77 @@ console.log('7. the group as data, the deadline, the words of a deformed group')
     console.log(`   twist 0.3, aspect 0.3: ${dgw.getFundDomain().length} sides, generator elements in ${gms} ms`);
     check(!threw && gms < 2000, `generator elements of the deformed domain within 2 s, no exception (${threw})`);
   }
+}
+
+// ---- 8. the limit bisector --------------------------------------------------------------
+
+console.log('8. the limit bisector of the base on the plane');
+{
+  const mink = (p, q) => p[0]*q[0] + p[1]*q[1] + p[2]*q[2] + p[3]*q[3] - p[4]*q[4];
+  const unit = v => { const n = Math.sqrt(Math.abs(mink(v, v))); return v.map(x => x/n); };
+  const vdist = (u, v) => { const a = unit(u), b = unit(v); return Math.hypot(...a.map((x, i) => x - b[i])); };
+  const EINF = [0, 0, 0, 1, 1];
+  // points along the trace of a side on the plane
+  const tracePoints = side => {
+    const arc = side.type === SPLANE_SPHERE ? [0, 2*Math.PI] : [-1, 1];
+    return [0.1, 0.3, 0.55, 0.8].map(t => sideArcPoint(side, arc, t, 1)).filter(Boolean);
+  };
+  const klmn = new Group_KLMN();
+  klmn.setParamsMap({ s: false, K: 3, L: 2, M: 2, N: 2, twist: 0, aspect: 0.49, bend: 0, uhp: true });
+  const unbent = klmn.getGroup();
+  klmn.setParamsMap({ s: false, K: 3, L: 2, M: 2, N: 2, twist: 0.0169, aspect: 0.49, bend: 34, uhp: true });
+  const bent = klmn.getGroup();
+  const a = [0.13563514348191294, 0.12021362958994072];
+  const base = dirichletBase({ baseX: a[0], baseY: a[1] });
+  const words = ['a', 'b', 'c', 'B', 'ab', 'bc', 'acb', 'cca', 'abcA', 'aCbc'];
+  let pencil = 0, limit2 = 0, limit3 = 0, apol = 0, hyp = 0;
+  for (const [label, group] of [['unbent', unbent], ['bent', bent]]) {
+    for (const w of words) {
+      const T = group.word2trans(w);
+      const s = dirichletSide(group, base, w);
+      if (!check(s, `${label} '${w}': a side`)) continue;
+      check(iDistanceU4(s.side, base) < 0, `${label} '${w}': the base inside its side`);
+      // the old bisector of the points at height h above a and T(a): exactly the
+      // pencil N(a) - T N(a) + h^2/2 (e_inf - T e_inf), and h^2 away from the side
+      const at = h => { const p = iPoint([a[0], a[1], 0, h]); return U4toH4(iGetBisectorU4(p, iTransformU4(T, p))); };
+      const N = U4toH4(pnt(a));
+      const TN = iTransformH4(T, N), TE = iTransformH4(T, EINF);
+      const B = N.map((x, i) => x - TN[i] + (0.3*0.3/2)*(EINF[i] - TE[i]));
+      pencil = Math.max(pencil, vdist(B, at(0.3)));
+      const B0 = U4toH4(s.side);
+      limit2 = Math.max(limit2, vdist(B0, at(1e-2)));
+      limit3 = Math.max(limit3, vdist(B0, at(1e-3)));
+      // the Apollonius circle; for the unbent group the bisector of the upper half plane
+      const b = s.point.v;
+      for (const x of tracePoints(s.side)) {
+        const da = (x[0]-a[0])**2 + (x[1]-a[1])**2, db = (x[0]-b[0])**2 + (x[1]-b[1])**2;
+        apol = Math.max(apol, Math.abs(db - s.scale*da)/db);
+        if (label === 'unbent' && x[1] > 0) {
+          const ca = 1 + da/(2*x[1]*a[1]), cb = 1 + db/(2*x[1]*b[1]);
+          hyp = Math.max(hyp, Math.abs(ca - cb)/ca);
+        }
+      }
+    }
+  }
+  console.log(`   pencil at w = 0.3: ${pencil.toExponential(1)}; the old bisector at w = 1e-2: ${limit2.toExponential(1)}, at 1e-3: ${limit3.toExponential(1)}; Apollonius ${apol.toExponential(1)}, hyperbolic ${hyp.toExponential(1)}`);
+  check(pencil < 1e-9, 'the old bisector at w is N(a) - T N(a) + w^2/2 (e_inf - T e_inf)');
+  check(limit3 < 1e-3 && limit3 < limit2/50, 'the old bisector tends to the side like w^2');
+  check(apol < 1e-9, "the side is the Apollonius circle |x - T(a)|^2 = |T'(a)| |x - a|^2");
+  check(hyp < 1e-9, 'unbent KLMN: the side is the hyperbolic bisector of a and T(a)');
+
+  // the wallpaper group o: a plane, scale 1, the euclidean bisector
+  const wp = new Group_WP({ type: 'o', a: 0.5, b: 0.6, angle_b: 70 }).getGroup();
+  const wa = [0.03, 0.07];
+  const wbase = dirichletBase({ baseX: wa[0], baseY: wa[1] });
+  let eu = 0;
+  for (const w of ['a', 'c', 'ac', 'aC']) {
+    const s = dirichletSide(wp, wbase, w);
+    if (!check(s && s.side.type === SPLANE_PLANE && Math.abs(s.scale - 1) < 1e-12, `o '${w}': a plane, scale 1`)) continue;
+    const b = s.point.v;
+    for (const x of tracePoints(s.side)) eu = Math.max(eu, Math.abs(Math.hypot(x[0]-wa[0], x[1]-wa[1]) - Math.hypot(x[0]-b[0], x[1]-b[1])));
+  }
+  console.log(`   o: euclidean bisector to ${eu.toExponential(1)}`);
+  check(eu < 1e-12, 'o: the side is the euclidean bisector');
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nall passed');
