@@ -33,6 +33,9 @@
      T e_inf) in H4 and tends to the side like w^2; the side is the Apollonius circle
      |x - T(a)|^2 = |T'(a)| |x - a|^2, for the unbent KLMN group (upper half plane) the
      hyperbolic bisector of a and T(a), for the wallpaper group o the euclidean one
+  9. startDirichletSearch with a Worker (a stand-in speaking the worker's protocol):
+     two searches use one worker, loaded once; a worker that fails to load leaves the
+     search to the page (auto select never finished in the browser, 2026-10-29)
 */
 
 import {
@@ -442,6 +445,56 @@ console.log('8. the limit bisector of the base on the plane');
   }
   console.log(`   o: euclidean bisector to ${eu.toExponential(1)}`);
   check(eu < 1e-12, 'o: the side is the euclidean bisector');
+}
+
+// ---- 9. the search worker: kept between searches, the page when it fails ------------------
+
+console.log('9. startDirichletSearch with a worker');
+{
+  const wp = new Group_WP({ type: 'o', a: 0.5, b: 0.6, angle_b: 70 }).getGroup();
+  const base = dirichletBase({ baseX: 0.03, baseY: 0.07 });
+  const opt = { base, depth: 2, minScale: 0.01, maxIterations: 200, timeLimit: 5 };
+  const expected = selectDirichletSides(wp, opt).words.join(' ');
+  // a stand-in for DirichletWorker.js: 'ready' after loading, then answers each search
+  class GoodWorker {
+    constructor() { GoodWorker.made++; setTimeout(() => this.onmessage({ data: { type: 'ready' } }), 20); }
+    postMessage(m) {
+      setTimeout(() => {
+        const res = selectDirichletSides(groupFromData(m.group), { ...m.options, base: iPoint(m.base) });
+        this.onmessage({ data: { type: 'done', result: { words: res.words, candidates: res.candidates, unpaired: res.unpaired, nearIdentity: res.nearIdentity, timedOut: res.timedOut } } });
+      }, 0);
+    }
+    terminate() { GoodWorker.terminated++; }
+  }
+  GoodWorker.made = 0; GoodWorker.terminated = 0;
+  class FailingWorker {
+    constructor() { setTimeout(() => this.onerror({ message: 'simulated load failure' }), 20); }
+    postMessage() {}
+    terminate() {}
+  }
+  const saved = globalThis.Worker;
+  try {
+    globalThis.Worker = GoodWorker;
+    // a module instance of its own (the query), with its own kept worker
+    const S1 = await import('../../lib/grouplib/DirichletSearch.js?test=good');
+    const stages = [];
+    const a = await S1.startDirichletSearch(wp, { ...opt, onStage: s => stages.push(s) }).promise;
+    const b = await S1.startDirichletSearch(wp, opt).promise;
+    check(a.where === 'worker' && b.where === 'worker', `the searches ran in the worker (${a.where}, ${b.where})`);
+    check(a.words.join(' ') === expected && b.words.join(' ') === expected, 'the worker gives the sides of the search in place');
+    check(GoodWorker.made === 1 && GoodWorker.terminated === 0, `one worker for two searches (${GoodWorker.made} made, ${GoodWorker.terminated} terminated)`);
+    check(stages.join(' ') === 'loading search', `the stages of the first search: ${stages.join(' ')}`);
+
+    globalThis.Worker = FailingWorker;
+    const S2 = await import('../../lib/grouplib/DirichletSearch.js?test=failing');
+    const t = Date.now();
+    const c = await S2.startDirichletSearch(wp, opt).promise;
+    check(c.where === 'page' && c.words && c.words.join(' ') === expected && Date.now() - t < 2000,
+      `a worker that fails to load: the search runs in the page (${c.where}, ${Date.now() - t} ms)`);
+  } finally {
+    globalThis.Worker = saved;
+  }
+  console.log('   one worker for two searches; a failing worker leaves the search to the page');
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nall passed');
