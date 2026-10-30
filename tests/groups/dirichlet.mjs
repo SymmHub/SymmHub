@@ -36,6 +36,11 @@
   9. startDirichletSearch with a Worker (a stand-in speaking the worker's protocol):
      two searches use one worker, loaded once; a worker that fails to load leaves the
      search to the page (auto select never finished in the browser, 2026-10-29)
+  10. the words: the partner letter as the inverse (cyclic a~b, 22222 b~f c~e, KLMN's own
+      uppercase side names, oN's duplicated side, reflection groups), old uppercase
+      inverse letters read as partner letters, the compact notation (powers, repeated
+      blocks) expands back, keeps the element, and rejects a wrong notation; auto
+      select and the cell under a point give words without inverse letters
 */
 
 import {
@@ -60,6 +65,12 @@ import {
   groupToData,
   groupFromData,
   startDirichletSearch,
+  expandWord,
+  compactWord,
+  wordAlphabet,
+  inverseWord,
+  normalizeWord,
+  Group_ON,
 } from '../../lib/grouplib/grouplib.js';
 import { ITransform, iPoint, iTransformU4, iTransformH4, iGetBisectorU4, iDistanceU4, U4toH4, GroupUtils } from '../../lib/invlib/invlib.js';
 import { U4 } from '../../lib/invlib/U4.js';
@@ -162,7 +173,7 @@ if(dg7){
   // the pairing transform of the side of word w is the transform of the inverse word
   for(let i = 0; i < 6; i++){
     const w = dg7.dirichletWords[i];
-    const inv = cycGroup.word2trans(GroupUtils.getInverseWord(w));
+    const inv = cycGroup.word2trans(inverseWord(cycGroup, normalizeWord(cycGroup, w)));
     const p = pnt([0.3, 0.1]);
     const a = iTransformU4(dg7.getReverseTransforms()[i], p);
     const b = iTransformU4(inv, p);
@@ -495,6 +506,64 @@ console.log('9. startDirichletSearch with a worker');
     globalThis.Worker = saved;
   }
   console.log('   one worker for two searches; a failing worker leaves the search to the page');
+}
+
+// ---- 10. the words: partner letters and the compact notation -----------------------------
+
+console.log('10. the words');
+{
+  const act = (g, w) => iTransformU4(g.word2trans(w), pnt([0.123, 0.0456]));
+  // the alphabets
+  const g22 = new Group_22222().getGroup();
+  const alc = wordAlphabet(cycGroup), al22 = wordAlphabet(g22);
+  check(alc.inverse.a === 'b' && alc.inverse.b === 'a', 'cyclic: a and b are partners');
+  check(al22.inverse.a === 'a' && al22.inverse.b === 'f' && al22.inverse.c === 'e' && al22.inverse.d === 'd', '22222: a, d involutions, b~f, c~e');
+  const klmn = new Group_KLMN(); klmn.setParamsMap({ s: false });
+  const gk = klmn.getGroup(), alk = wordAlphabet(gk);
+  check(alk.names.join('') === 'abBACc' && alk.inverse.a === 'A' && alk.inverse.B === 'b' && alk.alias.c === 'C', `KLMN: its own uppercase side names, c the same half turn as C (${JSON.stringify(alk.inverse)})`);
+  const gon = new Group_ON().getGroup(), alo = wordAlphabet(gon);
+  check(alo.alias.b === 'a' && alo.inverse.c === 'd', `oN: the duplicated side b reads as a (${JSON.stringify(alo.alias)})`);
+  const gs5 = new Group_s22222().getGroup();
+  check(Object.values(wordAlphabet(gs5).inverse).every((v, i) => v === wordAlphabet(gs5).names[i]), '*22222: every letter its own inverse');
+
+  // old uppercase inverse letters read as the partner letters, same element
+  for (const [g, w, want] of [[cycGroup, 'BBBBBBBBB', 'a9'], [cycGroup, 'A', 'b'], [g22, 'FaFaFac', 'ba(ba)2c'], [g22, 'dBd', 'dfd'], [gs5, 'aB', 'ab']]) {
+    const plain = normalizeWord(g, w);
+    const c = compactWord(plain);
+    check(c === want || compactWord(normalizeWord(g, want)) === c, `'${w}' reads as '${c}', expected '${want}'`);
+    if (g !== gs5) check(samePoint(act(g, w), act(g, plain), 1e-9), `'${w}' and '${plain}' are the same element`);
+  }
+  check(normalizeWord(g22, 'ab') === 'ab' && normalizeWord(g22, 'bf') === '' && normalizeWord(g22, 'aa') === '', '22222: b f and a a cancel');
+  check(normalizeWord(gk, 'aA') === '' && normalizeWord(gk, 'cC') === '', 'KLMN: a A and c C cancel');
+  check(normalizeWord(g22, 'az') === null, 'a letter that is no side name does not read');
+
+  // the notation
+  for (const [w, plain] of [['f11', 'fffffffffff'], ['(af)3', 'afafaf'], ['a(f11ca)2', 'afffffffffffcafffffffffffca'], ['d(af)2(ce4g)2', 'dafafceeeegceeeeg'], ['((ab)2c)2', 'ababcababc'], ['abc', 'abc']]) {
+    check(expandWord(w) === plain, `expand '${w}'`);
+    check(expandWord(compactWord(plain)) === plain && compactWord(plain).length <= w.length, `compact '${plain}' -> '${compactWord(plain)}'`);
+  }
+  for (const w of ['(ab', 'ab)', '3a', 'a-b', '()2x']) check(expandWord(w) === null || w === '()2x', `'${w}' is a notation error`);
+  check(compactWord('ad'.repeat(33)) === '(ad)33', `(ad)33: '${compactWord('ad'.repeat(33))}'`);
+  check(compactWord('f'.repeat(10)) === 'f10', 'a run stays whole: f10');
+  // the long word of 22222-set_14 keeps its element in the compact notation
+  const g14 = new Group_22222();
+  g14.setParamsMap({ R1: 0.2, R2: 0.2, R3: 1.1, A2: 47.15, A3: 0, A4: 0, T0: -0.394, T1: -0.011, uhp: true });
+  const gg = g14.getGroup();
+  const long = 'af11caf11caf11caf11caf10eaf11';
+  const c = compactWord(expandWord(long));
+  check(samePoint(act(gg, expandWord(long)), act(gg, expandWord(c)), 1e-6), `'${long}' -> '${c}' keeps its element`);
+  const side = dirichletSide(gg, dirichletBase({ baseX: 0.011, baseY: 0.803 }), c);
+  check(side && side.word === expandWord(long), 'dirichletSide reads the compact word');
+
+  // auto select and the cell under a point: no inverse letters
+  const res = selectDirichletSides(g22, { base: dirichletBase({ baseX: 0.0109922034, baseY: 0.8030285596 }), depth: 2 });
+  check(res.words.every(w => /^[a-f0-9()]+$/.test(w)), `22222 auto select in side names: ${res.words.join(' ')}`);
+  let upper = 0;
+  for(let k = 0; k < 30; k++){
+    const s = dirichletCellAt(cycGroup, base7, [2*rnd() - 1, 2*rnd() - 1], 500);
+    if (s && /[A-Z]/.test(s.word)) upper++;
+  }
+  check(upper === 0, `cells under points: ${upper} words with uppercase letters`);
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nall passed');
