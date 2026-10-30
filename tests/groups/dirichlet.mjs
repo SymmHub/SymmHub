@@ -41,6 +41,10 @@
       inverse letters read as partner letters, the compact notation (powers, repeated
       blocks) expands back, keeps the element, and rejects a wrong notation; auto
       select and the cell under a point give words without inverse letters
+  11. the pairings shortened from long words keep the precision of the words: the bent
+      KLMN group of the symdraw preset par_s2223-11 (words of up to 161 letters, two half
+      turns lost their trace to 5e-5 in the H4 factorization, 2026-10-30) and odd words
+      of a reflection group (reversing pairings)
 */
 
 import {
@@ -72,7 +76,7 @@ import {
   normalizeWord,
   Group_ON,
 } from '../../lib/grouplib/grouplib.js';
-import { ITransform, iPoint, iTransformU4, iTransformH4, iGetBisectorU4, iDistanceU4, U4toH4, GroupUtils } from '../../lib/invlib/invlib.js';
+import { ITransform, iPoint, iTransformU4, iTransformH4, iGetBisectorU4, iDistanceU4, U4toH4, GroupUtils, mobiusDistance } from '../../lib/invlib/invlib.js';
 import { U4 } from '../../lib/invlib/U4.js';
 import { SPLANE_SPHERE, SPLANE_PLANE } from '../../lib/invlib/ISplane.js';
 
@@ -564,6 +568,34 @@ console.log('10. the words');
     if (s && /[A-Z]/.test(s.word)) upper++;
   }
   check(upper === 0, `cells under points: ${upper} words with uppercase letters`);
+}
+
+// ---- 11. the shortened pairings keep the precision of the words ---------------------------
+
+console.log('11. the shortened pairings');
+{
+  // each word's pairing, the inverse of its transform, is one of the Dirichlet group's
+  // generators up to the precision of the matrices (the group lists a side without
+  // a partner side by the word itself)
+  const checkShort = (group, base, words, name) => {
+    const dg = makeDirichletGroup(group, { base, words });
+    if (!check(dg && dg.dirichletWords.length === words.length, `${name}: every word gives a side`)) return;
+    const gens = dg.getTransforms();
+    let worst = 0, longest = 0;
+    for (const w of dg.dirichletWords) {
+      const tr = group.word2trans(w), inv = GroupUtils.getInverseTransform(tr);
+      longest = Math.max(longest, inv.length);
+      worst = Math.max(worst, Math.min(...gens.map(g => Math.min(mobiusDistance(g, inv), mobiusDistance(g, tr)))));
+    }
+    check(gens.every(g => g.length <= 5), `${name}: at most five reflections per pairing`);
+    check(worst < 1e-9, `${name}: the pairings of words of up to ${longest} reflections within ${worst.toExponential(1)} of the words`);
+  };
+  const klmn = new Group_KLMN();
+  klmn.setParamsMap({ s: false, K: 3, L: 2, M: 2, N: 2, twist: 0.0362, aspect: 0.49, bend: 34.68, uhp: true });
+  checkShort(klmn.getGroup(), dirichletBase({ baseX: 0.1292231066542999, baseY: 0.11946168615193525 }),
+    parseWords('C(BC)7A C(BC)7AbACBCa(BC)9AbC CBa(Cb)9ACbCaBaC(bC)7 bACBCa(BC)9AbC CBa(Cb)9ACbCaB aC(bC)11aB2AbACBCa(BC)9A bC CB (CBa(Cb)9ACbCaB)3aC(bC)11aB2AbACBCa(BC)9A (CBa(Cb)9ACbCaB)4aC(bC)11aB2AbACBCa(BC)9A C(BC)6AbAC(BC)11A C(BC)7AbAC(BC)11A'),
+    'par_s2223-11');
+  checkShort(new Group_s22222().getGroup(), dirichletBase({ baseX: 0.1, baseY: 0.5 }), ['abcdeabcd', '(ab)4c', '(bc)5d'], '*22222 odd words');
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nall passed');
