@@ -51,6 +51,13 @@
       points of the empty triangle of its view folded into a sliver. Auto select adds
       f and b, no point of the cell's arcs lies beyond an image of a short word, and the
       triangle folds into the domain
+  13. the domain of the group, not of a subgroup: the bent twisted 22222 group of the
+      symdraw samples par-22222-problem1 .. 3 (2026-10-31; its hexagon's sides S2 and S2a
+      cross, so its folds miss the images near these bases). Auto select gave the
+      domains of subgroups at the bases of problem2 and 3 (6 and 2 sides): no generator
+      folds back to the base, images of problem1's words lie inside. Now every generator
+      folds back, no such image is inside, seeds give the same sides, and problem1's
+      relation words no longer count as images at the base
 */
 
 import {
@@ -110,6 +117,11 @@ function sameSplane(a, b, eps = 1e-6){
     return same || opp;
   }
   return false;
+}
+
+// two images of the base (dirichletSide) of one element: the same point and scale
+function sameImage(a, b, eps = 1e-6){
+  return Math.abs(Math.log(a.scale / b.scale)) < eps && Math.hypot(a.point.v[0] - b.point.v[0], a.point.v[1] - b.point.v[1]) < eps * a.scale;
 }
 
 function samePoint(p, q, eps = 1e-7){
@@ -635,11 +647,69 @@ console.log('12. no slivers');
   check(nOld > 0 && pOld && sigDist(fside, pOld) > 0, `the old sides: ${nOld} arc points beyond an image, the triangle folds beyond f`);
   const res = selectDirichletSides(group, { base, depth: 2, minScale: 0.001, maxIterations: 400 });
   const nNew = beyond(res.words), pNew = foldTriangle(res.words);
-  check(old.every(w => res.words.includes(w)) && res.words.includes('f') && res.words.includes('b') && res.words.length === old.length + 2,
+  // the same elements, perhaps by shorter words (abab8a is b7a: ab is a half turn)
+  const hasSide = w => res.sides.some(s => sameImage(s, dirichletSide(group, base, w)));
+  check(old.every(hasSide) && hasSide('f') && hasSide('b') && res.words.length === old.length + 2,
     `auto select keeps the 14 sides and adds f and b (${res.words.join(' ')})`);
   check(res.unpaired === 0 && nNew === 0, `no arc point beyond an image (${nNew}), ${res.unpaired} unpaired`);
   check(pNew && images.every(im => sigDist(im.side, pNew) <= 1e-9), `the triangle folds into the domain (${pNew && pNew.map(x => x.toFixed(4))})`);
   console.log(`   ${res.words.length} sides from ${res.candidates} candidates; the old sides left ${nOld} arc points beyond an image`);
+}
+
+// ---- 13. the domain of the group, not of a subgroup --------------------------------------
+
+console.log('13. not a subgroup\'s domain');
+{
+  const g22 = new Group_22222();
+  g22.setParamsMap({ R1: 0.2, R2: 0.2, R3: 0.2, A2: 48.6, A3: 0, A4: 0, T0: 0.0017, T1: 0.02, uhp: true });
+  const group = g22.getGroup();
+  const t0 = Date.now();
+  // the samples par-22222-problem1 .. 3 (2026-10-31): one group, three bases, the words
+  // auto select gave for each
+  const base1 = dirichletBase({ baseX: 0.3145057598279523, baseY: 1.6222983665393242 });
+  const words1 = parseWords('df7dbab8d df8afdb7d df8afdfadbab8d df8a(fdfa)2b6d df8afdfab6d df8a(fdfa)3b6d df8afdebabdbab8d df8afdfafcdbab8d df8afdfaebabdbab8d df8afdfafdebabdbab8d df8afdfadbabadf8dbab8d df8afdf(ab7d)2 df8afdb8dab7d df7adf8dbab8d');
+  const cases = [
+    { name: 'problem2', base: dirichletBase({ baseX: 0.3630940799316282, baseY: 1.627948172204975 }),
+      old: parseWords('df7dbab8d df8afdb7d df8afdb7dadbab8d df8afdadf7dbab8d df7adf7dbab8d df8afdb7dab7d'), sides: 15 },
+    { name: 'problem3', base: dirichletBase({ baseX: 0.5297634763821106, baseY: 1.8228664676699224 }),
+      old: parseWords('df7adb7d df7dab7d'), sides: 14 },
+  ];
+  // the generators whose image of the base the domain's own fold does not bring back to the base
+  const astray = (base, words) => {
+    const dg = makeDirichletGroup(group, { base, words });
+    return group.getGenNames().filter(x => {
+      const im = dirichletSide(group, base, x).point;
+      const res = dg.toFundDomain({ pnt: pnt([im.v[0], im.v[1]]), maxIterations: 400 });
+      return !(res.inDomain && Math.hypot(res.pnt.v[0] - base.v[0], res.pnt.v[1] - base.v[1]) < 1e-6);
+    });
+  };
+  // the images of the base under the words that lie inside the cell of the sides
+  const imagesInside = (base, sideWords, words) => {
+    const sides = sideWords.map(w => dirichletSide(group, base, w).side);
+    return words.filter(w => { const p = dirichletSide(group, base, w).point; return isStrictlyInside(sides, [p.v[0], p.v[1]], 1e-9); });
+  };
+  check(astray(base1, words1).length === 0, 'problem1: every generator folds back to the base');
+  const res1 = selectDirichletSides(group, { base: base1, depth: 2, minScale: 0.01, maxIterations: 200 });
+  check(res1.nearIdentity === 0 && res1.ungenerated === 0 && res1.unpaired === 0 && res1.words.length === 14,
+    `problem1: 14 sides (${res1.words.length}), no image at the base (${res1.nearIdentity}: the relation words left 2e-12 by their rounding counted)`);
+  for (const c of cases) {
+    // the old sides bound the domain of a subgroup: no generator folds back, and images of
+    // the base under problem1's words lie inside
+    const oldAstray = astray(c.base, c.old), oldInside = imagesInside(c.base, c.old, words1);
+    check(oldAstray.length === 6 && oldInside.length > 0, `${c.name}: the old ${c.old.length} sides: ${oldAstray.length} generators astray, ${oldInside.length} images inside`);
+    const res = selectDirichletSides(group, { base: c.base, depth: 2, minScale: 0.01, maxIterations: 200 });
+    check(res.unpaired === 0 && res.ungenerated === 0 && res.nearIdentity === 0 && !res.timedOut && res.words.length === c.sides,
+      `${c.name}: auto select gives ${res.words.length} sides (${c.sides}), ${res.unpaired} unpaired, ${res.ungenerated} generators astray`);
+    check(astray(c.base, res.words).length === 0, `${c.name}: every generator folds back into the base by the new domain`);
+    check(imagesInside(c.base, res.words, words1.concat(c.old)).length === 0, `${c.name}: no image of the old words inside the new domain`);
+    // started from problem1's sides (the base moved from there), the same sides, sooner
+    const seeded = selectDirichletSides(group, { base: c.base, depth: 2, minScale: 0.01, maxIterations: 200, seeds: words1 });
+    const same = seeded.sides.length === res.sides.length && seeded.sides.every(s => res.sides.some(t => sameImage(s, t, 1e-4)));
+    check(same, `${c.name}: seeded with problem1's words, the same sides (${seeded.words.length})`);
+    console.log(`   ${c.name}: ${res.words.length} sides from ${res.candidates} candidates, seeded ${seeded.candidates}`);
+  }
+  check(compactWord('') === '', 'the compact notation of the empty word');
+  console.log(`   ${Date.now() - t0} ms`);
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nall passed');
