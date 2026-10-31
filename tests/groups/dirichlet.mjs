@@ -45,6 +45,12 @@
       KLMN group of the symdraw preset par_s2223-11 (words of up to 161 letters, two half
       turns lost their trace to 5e-5 in the H4 factorization, 2026-10-30) and odd words
       of a reflection group (reversing pairings)
+  12. the automatic sides leave no sliver: the twisted 22222 group of the symdraw sample
+      par_22222-6 (2026-10-30), where the 14 sides that bound the cell of all candidates
+      bound three slivers besides (cut off by the bisector of f, which bounds no arc);
+      points of the empty triangle of its view folded into a sliver. Auto select adds
+      f and b, no point of the cell's arcs lies beyond an image of a short word, and the
+      triangle folds into the domain
 */
 
 import {
@@ -596,6 +602,44 @@ console.log('11. the shortened pairings');
     parseWords('C(BC)7A C(BC)7AbACBCa(BC)9AbC CBa(Cb)9ACbCaBaC(bC)7 bACBCa(BC)9AbC CBa(Cb)9ACbCaB aC(bC)11aB2AbACBCa(BC)9A bC CB (CBa(Cb)9ACbCaB)3aC(bC)11aB2AbACBCa(BC)9A (CBa(Cb)9ACbCaB)4aC(bC)11aB2AbACBCa(BC)9A C(BC)6AbAC(BC)11A C(BC)7AbAC(BC)11A'),
     'par_s2223-11');
   checkShort(new Group_s22222().getGroup(), dirichletBase({ baseX: 0.1, baseY: 0.5 }), ['abcdeabcd', '(ab)4c', '(bc)5d'], '*22222 odd words');
+}
+
+// ---- 12. the automatic sides leave no sliver ------------------------------------------
+
+console.log('12. no slivers');
+{
+  const g22 = new Group_22222();
+  g22.setParamsMap({ R1: 0.2, R2: 0.2, R3: 0.2, A2: 48.6, A3: 0, A4: 0, T0: 0.0017, T1: 0.02, uhp: true });
+  const group = g22.getGroup();
+  const base = dirichletBase({ baseX: 0.03995731946678962, baseY: 0.08453654590523309 });
+  const images = dirichletImages(group, { base, depth: 4, minScale: 1e-3, maxCount: 20000 });
+  // the points along the free arcs of the cell of the words that lie beyond an image's bisector
+  const beyond = words => {
+    const sides = words.map(w => dirichletSide(group, base, w).side);
+    let n = 0;
+    for (const e of dirichletCell(sides)) for (const arc of e.arcs) for (const t of [0.25, 0.5, 0.75]) {
+      const xy = sideArcPoint(sides[e.index], arc, t);
+      if (images.some(im => sigDist(im.side, xy) > 1e-9)) n++;
+    }
+    return n;
+  };
+  // the folded point of the triangle lies beyond f's bisector in a sliver, or in the domain
+  const fside = dirichletSide(group, base, 'f').side;
+  const foldTriangle = words => {
+    const dg = makeDirichletGroup(group, { base, words });
+    const res = dg.toFundDomain({ pnt: pnt([-3.9, -1.28]), maxIterations: 40 });
+    return res.inDomain ? [res.pnt.v[0], res.pnt.v[1]] : null;
+  };
+  const old = parseWords('abab8a abda adfa af7adfa abdab7a abab7a af7adab7a abea abdbea abdfa ab ab2 abdafa abadfa');
+  const nOld = beyond(old), pOld = foldTriangle(old);
+  check(nOld > 0 && pOld && sigDist(fside, pOld) > 0, `the old sides: ${nOld} arc points beyond an image, the triangle folds beyond f`);
+  const res = selectDirichletSides(group, { base, depth: 2, minScale: 0.001, maxIterations: 400 });
+  const nNew = beyond(res.words), pNew = foldTriangle(res.words);
+  check(old.every(w => res.words.includes(w)) && res.words.includes('f') && res.words.includes('b') && res.words.length === old.length + 2,
+    `auto select keeps the 14 sides and adds f and b (${res.words.join(' ')})`);
+  check(res.unpaired === 0 && nNew === 0, `no arc point beyond an image (${nNew}), ${res.unpaired} unpaired`);
+  check(pNew && images.every(im => sigDist(im.side, pNew) <= 1e-9), `the triangle folds into the domain (${pNew && pNew.map(x => x.toFixed(4))})`);
+  console.log(`   ${res.words.length} sides from ${res.candidates} candidates; the old sides left ${nOld} arc points beyond an image`);
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nall passed');
