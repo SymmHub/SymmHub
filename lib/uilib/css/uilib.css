@@ -469,6 +469,11 @@ input.imgbutton {
     border: 1px solid transparent !important;
 }
 
+input.imgbutton:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
 input.imgbutton.pressed {
     background-color: #bae6fd !important;
     border-color: #0284c7 !important;
