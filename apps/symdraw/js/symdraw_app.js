@@ -58,6 +58,9 @@ function startSymdraw(opt = {}) {
         samples:           makeSamplesArray(opt.presets || '', opt.presetsFolder || ''),
         docFolderId:       'symdraw_doc_folder',
         params:            (hash.preset || hash.params) ? undefined : START_PARAMS,
+        // the drawing tools in a palette, their settings in a property bar;
+        // of the renderer's own tools only pan/zoom and the pattern box
+        toolPalette:       { tools: ['move', 'patternTransform'], startTool: 'pattern.select' },
     });
 
     app.run();
