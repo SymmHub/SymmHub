@@ -101,6 +101,11 @@
   color: #0078d4;
 }
 
+/* a window whose height fits its content: the grip sets the width */
+.drag-grip--width {
+  cursor: ew-resize;
+}
+
 /* Remove DatGUI panel outer border, shadow, and rounded corners when hosted inside internalWindow */
 .interior-style #rightGUI,
 .interior-style #configGUI,
