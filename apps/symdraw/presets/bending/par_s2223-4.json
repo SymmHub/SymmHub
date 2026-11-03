@@ -33,6 +33,7 @@
                         "filled": true,
                         "fill": "#3373e6",
                         "fillOpacity": 1,
+                        "fillRule": "nonzero",
                         "cap": "round",
                         "join": "round",
                         "colorClass": -1,
@@ -508,8 +509,7 @@
                 "enabled": true,
                 "baseX": 0.13563514348191294,
                 "baseY": 0.12021362958994072,
-                "baseW": 0.01,
-                "words": "bAcBcBcBcAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcA bAcBcBcbcbcaBacbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcacbcbcbcaB bAcBcBcBcAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcAbAcBcBcbcbcaB bAcBcBcBcAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcAbAcBcBcbcbcaBacbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcacbcbcbcaB bAcBcBcbcbcaB bAcBcBcBcAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcA bAcBcBcbcaB bAcBcbcbcaB bAcBcBcBcB acbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcaB bAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcA bAcBcBcBcBcB",
+                "words": "aC(bC)16aCbCbCBCAC(BC)15A bACBCB2CAC(BC)15A aC(bC)15aCb2CbCaB bAC(BC)3AC(BC)15A CAC(BC)3AC(BC)15A bACBCBCbCaB bACBCbCbCaB aC(bC)15aCb2CbCaBaC(bC)15aC(bC)3aC CAC(BC)3AC(BC)15AbACBCB2CAC(BC)15A bC CB aC(bC)15a(BC)13A aC(bC)16a(BC)13A",
                 "searchTime": 10,
                 "depth": 2,
                 "minScale": 0.01,
@@ -528,6 +528,7 @@
             "transform": {
                 "className": "InversiveNavigator_v1",
                 "params": {
+                    "mode": "euclidean",
                     "projection": {
                         "className": "ProjectionTransform",
                         "params": {
@@ -614,10 +615,8 @@
                     },
                     "euclidean": {
                         "centerX": 0.129216953446503,
-                        "centerY": 0.18605054779807467,
-                        "zoom": [
-                            3.5793223343470757
-                        ]
+                        "centerY": 0.3404038857923634,
+                        "zoom": 3.5793223343470757
                     },
                     "options": {
                         "animation": true
