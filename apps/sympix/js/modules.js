@@ -89,4 +89,5 @@ export {
 
 export {
     SympixLayerFactory,
+    SympixColorLayerFactory,
 } from './SympixLayerFactory.js';
