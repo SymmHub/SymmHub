@@ -58,6 +58,22 @@
       folds back to the base, images of problem1's words lie inside. Now every generator
       folds back, no such image is inside, seeds give the same sides, and problem1's
       relation words no longer count as images at the base
+  14. the colour permutations of the sides (sidePermutations, 2026-11-03): a fold as the
+      shaders do it, composing the permutation of each side it crosses, on the Dirichlet
+      domains of the wallpaper group 632, the group 237 with the seven colours of a
+      symdraw preset, the hyperbolic KLMN group (side names a b B A C c) and the bent
+      22222 group, with coset tables of their subgroups, by cosets and by orbits: a
+      point and its image under a generator of the group fold to one point with the
+      permutations that generator relates, the permutation of a word is the one of its
+      transform, and the group's words read in the old letters are the same transforms
+      with the same permutations; the document's permutations on the new sides, or the
+      inverses of the right ones, do not relate
+  15. the letters of a word are the names of the sides (wordToPerm with the group's
+      names, 2026-11-03): every word of up to 3 letters of the groups of section 14 that
+      fold, a point of the group's domain and its image: the permutation of the word is
+      the one the fold accumulates. KLMN's sides are a b B A C c, so letters read by
+      their char code, as wordToPerm did before, take its c and C for the third side and
+      do not agree, while they do for the groups named a b c ...
 */
 
 import {
@@ -72,12 +88,20 @@ import {
   dirichletImage,
   dirichletSide,
   makeDirichletGroup,
+  dirichletSourceWord,
   dirichletImages,
   dirichletCellAt,
   dirichletCell,
   sideArcPoint,
   selectDirichletSides,
   Group_KLMN,
+  Group_KLM,
+  groupPresentation,
+  composePerms,
+  invertPerm,
+  wordToPerm,
+  sidePermutations,
+  strToPermutations,
   generatorElements,
   groupToData,
   groupFromData,
@@ -91,6 +115,7 @@ import {
 } from '../../lib/grouplib/grouplib.js';
 import { ITransform, iPoint, iTransformU4, iTransformH4, iGetBisectorU4, iDistanceU4, U4toH4, GroupUtils, mobiusDistance } from '../../lib/invlib/invlib.js';
 import { U4 } from '../../lib/invlib/U4.js';
+import { subgroupsData } from '../../lib/sublib/src/sublib.js';
 import { SPLANE_SPHERE, SPLANE_PLANE } from '../../lib/invlib/ISplane.js';
 
 let failures = 0;
@@ -710,6 +735,194 @@ console.log('13. not a subgroup\'s domain');
   }
   check(compactWord('') === '', 'the compact notation of the empty word');
   console.log(`   ${Date.now() - t0} ms`);
+}
+
+console.log('14. the colour permutations of the sides');
+{
+  const t0 = Date.now();
+  const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+  // a fold as the shaders do it (permutations24.glsl.mjs): across the first side the
+  // point lies beyond, composing that side's permutation
+  const fold = (group, perms, xy, useOrbit) => {
+    const fd = group.getFundDomain(), rev = group.getReverseITransforms();
+    let p = iPoint([xy[0], xy[1], 0, 0]);
+    let perm = perms[0].map((_, i) => i);
+    for (let n = 0; n < 3000; n++) {
+      const g = fd.findIndex(s => iDistanceU4(s, p) > 1e-9);
+      if (g < 0) return { xy: [p.v[0], p.v[1]], perm };
+      p = rev[g].transform(p);
+      perm = useOrbit ? composePerms(perms[g], perm) : composePerms(perm, perms[g]);
+    }
+    return null;
+  };
+  const imageOf = (trans, xy) => {
+    const v = new ITransform(trans.slice()).transform(iPoint([xy[0], xy[1], 0, 0])).v;
+    return [v[0], v[1]];
+  };
+  // a point and its image under a side of the source group fold to one point (two near
+  // a side may not: left out) and the image's first step is back across that side.
+  // How many points agree with that, and how many do not
+  const relate = (group, perms, source, sourcePerms, useOrbit, points) => {
+    let good = 0, bad = 0;
+    for (const xy of points) {
+      const a = fold(group, perms, xy, useOrbit);
+      if (!a) continue;
+      source.getTransforms().forEach((t, k) => {
+        const b = fold(group, perms, imageOf(t, xy), useOrbit);
+        if (!b || Math.hypot(a.xy[0] - b.xy[0], a.xy[1] - b.xy[1]) > 1e-6) return;
+        const want = useOrbit ? composePerms(a.perm, sourcePerms[k]) : composePerms(sourcePerms[k], a.perm);
+        if (same(want, b.perm)) good++; else bad++;
+      });
+    }
+    return { good, bad };
+  };
+  // points around the base, on a sunflower
+  const pointsAround = (base, r, n) => {
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const a = 2.399963*i, q = r*Math.sqrt((i + 0.5)/n);
+      out.push([base.v[0] + q*Math.cos(a), base.v[1] + q*Math.sin(a)]);
+    }
+    return out;
+  };
+  // the coset tables of subgroups of a presentation, as permutations of the sides: a
+  // side that is no generator is the inverse of its partner (KLMN's C, the half turn c)
+  const tablesOf = (group, gens, relators, maxIndex, count = 3) => {
+    const { inverse } = wordAlphabet(group);
+    const list = gens.split(' ');
+    return subgroupsData({ name: 'test', gens, relators, maxIndex, generators: 'none' }).subgroups
+      .filter(t => t.index > 2).slice(-count).map(t => {
+        const perms = strToPermutations(t.invcos);
+        return group.getGenNames().map(x => {
+          const k = list.indexOf(x);
+          if (k >= 0) return perms[k];
+          const partner = list.indexOf(inverse[x]);
+          return invertPerm(perms[partner >= 0 ? partner : list.indexOf(x.toLowerCase())]);
+        });
+      });
+  };
+
+  const wp = new Group_WP({ type: '632', a: 0.5 });
+  const g632 = wp.getGroup();
+  const pres632 = groupPresentation(g632);
+  // Group_KLM logs as it builds its group
+  const log = console.log;
+  console.log = () => {};
+  const klm = new Group_KLM(); klm.setParamsMap({ s: false, K: 2, L: 3, M: 7, hasR: false });
+  const g237 = klm.getGroup();
+  console.log = log;
+  const klmn = new Group_KLMN(); klmn.setParamsMap({ s: false });
+  // with M = 2 the sides C and c are one half turn, with M = 3 inverses of order 3
+  const klmn3 = new Group_KLMN(); klmn3.setParamsMap({ s: false, K: 3, L: 2, M: 3, N: 2 });
+  const g22 = new Group_22222();
+  g22.setParamsMap({ R1: 0.2, R2: 0.2, R3: 0.2, A2: 48.6, A3: 0, A4: 0, T0: 0.0017, T1: 0.02, uhp: true });
+  const cases = [
+    { name: '632', group: g632, base: dirichletBase({ baseX: 0.11, baseY: 0.043 }), r: 0.4, sourceFolds: true,
+      tables: tablesOf(g632, pres632.gens, pres632.relators, 6) },
+    // the 7 colours of the symdraw preset symdraw-237-seven-colors-2
+    { name: '237', group: g237, base: dirichletBase({ baseX: 0.07, baseY: 0.11 }), r: 0.2, sourceFolds: true,
+      tables: [strToPermutations('abdcegf cabfdeg abdcegf bcaefdg')] },
+    { name: 'KLMN', group: klmn.getGroup(), base: dirichletBase({ baseX: 0.13, baseY: 0.77 }), r: 0.2, sourceFolds: true,
+      tables: tablesOf(klmn.getGroup(), 'a b c', 'b^3, c^2, (a*c)^2, (a*B)^2', 5) },
+    { name: 'KLMN M3', group: klmn3.getGroup(), base: dirichletBase({ baseX: 0.05, baseY: 0.6 }), r: 0.1, sourceFolds: true,
+      tables: tablesOf(klmn3.getGroup(), 'a b c', 'b^3, c^3, (a*B)^2, (a*C)^2', 6) },
+    // its hexagon is no domain of the group
+    { name: 'bent 22222', group: g22.getGroup(), base: dirichletBase({ baseX: 0.3145057598279523, baseY: 1.6222983665393242 }), r: 0.25, sourceFolds: false,
+      tables: tablesOf(g22.getGroup(), 'a b c d', 'a^2, d^2, (a*b)^2, (b*C)^2, (c*d)^2', 5) },
+  ];
+  for (const c of cases) {
+    const { group, base } = c;
+    const res = selectDirichletSides(group, { base, depth: 2, minScale: 0.01, maxIterations: 200 });
+    const dg = makeDirichletGroup(group, { base, words: res.sides.map(s => s.word) });
+    const longest = Math.max(...dg.dirichletWords.map(w => w.length));
+    check(res.unpaired === 0 && res.ungenerated === 0, `${c.name}: a domain of the group, ${res.words.length} sides`);
+    check(c.tables.length > 0, `${c.name}: subgroups to colour by`);
+    console.log(`   ${c.name}: ${res.words.length} sides, words of up to ${longest} letters, ${c.tables.length} tables of ${c.tables.map(t => t[0].length).join(' ')} colours`);
+    const points = pointsAround(base, c.r, 40);
+    const letters = dg.getGenNames().concat(dg.getGenNames().map(x => x.toUpperCase()));
+    let wrong = 0, wrongInverse = 0;
+    for (const perms of c.tables) {
+      check(perms.length === group.getFundDomain().length, `${c.name}: one permutation per side`);
+      check(sidePermutations(group, perms, false) === perms, `${c.name}: a group of its own keeps the permutations`);
+      for (const useOrbit of [false, true]) {
+        const label = `${c.name} ${perms[0].length} colours ${useOrbit ? 'by orbits' : 'by cosets'}`;
+        if (c.sourceFolds) {
+          const own = relate(group, perms, group, perms, useOrbit, points);
+          check(own.good > 40 && own.bad === 0, `${label}: the group's own domain: ${own.good} agree, ${own.bad} not`);
+        }
+        const mapped = sidePermutations(dg, perms, useOrbit);
+        const inv = mapped.map(invertPerm);
+        check(mapped.length === dg.getFundDomain().length, `${label}: one permutation per new side`);
+        const r = relate(dg, mapped, group, perms, useOrbit, points);
+        check(r.good > 40 && r.bad === 0, `${label}: ${r.good} agree, ${r.bad} not`);
+        // the permutation of a word is the one of its transform, read in either group's letters
+        for (let i = 0; i < 12; i++) {
+          let word = '';
+          for (let k = 0; k < 1 + i % 4; k++) word += letters[(7*i + 11*k + i*k) % letters.length];
+          const image = imageOf(dg.word2trans(word), [base.v[0], base.v[1]]);
+          const end = fold(dg, mapped, image, useOrbit);
+          const perm = wordToPerm(word, mapped, inv, useOrbit, dg.getGenNames());
+          if (end) check(same(end.perm, invertPerm(perm)), `${label}: the permutation of the word ${word}`);
+          const src = dirichletSourceWord(dg, word);
+          const back = imageOf(group.word2trans(src), [base.v[0], base.v[1]]);
+          check(same(perm, wordToPerm(src, perms, perms.map(invertPerm), useOrbit, group.getGenNames())), `${label}: the word ${word} in the old letters: the same permutation`);
+          check(Math.hypot(image[0] - back[0], image[1] - back[1]) < 1e-5*(1 + Math.hypot(image[0], image[1])), `${label}: the word ${word} in the old letters: the same transform`);
+        }
+        // the permutations as they were, on the new sides, and the inverses of the right ones
+        wrong += relate(dg, dg.getGenNames().map((_, k) => perms[k % perms.length]), group, perms, useOrbit, points).bad;
+        wrongInverse += relate(dg, inv, group, perms, useOrbit, points).bad;
+      }
+    }
+    check(wrong > 0, `${c.name}: the permutations as they were do not colour the new sides`);
+    check(wrongInverse > 0, `${c.name}: nor do the inverses of the right ones`);
+    const copy = dg.clone();
+    check(same(sidePermutations(copy, c.tables[0], false).flat(), sidePermutations(dg, c.tables[0], false).flat()), `${c.name}: a clone keeps the words of its sides`);
+  }
+  console.log(`   ${Date.now() - t0} ms`);
+
+  console.log('15. the letters of a word are the names of the sides');
+  const t1 = Date.now();
+  // a point well inside a group's own domain
+  const insidePoint = group => {
+    for (let i = 0; i < 4000; i++) {
+      const a = 2.399963*i, q = 1.5*Math.sqrt((i + 0.5)/4000);
+      const xy = [q*Math.cos(a), q*Math.sin(a)];
+      const p = iPoint([xy[0], xy[1], 0, 0]);
+      if (group.getFundDomain().every(s => iDistanceU4(s, p) < -0.02)) return xy;
+    }
+    return null;
+  };
+  for (const c of cases.filter(x => x.sourceFolds)) {
+    const { group } = c;
+    const names = group.getGenNames();
+    const point = insidePoint(group);
+    check(!!point, `${c.name}: a point inside its domain`);
+    const other = x => x === x.toLowerCase() ? x.toUpperCase() : x.toLowerCase();
+    const letters = [...new Set(names.concat(names.map(other)))];
+    const words = letters.slice();
+    for (const x of letters) for (const y of letters) {
+      words.push(x + y);
+      for (const z of letters) words.push(x + y + z);
+    }
+    let good = 0, bad = 0, byCode = 0;
+    for (const perms of c.tables) {
+      const inv = perms.map(invertPerm);
+      for (const useOrbit of [false, true]) {
+        for (const word of words) {
+          const end = fold(group, perms, imageOf(group.word2trans(word), point), useOrbit);
+          if (!end || Math.hypot(end.xy[0] - point[0], end.xy[1] - point[1]) > 1e-6) continue;
+          const want = invertPerm(end.perm);
+          if (same(want, wordToPerm(word, perms, inv, useOrbit, names))) good++; else bad++;
+          if (!same(want, wordToPerm(word, perms, inv, useOrbit))) byCode++;
+        }
+      }
+    }
+    console.log(`   ${c.name}, sides ${names.join(' ')}: ${good} words agree, ${bad} not; by char code ${byCode} not`);
+    check(good > 200 && bad === 0, `${c.name}: the permutations of its words: ${good} agree, ${bad} not`);
+    const plain = names.every((x, k) => x.charCodeAt(0) === 97 + k);
+    check(plain ? byCode === 0 : byCode > 0, `${c.name}: letters by their char code: ${byCode} not, ${plain ? 'the same reading' : 'another reading'}`);
+  }
+  console.log(`   ${Date.now() - t1} ms`);
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nall passed');
