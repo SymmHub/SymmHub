@@ -21,7 +21,8 @@
 // the library first: importing the class file as the entry evaluates GroupMakerFactory
 // before the class (a TDZ error), as for every group class
 import { Group_Grandma, dirichletSide, dirichletCellAt, dirichletSourceWord, normalizeWord, inverseWord } from '../../lib/grouplib/grouplib.js';
-import { grandmaRecipe, mmul, inverse, trace, mobius } from '../../lib/grouplib/Group_Grandma.js';
+import { grandmaRecipe } from '../../lib/grouplib/Group_Grandma.js';
+import { mmul, minverse as inverse, mtrace as trace, mobius } from '../../lib/grouplib/MobiusGenerators.js';
 import { ITransform, iPoint, iTransformU4 } from '../../lib/invlib/invlib.js';
 import { U4 } from '../../lib/invlib/U4.js';
 import { SPLANE_SPHERE, SPLANE_PLANE } from '../../lib/invlib/ISplane.js';
