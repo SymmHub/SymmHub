@@ -1,0 +1,351 @@
+{
+    "name": "ip-9.19",
+    "appInfo": {
+        "appName": "SymRenderer.Group_Grandma.PatternImage.InversiveNavigator_v1",
+        "fileFormatRelease": 1
+    },
+    "params": {
+        "files": {},
+        "display": {
+            "backgroundColor": "#FFFFFF00"
+        },
+        "recording": {
+            "animTime": 0,
+            "animSpeed": 1,
+            "startFrame": 0,
+            "endFrame": 100,
+            "currentFrame": 0
+        },
+        "pattern": {
+            "patternParams": {
+                "className": "PatternImage",
+                "params": {
+                    "id": "img1",
+                    "transparency": 0,
+                    "useCrown": false,
+                    "transform": {
+                        "centerX": 0,
+                        "centerY": 0,
+                        "scale": 1,
+                        "angle": 0,
+                        "flipX": false,
+                        "flipY": false
+                    },
+                    "texture": {
+                        "className": "TextureFile",
+                        "params": {
+                            "texName": "haeckel 05",
+                            "image": null,
+                            "showFrame": false,
+                            "interpolation": "linear",
+                            "texSize": 1024
+                        }
+                    },
+                    "adjust": {
+                        "negative": false,
+                        "useOKLCH": false,
+                        "hueShift": 0,
+                        "satMult": 1,
+                        "lightOffset": 0,
+                        "contrastMult": 1
+                    }
+                }
+            },
+            "patternTransform": {
+                "centerX": 0.5894885643016942,
+                "centerY": 0.0027727574076653744,
+                "scale": 0.10203647869642671,
+                "angle": 15.718845223985602,
+                "pivotX": 0.08790941665391994,
+                "pivotY": 0.13951625262566306
+            }
+        },
+        "visualization": {
+            "className": "VisualizationManager",
+            "params": {
+                "layers": {
+                    "className": "ObjArray",
+                    "params": {
+                        "id": "layers",
+                        "children": [
+                            {
+                                "className": "VisualizationImage",
+                                "params": {
+                                    "id": "image",
+                                    "enabled": true,
+                                    "opacity": 1,
+                                    "interpolation": "linear",
+                                    "dataSource": "u",
+                                    "useMipmap": false,
+                                    "imageId": "",
+                                    "useCrown": true,
+                                    "useTilt": true,
+                                    "patternTiltDirection": 0
+                                }
+                            },
+                            {
+                                "className": "VisualizationOverlay",
+                                "params": {
+                                    "id": "overlay",
+                                    "enabled": true,
+                                    "opacity": 1,
+                                    "overlays": {
+                                        "className": "ObjArray",
+                                        "params": {
+                                            "id": "overlays",
+                                            "children": [
+                                                {
+                                                    "className": "OverlayTiling",
+                                                    "params": {
+                                                        "id": "tiling",
+                                                        "enabled": true,
+                                                        "opacity": 1,
+                                                        "width": 1,
+                                                        "color": "#000000FF",
+                                                        "symmetry": {
+                                                            "type": "renderer",
+                                                            "maxIndex": 8,
+                                                            "cosets": ""
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "className": "OverlayFundDomain",
+                                                    "params": {
+                                                        "id": "fundDomain",
+                                                        "enabled": true,
+                                                        "opacity": 1,
+                                                        "fill": {
+                                                            "enabled": false,
+                                                            "color": "#ff00001c"
+                                                        },
+                                                        "outline": {
+                                                            "enabled": false,
+                                                            "width": 1,
+                                                            "color": "#000000AA",
+                                                            "shadowsWidth": 10,
+                                                            "shadowsColor": "#0000FFAA"
+                                                        },
+                                                        "walls": {
+                                                            "enabled": false,
+                                                            "width": 1,
+                                                            "color": "#00000055"
+                                                        },
+                                                        "symmetry": {
+                                                            "type": "renderer",
+                                                            "maxIndex": 8,
+                                                            "cosets": ""
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "className": "OverlayBuffer",
+                                                    "params": {
+                                                        "id": "buffer",
+                                                        "enabled": false,
+                                                        "opacity": 1,
+                                                        "fill": {
+                                                            "enabled": false,
+                                                            "color": "#00ff350c"
+                                                        },
+                                                        "outline": {
+                                                            "enabled": false,
+                                                            "width": 7,
+                                                            "color": "#513b44f7"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "misc": {
+            "dataPlot": {
+                "className": "DataPlot",
+                "params": {
+                    "potType": 0,
+                    "viewport": {
+                        "xmin": -1.3,
+                        "xmax": 1.3,
+                        "ymin": -0.2,
+                        "ymax": 1.1
+                    },
+                    "viewbox": {
+                        "width": 65,
+                        "height": 20,
+                        "left": 17.5,
+                        "bottom": 0,
+                        "centerX": 0,
+                        "centerY": 0,
+                        "zoom": 1
+                    }
+                }
+            }
+        },
+        "symmetry": {
+            "groupType": "Grandma",
+            "group": {
+                "className": "Group_Grandma",
+                "params": {
+                    "ta_re": 1.5306639,
+                    "ta_im": -0.8501047,
+                    "tb_re": 1.5306639,
+                    "tb_im": 0.8501047,
+                    "otherRoot": true,
+                    "domain": "dirichlet",
+                    "baseX": 0.12000000000000001,
+                    "baseY": -0.8370000000000001,
+                    "depth": 4,
+                    "minScale": 0.001
+                }
+            },
+            "transform": {
+                "translationX": 0,
+                "translationY": 0,
+                "rotation": 0,
+                "scale": 1
+            },
+            "dirichlet": {
+                "enabled": true,
+                "baseX": 1.521926501416429,
+                "baseY": -0.27330442396740345,
+                "words": "bdmcbcqdadnca bdmcbcvdadnca bdmcbcqgadnca bdmcbfvdadnca bdmcbfdadnca bdmcbcgadnca bdmcbcv2nadadnca bdmcbcbcvdadnca bdmcbcqdadadnca bdmcbnca bdmadnca bdmcbcbcgadnca bdmcbfdadadnca bdmcbcb2dadnca bdmcbca2dadnca bdmcbcqgnca bdmfvdadnca bdmcbcqd(ad)3nca bdmc(bc)3vdadnca bdmcbcbmpdadnca bdmcbconadadnca bdmcbcqonadadnca bdmcbcbmpvdadnca bdmcbcv6nadadnca bdmcbcbfdadadnca bdmcbcbcgadadnca bdmcbcbmfhnadadnca bdmcbcbmignadadnca bdmcbcb4dadnca bdmcbcbmupnaqdadnca bdmcbcvbmoznadadnca bdmcbcbmpbmpbcp2dadnca bdmcbco2daonaonadadnca bdmcbcqo2daonaonadadnca bdmcbcbmpbmpbcp2vdadnca bdmcbcqdmp2nadadnca bdmcbcbmo2ncvdadnca bdmcbcbmodaonaonadadnca bdmcbcbmpbmpbcpnadadnca bdmcbcqo2daonadadnca bdmcbcbmpbcp2vdadnca bdmcbcbmfhnaqdmp2nadadnca bdmcbcbmo2ncvbmignadadnca bdmcbc(qo2daonaona)2dadnca bdmcbc(bmpbmpbcp2v)2dadnca bdmcbc(o2daonaona)4dadnca bdmcbc(bmpbmpbcp2)4dadnca",
+                "searchTime": 10,
+                "depth": 5,
+                "minScale": 0.01,
+                "iterations": 200,
+                "showPoints": true,
+                "showPlanes": false,
+                "showSides": false,
+                "showLabels": true
+            },
+            "options": {
+                "useSymm": true,
+                "iterations": 100
+            }
+        },
+        "tools": {
+            "transform": {
+                "className": "InversiveNavigator_v1",
+                "params": {
+                    "mode": "euclidean",
+                    "projection": {
+                        "className": "ProjectionTransform",
+                        "params": {
+                            "enabled": true,
+                            "fpdMap": {
+                                "className": "FixedPointTransform",
+                                "params": {
+                                    "enabled": false,
+                                    "showUI": false,
+                                    "animate": false,
+                                    "word": "a",
+                                    "orientation": "none",
+                                    "fp0x": -0.22973437010941053,
+                                    "fp0y": 0.05756332069972592,
+                                    "fp1x": 0.22973437010942432,
+                                    "fp1y": -0.05756332069972612,
+                                    "basex": 0,
+                                    "basey": 0,
+                                    "translation": 0.162902695550137,
+                                    "rotation": -0.19837780730912896,
+                                    "fraction": 0,
+                                    "loopTime": 5
+                                }
+                            },
+                            "bandMap": {
+                                "enabled": false,
+                                "fraction": 1
+                            },
+                            "logMap": {
+                                "enabled": false
+                            },
+                            "periodicMap": {
+                                "enabled": false,
+                                "a1x": 1,
+                                "a1y": 0,
+                                "a2x": 0,
+                                "a2y": 1,
+                                "cx": 0,
+                                "cy": 0
+                            },
+                            "scaleMap": {
+                                "enabled": false,
+                                "a1x": 1,
+                                "a1y": 0,
+                                "a2x": 0,
+                                "a2y": 1,
+                                "n1": 10,
+                                "n2": 0,
+                                "shift1": 0,
+                                "shift2": 0
+                            },
+                            "expMap": {
+                                "enabled": false
+                            },
+                            "loxMap": {
+                                "enabled": false
+                            },
+                            "uhpMap": {
+                                "enabled": false
+                            },
+                            "rationalMap": {
+                                "enabled": false,
+                                "x1": 1,
+                                "y1": 0,
+                                "n1": 1,
+                                "x2": 0,
+                                "y2": 1,
+                                "n2": -1,
+                                "x3": -1,
+                                "y3": 0,
+                                "n3": 1,
+                                "x4": 0,
+                                "y4": -1,
+                                "n4": -1
+                            }
+                        }
+                    },
+                    "inversive": {
+                        "enabled": true,
+                        "itrans": []
+                    },
+                    "spherical": {
+                        "enabled": false
+                    },
+                    "euclidean": {
+                        "centerX": 2.409477739484117,
+                        "centerY": -0.747830283877482,
+                        "zoom": 0.2990474435906156
+                    },
+                    "options": {
+                        "animation": true
+                    }
+                }
+            },
+            "drawing": {
+                "className": "DrawingToolRenderer",
+                "params": {
+                    "symmetry": false,
+                    "brushR": 1,
+                    "brushG": 0,
+                    "brushB": 0,
+                    "brushA": 1,
+                    "brushRadius": 0.01,
+                    "brushBlur": 0.5,
+                    "brushX": 0,
+                    "brushY": 0
+                }
+            }
+        },
+        "scripting": {
+            "scriptParams": {}
+        }
+    }
+}
