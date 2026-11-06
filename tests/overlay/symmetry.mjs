@@ -10,16 +10,16 @@
 
   1. the group using kinds serialize a symmetry block, the others do not
   2. with the catalogue presentation of 632 (default domain) the table of
-     subgroups is computed by sublib; choosing index 3 sets the cosets of the
-     first index 3 subgroup and H has index 3
+     subgroups comes from SubgroupTables.js, its names a moment later; choosing
+     index 3 sets the cosets of the first index 3 subgroup and H has index 3
   3. a restored document selects its subgroup in the choices again; the
      serialization round trips
   4. a presentation change (the kite domain of 632, generators and relators
-     derived from the domain) recomputes the table; H of index 3 is built from
+     derived from the domain) brings another table; H of index 3 is built from
      the kite group
   5. unusable cosets leave the item on the renderer's group, without throwing
   6. every wallpaper group of grouplib names a sublib preset
-  7. the overlay forwards group changes to its items
+  7. the overlay forwards group changes and the table to its items
 */
 
 import { OverlayTiling, OverlayFundDomain, OverlayIsolines, OverlayBuffer, OverlayWorldGrid, VisualizationOverlay } from '../../lib/symhublib/symhublib.js';
@@ -28,6 +28,7 @@ import { iWallpaperGroup, getWallpaperDomainShapes, WallpaperDomainShapes, Wallp
 import { Group } from '../../lib/invlib/invlib.js';
 import { groupPresentation } from '../../lib/grouplib/GroupPresentation.js';
 import { getPreset, WALLPAPER_NAMES } from '../../lib/sublib/src/sublib.js';
+import { makeGroupTables } from '../../lib/grouplib/grouplib.js';
 
 const quiet = { log: console.log, warn: console.warn };
 console.log = () => {};
@@ -36,6 +37,7 @@ const say = (...a) => quiet.log(...a);
 let failures = 0;
 function check(ok, msg) { if (!ok) { failures++; say('  FAIL:', msg); } return ok; }
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const tick = () => new Promise(r => setTimeout(r, 0));
 
 const GEO = { a: 0.5, b: 0.5, c: 0.038 };
 const G632 = new Group(iWallpaperGroup({ name: '632', ...GEO }));
@@ -49,9 +51,17 @@ const kitePres = (() => {
     return { name: '632', domainShape: KITE, label: '632 [' + KITE + ']', gens: p.gens, relators: p.relators };
 })();
 
-// init arguments as the renderer passes them, without GL
+// init arguments as the renderer passes them, without GL: pres is the presentation or
+// the function which gives it, the message goes to the item as it does through the layers
 let repaints = 0;
-const initPar = (pres) => ({ glCtx: null, onChange: () => { repaints++; }, getGroupPresentation: () => pres });
+const initPar = (pres, item) => ({
+    glCtx: null,
+    onChange: () => { repaints++; },
+    groupTables: makeGroupTables({
+        getPresentation: (typeof pres === 'function') ? pres : () => pres,
+        onChanged: (info) => item.onPresentationChanged(info),
+    }),
+});
 
 const SYM_DEFAULT = { type: 'renderer', maxIndex: 8, cosets: '' };
 
@@ -77,13 +87,14 @@ say('2. subgroup from the catalogue presentation');
 let cosets3 = null;
 {
     const it = OverlayTiling({ id: 'tiling' });
-    it.init(initPar(catalogue632));
+    it.init(initPar(catalogue632, it));
     const sym = it.getSymmetry();
     check(sym && !sym.usesSubgroup && sym.getTable() === null, 'renderer symmetry: no table yet');
 
     repaints = 0;
     setParamValues(it.getParams(), { symmetry: { type: 'subgroup' } });
     check(sym.usesSubgroup && repaints > 0, 'switching to subgroup asks for a repaint');
+    await tick();
     const table = sym.getTable();
     check(table && table.name === '632' && table.maxIndex === 8, `table computed: ${table && table.subgroups.length} subgroups`);
     const ch = sym.getChoices();
@@ -91,6 +102,8 @@ let cosets3 = null;
     check(ch.index === '[select]' && ch.subgroup === '[select]', 'nothing selected without cosets');
 
     sym.setIndex('3(2)');
+    check(/^632.3./.test(sym.getChoices().subgroup), 'the sublib ids stand in for the names: ' + sym.getChoices().subgroup);
+    await tick();
     const ch3 = sym.getChoices();
     // the subgroups are listed under the catalogue names (SubgroupNames.js), the first of index 3 is 632.3.1 = 632/2222[3]
     check(same(ch3.subgroups, ['[select]', '632/2222[3]', '632/632[3]']) && ch3.subgroup === '632/2222[3]', `subgroup choices of index 3: ${ch3.subgroups}`);
@@ -118,9 +131,10 @@ let cosets3 = null;
 say('3. restore of a document');
 {
     const it = OverlayFundDomain({ id: 'fundDomain' });
-    it.init(initPar(catalogue632));
+    it.init(initPar(catalogue632, it));
     setParamValues(it.getParams(), { symmetry: { type: 'subgroup', maxIndex: 8, cosets: cosets3 } });
     const sym = it.getSymmetry();
+    await tick();
     const ch = sym.getChoices();
     check(ch.index === '3(2)' && ch.subgroup === '632/2222[3]', `restored cosets select their subgroup: ${ch.index} ${ch.subgroup}`);
     const v = getParamValues(it.getParams());
@@ -130,7 +144,7 @@ say('3. restore of a document');
 
     // a fresh item restored before the group is known builds on the first frame
     const it2 = OverlayTiling({ id: 't2' });
-    it2.init(initPar(catalogue632));
+    it2.init(initPar(catalogue632, it2));
     setParamValues(it2.getParams(), { symmetry: { type: 'subgroup', cosets: cosets3 } });
     it2.getSymmetry().getUniforms({ group: G632 });
     check(it2.getSymmetry().getDomain() && it2.getSymmetry().getDomain().n === 3, 'getUniforms builds H on demand');
@@ -141,15 +155,18 @@ say('4. presentation change: the kite domain of 632');
 {
     let pres = catalogue632;
     const it = OverlayTiling({ id: 'tiling' });
-    it.init({ glCtx: null, onChange: () => {}, getGroupPresentation: () => pres });
+    it.init(initPar(() => pres, it));
     setParamValues(it.getParams(), { symmetry: { type: 'subgroup', cosets: cosets3 } });
     const sym = it.getSymmetry();
+    await tick();
     const tableA = sym.getTable();
 
     pres = kitePres;
     sym.onGroupChanged(G632kite);
+    check(sym.getTable() === null, 'nothing is offered while the table is calculated');
+    await tick();
     const tableB = sym.getTable();
-    check(tableB && tableB !== tableA, 'the table is recomputed for the new presentation');
+    check(tableB && tableB !== tableA, 'the table of the new presentation comes');
     check(tableB.subgroups.filter(s => s.index === 3).length === 2, `the kite presentation has 2 subgroups of index 3: ${tableB.countPerIndex.map(c => c.index + ':' + c.count)}`);
     const chB = sym.getChoices();
     check(chB.indices.includes('3(2)'), `kite index choices: ${chB.indices}`);
@@ -164,14 +181,15 @@ say('4. presentation change: the kite domain of 632');
     // back to the default domain: the table follows, the kite cosets no longer match a choice
     pres = catalogue632;
     sym.onGroupChanged(G632);
-    check(sym.getTable() !== tableB, 'table recomputed again');
+    await tick();
+    check(sym.getTable() !== tableB, 'the table follows again');
 }
 
 // ── 5. unusable cosets ────────────────────────────────────────────────────────
 say('5. unusable cosets');
 {
     const it = OverlayTiling({ id: 'tiling' });
-    it.init(initPar(catalogue632));
+    it.init(initPar(catalogue632, it));
     let warned = 0; console.warn = () => { warned++; };
     setParamValues(it.getParams(), { symmetry: { type: 'subgroup', cosets: 'xyz' } });
     let threw = false;
@@ -197,12 +215,15 @@ say('6. wallpaper groups and sublib presets');
 say('7. group changes through the overlay');
 {
     const ov = VisualizationOverlay({ id: 'overlay' });
-    ov.init(initPar(catalogue632));
+    ov.init(initPar(catalogue632, ov));
     setParamValues(ov.getParams(), { overlays: { tiling: { enabled: true, symmetry: { type: 'subgroup', cosets: cosets3 } } } });
     let threw = false;
     try { ov.onGroupChanged(G632); } catch (e) { threw = true; }
     check(!threw, 'onGroupChanged forwarded to the items');
     const sym = ov.getItem('tiling').getSymmetry();
+    await tick();
+    check(sym.getTable() !== null, 'the table reaches the item through the overlay');
+    check(sym.getChoices().subgroup !== '[select]', 'and selects its subgroup');
     sym.rebuild(G632);
     check(sym.getDomain() && sym.getDomain().n === 3, 'the tiling item of the overlay builds H');
     const saved = getParamValues(ov.getParams());

@@ -17,7 +17,7 @@
 import {
     subgroupTable, checkPermutations, entryPermutations, presentationKey, presentationSpec,
     presentationText, clampMaxIndex, TABLE_MAX_SUBGROUPS,
-    Group_WP, Group_KLM,
+    Group_WP, Group_KLM, Group_KLMN, tableUpTo,
 } from '../../lib/grouplib/modules.js';
 import { WallpaperGroupNames, getWallpaperDomainShapes } from '../../lib/grouplib/WallpaperGroups.js';
 import { ITransform, iPoint } from '../../lib/invlib/invlib.js';
@@ -149,6 +149,36 @@ say('6. Group_KLM');
     const starCat = subgroupsData({ preset: 'sklm:*237', maxIndex: 24 });
     check(star.subgroups.every((s, i) => s.subgroup === starCat.subgroups[i].subgroup && s.cosets === starCat.subgroups[i].cosets),
           '*klm *237: the table and the ids of the catalogue');
+}
+
+say('the table of a group cut at a lower index is the table to that index');
+{
+    const same = (a, b) => a.subgroups.length === b.subgroups.length &&
+        a.subgroups.every((s, i) => s === b.subgroups[i] ||
+                                    (s.subgroup === b.subgroups[i].subgroup && s.cosets === b.subgroups[i].cosets));
+    const make = (Maker, values) => { const m = new Maker({}); Object.assign(m.params, values); return m.getPresentation(); };
+    const cases = [
+        ...WallpaperGroupNames.filter(type => type !== 'trivial').map(type => new Group_WP({ type }).getPresentation()),
+        make(Group_KLM, { K: 2, L: 3, M: 7, s: false, hasR: false }),
+        make(Group_KLM, { K: 3, L: 3, M: 4, s: false, hasR: false }),
+        make(Group_KLM, { K: 2, L: 4, M: 5, s: true, hasR: false }),
+        make(Group_KLMN, {}),
+    ];
+    for (const pres of cases) {
+        if (!check(!!pres, 'a presentation')) continue;
+        const table = subgroupTable(pres, { maxIndex: 24 });
+        for (const maxIndex of [6, 12]) {
+            if (table.maxIndex <= maxIndex) continue;
+            const cut = tableUpTo(table, maxIndex);
+            const direct = subgroupTable(pres, { maxIndex });
+            check(same(cut, direct), `${pres.name} at ${maxIndex}: ${cut.subgroups.length} and ${direct.subgroups.length}`);
+            check(cut.maxIndex === maxIndex && cut.totalCount === direct.totalCount, `${pres.name} at ${maxIndex}: the counts`);
+            check(JSON.stringify(cut.countPerIndex) === JSON.stringify(direct.countPerIndex), `${pres.name} at ${maxIndex}: per index`);
+            check(cut.nextIndex === null && cut.nextIndexCount === null, `${pres.name} at ${maxIndex}: nothing beyond`);
+            check(cut.stats === table.stats, `${pres.name}: the stats stay`);
+        }
+        check(tableUpTo(table, 24) === table, `${pres.name}: the table itself when it does not reach further`);
+    }
 }
 
 say(failures ? `${failures} FAILED` : 'ALL CHECKS PASSED');
