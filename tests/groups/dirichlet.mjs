@@ -74,6 +74,13 @@
       the one the fold accumulates. KLMN's sides are a b B A C c, so letters read by
       their char code, as wordToPerm did before, take its c and C for the third side and
       do not agree, while they do for the groups named a b c ...
+  16. checkDirichletDomain (2026-11-06), which tells in every step of a drag of the base
+      whether the sides still bound the domain: the sides found automatically pass, the
+      partners read off the images; a redundant side passes and is listed as unused; the
+      sides of a base moved a little agree with a search at the new base on several
+      groups, both ways; a corner bitten off while the arcs still pair up is seen by the
+      products of the sides. sideArcContains tells the arcs of a side from the rest of
+      its circle.
 */
 
 import {
@@ -93,9 +100,12 @@ import {
   dirichletCellAt,
   dirichletCell,
   sideArcPoint,
+  sideArcContains,
   selectDirichletSides,
+  checkDirichletDomain,
   Group_KLMN,
   Group_KLM,
+  Group_Grandma,
   groupPresentation,
   composePerms,
   invertPerm,
@@ -922,6 +932,84 @@ console.log('14. the colour permutations of the sides');
     const plain = names.every((x, k) => x.charCodeAt(0) === 97 + k);
     check(plain ? byCode === 0 : byCode > 0, `${c.name}: letters by their char code: ${byCode} not, ${plain ? 'the same reading' : 'another reading'}`);
   }
+  console.log(`   ${Date.now() - t1} ms`);
+}
+
+// ---- 16. the check of the sides ------------------------------------------------------------
+
+console.log('16. the check of the sides');
+{
+  const t1 = Date.now();
+  const opt = { depth: 2, minScale: 0.01, maxIterations: 200 };
+  const find = (group, base, seeds = []) => selectDirichletSides(group, { ...opt, base, seeds });
+  const checked = (group, base, words) => checkDirichletDomain(group, makeDirichletGroup(group, { base, words }), opt);
+
+  // the partners and a redundant side, on the cyclic group's hexagon
+  const base = dirichletBase({ baseX: 0.7160210667, baseY: -0.0054142308 });
+  const found = find(cycGroup, base);
+  const hexagon = checked(cycGroup, base, found.words);
+  check(hexagon.ok && hexagon.unused.length === 0, 'the automatic hexagon passes');
+  check(hexagon.partner.every((j, i) => j >= 0 && j !== i && hexagon.partner[j] === i), `the sides of the hexagon are paired: ${hexagon.partner}`);
+  const extra = checked(cycGroup, base, found.words.concat(['aaaaaaaaaaa']));
+  check(extra.ok && extra.unused.length === 1 && extra.unused[0] === 6, `a redundant side passes and is unused: ${extra.ok}, ${extra.unused}`);
+  const missing = checked(cycGroup, base, found.words.slice(0, 5));
+  check(!missing.ok && missing.unpaired > 0, 'a side left out shows');
+
+  // moves of the base: the check against a search at the new base
+  const groups = [
+    ['632', new Group_WP({ type: '632', a: 0.5 }).getGroup(), [0.1, 0.07], 0.15],
+    ['klm', (() => { const m = new Group_KLM(); m.setParamsMap({ s: false, K: 2, L: 3, M: 7, hasR: false }); return m.getGroup(); })(), [0.05, 0.1], 0.1],
+    ['22222', (() => { const m = new Group_22222(); m.setParamsMap({ R1: 0.2, R2: 0.2, R3: 1.1, A2: 47.15, A3: 0, A4: 0, T0: 0, T1: 0, uhp: true }); return m.getGroup(); })(), [0.2, 1], 0.2],
+    ['grandma', new Group_Grandma().getGroup(), [0.1, 0.3], 0.1],
+  ];
+  const place = s => `${s.point.v[0].toFixed(4)},${s.point.v[1].toFixed(4)}`;
+  const log = console.warn;
+  console.warn = () => {};      // the searches of bases near the limit set say so
+  for (const [name, group, c, step] of groups) {
+    let same = 0, changed = 0, wrong = 0;
+    for (let k = 0; k < 40; k++) {
+      const b0 = dirichletBase({ baseX: c[0] + step*(2*rnd() - 1), baseY: c[1] + step*(2*rnd() - 1) });
+      const r0 = find(group, b0);
+      if (r0.timedOut || r0.unpaired || r0.ungenerated || r0.nearIdentity) continue;
+      const d = step*Math.pow(10, -2*rnd());
+      const b1 = dirichletBase({ baseX: b0.v[0] + d*(2*rnd() - 1), baseY: b0.v[1] + d*(2*rnd() - 1) });
+      const verdict = checked(group, b1, r0.words);
+      const r1 = find(group, b1, r0.words);
+      if (r1.nearIdentity) continue;
+      const old = r0.words.map(w => dirichletSide(group, b1, w)).filter(Boolean);
+      const oldKeys = dirichletCell(old.map(s => s.side)).map(e => place(old[e.index])).sort().join(';');
+      const newKeys = r1.sides.filter(s => s.arcs.length).map(place).sort().join(';');
+      const stays = oldKeys === newKeys;
+      if (stays) same++; else changed++;
+      if (stays !== verdict.ok) wrong++;
+    }
+    console.log(`   ${name}: ${same} moves keep the sides, ${changed} change them, ${wrong} judged wrongly`);
+    check(wrong === 0 && same > 5 && changed > 0, `${name}: the check agrees with the search: ${wrong} wrong of ${same + changed}`);
+  }
+  console.warn = log;
+
+  // a bite in the middle of an arc: the arcs still pair up, only a product of the sides shows it
+  const grandma = new Group_Grandma().getGroup();
+  const bitten = checked(grandma, dirichletBase({ baseX: 0.1792, baseY: 0.3764 }), parseWords('g h e f a b hf eg bhf ega'));
+  check(!bitten.ok && bitten.cutting > 0 && bitten.unpaired === 0 && bitten.mismatched === 0 && bitten.stray === 0,
+    `the bite shows by the products alone: cutting ${bitten.cutting}, unpaired ${bitten.unpaired}, mismatched ${bitten.mismatched}, stray ${bitten.stray}`);
+
+  // the arcs of a side: the middle of an arc and the far side of its circle, also past the angle PI
+  const dg = makeDirichletGroup(cycGroup, { base, words: found.words });
+  const fd = dg.getFundDomain();
+  let onArc = 0, offArc = 0;
+  for (const e of hexagon.cell) {
+    for (const arc of e.arcs) {
+      const a = [arc[0] + 0.5*(arc[1] - arc[0])];
+      const mid = sideArcPoint(fd[e.index], arc, 0.5);
+      if (sideArcContains(fd[e.index], e.arcs, mid)) onArc++;
+      const v = fd[e.index].v, r = Math.abs(v[3]);
+      const far = [v[0] + r*Math.cos(a[0] + Math.PI), v[1] + r*Math.sin(a[0] + Math.PI)];
+      if (fd[e.index].type === SPLANE_SPHERE && arc[1] - arc[0] < Math.PI && !sideArcContains(fd[e.index], e.arcs, far)) offArc++;
+    }
+  }
+  check(onArc === hexagon.cell.length && offArc === hexagon.cell.length, `the arcs of the hexagon: ${onArc} middles on them, ${offArc} opposite points off them`);
+  check(sideArcContains(fd[0], [[3, 3.5]], [fd[0].v[0] + Math.abs(fd[0].v[3])*Math.cos(3.3), fd[0].v[1] + Math.abs(fd[0].v[3])*Math.sin(3.3)]), 'an arc past the angle PI');
   console.log(`   ${Date.now() - t1} ms`);
 }
 
