@@ -4,12 +4,12 @@
     node tests/drawlib/frames.mjs
 
   1. framedImage: the frame's outline is the image's quad, straight, turned, sheared and
-     mirrored; the frame takes the image's place (id, pivot, axes, opacity, colours)
+     mirrored; the frame takes the image's place (id, pivot, axes, opacity, colour word)
   2. withImagesFramed: an image on its own, in a group; what has none stays the same object
   3. coverQuad: same centre, the new image's proportions, the old quad covered; itemCopy
   4. DrawingDocument: an image on a layer or in a group is framed, in a closed item it is
      not; older documents through fromJSON and through a layer's items param; itemChain;
-     a group's box follows a child that changed
+     a group's box follows a child that changed; an old colour class (motifClass) is dropped
   5. DrawingEditor (no group, no colour layers: hitTopmost): a frame is picked by its
      content; levels entered one within the other, Escape a level at a time, entering a
      sibling; children cut off at every outline around them; what goes where while inside
@@ -66,13 +66,12 @@ check(framedImage(image(quads.sheared)).shape.skew, 'a sheared quad gives a skew
 
 {
     const frame = framedImage(image(quads.straight, { id: 'p9', pivot: [1, 2], axes: [0, 1, -1, 0], colorWord: 'aB',
-                                                      style: { stroke: null, fill: null, strokeWidth: 0, opacity: 0.4, motifClass: 2 } }));
+                                                      style: { stroke: null, fill: null, strokeWidth: 0, opacity: 0.4 } }));
     const child = frame.children[0];
     check(frame.id === 'p9' && !child.id, 'the frame takes the id');
     check(frame.pivot && !child.pivot && frame.axes && !child.axes, 'the frame takes the pivot and the axes');
     check(frame.colorWord === 'aB' && !child.colorWord, 'the frame takes the colour word');
     check(frame.style.opacity === 0.4 && child.style.opacity === 1, 'the frame takes the opacity');
-    check(frame.style.motifClass === 2 && child.style.motifClass === undefined, 'the frame takes the colour class');
 }
 
 // 2 ───────────────────────────────────────────────────────────────────────────
@@ -151,6 +150,15 @@ for (const [name, p] of Object.entries({ straight: quads.straight, turned: quads
     check(read.getItem('o2').shape && read.getItem('o2').children[0].id, 'through the items param too');
     const saved = layer.getParams().items.getValue();
     check(saved[0].children[0].type === 'image', 'saved as a frame');
+
+    // a colour class per shape is no longer read (a colour layer's images list says what each coset shows)
+    const classed = { version: 1, layers: [{ id: 'old', items: [{ ...square(0, 0, 1), id: 'c1', style: { stroke: null, fill: { rgba: [1, 0, 0, 1] }, opacity: 1, motifClass: 1 } },
+                                                                image(quads.straight, { id: 'c2', style: { stroke: null, fill: null, strokeWidth: 0, opacity: 1, motifClass: 2 } })] }] };
+    const noClass = DrawingDocument();
+    noClass.fromJSON(JSON.parse(JSON.stringify(classed)));
+    check(!('motifClass' in noClass.getItem('c1').style), 'an old colour class is dropped');
+    check(!('motifClass' in noClass.getItem('c2').style) && !('motifClass' in noClass.getItem('c2').children[0].style), 'from a framed image too');
+    check(!JSON.stringify(noClass.getLayers()[0].getParams().items.getValue()).includes('motifClass'), 'and not saved');
 }
 
 // 5 ───────────────────────────────────────────────────────────────────────────
@@ -256,7 +264,7 @@ function newEditor(extra = {}){
     editor.undo();
 
     // a shape that paints stays, under what it held; opacity and colours go along
-    const painted = doc.insertItem({ ...square(5, 0, 1), colorWord: 'a', style: { stroke: { rgba: [1, 0, 0, 1] }, strokeWidth: 0.1, fill: null, opacity: 0.5, motifClass: 3 },
+    const painted = doc.insertItem({ ...square(5, 0, 1), colorWord: 'a', style: { stroke: { rgba: [1, 0, 0, 1] }, strokeWidth: 0.1, fill: null, opacity: 0.5 },
                                      children: [square(5, 0, 0.5, { opacity: 0.5 }), { type: 'group', style: { opacity: 1 }, children: [square(5, 0, 0.2), square(5, 0, 0.3)] }] });
     const [c0, c1] = doc.getItem(painted.id).children.map(c => c.id);
     editor.setSelection([{ id: painted.id, frame: null, frameInv: null }]);
@@ -267,10 +275,10 @@ function newEditor(extra = {}){
     const r0 = doc.getItem(c0), r1 = doc.getItem(c1);
     check(near(r0.style.opacity, 0.25), `the holder's opacity goes into the content: ${r0.style.opacity}`);
     check(near(r1.style.opacity, 0.5), `a group's too: ${r1.style.opacity}`);
-    check(r0.style.motifClass === 3 && r0.colorWord === 'a', 'its colours too');
-    check(r1.children.every(c => c.style.motifClass === 3 && c.colorWord === 'a'), 'down to a group\'s members');
+    check(r0.colorWord === 'a', 'its colours too');
+    check(r1.children.every(c => c.colorWord === 'a'), 'down to a group\'s members');
     editor.undo();
-    check(doc.getItem(painted.id).children.length === 2 && !doc.getItem(painted.id).children[1].style.motifClass, 'undo: the shape holds them again');
+    check(doc.getItem(painted.id).children.length === 2 && !doc.getItem(painted.id).children[1].children.some(c => c.colorWord), 'undo: the shape holds them again');
     check(doc.getItem(painted.id).style.stroke, 'undo: its stroke');
 
     // nothing to release
