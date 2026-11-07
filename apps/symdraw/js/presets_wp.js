@@ -14,4 +14,8 @@ symdraw-632-4-colors-2.json
 symdraw-s632-4-colors.json
 symdraw-632-6-colors.json
 symdraw-632-7-colors.json
+symdraw_images.json
+symdraw_images-2.json
+symdraw_images-3.json
+symdraw_2-layers.json
 `;

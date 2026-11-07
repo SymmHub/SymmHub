@@ -33,6 +33,7 @@
                         "filled": true,
                         "fill": "#ffffff",
                         "fillOpacity": 1,
+                        "fillRule": "nonzero",
                         "cap": "round",
                         "join": "round",
                         "colorClass": -1,
@@ -57,20 +58,20 @@
                                                 "id": "p2",
                                                 "closed": true,
                                                 "points": [
-                                                    0.005217833884636924,
-                                                    1.7207487201130762,
+                                                    -2.220446049250313e-16,
+                                                    1.7320508075688776,
                                                     0.04192960644764154,
                                                     1.5896484444964405,
-                                                    0.0035459577713534696,
-                                                    1.5260502766403965,
-                                                    0.007387469423397297,
-                                                    1.444734286719143,
-                                                    0.07209311870886512,
-                                                    1.4140373483030169,
-                                                    0.1691606402531629,
-                                                    1.6211006245714064,
-                                                    0.13634214079366402,
-                                                    1.6825115835488806
+                                                    -0.005894346668556372,
+                                                    1.5301388097804067,
+                                                    -0.00043142983105481925,
+                                                    1.4413881611802668,
+                                                    0.07808625392059554,
+                                                    1.405098758524577,
+                                                    0.17191374607940602,
+                                                    1.6259901547209599,
+                                                    0.14428886720348588,
+                                                    1.697161730387001
                                                 ],
                                                 "style": {
                                                     "stroke": {
@@ -347,7 +348,10 @@
                                     "interpolation": "linear",
                                     "dataSource": "v",
                                     "useMipmap": false,
-                                    "imageId": "layer2"
+                                    "imageId": "layer2",
+                                    "useCrown": false,
+                                    "useTilt": false,
+                                    "patternTiltDirection": 0
                                 }
                             },
                             {
@@ -364,11 +368,7 @@
                                     "subgroups": {
                                         "className": "Subgroups",
                                         "params": {
-                                            "groupType": "klm",
-                                            "groupName": "623",
-                                            "fileName": "623  (computed, index <= 24)",
                                             "maxIndex": 24,
-                                            "index": "3(2)",
                                             "subgroup": "623.3.1"
                                         }
                                     },
@@ -429,11 +429,7 @@
                                     "subgroups": {
                                         "className": "Subgroups",
                                         "params": {
-                                            "groupType": "klm",
-                                            "groupName": "623",
-                                            "fileName": "623  (computed, index <= 24)",
                                             "maxIndex": 24,
-                                            "index": "3(2)",
                                             "subgroup": "623.3.1"
                                         }
                                     },
@@ -636,17 +632,18 @@
             },
             "dirichlet": {
                 "enabled": false,
+                "autoSides": true,
                 "baseX": 0.01,
                 "baseY": 0.02,
+                "showPoints": false,
+                "showPlanes": false,
+                "showSides": true,
+                "showLabels": true,
                 "words": "",
                 "searchTime": 10,
                 "depth": 2,
                 "minScale": 0.01,
-                "iterations": 200,
-                "showPoints": false,
-                "showPlanes": false,
-                "showSides": true,
-                "showLabels": true
+                "iterations": 200
             },
             "options": {
                 "useSymm": true,
@@ -657,6 +654,7 @@
             "transform": {
                 "className": "InversiveNavigator_v1",
                 "params": {
+                    "mode": "euclidean",
                     "projection": {
                         "className": "ProjectionTransform",
                         "params": {
@@ -742,11 +740,9 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0.08814016641472522,
-                        "centerY": 0.16961722325653142,
-                        "zoom": [
-                            1.8964698438977272
-                        ]
+                        "centerX": -0.09337757606424646,
+                        "centerY": 0.15779659940559035,
+                        "zoom": 0.8521357210347966
                     },
                     "options": {
                         "animation": true
