@@ -320,6 +320,9 @@ function PatternImage(options){
         setParamsMap    : setParamsMap,
         getSimBuffer    : getSimBuffer,
         getPatternData  : getPatternData,
+        // the pattern box may be placed by a bent pose (PatternPose.js): the pattern
+        // transform tool then moves the image in the geometry of the group
+        canBend         : () => true,
     };
 
     return myself;

@@ -165,6 +165,9 @@ function PatternImageArray(options = {}) {
         init,
         getParams,
         getPatternData,
+        // the pattern box may be placed by a bent pose (PatternPose.js): the pattern
+        // transform tool then moves the images in the geometry of the group
+        canBend: () => true,
     };
 
     return myself;
