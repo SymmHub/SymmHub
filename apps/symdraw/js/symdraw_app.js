@@ -61,6 +61,8 @@ function startSymdraw(opt = {}) {
         // the drawing tools in a palette, their settings in a property bar;
         // of the renderer's own tools only pan/zoom and the pattern box
         toolPalette:       { tools: ['move', 'patternTransform'], startTool: 'pattern.select' },
+        // the visualization layers in a window of their own, not in the settings
+        visualizationWindow: true,
     });
 
     app.run();

@@ -1,7 +1,7 @@
 /*
   tests of the ids and the visibility of a drawing's items (lib/drawlib
   DrawingDocument, DrawingEditor), which the layers window's tree edits, and
-  of a shape's names in a colour layer's images list (lib/symhublib/ImageList.js)
+  of a shape's names in a colour layer's images list (lib/uilib/ImageList.js)
 
     node tests/drawlib/item_ids.mjs
 
@@ -23,7 +23,7 @@ import { DrawingDocument } from '../../lib/drawlib/DrawingDocument.js';
 import { DrawingEditor } from '../../lib/drawlib/DrawingEditor.js';
 import { drawItem } from '../../lib/drawlib/ItemRenderer.js';
 import { itemsToSvg } from '../../lib/drawlib/SvgExport.js';
-import { parseImageList, imageListCosets } from '../../lib/symhublib/ImageList.js';
+import { parseImageList, imageListCosets } from '../../lib/uilib/ImageList.js';
 
 globalThis.window = globalThis.window || { addEventListener(){} };
 
