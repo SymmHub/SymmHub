@@ -218,12 +218,12 @@ const path = (nodes, style = STYLE) => withNodes({ closed: true, style }, nodes)
     });
     const under = document.insertItem(path(square(0, 0, 4, false), { ...STYLE, fill: { rgba: [1, 0, 0, 1] } }));
     const o = document.insertItem(path(joined(square(0, 0, 3), from(square(0.5, 0, 1, true), 1))));
-    check(editor.hitTest([2, 2], 0)?.item.id === o.id, 'on the ring');
-    check(editor.hitTest([0.5, 0], 0)?.item.id === under.id, 'through the hole');
-    check(editor.hitTest([0.6, 0.205], 0)?.item.id === under.id, 'the bridge in the hole is not there');
-    check(editor.hitTest([0.6, 0.205], 10)?.item.id === under.id, 'nor with a reach');
-    check(editor.hitTest([1.505, 0], 10)?.item.id === o.id, 'its edge is, from in the hole');
-    check(editor.hitTest([-3.5, 0], 0)?.item.id === under.id, 'outside');
+    check(editor.hitTest([2, 2], null, 0)?.item.id === o.id, 'on the ring');
+    check(editor.hitTest([0.5, 0], null, 0)?.item.id === under.id, 'through the hole');
+    check(editor.hitTest([0.6, 0.205], null, 0)?.item.id === under.id, 'the bridge in the hole is not there');
+    check(editor.hitTest([0.6, 0.205], null, 10)?.item.id === under.id, 'nor with a reach');
+    check(editor.hitTest([1.505, 0], null, 10)?.item.id === o.id, 'its edge is, from in the hole');
+    check(editor.hitTest([-3.5, 0], null, 0)?.item.id === under.id, 'outside');
 
     // a fill, cut by the rings: its child is picked on the ring, not in the hole
     const image = { type: 'image', src: null, closed: true, points: [-3, -3, 3, -3, 3, 3, -3, 3], style: { stroke: null, fill: null, strokeWidth: 0, opacity: 1 } };
@@ -231,8 +231,8 @@ const path = (nodes, style = STYLE) => withNodes({ closed: true, style }, nodes)
     editor.setSelection([{ id: o.id, frame: null, frameInv: null }]);
     editor.setStyleValue('filled', false);
     editor.clearSelection();
-    check(editor.hitTest([2, 2], 0)?.item.id === o.id, 'its content picks it');
-    check(editor.hitTest([0.5, 0], 0)?.item.id === under.id, 'not in the hole');
+    check(editor.hitTest([2, 2], null, 0)?.item.id === o.id, 'its content picks it');
+    check(editor.hitTest([0.5, 0], null, 0)?.item.id === under.id, 'not in the hole');
     check(editor.getSelection().length === 0, 'nothing selected');
 }
 

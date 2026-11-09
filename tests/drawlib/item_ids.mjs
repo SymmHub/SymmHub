@@ -179,7 +179,7 @@ function newEditor(){
     doc.insertItem(square(0, 0, 0.5, { id: 'under' }));
     doc.insertItem(square(0, 0, 0.2, { id: 'over' }));
     doc.insertItem({ type: 'group', id: 'g', children: [square(0.4, 0.4, 0.05, { id: 'c' })] });
-    const pick = (x, y) => { const hit = editor.hitTest([x, y], 0); return hit ? hit.item.id : null; };
+    const pick = (x, y) => { const hit = editor.hitTest([x, y], null, 0); return hit ? hit.item.id : null; };
     check(pick(0, 0) === 'over', 'the top one is picked');
     doc.setItemVisible('over', false);
     check(pick(0, 0) === 'under', 'hidden, the one under it is');

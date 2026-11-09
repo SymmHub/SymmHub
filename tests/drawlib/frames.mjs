@@ -183,7 +183,7 @@ function newEditor(extra = {}){
     const frame = doc.insertItem(frameItem(rect(0, 0, 1, 1), [{ type: 'group', children: [a, b] }]));
     const group = doc.getItem(frame.id).children[0];
     const [ida, idb] = group.children.map(c => c.id);
-    const pick = (x, y) => { const hit = editor.hitTest([x, y], 0); return hit ? hit.item.id : null; };
+    const pick = (x, y) => { const hit = editor.hitTest([x, y], null, 0); return hit ? hit.item.id : null; };
     const path = () => (editor.getContainer() ? editor.getContainer().id : null);
 
     check(pick(-0.5, 0) === frame.id, 'a frame is picked by what it holds');
@@ -192,13 +192,13 @@ function newEditor(extra = {}){
 
     editor.enterContainer(frame.id, null, null);
     check(path() === frame.id, 'in the frame');
-    const hit = editor.hitTest([-0.5, 0], 0);
+    const hit = editor.hitTest([-0.5, 0], null, 0);
     check(hit.item.id === group.id && hit.parent.id === frame.id, 'in the frame the group is picked as a whole');
     check(pick(-1.2, 0) === under.id, 'in the frame: what it cuts off stays out');
 
     editor.enterContainer(group.id, null, null);
     check(path() === group.id, 'in the group, in the frame');
-    const hit2 = editor.hitTest([-0.5, 0], 0);
+    const hit2 = editor.hitTest([-0.5, 0], null, 0);
     check(hit2.item.id === ida && hit2.parent.id === group.id, 'in the group its members are picked');
     check(pick(0.5, 0.5) === idb, 'the other one too');
     check(pick(-1.2, 0) === under.id, 'in the group: the frame around it still cuts it off');

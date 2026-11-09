@@ -19,6 +19,11 @@
   5. the shared builders (lib/symhublib/OverlayGeometry.js): the trace of an inversive
      splane (a circle off the plane, a plane), the arcs of a side as splane records, a
      CSS colour, the geometries merged
+  6. the pixels of the editor's tolerances by the view's scale at the pointer's canvas
+     point: the pick tolerance of hitTest, the snap radius (its index rebuilt for another
+     octave of the radius only), the fit tolerance; a place without a scale falls back
+     to the pixel size; next to the limit set, where the fold magnifies the snap radius
+     without bound, the snap query stays quick and still finds a vertex's copy
 */
 
 import { Group_KLM } from '../../lib/grouplib/grouplib.js';
@@ -43,12 +48,12 @@ const mk = new Group_KLM({});
 Object.assign(mk.params, { K: 2, L: 3, M: 7, s: true, hasR: false });
 const g237 = mk.getGroup();
 
-function newEditor(view){
+function newEditor(view, group = g237){
     const document = DrawingDocument();
     document.clear();
     const editor = DrawingEditor({
         document,
-        getContext: () => ({ group: g237, ptc: { centerX: 0, centerY: 0, scale: 1, angle: 0 }, sprites: false, visLayers: [] }),
+        getContext: () => ({ group, ptc: { centerX: 0, centerY: 0, scale: 1, angle: 0 }, sprites: false, visLayers: [] }),
         view: view || { toCanvas: w => w, toWorld: c => ({ pnt: c }), isLinear: () => true, pixelSize: () => 0.001 },
     });
     return { doc: document, editor };
@@ -200,6 +205,50 @@ const square = (cx, cy, h) => ({ type: 'polyline', closed: true, points: [cx - h
     discGeometry(other, [1, 1], { size: 7, fill: [1, 1, 0, 1], color: [0, 0, 0, 1], width: 1.5 });
     const merged = mergeGeometry(geo, null, other, { polylines: [{ points: [[0, 0], [1, 1]] }] });
     check(merged.splanes.length === 3 && merged.points.length === 1 && merged.polylines.length === 1 && merged.points[0].kind === 'disc' && merged.points[0].size === 7, 'the geometries merged');
+}
+
+// 6 ───────────────────────────────────────────────────────────────────────────
+
+{
+    // a view whose pixels are ten times larger right of x = 100, and without a scale below y = 100
+    const view = { toCanvas: w => w, toWorld: c => ({ pnt: c }), isLinear: () => false, pixelSize: () => 0.001,
+                   scaleAt: c => c[1] > 100 ? NaN : (c[0] > 100 ? 0.01 : 0.001) };
+    const { doc, editor } = newEditor(view, null);
+    // a square of half side 0.1, its stroke 0.02 wide: painted to 0.11 from the centre
+    const item = doc.insertItem(square(0, 0, 0.1));
+    const hitId = (w, canvas) => { const hit = editor.hitTest(w, canvas); return hit ? hit.item.id : null; };
+    // 0.03 beyond the stroke: 6 pixels of 0.001 do not reach it, 6 pixels of 0.01 do
+    check(hitId([0.14, 0], [10, 10]) === null && hitId([0.14, 0], null) === null, 'not picked 0.03 away through small pixels');
+    check(hitId([0.14, 0], [200, 10]) === item.id, 'picked 0.03 away through pixels ten times larger');
+    check(hitId([0.114, 0], [10, 10]) === item.id && hitId([0.114, 0], null) === item.id, 'picked within the small pixels\' reach');
+    check(hitId([0.14, 0], [200, 200]) === null, 'a place without a scale: the pixel size');
+    check(editor.hitTest([0.14, 0], [200, 10], 0) === null, 'no tolerance, no reach');
+    // the snap radius, 10 pixels: 0.05 from the corner (0.1, 0.1)
+    const far = editor.snap([0.15, 0.1], null, [10, 10]);
+    const reached = editor.snap([0.15, 0.1], null, [200, 10]);
+    check(far === null && reached && reached.kind === 'vertex' && nearPt(reached.wpnt, [0.1, 0.1]), 'the snap radius follows the scale at the pointer');
+    const close = editor.snap([0.105, 0.1], null, [10, 10]);
+    check(close && nearPt(close.wpnt, [0.1, 0.1]) && editor.snap([0.15, 0.1], null, null) === null, 'and the index follows the radius back');
+    // the fit tolerance
+    check(near(editor.fitTolerance([200, 10]), 10*editor.fitTolerance([10, 10])) && near(editor.fitTolerance(null), editor.fitTolerance([10, 10]))
+          && near(editor.fitTolerance([10, 200]), editor.fitTolerance(null)), 'the fit tolerance by the scale at the canvas point');
+
+    // *237, next to the unit circle: the radius in the domain is hundreds of cells wide
+    const hyp = newEditor();
+    const sq = hyp.doc.insertItem(square(0.1, 0.05, 0.1));
+    const t0 = Date.now();
+    let found = 0;
+    for (let i = 0; i < 40; i++) if (hyp.editor.snap([0.9995*Math.cos(i), 0.9995*Math.sin(i)], null, null)) found++;
+    const ms = Date.now() - t0;
+    check(ms < 1000, 'snap queries next to the limit set are quick: 40 in ' + ms + ' ms');
+    // a copy of the square's corner (0, -0.05) far out: the corner mapped by a word of the generators
+    const corner = [0, -0.05];
+    let copy = corner;
+    // the product of the three reflections is a glide: its powers take the point out
+    for (let i = 0; i < 12; i++) copy = hyp.editor.mapWorld(g237.revITransforms[i % 3], copy);
+    const at = hyp.editor.snap(copy, null, null);
+    check(Math.hypot(copy[0], copy[1]) > 0.5 && at && at.kind === 'vertex' && at.itemId === sq.id && nearPt(at.wpnt, copy, 1e-6),
+          'a copy of a vertex is found at ' + Math.hypot(copy[0], copy[1]).toFixed(4) + ' from the centre');
 }
 
 console.log(failed ? `${failed} check(s) FAILED` : 'all checks passed');
