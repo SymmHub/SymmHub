@@ -1,7 +1,7 @@
 {
     "name": "par_s2223-6",
     "appInfo": {
-        "appName": "SymRenderer.Group_KLMN.PatternDrawing.InversiveNavigator_v1",
+        "appName": "SymRenderer.Group_WP.PatternDrawing.InversiveNavigator_v1",
         "fileFormatRelease": 1
     },
     "params": {
@@ -33,11 +33,14 @@
                         "filled": true,
                         "fill": "#3373e6",
                         "fillOpacity": 1,
+                        "fillRule": "nonzero",
                         "cap": "round",
                         "join": "round",
-                        "colorClass": -1,
                         "snap": true,
-                        "fitCurves": false
+                        "fitCurves": false,
+                        "geometry": true,
+                        "incremental": false,
+                        "keepInCell": false
                     },
                     "layers": {
                         "className": "ObjArray",
@@ -270,7 +273,10 @@
                 "scale": 0.5,
                 "angle": 0,
                 "pivotX": 0,
-                "pivotY": 0
+                "pivotY": 0,
+                "bendX": 0,
+                "bendY": 0,
+                "geometric": true
             }
         },
         "visualization": {
@@ -295,11 +301,7 @@
                                     "subgroups": {
                                         "className": "Subgroups",
                                         "params": {
-                                            "groupType": "[select]",
-                                            "groupName": "[select]",
-                                            "fileName": "",
                                             "maxIndex": 24,
-                                            "index": "[select]",
                                             "subgroup": "[select]"
                                         }
                                     },
@@ -506,18 +508,18 @@
             },
             "dirichlet": {
                 "enabled": true,
+                "autoSides": true,
                 "baseX": 0.13563514348191294,
                 "baseY": 0.12021362958994072,
-                "baseW": 0.01,
-                "words": "bAcBcBcBcAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcA bAcBcBcbcbcaBacbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcacbcbcbcaB bAcBcBcBcAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcAbAcBcBcbcbcaB bAcBcBcBcAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcAbAcBcBcbcbcaBacbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcacbcbcbcaB bAcBcBcbcbcaB bAcBcBcBcAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcA bAcBcBcbcaB bAcBcbcbcaB bAcBcBcBcB acbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcaB bAcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcBcA bAcBcBcBcBcB",
-                "searchTime": 10,
-                "depth": 2,
-                "minScale": 0.01,
-                "iterations": 200,
                 "showPoints": false,
                 "showPlanes": false,
                 "showSides": false,
-                "showLabels": false
+                "showLabels": false,
+                "words": "aC(bC)16aCbCbCBCAC(BC)15A bACBCB2CAC(BC)15A aC(bC)15aCb2CbCaB bAC(BC)3AC(BC)15A CAC(BC)3AC(BC)15A bACBCBCbCaB bACBCbCbCaB aC(bC)15aCb2CbCaBaC(bC)15aC(bC)3aC CAC(BC)3AC(BC)15AbACBCB2CAC(BC)15A bC CB aC(bC)15a(BC)13A aC(bC)16a(BC)13A",
+                "searchTime": 10,
+                "depth": 2,
+                "minScale": 0.01,
+                "iterations": 200
             },
             "options": {
                 "useSymm": true,
@@ -528,6 +530,7 @@
             "transform": {
                 "className": "InversiveNavigator_v1",
                 "params": {
+                    "mode": "euclidean",
                     "projection": {
                         "className": "ProjectionTransform",
                         "params": {
@@ -540,13 +543,13 @@
                                     "animate": false,
                                     "word": "bjhi",
                                     "orientation": "1,-1",
-                                    "fp0x": 0.2818759273013213,
-                                    "fp0y": 0.11931983885922366,
-                                    "fp1x": 0.18023612592333618,
-                                    "fp1y": 0.10712537193518902,
+                                    "fp0x": 0.2818759287819328,
+                                    "fp0y": 0.11931983970975206,
+                                    "fp1x": 0.1802361245995142,
+                                    "fp1y": 0.10712537224833682,
                                     "basex": 0,
                                     "basey": 0,
-                                    "translation": 3.3023917860041485,
+                                    "translation": 3.3023919297093616,
                                     "rotation": 0,
                                     "fraction": 0,
                                     "loopTime": 5
@@ -615,9 +618,7 @@
                     "euclidean": {
                         "centerX": -0.799278829638978,
                         "centerY": 2.1890005260790923,
-                        "zoom": [
-                            0.2611975141062277
-                        ]
+                        "zoom": 0.2611975141062277
                     },
                     "options": {
                         "animation": true
