@@ -139,7 +139,7 @@ const g632 = new Group_WP({ type: '632' }).getGroup();
 const DISK = { kind: 'hyperbolic', c: [0, 0], r: 1 };
 
 // the screen: 300 px a unit, the origin at (400, 400)
-const SCREEN = { world2screen: w => [400 + 300*w[0], 400 - 300*w[1]] };
+const SCREEN = { world2screen: w => [400 + 300*w[0], 400 - 300*w[1]], getPixelSize: () => 1/300 };
 function makeHandler(config, group, canBend = true){
     return PatternTransformHandler({ config, onChanged(){}, canvasTransform: SCREEN, overlay: null, getGroup: () => group, canBend: () => canBend });
 }
