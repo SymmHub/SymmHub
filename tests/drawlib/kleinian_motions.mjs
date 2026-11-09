@@ -269,5 +269,34 @@ const square = (cx, cy, h) => ({ type: 'polyline', closed: true, points: [cx - h
     check(errLoop < 1e-9 && nearPt(p3.pivot, C, 1e-9) && near(p3.style.strokeWidth, base.style.strokeWidth, 1e-9), `three anchored drags round a loop restore the item (${fmt(errLoop)}), its pivot and its stroke`);
 }
 
+// ── fitsCell and fitSelection('cell') on a Kleinian group ─────────────────────
+//  a shape inside its maximal disk fits its cell, one blown up across the limit set
+//  does not, and the fit puts it back inside the disk, where it fits again
+
+{
+    const group = grandma(3, 0.3);
+    const ptc = { centerX: 0, centerY: 0, scale: 1, angle: 0 };
+    const { doc, editor } = newEditor(group, ptc);
+    check(editor.geometry().fallback === 'kleinian', 'the group has no absolute');
+    const w0 = [0.3, 0.2];
+    const g0 = editor.localGeometry(w0);
+    check(g0.kind === 'hyperbolic' && g0.r > 0, `the local disk at ${w0}: ${JSON.stringify(g0)}`);
+    const item = doc.insertItem(square(w0[0], w0[1], 0.1*g0.r));
+    editor.setSelection([{ id: item.id, frame: null, frameInv: null }]);
+    check(editor.fitsCell([doc.getItem(item.id)]) === true, 'a small shape fits its cell');
+    // blown up thirty times about its centre: out of the disk
+    editor.transformSelection(q => [w0[0] + 30*(q[0] - w0[0]), w0[1] + 30*(q[1] - w0[1])], 'blow', true);
+    const big = doc.getItem(item.id);
+    check(editor.fitsCell([big]) === false, `a shape thirty times its disk does not fit its cell (box ${editor.selectionBox().map(x => x.toFixed(3))})`);
+    editor.fitSelection('cell');
+    const fitted = doc.getItem(item.id);
+    const box = editor.selectionBox();
+    const c = [0.5*(box[0] + box[2]), 0.5*(box[1] + box[3])];
+    // the fit used the disk at the blown-up shape's centre, w0 (the disk at the new centre may differ a little)
+    check(editor.fitsCell([fitted]) === true && near(Math.hypot(box[2] - box[0], box[3] - box[1]), g0.r, 1e-6) && nearPt(c, g0.c, 1e-9),
+          `fit to the cell: the box ${box.map(x => x.toFixed(4))} in the disk of radius ${g0.r.toFixed(4)} about ${g0.c.map(x => x.toFixed(4))}`);
+    check(near(fitted.style.strokeWidth, big.style.strokeWidth*(g0.r/Math.hypot(big.points[4] - big.points[0], big.points[5] - big.points[1])), 1e-9), 'the stroke scales with the fit');
+}
+
 console.log(failed ? `${failed} check(s) FAILED` : 'all checks passed');
 process.exit(failed ? 1 : 0);

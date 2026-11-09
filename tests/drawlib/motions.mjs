@@ -36,6 +36,10 @@
      loop turns it by the hyperbolic area it encloses (the other way round the other way)
      while the direct move round a loop is the identity; in the plane, and with the
      geometry off, the steps compose to the translation; it is saved with the tool settings
+  8. fitSelection: 'view' puts the selection's box, a third of the view's smaller side, at
+     the view's centre, 'cell' its diagonal half the disk's diameter at the disk's centre,
+     both as plain similarities with the strokes scaled along, one undo step each; fitsCell
+     is true on a group with an absolute; keepInCell is on by default
 */
 
 import { domainAbsolute, groupGeometry } from '../../lib/grouplib/GroupGeometry.js';
@@ -432,6 +436,37 @@ const vertex = (item, i) => [item.points[2*i], item.points[2*i + 1]];
     const saved = editor.getStyleParams().getValue();
     editor.getStyleParams().setValue({ ...saved, incremental: false });
     check(saved.incremental === true && editor.getStyleConfig().incremental === false, 'the setting is saved with the tool settings and restored from them');
+}
+
+// 8 ───────────────────────────────────────────────────────────────────────────
+//  fitSelection and fitsCell on the hyperbolic group
+
+{
+    const ptc = { centerX: 0.1, centerY: -0.05, scale: 0.8, angle: 20 };
+    const { doc, editor } = newEditor(g237, ptc);
+    editor.setStyleValue('geometry', true);
+    check(editor.getStyleConfig().keepInCell === true, 'keepInCell is on by default');
+    const item = doc.insertItem(square(0.3, -0.2, 0.05));
+    editor.setSelection([{ id: item.id, frame: null, frameInv: null }]);
+    const first = doc.getItem(item.id);
+    check(editor.fitsCell([first]) === true, 'fitsCell is true on a group with an absolute');
+    // to the view: the test view shows [-1, 1]^2 (no visible(): the editor's fallback)
+    editor.fitSelection('view');
+    const v = doc.getItem(item.id);
+    const bv = editor.selectionBox();
+    check(near(bv[2] - bv[0], 2/3, 1e-9) && near(bv[3] - bv[1], 2/3, 1e-9) && nearPt([0.5*(bv[0] + bv[2]), 0.5*(bv[1] + bv[3])], [0, 0], 1e-9)
+          && near(v.style.strokeWidth, 0.02*(2/3)/0.1, 1e-9),
+          `fit to the view: the box ${bv.map(x => x.toFixed(4))}, the stroke ${v.style.strokeWidth}`);
+    editor.undo();
+    const u = doc.getItem(item.id);
+    check(u.points.every((x, i) => near(x, first.points[i], 1e-12)) && near(u.style.strokeWidth, 0.02, 1e-12), 'the fit is one undo step');
+    // to the cell: the whole disk of the hyperbolic group, radius 0.8 about (0.1, -0.05) (the undo dropped the selection)
+    editor.setSelection([{ id: item.id, frame: null, frameInv: null }]);
+    editor.fitSelection('cell');
+    const bc = editor.selectionBox();
+    const geo = editor.geometry();
+    check(near(Math.hypot(bc[2] - bc[0], bc[3] - bc[1]), geo.r, 1e-9) && nearPt([0.5*(bc[0] + bc[2]), 0.5*(bc[1] + bc[3])], geo.c, 1e-9),
+          `fit to the cell: the box ${bc.map(x => x.toFixed(4))} in the disk of radius ${geo.r} about ${geo.c}`);
 }
 
 console.log(failed ? `${failed} check(s) FAILED` : 'all checks passed');
