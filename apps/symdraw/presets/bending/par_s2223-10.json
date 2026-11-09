@@ -37,7 +37,9 @@
                         "cap": "round",
                         "join": "round",
                         "snap": true,
-                        "fitCurves": false
+                        "fitCurves": false,
+                        "geometry": true,
+                        "incremental": false
                     },
                     "layers": {
                         "className": "ObjArray",
@@ -54,17 +56,17 @@
                                         "items": [
                                             {
                                                 "type": "polyline",
-                                                "id": "p4",
+                                                "id": "p3",
                                                 "closed": true,
                                                 "points": [
-                                                    4.784491228153668,
-                                                    8.356524784260287,
-                                                    7.21333799470257,
-                                                    7.598916018491024,
-                                                    4.469682349073805,
-                                                    6.513022296105301,
-                                                    5.56822878099282,
-                                                    7.483289759201069
+                                                    0.30949583263734703,
+                                                    0.380501284073568,
+                                                    0.33118319219358444,
+                                                    0.38628458271292165,
+                                                    0.31658037229853686,
+                                                    0.3693684370194447,
+                                                    0.3183153566507313,
+                                                    0.37862171539394873
                                                 ],
                                                 "style": {
                                                     "stroke": {
@@ -87,17 +89,7 @@
                                                         ]
                                                     },
                                                     "opacity": 1
-                                                },
-                                                "pivot": [
-                                                    5.360470397013698,
-                                                    7.549164389357415
-                                                ],
-                                                "axes": [
-                                                    0.6085216608889618,
-                                                    -0.7935372632894686,
-                                                    0.7935321827375985,
-                                                    0.6085282860801972
-                                                ]
+                                                }
                                             }
                                         ]
                                     }
@@ -113,7 +105,10 @@
                 "scale": 0.5,
                 "angle": 0,
                 "pivotX": 0,
-                "pivotY": 0
+                "pivotY": 0,
+                "bendX": 0,
+                "bendY": 0,
+                "geometric": true
             }
         },
         "visualization": {
@@ -128,7 +123,7 @@
                                 "className": "VisualizationColorSym",
                                 "params": {
                                     "id": "drawing",
-                                    "enabled": false,
+                                    "enabled": true,
                                     "opacity": 1,
                                     "imageId": "",
                                     "permutations": "abdec adbce acdbe abecd badce badce",
@@ -468,9 +463,9 @@
                         "enabled": false
                     },
                     "euclidean": {
-                        "centerX": 0.267148949131208,
-                        "centerY": 0.3873919134923791,
-                        "zoom": 2.7184285584128443
+                        "centerX": 0.33401078450829497,
+                        "centerY": 0.3888542629749121,
+                        "zoom": 9.606373789063628
                     },
                     "options": {
                         "animation": true
