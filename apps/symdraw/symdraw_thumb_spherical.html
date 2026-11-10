@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Cache-Control" content="no-cache">
+        <link rel="icon" type="image/svg+xml" href="./css/icon_symdraw.svg">
+        <title>SymDraw Spherical Presets</title>
+        <meta name="description" content="SymDraw presets with spherical group symmetry">
+        <link rel="stylesheet" href="../../css/thumbnails.css"/>
+        <link rel="stylesheet" href="../../css/index.css"/>
+    </head>
+<body>
+
+    <header>
+    <h1>SymDraw with Spherical Groups</h1>
+    </header>
+    <div class="container">
+        <p>
+        One drawing in each family of spherical groups, shown on the sphere: the polyhedral groups
+        *532, 532, *432, 432, *332, 332, 3*2 and the families *22n, 2*n, 22n, *nn, nn, nx, n*.
+        A thumbnail opens SymDraw with that preset.
+        </p>
+        <div id='thumbnails'>
+        </div>
+    </div>
+    <footer>
+    <a href='./index.html'>SymDraw</a>
+    <a href='../../index.html'>SymmHub</a>
+    </footer>
+</body>
+<script type='module'>
+    import { appendThumbnails2 } from './js/modules.js';
+    import { presets } from './js/presets_spherical.js';
+
+    appendThumbnails2({
+        elem:    document.getElementById('thumbnails'),
+        page:    'symdraw_spherical.html',
+        folder:  'presets/spherical/',
+        target:  'SYMDRAW',
+        presetsString: presets,
+    });
+</script>
+</html>
