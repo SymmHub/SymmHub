@@ -59,12 +59,12 @@ const mark = p => p.getValue || p.createUI;
 
 const kinds = [
     ['Color Images', () => VisualizationColorSym({ config: { imageId: 'a b+c', permutations: 'acb bac', mask: '01', coloringType: 'mult', useCrown: true } }),
-     ['id', 'enabled', 'opacity', 'imageId', 'permutations', 'permIndex', 'useOrbit', 'mask', 'subgroups', 'coloringType',
+     ['id', 'enabled', 'useSymmetry', 'opacity', 'frame', 'imageId', 'permutations', 'permIndex', 'useOrbit', 'mask', 'subgroups', 'coloringType',
       'colorTiles', 'useCrown', 'useTilt', 'patternTiltDirection', 'useMipmap', 'interpolation']],
     ['Color Tiles', () => VisualizationColorTiles({ config: { permutations: 'acb bac', mask: '001' } }),
-     ['id', 'enabled', 'opacity', 'permutations', 'useOrbit', 'permIndex', 'mask', 'subgroups', 'colorTiles']],
+     ['id', 'enabled', 'useSymmetry', 'opacity', 'permutations', 'useOrbit', 'permIndex', 'mask', 'subgroups', 'colorTiles']],
     ['Image', () => VisualizationImage({ config: { imageId: 'p2 p3', useTilt: true } }),
-     ['id', 'enabled', 'opacity', 'interpolation', 'dataSource', 'useMipmap', 'imageId', 'useCrown', 'useTilt', 'patternTiltDirection']],
+     ['id', 'enabled', 'useSymmetry', 'opacity', 'frame', 'interpolation', 'dataSource', 'useMipmap', 'imageId', 'useCrown', 'useTilt', 'patternTiltDirection']],
 ];
 for (const [name, make, keys] of kinds) {
     const layer = make();

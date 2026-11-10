@@ -23,10 +23,10 @@ import {
 //  opt.colorTiles     a Color Tiles layer under the drawing, as in sympix_color
 //
 
-// a page opened without a document in its hash starts with the symmetry on,
-// folding with enough steps to fill a hyperbolic disk to its rim
+// a page opened without a document in its hash folds with enough steps to fill
+// a hyperbolic disk to its rim (the layers are symmetric by default)
 const START_PARAMS = {
-    symmetry: { options: { useSymm: true, iterations: 40 } },
+    symmetry: { options: { iterations: 40 } },
 };
 
 function startSymdraw(opt = {}) {
