@@ -219,7 +219,6 @@ section('Group_Frieze', () => {
 section('Group_Spherical', () => {
     for (const type of ['*nn', 'nn', 'nx', 'n*', '*22n', '2*n', '22n']) {
         for (const n of [2, 3, 4, 5, 6]) {
-            if (type === 'nx' && n % 2) continue;      // n x of an odd n has the mirror of n*
             for (const centered of [false, true]) checkMaker(makerOf('Spherical', { type, n, centered }), `${type} ${n}`);
         }
     }
