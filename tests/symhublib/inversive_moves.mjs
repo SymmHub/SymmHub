@@ -13,10 +13,14 @@
      1/f); without a pole the dilation about p
   4. turn: p and the pole stay, a direction at p turns by a counterclockwise
   5. no move: a point at the pole, f = 1, a = 0, p0 = p1
+  6. the frame of a group's absolute: similarityMirrors takes the unit circle
+     to the absolute, frameToModel inverts the frame, a move of the unit
+     disk carried by frameMirrors keeps the absolute in the view
 */
 
 import { iPoint, iTransformU4, iReflectU4 } from '../../lib/invlib/invlib.js';
-import { inversiveDrag, inversiveDilation, inversiveTurn, invertPoint, invertSplane }
+import { inversiveDrag, inversiveDilation, inversiveTurn, invertPoint, invertSplane,
+         similarityMirrors, frameToModel, frameMirrors, frameReverses }
     from '../../lib/symhublib/InversiveMoves.js';
 import { iPlane, iSphere, SPLANE_SPHERE } from '../../lib/invlib/invlib.js';
 
@@ -107,6 +111,49 @@ for (const O of [null, [0.9, -0.3]]) {
     check(inversiveDrag([0.1, 0.1], [0.1, 0.1], O) === null, 'no drag without a step');
     check(inversiveDilation([0, 0], 1, O) === null && inversiveDilation(O, 2, O) === null, 'no dilation by 1 or at the pole');
     check(inversiveTurn([0, 0], 0, O) === null && inversiveTurn(O, 1, O) === null, 'no turn by 0 or at the pole');
+}
+
+// 6 ───────────────────────────────────────────────────────────────────────────
+
+{
+    const c = [0.3, -0.2], r = 1.7;
+    const S = similarityMirrors(c, r);
+    for (const t of [0, 1, 2.5, 4]) {
+        const q = [Math.cos(t), Math.sin(t)];
+        check(near(apply(S, q), [c[0] + r*q[0], c[1] + r*q[1]], 1e-12), 'similarityMirrors: z -> c + r z');
+    }
+    check(similarityMirrors([0, 0], 1).length === 0, 'similarityMirrors: the identity has no mirrors');
+    // the Moebius transform of the view: a move about a pole
+    const M = inversiveDrag([0.1, 0.2], [0.4, -0.1], [1.2, 1.1]);
+    const T = S.concat(M);
+    check(!frameReverses(T), 'the frame keeps the orientation');
+    // the absolute in the view: the images of the unit circle
+    const onAbs = [0.3, 1.4, 2.2, 3.9, 5.1].map(t => apply(T, [Math.cos(t), Math.sin(t)]));
+    // its circle through three of them
+    const circ = (a, b, d) => {
+        const ax = a[0], ay = a[1], bx = b[0], by = b[1], cx = d[0], cy = d[1];
+        const D = 2*(ax*(by - cy) + bx*(cy - ay) + cx*(ay - by));
+        const ux = ((ax*ax + ay*ay)*(by - cy) + (bx*bx + by*by)*(cy - ay) + (cx*cx + cy*cy)*(ay - by))/D;
+        const uy = ((ax*ax + ay*ay)*(cx - bx) + (bx*bx + by*by)*(ax - cx) + (cx*cx + cy*cy)*(bx - ax))/D;
+        return [ux, uy, Math.hypot(ax - ux, ay - uy)];
+    };
+    const A = circ(onAbs[0], onAbs[1], onAbs[2]);
+    const onA = (w) => Math.abs(Math.hypot(w[0] - A[0], w[1] - A[1]) - A[2]) < 1e-9*(1 + A[2]);
+    check(onAbs.every(onA), 'the frame takes the unit circle to a circle');
+    for (const w of onAbs) {
+        const q = frameToModel(T, w);
+        check(Math.abs(Math.hypot(q[0], q[1]) - 1) < 1e-9, 'frameToModel: the absolute to the unit circle');
+    }
+    // a move of the unit disk: the rotation about 0 by two lines through it, then the
+    // hyperbolic translation along the x axis by two circles orthogonal to the unit circle
+    const rot = [iPlane([0, 1, 0, 0]), iPlane([-Math.sin(0.4), Math.cos(0.4), 0, 0])];
+    const tr = [iSphere([2, 0, 0, Math.sqrt(3)]), iSphere([3, 0, 0, Math.sqrt(8)])];
+    for (const mv of [rot, tr]) {
+        const F = frameMirrors(T, mv);
+        check(onAbs.every(w => onA(apply(F, w))), 'frameMirrors: the move keeps the absolute in the view');
+        const q = [0.2, -0.35];
+        check(near(apply(F, apply(T, q)), apply(T, apply(mv, q)), 1e-9), 'frameMirrors: T S T^-1');
+    }
 }
 
 console.log(failed ? `${failed} FAILED` : 'all passed');
