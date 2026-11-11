@@ -711,7 +711,7 @@ export class GroupRenderer {
         progFD.setUniforms(configUni);
         progFD.setUniforms(patternUni);
         // the FD rendering region is a square of size 2 centered at origin 
-        let canvasUni = {u_center: [0.,0.], u_scale:1, u_aspect: 1., u_pixelSize: 2./fdbuff.width}; 
+        let canvasUni = {u_rotation: 0, u_center: [0.,0.], u_scale:1, u_aspect: 1., u_pixelSize: 2./fdbuff.width}; 
         progFD.setUniforms(canvasUni);
         progFD.setUniforms(groupUni);
                 

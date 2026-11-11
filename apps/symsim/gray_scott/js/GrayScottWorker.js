@@ -164,7 +164,7 @@ function GrayScottWorker(options = {}) {
         program.setUniforms({
             u_aspect: buffer.height / buffer.width,
             u_scale:  0.5,
-            u_center: [0.5, 0.5],
+            u_rotation: 0, u_center: [0.5, 0.5],
         });
 
         program.setUniforms({

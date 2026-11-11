@@ -240,7 +240,7 @@ function PatternImage(options){
         mGL.viewport(0, 0, buf.width, buf.height);              
         clearImageBuffer(buf, [0.2, 0.7, 0.2, 1.]);
 
-        let ctUni = { u_aspect: 1., u_scale: 1., u_center: [0.,0.], u_pixelSize: 2./buf.width};
+        let ctUni = { u_aspect: 1., u_scale: 1., u_rotation: 0, u_center: [0.,0.], u_pixelSize: 2./buf.width};
         program.setUniforms(ctUni);
         let cfg = mConfig;
         let a = -cfg.angle*TORADIANS;

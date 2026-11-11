@@ -134,7 +134,7 @@ function GrayScottInitializer(options = {}) {
         program.setUniforms({
             u_aspect: buffer.height / buffer.width,
             u_scale:  1,
-            u_center: [0, 0],
+            u_rotation: 0, u_center: [0, 0],
         });
 
         program.setUniforms({
@@ -167,7 +167,7 @@ function GrayScottInitializer(options = {}) {
         program.setUniforms({
             u_aspect: buffer.height / buffer.width,
             u_scale:  1,
-            u_center: [0, 0],
+            u_rotation: 0, u_center: [0, 0],
         });
 
         const fd                = group.getFundDomain();
