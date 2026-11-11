@@ -91,3 +91,7 @@ export {
     SympixLayerFactory,
     SympixColorLayerFactory,
 } from './SympixLayerFactory.js';
+
+export {
+    buildOrbifoldMenu,
+} from './OrbifoldMenu.js';

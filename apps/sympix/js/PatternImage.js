@@ -299,6 +299,27 @@ function PatternImage(options){
         return mParams;
     }
 
+    // the image's place in the pattern box (buffer coordinates): the square of
+    // half side `scale` about (centerX, centerY), turned by `angle` degrees
+    function getTransform(){
+        return {
+            centerX: mConfig.centerX || 0,
+            centerY: mConfig.centerY || 0,
+            scale:   (mConfig.scale === undefined) ? 1 : mConfig.scale,
+            angle:   mConfig.angle || 0,
+        };
+    }
+
+    // the pattern transform tool's write back: any of centerX, centerY, scale, angle
+    function setTransform(t){
+        if (!t) return;
+        for (const k of ['centerX', 'centerY', 'scale', 'angle']) {
+            if (Number.isFinite(t[k])) mConfig[k] = t[k];
+        }
+        if (mParams && mParams.transform) mParams.transform.updateDisplay();
+        onParamChanged();
+    }
+
     function getImage(){
         if(mNeedToRender){
             renderBuffer();
@@ -320,6 +341,8 @@ function PatternImage(options){
         setParamsMap    : setParamsMap,
         getSimBuffer    : getSimBuffer,
         getPatternData  : getPatternData,
+        getTransform    : getTransform,
+        setTransform    : setTransform,
         // the pattern box may be placed by a bent pose (PatternPose.js): the pattern
         // transform tool then moves the image in the geometry of the group
         canBend         : () => true,

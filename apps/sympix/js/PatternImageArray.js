@@ -9,6 +9,7 @@ import {
     ParamFloat,
     PatternImage,
     PatternImageCreator,
+    setParamValues,
 } from './modules.js';
 
 const MYNAME = 'PatternImageArray';
@@ -140,6 +141,46 @@ function PatternImageArray(options = {}) {
         return mParams;
     }
 
+    // ── old documents ─────────────────────────────────────────────────────────
+    //
+    //  ParamObj hands a saved pattern to setParamsMap. A document saved by a
+    //  page whose pattern was a single PatternImage (the orbifold page before
+    //  2026-11-11) has the image's keys at the top and no `images`: it becomes
+    //  the array's one image.
+    //
+    function setParamsMap(values, initialize = false) {
+        setParamValues(mParams, upgradeData(values), initialize);
+    }
+
+    const IMAGE_KEYS = ['texture', 'transform', 'useCrown', 'adjust', 'flipX', 'flipY'];
+
+    function upgradeData(v) {
+        if (!v || typeof v !== 'object' || v.images || !IMAGE_KEYS.some(k => k in v)) return v;
+        if (DEBUG) console.log(`${MYNAME}.upgradeData(): a single image document`);
+        const image = {};
+        for (const k of Object.keys(v)) {
+            if (k === 'active') continue;
+            image[k] = v[k];
+        }
+        return {
+            ...(('active' in v) ? { active: v.active } : {}),
+            images: { className: 'ObjArray', params: { id: '', children: [{ className: 'PatternImage', params: image }] } },
+        };
+    }
+
+    // ── the images' places, for the pattern transform tool ───────────────────
+    //
+    //  one entry per image: its id and its place in the pattern box
+    //  (PatternImage.getTransform / setTransform)
+    //
+    function getImageTransforms() {
+        return mConfig.images.getChildren().filter(img => img.getTransform).map((img, i) => ({
+            id:  img.getId ? img.getId() : `image_${i}`,
+            get: () => img.getTransform(),
+            set: (t) => img.setTransform(t),
+        }));
+    }
+
     // ── PatternData ───────────────────────────────────────────────────────────
 
     function getPatternData() {
@@ -164,7 +205,9 @@ function PatternImageArray(options = {}) {
         setGroup,
         init,
         getParams,
+        setParamsMap,
         getPatternData,
+        getImageTransforms,
         // the pattern box may be placed by a bent pose (PatternPose.js): the pattern
         // transform tool then moves the images in the geometry of the group
         canBend: () => true,
