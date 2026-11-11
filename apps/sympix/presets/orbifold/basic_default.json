@@ -107,7 +107,10 @@
                 "scale": 0.4353527351323828,
                 "angle": -14.438233210205558,
                 "pivotX": 0,
-                "pivotY": 0
+                "pivotY": 0,
+                "bendX": 0,
+                "bendY": 0,
+                "geometric": true
             }
         },
         "visualization": {
@@ -123,11 +126,16 @@
                                 "params": {
                                     "id": "image",
                                     "enabled": true,
+                                    "useSymmetry": true,
                                     "opacity": 1,
+                                    "frame": "fit",
                                     "interpolation": "linear",
                                     "dataSource": "u",
                                     "useMipmap": false,
-                                    "imageId": ""
+                                    "imageId": "",
+                                    "useCrown": false,
+                                    "useTilt": false,
+                                    "patternTiltDirection": 0
                                 }
                             },
                             {
@@ -152,7 +160,8 @@
                                                         "symmetry": {
                                                             "type": "renderer",
                                                             "maxIndex": 8,
-                                                            "cosets": ""
+                                                            "cosets": "",
+                                                            "iterations": 0
                                                         }
                                                     }
                                                 },
@@ -181,7 +190,8 @@
                                                         "symmetry": {
                                                             "type": "renderer",
                                                             "maxIndex": 8,
-                                                            "cosets": ""
+                                                            "cosets": "",
+                                                            "iterations": 0
                                                         }
                                                     }
                                                 },
@@ -229,7 +239,8 @@
                                                         "symmetry": {
                                                             "type": "renderer",
                                                             "maxIndex": 8,
-                                                            "cosets": ""
+                                                            "cosets": "",
+                                                            "iterations": 0
                                                         }
                                                     }
                                                 }
@@ -281,8 +292,22 @@
                 "rotation": 0,
                 "scale": 1
             },
+            "dirichlet": {
+                "enabled": false,
+                "autoSides": true,
+                "baseX": 0.01,
+                "baseY": 0.02,
+                "showPoints": false,
+                "showPlanes": false,
+                "showSides": true,
+                "showLabels": true,
+                "words": "",
+                "searchTime": 10,
+                "depth": 2,
+                "minScale": 0.01,
+                "iterations": 200
+            },
             "options": {
-                "useSymm": true,
                 "iterations": 100
             }
         },
@@ -290,6 +315,7 @@
             "transform": {
                 "className": "InversiveNavigator_v1",
                 "params": {
+                    "mode": "euclidean",
                     "projection": {
                         "className": "ProjectionTransform",
                         "params": {
@@ -377,9 +403,7 @@
                     "euclidean": {
                         "centerX": 0.18623275782199042,
                         "centerY": 0.002742010829595696,
-                        "zoom": [
-                            0.485252778186948
-                        ]
+                        "zoom": 0.485252778186948
                     },
                     "options": {
                         "animation": true
