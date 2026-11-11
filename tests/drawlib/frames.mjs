@@ -17,12 +17,28 @@
      back in a whole frame; undo and redo
   7. the style settings on a frame: a stroke brings no fill; opacity; the next shape keeps
      its stroke after a frame was selected
+  8. frameAxes, the transform box of a frame without axes of its own: along the picture's
+     bottom edge (turned, sheared, mirrored, turned by a map), a frame of an SVG along its
+     rect, none for what is not a frame; the box's w and h along those axes: a turned
+     picture measured along its sides, a typed width stretches it along its side unsheared
+  9. the picture in its holder: placedPicture by cover, fit and stretch, in a turned and a
+     skewed box; pictureOrientation snapped, orientedBy flips and turns; the editor's
+     placePicture (fit mode kept on the frame, flips and turns about the box, a reset after a
+     move inside, a star's fill, one undo step each); size and fit kept by the document
+ 10. the Image tool: framedPicture (the placeholder, a chosen picture, the tool's fit); a
+     drag lands a frame over the box, Shift in the picture's proportions, a click places one
+     of the picture's proportions or selects a frame; the placeholder flag kept by the
+     document and dropped by a replace; Escape, Delete, undo
 */
 
-import { framedImage, withImagesFramed, frameItem } from '../../lib/drawlib/Frames.js';
+import { framedImage, withImagesFramed, frameItem, frameAxes, holderBox, pictureOrientation, orientedBy, placedPicture, holderFit } from '../../lib/drawlib/Frames.js';
+import { mappedItem } from '../../lib/drawlib/Paths.js';
+import { boxProperties } from '../../lib/drawlib/ToolProperties.js';
 import { coverQuad, itemCopy } from '../../lib/drawlib/ImageItems.js';
 import { DrawingDocument } from '../../lib/drawlib/DrawingDocument.js';
 import { DrawingEditor } from '../../lib/drawlib/DrawingEditor.js';
+import { ImageTool } from '../../lib/drawlib/ImageTool.js';
+import { placeholderPicture } from '../../lib/drawlib/ImageItems.js';
 
 globalThis.window = globalThis.window || { addEventListener(){} };
 
@@ -326,6 +342,236 @@ function newEditor(extra = {}){
     const shape = doc2.insertItem(square(0, 0, 1, { stroke: { rgba: [0, 1, 0, 1] }, strokeWidth: 0.2 }));
     editor2.setSelection([{ id: shape.id, frame: null, frameInv: null }]);
     check(editor2.getStyleConfig().width === 0.2, 'a shape that paints shows its style');
+}
+
+// 8 ───────────────────────────────────────────────────────────────────────────
+{
+    const deg = Math.PI/180;
+    const turnedQuad = (t, w = 2, h = 1) => {
+        const c = Math.cos(t), s = Math.sin(t);
+        const at = (x, y) => [c*x - s*y, s*x + c*y];
+        return [...at(-w, -h), ...at(w, -h), ...at(w, h), ...at(-w, h)];
+    };
+    const axesNear = (a, t, what) => check(near(a[0], Math.cos(t), 1e-9) && near(a[1], Math.sin(t), 1e-9) &&
+                                           near(a[2], -Math.sin(t), 1e-9) && near(a[3], Math.cos(t), 1e-9), what + ': ' + a.map(x => x.toFixed(4)));
+
+    axesNear(frameAxes(framedImage(image(turnedQuad(0)))), 0, 'a straight picture: the world axes');
+    axesNear(frameAxes(framedImage(image(turnedQuad(30*deg)))), 30*deg, 'a picture turned by 30 degrees');
+    axesNear(frameAxes(framedImage(image(turnedQuad(-135*deg)))), -135*deg, 'a picture turned by -135 degrees');
+    // sheared: along the bottom edge, the second axis square to it
+    axesNear(frameAxes(framedImage(image([0, 0, 2, 0, 3, 1, 1, 1]))), 0, 'a sheared picture: along its bottom edge');
+    // mirrored (its top-left where the top-right would be): a box all the same, along the bottom edge
+    const mirrored = frameAxes(framedImage(image([0, 0, -2, 0, -2, 1, 0, 1])));
+    axesNear(mirrored, Math.PI, 'a mirrored picture: along its bottom edge, which runs to the left');
+    check(mirrored[0]*mirrored[3] - mirrored[1]*mirrored[2] > 0, 'the axes of a mirrored picture keep their hand');
+
+    // the box follows the picture under maps that set no axes: a turn by 45 degrees, a flip
+    const frame = framedImage(image(turnedQuad(0)));
+    const turn = (t) => p => [Math.cos(t)*p[0] - Math.sin(t)*p[1], Math.sin(t)*p[0] + Math.cos(t)*p[1]];
+    const turned = mappedItem(frame, turn(45*deg));
+    check(!turned.axes, 'a turn sets no axes of the item');
+    axesNear(frameAxes(turned), 45*deg, 'a frame turned by 45 degrees: its box too');
+    axesNear(frameAxes(mappedItem(turned, p => [-p[0], p[1]])), 135*deg, 'flipped across y: along the bottom edge of the picture');
+
+    // an SVG's frame (no image): along its rect
+    const svg = frameItem({ kind: 'rect', cx: 0, cy: 0, rx: 1, ry: 0.5, angle: 20*deg }, [square(0, 0, 0.2)]);
+    axesNear(frameAxes(svg), 20*deg, 'an SVG frame: along its rect');
+    check(frameAxes(square(0, 0, 1)) === null, 'a shape that holds nothing is not a frame');
+    check(frameAxes(null) === null, 'nothing');
+
+    // the box's numbers along the axes of a picture turned by 30 degrees
+    const { doc, editor } = newEditor();
+    const t = 30*deg;
+    const fr = doc.insertItem(framedImage(image(turnedQuad(t), { src: 'data:image/png;base64,AAAA' })));
+    editor.setSelection([{ id: fr.id, frame: null, frameInv: null }]);
+    const getAxes = () => frameAxes(doc.getItem(fr.id));
+    const fields = Object.fromEntries(boxProperties(editor, getAxes).map(f => [f.label, f]));
+    check(near(fields.w.get(), 4, 1e-9) && near(fields.h.get(), 2, 1e-9), `w, h along the picture's sides: ${fields.w.get()}, ${fields.h.get()}`);
+    check(near(fields.x.get(), 0, 1e-9) && near(fields.y.get(), 0, 1e-9), 'x, y the centre');
+    fields.w.set(6);
+    let it = doc.getItem(fr.id), q = it.children[0].points;
+    const len = (i, j) => Math.hypot(q[j] - q[i], q[j + 1] - q[i + 1]);
+    check(near(len(0, 2), 6, 1e-9) && near(len(0, 6), 2, 1e-9), `a typed width stretches along the bottom edge: ${len(0, 2)}, ${len(0, 6)}`);
+    const dot = (q[2] - q[0])*(q[6] - q[0]) + (q[3] - q[1])*(q[7] - q[1]);
+    check(near(dot, 0, 1e-9), 'not sheared');
+    axesNear(frameAxes(it), t, 'the turn stays');
+    check(near(fields.w.get(), 6, 1e-9), 'the field reads what was typed');
+    fields.h.set(3);
+    it = doc.getItem(fr.id); q = it.children[0].points;
+    check(near(len(0, 6), 3, 1e-9) && near(len(0, 2), 6, 1e-9), 'a typed height along the left edge');
+    fields.x.set(1);
+    check(near(fields.x.get(), 1, 1e-9) && near(fields.y.get(), 0, 1e-9), 'x moves along the world x');
+    // without axes the world's, as before
+    const plain = Object.fromEntries(boxProperties(editor).map(f => [f.label, f]));
+    const c = Math.cos(t), sn = Math.sin(t);
+    check(near(plain.w.get(), 2*(6/2*c + 3/2*sn), 1e-9), `without axes: the world box, ${plain.w.get()}`);
+}
+
+// 9 ───────────────────────────────────────────────────────────────────────────
+{
+    const deg = Math.PI/180;
+    const pts = (q) => [0, 2, 4, 6].map(i => [q[i], q[i + 1]]);
+    const quadNear = (a, b, what, eps = 1e-9) => check(a.length === b.length && a.every((v, i) => near(v, b[i], eps)), what + ': ' + a.map(v => v.toFixed(4)).join(' ') + ' vs ' + b.map(v => v.toFixed(4)).join(' '));
+    const side = (q, i, j) => Math.hypot(q[j] - q[i], q[j + 1] - q[i + 1]);
+    // a box 4 by 2 (half 2, 1), straight; a picture of 300 by 300 pixels
+    const box = { kind: 'rect', cx: 0, cy: 0, rx: 2, ry: 1, angle: 0 };
+    quadNear(placedPicture(box, 300, 300, 'cover'), [-2, -2, 2, -2, 2, 2, -2, 2], 'cover: a square over a 4 by 2 box is 4 by 4');
+    quadNear(placedPicture(box, 300, 300, 'fit'), [-1, -1, 1, -1, 1, 1, -1, 1], 'fit: a square inside a 4 by 2 box is 2 by 2');
+    quadNear(placedPicture(box, 300, 300, 'stretch'), [-2, -1, 2, -1, 2, 1, -2, 1], 'stretch: the box');
+    // a picture 2:1 turned a quarter left: its width along the box's height
+    const left = { right: [0, 1], up: [-1, 0] };
+    const q = placedPicture(box, 200, 100, 'fit', left);
+    check(near(side(q, 0, 2), 2, 1e-9) && near(side(q, 0, 6), 1, 1e-9), `fit, turned: the 2:1 picture 2 by 1 standing up, ${side(q, 0, 2)}, ${side(q, 0, 6)}`);
+    check(near(q[2] - q[0], 0, 1e-9) && q[3] > q[1], 'its bottom edge runs up the box');
+    // turned and skewed boxes: stretch lands on the box's corners
+    const turned = { kind: 'rect', cx: 1, cy: 2, rx: 2, ry: 1, angle: 30*deg, skew: 0.3 };
+    const corners = [[-2, -1], [2, -1], [2, 1], [-2, 1]].flatMap(([x, y]) => { const c = Math.cos(30*deg), sn = Math.sin(30*deg), xs = x + 0.3*y; return [1 + xs*c - y*sn, 2 + xs*sn + y*c]; });
+    quadNear(placedPicture(turned, 640, 480, 'stretch'), corners, 'stretch in a turned, skewed box: on its corners');
+    // orientation read back, snapped
+    for (const o of [{ right: [1, 0], up: [0, 1] }, { right: [-1, 0], up: [0, 1] }, { right: [0, 1], up: [-1, 0] }, { right: [0, -1], up: [-1, 0] }]) {
+        const back = pictureOrientation(turned, placedPicture(turned, 300, 200, 'cover', o));
+        check(back.right.join() === o.right.join() && back.up.join() === o.up.join(), `orientation read back: ${JSON.stringify(o)} -> ${JSON.stringify(back)}`);
+    }
+    // a picture turned a little in the box counts as straight
+    const tilted = turnedQuadOf(10*deg);
+    function turnedQuadOf(t){ const c = Math.cos(t), sn = Math.sin(t); return [[-2, -1], [2, -1], [2, 1], [-2, 1]].flatMap(([x, y]) => [c*x - sn*y, sn*x + c*y]); }
+    const o10 = pictureOrientation(box, tilted);
+    check(o10.right.join() === '1,0' && o10.up.join() === '0,1', 'turned by 10 degrees: straight');
+    // the eight orientations from flips and turns
+    const st = { right: [1, 0], up: [0, 1] };
+    const seq = (o, ops) => ops.reduce((a, op) => orientedBy(a, op), o);
+    check(JSON.stringify(seq(st, ['flipH'])) === JSON.stringify({ right: [-1, 0], up: [0, 1] }), 'flipH');
+    check(JSON.stringify(seq(st, ['flipV'])) === JSON.stringify({ right: [1, 0], up: [0, -1] }), 'flipV');
+    check(JSON.stringify(seq(st, ['turnLeft', 'turnLeft', 'turnLeft', 'turnLeft'])) === JSON.stringify(st), 'four quarter turns: back');
+    check(JSON.stringify(seq(st, ['turnLeft', 'turnRight'])) === JSON.stringify(st), 'left then right: back');
+    check(JSON.stringify(seq(st, ['flipH', 'flipV'])) === JSON.stringify(seq(st, ['turnLeft', 'turnLeft'])), 'both flips: a half turn');
+    // holderBox: a rect frame's own numbers, a star's fill box
+    check(holderBox(frameItem(turned, [])).angle === turned.angle, 'a frame: its rect');
+    check(holderFit({}) === 'cover' && holderFit({ fit: 'fit' }) === 'fit' && holderFit({ fit: 'x' }) === 'cover', 'fit modes');
+
+    // the editor
+    const { doc, editor } = newEditor();
+    const img = (q, extra = {}) => image(q, { src: 'data:image/png;base64,AAAA', size: [200, 100], ...extra });
+    const fr = doc.insertItem(frameItem({ kind: 'rect', cx: 0, cy: 0, rx: 1, ry: 1, angle: 0 }, [img([-2, -1, 2, -1, 2, 1, -2, 1])]));
+    const pic = () => doc.getItem(fr.id).children[0];
+    editor.setSelection([{ id: fr.id, frame: null, frameInv: null }]);
+    check(editor.getPictureHolders().length === 1 && editor.pictureFit() === 'cover', 'a frame holds a picture, cover');
+    editor.placePicture('fit');
+    check(doc.getItem(fr.id).fit === 'fit', 'fit kept on the frame');
+    quadNear(pic().points, [-1, -0.5, 1, -0.5, 1, 0.5, -1, 0.5], 'fit: 2 by 1 in the 2 by 2 frame');
+    check(pic().size.join() === '200,100' && pic().src === 'data:image/png;base64,AAAA', 'size and source kept');
+    editor.placePicture(null, 'turnLeft');
+    let o = pictureOrientation(holderBox(doc.getItem(fr.id)), pic().points);
+    check(o.right.join() === '0,1' && o.up.join() === '-1,0', 'turned left in the frame');
+    check(near(side(pic().points, 0, 2), 2, 1e-9) && near(side(pic().points, 0, 6), 1, 1e-9), 'still fit, standing up: 2 by 1');
+    editor.placePicture(null, 'flipH');
+    o = pictureOrientation(holderBox(doc.getItem(fr.id)), pic().points);
+    check(o.right.join() === '0,1' && o.up.join() === '1,0', `then flipped left to right: the up turned over, ${JSON.stringify(o)}`);
+    editor.placePicture('stretch');
+    quadNear(pic().points.map(Math.abs), [1, 1, 1, 1, 1, 1, 1, 1], 'stretch: on the frame, flipped and turned');
+    o = pictureOrientation(holderBox(doc.getItem(fr.id)), pic().points);
+    check(o.right.join() === '0,1' && o.up.join() === '1,0', 'the mode keeps the orientation');
+    editor.undo(); editor.undo(); editor.undo();
+    editor.setSelection([{ id: fr.id, frame: null, frameInv: null }]);
+    quadNear(pic().points, [-1, -0.5, 1, -0.5, 1, 0.5, -1, 0.5], 'one undo step each');
+    editor.undo();
+    editor.setSelection([{ id: fr.id, frame: null, frameInv: null }]);
+    check(!doc.getItem(fr.id).fit, 'cover is the default, not written');
+    quadNear(pic().points, [-2, -1, 2, -1, 2, 1, -2, 1], 'back to the import');
+    // a picture moved inside, reset
+    doc.updateItem(fr.id, { ...doc.getItem(fr.id), children: [{ ...pic(), points: pic().points.map((v, i) => v + (i % 2 ? 0.2 : 0.3)) }] });
+    editor.setSelection([{ id: fr.id, frame: null, frameInv: null }]);
+    editor.placePicture();
+    quadNear(pic().points, [-2, -1, 2, -1, 2, 1, -2, 1], 'reset after a move inside');
+    // an older image without its size: the quad's sides
+    doc.updateItem(fr.id, { ...doc.getItem(fr.id), children: [{ ...pic(), size: undefined }] });
+    editor.setSelection([{ id: fr.id, frame: null, frameInv: null }]);
+    editor.placePicture('fit');
+    quadNear(pic().points, [-1, -0.5, 1, -0.5, 1, 0.5, -1, 0.5], 'no size kept: the quad gives it');
+    check(pic().size && near(pic().size[0]/pic().size[1], 2, 1e-9), 'and it is kept from then on');
+    // a star filled with an image
+    const star = doc.insertItem({ type: 'polyline', closed: true, points: [0, 3, 1, 1, 3, 0, 1, -1, 0, -3, -1, -1, -3, 0, -1, 1],
+                                  style: { stroke: null, fill: { rgba: [1, 0, 0, 1] }, strokeWidth: 0, opacity: 1 },
+                                  children: [img([-1, -0.5, 1, -0.5, 1, 0.5, -1, 0.5])] });
+    editor.setSelection([{ id: star.id, frame: null, frameInv: null }]);
+    editor.placePicture('cover');
+    const sq = doc.getItem(star.id).children[0].points;
+    check(near(side(sq, 0, 2), 12, 1e-9) && near(side(sq, 0, 6), 6, 1e-9), `a star's fill covers its 6 by 6 box: ${side(sq, 0, 2)} by ${side(sq, 0, 6)}`);
+    // groups and shapes without a picture are left alone
+    const plain = doc.insertItem(square(5, 5, 1));
+    editor.setSelection([{ id: plain.id, frame: null, frameInv: null }]);
+    check(editor.getPictureHolders().length === 0 && editor.placePicture('fit') === false && editor.pictureFit() === null, 'nothing to place');
+    // the document keeps size and fit
+    const json = JSON.parse(JSON.stringify(doc.getItem(fr.id)));
+    const { doc: doc2 } = newEditor();
+    const back = doc2.insertItem(json);
+    check(back.fit === 'fit' && back.children[0].size && back.children[0].size.length === 2, 'size and fit through the document');
+}
+
+// 10 ──────────────────────────────────────────────────────────────────────────
+{
+    const { doc, editor } = newEditor();
+    const side = (q, i, j) => Math.hypot(q[j] - q[i], q[j + 1] - q[i + 1]);
+    const ph = placeholderPicture();
+    check(ph.placeholder && ph.size.join() === '256,192' && ph.src.startsWith('data:image/svg+xml;base64,'), 'the placeholder picture');
+    check(editor.getImageToolConfig().picture.placeholder && editor.getImageToolConfig().fit === 'cover', 'the tool starts with the placeholder, cover');
+
+    // framedPicture: a 4 by 2 rect, the placeholder (4:3) covering it
+    let fr = editor.framedPicture({ kind: 'rect', cx: 0, cy: 0, rx: 2, ry: 1, angle: 0 });
+    let im = fr.children[0];
+    check(fr.shape.kind === 'rect' && !fr.fit && im.type === 'image' && im.placeholder === true, 'a frame of the placeholder, cover');
+    check(near(side(im.points, 0, 2), 4, 1e-9) && near(side(im.points, 0, 6), 3, 1e-9), `covering 4 by 2 with 4:3: 4 by 3, ${side(im.points, 0, 2)} by ${side(im.points, 0, 6)}`);
+    editor.setImageToolPicture({ src: 'data:image/png;base64,AAAA', size: [100, 200] });
+    editor.setImageToolValue('fit', 'fit');
+    fr = editor.framedPicture({ kind: 'rect', cx: 0, cy: 0, rx: 2, ry: 1, angle: 0 });
+    im = fr.children[0];
+    check(fr.fit === 'fit' && !im.placeholder && im.src === 'data:image/png;base64,AAAA', 'a chosen picture, the tool\'s fit');
+    check(near(side(im.points, 0, 2), 1, 1e-9) && near(side(im.points, 0, 6), 2, 1e-9), '1:2 fitting 4 by 2: 1 by 2');
+    editor.setImageToolPicture(ph);
+    editor.setImageToolValue('fit', 'cover');
+
+    // the tool, through pointer events on the identity view (a pixel is 0.001 of a world unit there)
+    const tool = ImageTool({ editor });
+    const ev = (type, x, y, extra = {}) => { const e = { type, button: 0, buttons: type === 'pointerup' ? 0 : 1, wpnt: [x, y], canvasX: x, canvasY: y, shiftKey: false, preventDefault(){}, ...extra }; tool.handleEvent(e); return e; };
+    const items = () => doc.getItems();
+    ev('pointerdown', 0, 0); ev('pointermove', 40, 20); ev('pointerup', 40, 20);
+    check(items().length === 1, 'a drag lands a frame');
+    let f = items()[0];
+    check(f.shape.kind === 'rect' && near(2*f.shape.rx, 40, 1e-9) && near(2*f.shape.ry, 20, 1e-9) && near(f.shape.cx, 20, 1e-9), `over the box dragged: ${2*f.shape.rx} by ${2*f.shape.ry}`);
+    check(f.children.length === 1 && f.children[0].placeholder === true && f.children[0].size.join() === '256,192', 'holding the placeholder, its size kept');
+    check(editor.getSelection().length === 1 && editor.getSelection()[0].id === f.id, 'selected');
+    check(editor.getPictureHolders().length === 1, 'a holder of a picture for the bar');
+    // Shift: the picture's proportions, 4:3
+    // a tall drag: the larger 4:3 box, as high as the drag
+    ev('pointerdown', 100, 0); ev('pointerup', 110, 60, { shiftKey: true });
+    f = items()[1];
+    check(near(2*f.shape.rx, 80, 1e-9) && near(2*f.shape.ry, 60, 1e-9), `Shift: 4:3, ${2*f.shape.rx} by ${2*f.shape.ry}`);
+    // a click on a frame selects it, elsewhere places one of the picture's proportions
+    ev('pointerdown', 20, 10); ev('pointerup', 20, 10);
+    check(items().length === 2 && editor.getSelection()[0].id === items()[0].id, 'a click on a frame selects it');
+    ev('pointerdown', 500, 500); ev('pointerup', 500, 500);
+    f = items()[2];
+    check(items().length === 3 && near(2*f.shape.rx, 0.16, 1e-9) && near(2*f.shape.ry, 0.12, 1e-9) && near(f.shape.cx, 500, 1e-9), `a click elsewhere: 160 by 120 pixels (of 0.001) at the click, ${2*f.shape.rx} by ${2*f.shape.ry}`);
+    // the document keeps the placeholder flag; a replace drops it
+    check(JSON.parse(JSON.stringify(f)).children[0].placeholder === true, 'the placeholder flag saved');
+    editor.setSelection([{ id: f.id, frame: null, frameInv: null }]);
+    editor.replacePictures({ src: 'data:image/png;base64,BBBB', size: [300, 100] });
+    let g = doc.getItem(f.id).children[0];
+    check(!g.placeholder && g.src === 'data:image/png;base64,BBBB' && g.size.join() === '300,100', 'a replace drops the placeholder');
+    check(near(side(g.points, 0, 2)/side(g.points, 0, 6), 3, 1e-9), 'the new picture unstretched');
+    editor.undo();
+    check(doc.getItem(f.id).children[0].placeholder === true, 'undo brings the placeholder back');
+    // Escape drops a drag; Delete removes the selection; undo of the landing
+    ev('pointerdown', 0, 300); ev('pointermove', 50, 350);
+    const esc = { type: 'keydown', key: 'Escape' };
+    tool.handleKey(esc);
+    ev('pointerup', 50, 350, { buttons: 0 });
+    check(items().length === 3 && esc.isConsumed, 'Escape drops the drag');
+    editor.setSelection([{ id: f.id, frame: null, frameInv: null }]);
+    tool.handleKey({ type: 'keydown', key: 'Delete' });
+    check(items().length === 2, 'Delete removes the selection');
+    editor.undo(); editor.undo();
+    check(items().length === 2 && !doc.getItem(f.id), 'undo: the delete, then the landing');
 }
 
 console.log(failed ? `${failed} failed` : 'all passed');
