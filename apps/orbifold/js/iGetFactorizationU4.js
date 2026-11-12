@@ -69,7 +69,9 @@ const SPLANE_POINT = 3;
 
 
 
-const iPointAtInfinity = iPoint(1.e10,0,0,0);
+// a far point (iPoint takes an array: iPoint(1.e10,0,0,0) had the number 1e10 as v); a new
+// one every time, a shared one could be changed by a caller (2026-11-12, as invlib Inversive.js)
+const iPointAtInfinity = () => iPoint([1.e10, 0, 0, 0]);
 
 
 
@@ -183,7 +185,7 @@ export function H4toU4(v) {
         if (abs(den) > eps) {
             return iPoint([v[0] / den, v[1] / den, v[2] / den, sqrt(-ip) / den]);
         } else {
-            return iPointAtInfinity;
+            return iPointAtInfinity();
         }
     } else {
         // point at the horizon in R3 (really S3)
@@ -193,7 +195,7 @@ export function H4toU4(v) {
         } else {
             // point at infinity of Riemann sphere S3
             if (debug)console.log("H4toU4 return pointAtInfinity");
-            return iPointAtInfinity;
+            return iPointAtInfinity();
         }
     }
 }

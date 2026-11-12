@@ -81,6 +81,15 @@
       groups, both ways; a corner bitten off while the arcs still pair up is seen by the
       products of the sides. sideArcContains tells the arcs of a side from the rest of
       its circle.
+  17. sides that are nearly lines (2026-11-12, the symdraw document tests/dirichlet_test.json
+      of the workspace): in the group 237 at a base where the bisectors of d and da pass
+      near the centre of the disk, circles of radius 1e4 and more, the points of their
+      arcs lie thousands away, and H4toU4 took their images under the pairings for
+      spheres of radius 1e-7, which iDistanceU4 refused: the check threw (the tool said
+      'no side from the words'), and auto select threw in the fold of such a point. A
+      point's image is a point now (H4toU4Point): the document's words pass the check,
+      and the base moved to where the bisectors pass through the centre, from either
+      side, gives sides that pass (dab on one side, a on the other)
 */
 
 import {
@@ -1010,6 +1019,79 @@ console.log('16. the check of the sides');
   }
   check(onArc === hexagon.cell.length && offArc === hexagon.cell.length, `the arcs of the hexagon: ${onArc} middles on them, ${offArc} opposite points off them`);
   check(sideArcContains(fd[0], [[3, 3.5]], [fd[0].v[0] + Math.abs(fd[0].v[3])*Math.cos(3.3), fd[0].v[1] + Math.abs(fd[0].v[3])*Math.sin(3.3)]), 'an arc past the angle PI');
+  console.log(`   ${Date.now() - t1} ms`);
+}
+
+// ---- 17. sides that are nearly lines -------------------------------------------------------
+
+console.log('17. sides that are nearly lines');
+{
+  const t1 = Date.now();
+  const log = console.log;
+  console.log = () => {};
+  const klm = new Group_KLM(); klm.setParamsMap({ s: false, K: 2, L: 3, M: 7, hasR: false });
+  const g237 = klm.getGroup();
+  console.log = log;
+  const opt = { depth: 2, minScale: 0.01, maxIterations: 200 };
+  const words = parseWords('b d ab da dab');
+  const at = x => dirichletBase({ baseX: x, baseY: 0.06320127210954384 });
+  const tryCheck = (base, ws) => {
+    try {
+      return checkDirichletDomain(g237, makeDirichletGroup(g237, { base, words: ws }), opt);
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  };
+
+  // the document's base and words: side d is a circle of radius 7e3
+  const base = at(0.1049305927);
+  const dg = makeDirichletGroup(g237, { base, words });
+  const d = dg.getFundDomain()[1];
+  check(d.type === SPLANE_SPHERE && Math.abs(d.v[3]) > 5e3, `side d is nearly a line: radius ${d.v[3].toFixed(0)}`);
+  const doc = tryCheck(base, words);
+  check(!doc.error, `the check runs: ${doc.error}`);
+  check(doc.ok && doc.cell.length === 5 && doc.partner.join() === '1,0,3,2,4', `the document's words pass: ok ${doc.ok}, ${doc.cell?.length} sides, partners ${doc.partner}`);
+
+  // a far point of d's arc and its image under the pairing: a point, where the H4 vector says
+  const far = dirichletCell(dg.getFundDomain()).find(e => e.index === 1).arcs
+    .map(arc => sideArcPoint(d, arc, 0.98)).reduce((a, b) => Math.hypot(...a) > Math.hypot(...b) ? a : b);
+  const pairing = dg.getReverseITransforms()[1];
+  const q = pairing.transform(pnt(far));
+  const v = iTransformH4(dg.getReverseTransforms()[1], U4toH4(pnt(far)));
+  const qx = v[0] / (v[4] - v[3]), qy = v[1] / (v[4] - v[3]);
+  check(Math.hypot(...far) > 1e3 && q.type === iPoint([0, 0, 0, 0]).type && Math.hypot(q.v[0] - qx, q.v[1] - qy) < 1e-9 * (1 + Math.hypot(qx, qy)),
+    `the image of the point ${far.map(x => x.toFixed(0))} is a point: type ${q.type} at ${q.v.slice(0, 2).map(x => x.toFixed(6))}`);
+  check(iTransformU4(dg.getReverseTransforms()[1], pnt(far)).type === q.type, 'iTransformU4 gives a point too');
+
+  // the base where the bisectors of d and da pass through the centre, approached from both
+  // sides: the arc of dab shrinks to nothing there, a takes its place beyond
+  const f = x => dirichletSide(g237, at(x), 'd').scale - 1;
+  let lo = 0.1, hi = 0.11;
+  for (let k = 0; k < 100; k++) { const m = (lo + hi) / 2; if (f(m) < 0) lo = m; else hi = m; }
+  const x0 = (lo + hi) / 2;
+  const warn = console.warn;
+  console.warn = () => {};
+  const found = [];
+  for (const dx of [1e-3, 1e-5, 1e-7, -1e-7, -1e-5, -1e-3]) {
+    let r = null, c = null, error = '';
+    try {
+      r = selectDirichletSides(g237, { ...opt, base: at(x0 + dx) });
+      c = tryCheck(at(x0 + dx), r.words);
+      error = c.error || '';
+    } catch (e) {
+      error = e.message;
+    }
+    found.push({ dx, words: r ? r.words.slice().sort().join(' ') : '', ok: !!(c && c.ok), error });
+  }
+  console.warn = warn;
+  const threw = found.filter(s => s.error);
+  check(threw.length === 0, `auto select and the check run near the centre: ${threw.map(s => `${s.dx}: ${s.error}`).join('; ')}`);
+  check(found.every(s => s.ok), `the sides pass: ${found.filter(s => !s.ok).map(s => `${s.dx}: ${s.words}`).join('; ')}`);
+  const plus = found.filter(s => s.dx > 0), minus = found.filter(s => s.dx < 0);
+  check(plus.every(s => s.words === 'ab b d da dab') && minus.every(s => s.words === 'a ab b d da'),
+    `dab on one side, a on the other: ${found.map(s => `${s.dx}: ${s.words}`).join('; ')}`);
+  // the document's words are not the domain beyond the centre
+  check(!tryCheck(at(x0 - 1e-5), words).ok, 'the document\'s words do not close up beyond the centre');
   console.log(`   ${Date.now() - t1} ms`);
 }
 
