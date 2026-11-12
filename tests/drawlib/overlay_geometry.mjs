@@ -15,7 +15,11 @@
      directory, each polyline's header, colours (premultiplied), halo, box and points,
      each point's four texels, each splane's five; empty polylines, points without a
      place and splanes without a trace are left out; the texture is EDIT_TEX_W wide and
-     grows by rows
+     grows by rows. From an origin (the view's centre): the points, boxes, circles' centres
+     and lines' offsets and ranges taken from it in double, a circle with the power of the
+     origin; the shader's distances (emulated in float) then exact at a deep zoom next to
+     the absolute (a pixel 2.5e-9 at |w| ~ 1: from the world's origin they are off by
+     pixels) and to a circle of radius 1e4 (a Dirichlet side that is nearly a line)
   5. the shared builders (lib/symhublib/OverlayGeometry.js): the trace of an inversive
      splane (a circle off the plane, a plane), the arcs of a side as splane records, a
      CSS colour, the geometries merged
@@ -179,6 +183,111 @@ const square = (cx, cy, h) => ({ type: 'polyline', closed: true, points: [cx - h
     check(big.rows === 2 && big.data.length === 2*2048*4, `600 points take ${big.rows} rows`);
     const none = packGeometry({ polylines: [{ points: [[0, 0]] }], points: [] });
     check(none.polylines === 0 && none.points === 0, 'nothing to draw');
+}
+
+// 4, from an origin ───────────────────────────────────────────────────────────
+
+{
+    const f = Math.fround;
+    // the shader's distances, in float as the GPU computes them, from the texels
+    const segDist = (w, a, b) => {
+        const abx = f(b[0] - a[0]), aby = f(b[1] - a[1]);
+        const L2 = f(f(abx*abx) + f(aby*aby));
+        const t = Math.min(1, Math.max(0, L2 > 0 ? f(f(f(f(w[0] - a[0])*abx) + f(f(w[1] - a[1])*aby))/L2) : 0));
+        const dx = f(w[0] - f(a[0] + f(t*abx))), dy = f(w[1] - f(a[1] + f(t*aby)));
+        return f(Math.sqrt(f(f(dx*dx) + f(dy*dy))));
+    };
+    const circleDist = (w, g) => {
+        const dx = f(w[0] - g[0]), dy = f(w[1] - g[1]);
+        const dist = f(Math.sqrt(f(f(dx*dx) + f(dy*dy))));
+        const num = f(f(f(f(w[0]*w[0]) + f(w[1]*w[1])) - f(2*f(f(w[0]*g[0]) + f(w[1]*g[1])))) + g[3]);
+        return Math.abs(f(num/f(dist + g[2])));
+    };
+    const plainCircleDist = (w, g) => Math.abs(f(f(Math.sqrt(f(f(f(w[0] - g[0])**2) + f(f(w[1] - g[1])**2)))) - g[2]));
+    const lineDist = (w, g) => Math.abs(f(f(f(w[0]*g[0]) + f(w[1]*g[1])) - g[2]));
+    const segExact = (w, a, b) => {
+        const abx = b[0] - a[0], aby = b[1] - a[1];
+        const t = Math.min(1, Math.max(0, ((w[0] - a[0])*abx + (w[1] - a[1])*aby)/(abx*abx + aby*aby)));
+        return Math.hypot(w[0] - a[0] - t*abx, w[1] - a[1] - t*aby);
+    };
+
+    // a selected copy's frame at zoom 8e5 next to the unit circle (a deep zoom of 237): a
+    // pixel is 2.5e-9 there, a float near 1 keeps 6e-8
+    const O = [0.025900119576587232, -0.9996643758027056];
+    const px = 2.5e-9;
+    const at = (x, y) => [O[0] + x*px, O[1] + y*px];
+    const frame = [at(-40, -30), at(50, -30), at(50, 35), at(-40, 35)];
+    const n = [0.6, 0.8];
+    const geo = {
+        polylines: [{ points: frame, closed: true }],
+        points: [{ p: frame[1], kind: 'square' }],
+        splanes: [
+            { circle: [O[0] + 0.3, O[1] + 0.4 + 7*px, 0.5] },                          // 7 px above the centre
+            { line: [n[0], n[1], n[0]*O[0] + n[1]*O[1] + 3*px], range: [-Infinity, 2] },  // 3 px from the centre
+        ],
+    };
+    const packed = packGeometry(geo, O);
+    const T = i => Array.from(packed.data.slice(4*i, 4*i + 4));
+    const off = T(T(0)[2])[0];
+    const box = T(off + 4), p0 = T(off + 5), p2 = T(off + 7);
+    const fr = p => [f(p[0]), f(p[1])];
+    check(nearPt(p0, fr([-40*px, -30*px]), 1e-15) && nearPt(p2, fr([50*px, 35*px]), 1e-15), `the frame from the origin ${p0} ${p2}`);
+    check(nearPt([box[0], box[1]], p0, 1e-15) && nearPt([box[2], box[3]], p2, 1e-15), `the frame's box from the origin ${box}`);
+    const pt = T(T(0)[3]);
+    check(nearPt(pt, fr([50*px, -30*px]), 1e-15), `the handle from the origin ${pt}`);
+    const sb = T(1)[1];
+    const gc = T(sb + 4), r3 = T(sb + 8), gl = T(sb + 9);
+    check(near(gc[0], 0.3, 1e-7) && near(gc[1], 0.4, 1e-7) && gc[2] === 0.5 && near(gc[3], f(0.09 + (0.4 + 7*px)**2 - 0.25), 1e-12),
+          `the circle from the origin, with the origin's power ${gc}`);
+    // the line's offset from the origin; its range along t = (-ny, nx) less t.o, the infinite end kept
+    const tO = -n[1]*O[0] + n[0]*O[1];
+    check(gl[0] === f(0.6) && near(gl[2], 3*px, 1e-15) && r3[2] < -1e29 && near(r3[3], f(2 - tO), 1e-6), `the line from the origin ${gl} ${r3}`);
+    {
+        // the position along the line from the range's start is the same in both frames
+        const w = at(17, -4), wr = [17*px, -4*px];
+        const d = n[0]*O[0] + n[1]*O[1] + 3*px, dr = 3*px;
+        const along = (p, dd) => (p[0] - n[0]*dd)*(-n[1]) + (p[1] - n[1]*dd)*n[0];
+        check(Math.abs((along(w, d) - 2) - (along(wr, dr) - (2 - tO))) < 1e-12, 'a ranged line keeps its positions');
+    }
+    // the shader's distances at pixels near the frame, the circle and the line: from the
+    // origin within a hundredth of a pixel; from the world's origin off by pixels
+    const flat = packGeometry(geo);
+    const F = i => Array.from(flat.data.slice(4*i, 4*i + 4));
+    const fOff = F(F(0)[2])[0];
+    const fb = F(1)[1];
+    let worstNear = 0, worstFar = 0;
+    for (const [x, y] of [[10.5, -30.2], [-12.3, 34.6], [50.4, 0.7], [-39.1, -1.3], [3.3, 7.4], [-6.8, 2.9]]) {
+        const w = at(x, y);
+        const exact = Math.min(...[0, 1, 2, 3].map(k => segExact(w, frame[k], frame[(k + 1) % 4])))/px;
+        const fromOrigin = Math.min(...[0, 1, 2, 3].map(k => segDist([f(x*px), f(y*px)], T(off + 5 + k), T(off + 5 + (k + 1) % 4))))/px;
+        const fromZero = Math.min(...[0, 1, 2, 3].map(k => segDist([f(w[0]), f(w[1])], F(fOff + 5 + k), F(fOff + 5 + (k + 1) % 4))))/px;
+        const cExact = Math.abs(Math.hypot(w[0] - geo.splanes[0].circle[0], w[1] - geo.splanes[0].circle[1]) - 0.5)/px;
+        const cOrigin = circleDist([f(x*px), f(y*px)], gc)/px;
+        const cZero = plainCircleDist([f(w[0]), f(w[1])], F(fb + 4))/px;
+        const lExact = Math.abs(n[0]*w[0] + n[1]*w[1] - geo.splanes[1].line[2])/px;
+        const lOrigin = lineDist([f(x*px), f(y*px)], gl)/px;
+        const lZero = lineDist([f(w[0]), f(w[1])], F(fb + 9))/px;
+        worstNear = Math.max(worstNear, Math.abs(fromOrigin - exact), Math.abs(cOrigin - cExact), Math.abs(lOrigin - lExact));
+        worstFar = Math.max(worstFar, Math.abs(fromZero - exact), Math.abs(cZero - cExact), Math.abs(lZero - lExact));
+    }
+    check(worstNear < 0.01, `from the view's centre the shader's distances are exact: off by ${worstNear.toFixed(4)} px`);
+    check(worstFar > 1, `from the world's origin they are off by pixels: ${worstFar.toFixed(1)} px`);
+
+    // a circle of radius 1e4 (a Dirichlet side that is nearly a line) at zoom 1.7: a pixel
+    // 1.2e-3; the float of |w - c| keeps 5e-4 there, the origin's power gives it exactly
+    const big = { circle: [3.4158449, 7708.4238, 7708.2949] };
+    const gb = Array.from(packGeometry({ splanes: [big] }).data.slice(4*6, 4*6 + 4));
+    const pb = 1.2e-3;
+    let worstPower = 0, worstPlain = 0;
+    for (const [x, y] of [[0.31, 0.25], [-0.42, 0.11], [0.05, -0.37], [0.2, 0.3]]) {
+        // a point about a pixel off the circle near its lowest point
+        const w = [big.circle[0] + x, big.circle[1] - big.circle[2] + y*pb];
+        const exact = Math.abs(Math.hypot(w[0] - big.circle[0], w[1] - big.circle[1]) - big.circle[2])/pb;
+        worstPower = Math.max(worstPower, Math.abs(circleDist([f(w[0]), f(w[1])], gb)/pb - exact));
+        worstPlain = Math.max(worstPlain, Math.abs(plainCircleDist([f(w[0]), f(w[1])], gb)/pb - exact));
+    }
+    check(worstPower < 0.01, `a circle of radius 1e4 by the origin's power: off by ${worstPower.toFixed(4)} px`);
+    check(worstPlain > 0.05, `by |w - c| - r in float: off by ${worstPlain.toFixed(3)} px`);
 }
 
 
