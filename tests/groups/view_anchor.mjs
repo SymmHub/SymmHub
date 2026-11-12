@@ -25,7 +25,8 @@ const realLog = console.log; console.log = () => {};
 const grouplib = await import('../../lib/grouplib/grouplib.js');
 console.log = realLog;
 
-const { makeViewAnchor, makeDirichletGroup, parseWords, dirichletBase, strToPermutations, sidePermutations } = grouplib;
+const { viewAnchorMath } = await import('../../lib/grouplib/modules.js');
+const { makeViewAnchor, makeDirichletGroup, parseWords, dirichletBase, strToPermutations, sidePermutations, mirrorsToMap, composeMaps, mapSize } = grouplib;
 
 let failed = 0;
 function check(ok, what){
@@ -345,6 +346,123 @@ realLog('7. far away and back, the permutation of every frame as the renderer ge
     const pw = a.foldPermutation({}, G.sidePerms, G.useOrbit);
     check(samePerm(pw, pb), `back: the word's permutation is the fresh one's (${pw} / ${pb})`);
     check(samePerm(b.p, pb), `back: the cached permutation is the fresh one's (${b.p} / ${pb})`);
+}
+
+// 8 ───────────────────────────────────────────────────────────────────────────
+
+const { applyMap } = viewAnchorMath;
+const { iFactorizeU4 } = await import('../../lib/invlib/invlib.js');
+const mapApart = (S, T, pts) => Math.max(...pts.map(p => { const a = applyMap(S, p), b = applyMap(T, p); return Math.hypot(a[0] - b[0], a[1] - b[1]); }));
+
+realLog('8. phase 2: the anchored view kept as the navigator keeps it, hyperbolic travel');
+{
+    const G = h237;
+    const inverseOf = list => list.slice().reverse();
+    // the navigator's transform: mirrors from the world to the view plane, the first
+    // first, normalized as the navigator does
+    const norm = list => list.length > 5 ? iFactorizeU4(list) : list;
+    // the motion of the unit disk taking 0 to p: the line across p through 0, then the
+    // geodesic halfway
+    const disk = p => {
+        const r = Math.hypot(p[0], p[1]);
+        if (r < 1e-15) return [];
+        const n = [p[0]/r, p[1]/r];
+        const s = Math.tanh(Math.atanh(r)/2);
+        const C = (1 + s*s)/(2*s), rho = (1 - s*s)/(2*s);
+        return [{ type: 2, v: [n[0], n[1], 0, 0] }, { type: 1, v: [C*n[0], C*n[1], 0, rho] }];
+    };
+    const a = makeViewAnchor();
+    let trans = [];
+    const centre = () => applyMap(mirrorsToMap(inverseOf(trans)), [0, 0]);
+    const frame = () => {
+        a.update({ group: G.group, refPoint: centre(), enabled: true, anchored: true, budgetMs: Infinity, maxSteps: 1e6 });
+        const pre = [];
+        for (const g of a.takeSteps()) pre.unshift(...inverseOf(a.sideReflections(g)));
+        trans = norm([...pre, ...trans]);
+        return centre();
+    };
+    // a move as the navigator makes it in the group's frame (modelFrame): the view's
+    // point q to the centre is a motion of the world's disk after the transform
+    // the view's point at distance d along x to the centre: the translation along the
+    // geodesic of the world's points u (the view's centre) and v, taking v to u
+    // (centred at u: phi_u o phi_-w o phi_-u, w = phi_-u(v))
+    const moveBy = d => {
+        const back = mirrorsToMap(inverseOf(trans));
+        const u = applyMap(back, [0, 0]);
+        const v = applyMap(back, [Math.tanh(d/2), 0]);
+        const w = applyMap(mirrorsToMap(disk([-u[0], -u[1]])), v);
+        trans = norm([...disk([-u[0], -u[1]]), ...disk([-w[0], -w[1]]), ...disk(u), ...trans]);
+    };
+    frame();
+    let outside = 0, biggest = 0;
+    const travel = (d, n) => {
+        for (let k = 0; k < n; k++) {
+            moveBy(d);
+            if (!inF(G, frame())) outside++;
+            biggest = Math.max(biggest, mapSize(mirrorsToMap(trans)));
+        }
+    };
+    // the unit circle (the group's absolute) to the unit circle: the view is a hyperbolic motion
+    const offCircle = () => Math.max(...[0, 1, 2, 3, 4, 5].map(k => { const p = applyMap(mirrorsToMap(trans), [Math.cos(k), Math.sin(k)]); return Math.abs(Math.hypot(p[0], p[1]) - 1); }));
+    const home = [0.3, 0.2, -0.1].map(x => applyMap(mirrorsToMap(trans), [x, x/2]));
+    // there and back: a heading error e is e sinh(d) away after the distance d, so not far
+    travel(0.25, 20);
+    travel(-0.25, 20);
+    const backApart = Math.max(...[0.3, 0.2, -0.1].map((x, i) => { const p = applyMap(composeMaps(mirrorsToMap(trans), a.getMap()), [x, x/2]); return Math.hypot(p[0] - home[i][0], p[1] - home[i][1]); }));
+    realLog(`  out to distance 5 and back: the true view ${backApart.toExponential(1)} from the start, word ${a.getWord().length}`);
+    check(backApart < 1e-6, 'out to distance 5 and back: the same view');
+    // circles: the moves of the view (after trans) along a geodesic polygon round a
+    // circle of radius 3, crossing the same tiles again; the free reduction does not
+    // shorten such words, the anchor refolds the true centre near home
+    // (refoldAnchored). The true view trans o a against the moves composed apart
+    {
+        const viewMove = (m) => { trans = norm([...trans, ...m]); truth = composeMaps(mirrorsToMap(m), truth); };
+        const step = 0.25, turnBy = step/Math.tanh(3);
+        const turn = s => [{ type: 2, v: [0, 1, 0, 0] }, { type: 2, v: [-Math.sin(s/2), Math.cos(s/2), 0, 0] }];
+        let truth = composeMaps(mirrorsToMap(trans), a.getMap());
+        let steps = 0, longest = 0, refolds = 0, last = a.getWord().length;
+        for (let k = 0, n = 3*Math.round(2*Math.PI*Math.sinh(3)/step); k < n; k++) {
+            viewMove(disk([-Math.tanh(step/2), 0]));
+            viewMove(turn(turnBy));
+            frame();
+            steps++;
+            const wl = a.getWord().length;
+            if (wl < last - 2) refolds++;
+            last = wl;
+            longest = Math.max(longest, wl);
+        }
+        const now = composeMaps(mirrorsToMap(trans), a.getMap());
+        const pts = [[0.3, 0.15], [0.2, 0.1], [-0.1, -0.05], [0, 0]];
+        const apart = mapApart(now, truth, pts);
+        realLog(`  ${steps} steps round a circle of radius 3, three times: the true view ${apart.toExponential(1)} from the moves composed, word ${a.getWord().length} letters (the longest ${longest}, refolded ${refolds} times)`);
+        check(apart < 1e-9, 'circles: the true view the same after the refolds');
+        // the word grows by REFOLD_MIN (64) and a quarter before the anchor refolds
+        check(refolds > 0 && longest < 160, `circles: the word stays short (${longest}, ${refolds} refolds)`);
+    }
+    // out past distance 18 the anchor's map is no longer exact (the true transform out
+    // of reach); back the same way the word reduces freely and the map, evaluated
+    // afresh from it, is exact again
+    {
+        // a generic heading: the x axis runs along edges of the tiling, where the
+        // rounding picks the sides and the way back is not the way out
+        const s = 0.4123;
+        trans = norm([...trans, { type: 2, v: [0, 1, 0, 0] }, { type: 2, v: [-Math.sin(s/2), Math.cos(s/2), 0, 0] }]);
+        frame();
+        const w0 = a.getWord().length;
+        travel(0.25, 120);
+        const farExact = a.isMapExact(), farWord = a.getWord().length;
+        travel(-0.25, 120);
+        frame();
+        realLog(`  out to distance 30 and back: word ${w0} -> ${farWord} -> ${a.getWord().length} letters, the map exact far out ${farExact}, back ${a.isMapExact()}`);
+        check(!farExact && a.isMapExact(), 'out to distance 30 and back: the map exact again');
+    }
+    travel(0.25, 400);
+    realLog(`  out to distance 100: word ${a.getWord().length} letters, the anchored transform's largest entry ${biggest.toFixed(2)}, off the absolute ${offCircle().toExponential(1)}, centre outside F ${outside} times`);
+    check(outside === 0, 'the anchored centre is in F after every frame');
+    check(biggest < 20, `the anchored transform stays bounded (${biggest.toFixed(2)})`);
+    // the view's disk drifts by the rounding of the factorizations, as without the anchor;
+    // the moves are made in the view's own disk (modelFrame), so the drift does not build up
+    check(offCircle() < 1e-5, 'the anchored view is a hyperbolic motion at distance 100');
 }
 
 console.log(failed ? `${failed} FAILED` : 'all passed');
