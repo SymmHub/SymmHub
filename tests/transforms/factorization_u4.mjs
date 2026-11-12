@@ -15,6 +15,9 @@
      1e-3 ... 1e-12): both against the exact map of the Moebius matrix
   5. long planar words (the reflections of the hyperbolic group 237 out to
      distance 20): both against the exact map
+  6. reflections in points (time-like H4 vectors, the half turns in the words of the
+     KLMN groups): against H4, in random transforms, and the words of the twisted bent
+     KLMN group that the factorization got 0.3 wrong while it took them for the identity
 */
 
 import fs from 'node:fs';
@@ -228,6 +231,54 @@ realLog('5. long planar words: the hyperbolic group 237 out to distance 20');
     }
     for (const r of rows) realLog('  ' + r);
     check(worstNew < 1e-9, 'iFactorizeU4 of long words');
+}
+
+// 6 ───────────────────────────────────────────────────────────────────────────
+
+realLog('6. reflections in points (the half turns of the KLMN groups\' words)');
+{
+    const randomPoint = () => iPoint([between(-1.5, 1.5), between(-1.5, 1.5), between(-1, 1), (rnd() < 0.5 ? -1 : 1)*between(0.1, 1.5)]);
+    let worst = 0;
+    for (let k = 0; k < 3000; k++) {
+        const p = randomPoint();
+        const kind = k % 3;
+        const x = kind === 0 ? iPoint([between(-2, 2), between(-2, 2), between(-2, 2), between(0.1, 2)]) : randomSplane(false);
+        // H4 reflects in a time-like vector to the other sheet: the half turn with the
+        // orientation reversed (a point below the boundary); U4 keeps the upper half space
+        const h = iReflectU4(p, x), hv = h.v;
+        const b = h.type === SPLANE_PLANE ? iPlane(hv.map(t => -t))
+                : h.type === SPLANE_SPHERE ? iSphere([hv[0], hv[1], hv[2], -hv[3]]) : iPoint([hv[0], hv[1], hv[2], -hv[3]]);
+        if (b.type === SPLANE_SPHERE && Math.abs(b.v[3]) > 1e6) continue;
+        worst = Math.max(worst, apart(iReflectSplaneU4(p, x), b));
+    }
+    realLog(`  3000 reflections in points: apart from H4 (its orientation undone) at most ${worst.toExponential(1)}`);
+    check(worst < 1e-9, 'iReflectSplaneU4 in a point is iReflectU4');
+
+    const hd = (a, b) => Math.sqrt(a.v.reduce((s, x, i) => s + (x - b.v[i])**2, 0)/(2*a.v[3]*b.v[3]));
+    let worstT = 0;
+    for (let k = 0; k < 300; k++) {
+        const T = Array.from({ length: 3 + (k % 3) }, (_, i) => (i + k) % 2 ? randomPoint() : randomSplane(false));
+        const f = iFactorizeU4(T);
+        for (const q of probes(false).slice(0, 8)) worstT = Math.max(worstT, hd(iTransformSplaneU4(T, q), iTransformSplaneU4(f, q)));
+    }
+    realLog(`  300 transforms with points: apart at most ${worstT.toExponential(1)}`);
+    check(worstT < 1e-8, 'iFactorizeU4 of transforms with point reflections');
+
+    // the words of the bent KLMN group twisted (tests/groups/dirichlet.mjs section 7):
+    // the point reflections were the identity in U4, the factorization 0.3 off
+    console.log = () => {};
+    const klmn = new grouplib.Group_KLMN();
+    klmn.setParamsMap({ s: false, K: 3, L: 2, M: 2, N: 2, twist: 0.3, aspect: 0.3, bend: 34, uhp: true });
+    const group = klmn.getGroup();
+    console.log = realLog;
+    let worstW = 0;
+    for (const w of ['bAcBcBcbcaB', 'bAcBcbcbcaB', 'bAcBcBcBcB']) {
+        const T = group.word2trans(w);
+        const f = iFactorizeU4(T);
+        for (const q of probes(false).slice(0, 8)) worstW = Math.max(worstW, hd(iTransformSplaneU4(T, q), iTransformSplaneU4(f, q)));
+    }
+    realLog(`  3 words of the twisted KLMN group: apart at most ${worstW.toExponential(1)}`);
+    check(worstW < 1e-9, 'iFactorizeU4 of KLMN words');
 }
 
 realLog(failed ? `${failed} failed` : 'all passed');
