@@ -13,7 +13,8 @@
      subgroups comes from SubgroupTables.js, its names a moment later; choosing
      index 3 sets the cosets of the first index 3 subgroup and H has index 3
   3. a restored document selects its subgroup in the choices again; the
-     serialization round trips
+     serialization round trips, iterations included (a document from before
+     2026-11-09 has none and gets 0, the renderer's count)
   4. a presentation change (the kite domain of 632, generators and relators
      derived from the domain) brings another table; H of index 3 is built from
      the kite group
@@ -63,7 +64,7 @@ const initPar = (pres, item) => ({
     }),
 });
 
-const SYM_DEFAULT = { type: 'renderer', maxIndex: 8, cosets: '' };
+const SYM_DEFAULT = { type: 'renderer', maxIndex: 8, cosets: '', iterations: 0 };
 
 // ── 1. serialized shape ───────────────────────────────────────────────────────
 say('1. serialized shape');
@@ -137,10 +138,18 @@ say('3. restore of a document');
     await tick();
     const ch = sym.getChoices();
     check(ch.index === '3(2)' && ch.subgroup === '632/2222[3]', `restored cosets select their subgroup: ${ch.index} ${ch.subgroup}`);
+    // the document has no iterations: the item folds with the renderer's count
     const v = getParamValues(it.getParams());
-    check(same(v.symmetry, { type: 'subgroup', maxIndex: 8, cosets: cosets3 }), 'serialization round trip');
+    check(same(v.symmetry, { type: 'subgroup', maxIndex: 8, cosets: cosets3, iterations: 0 }), `serialization round trip: ${JSON.stringify(v.symmetry)}`);
     sym.rebuild(G632);
     check(sym.getDomain() && sym.getDomain().n === 3, 'H rebuilt after the restore');
+
+    // a count of its own comes back in a fresh item
+    setParamValues(it.getParams(), { symmetry: { iterations: 12 } });
+    const v12 = getParamValues(it.getParams());
+    const it3 = OverlayFundDomain({ id: 'fundDomain' });
+    setParamValues(it3.getParams(), v12);
+    check(v12.symmetry.iterations === 12 && same(getParamValues(it3.getParams()), v12), `iterations round trip: ${JSON.stringify(getParamValues(it3.getParams()).symmetry)}`);
 
     // a fresh item restored before the group is known builds on the first frame
     const it2 = OverlayTiling({ id: 't2' });

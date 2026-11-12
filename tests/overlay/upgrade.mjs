@@ -127,7 +127,7 @@ say('2. document load into the overlay');
     check(saved.overlays && saved.overlays.className === 'ObjArray' && !('fundDomain' in saved) && !('tiling' in saved), 'saved in the new format only');
     check(same(saved.overlays.params.children.map(c => c.className), ['OverlayTiling', 'OverlayFundDomain', 'OverlayBuffer']), 'saved children classes');
     check(same(saved.overlays.params.children[0].params,
-               { id: 'tiling', enabled: true, opacity: 1, width: 1, color: '#000000FF', symmetry: { type: 'renderer', maxIndex: 8, cosets: '' } }),
+               { id: 'tiling', enabled: true, opacity: 1, width: 1, color: '#000000FF', symmetry: { type: 'renderer', maxIndex: 8, cosets: '', iterations: 0 } }),
           'saved tiling item');
 
     const ov2 = VisualizationOverlay({ id: 'x' });
@@ -269,7 +269,7 @@ say('6. an item as a top level layer');
     check(iso.getClassName() === 'OverlayIsolines' && iso.getId() === 'isolines' && iso.enabled === true, 'layer interface');
     const v = getParamValues(iso.getParams());
     check(same(v, { id: 'isolines', enabled: true, opacity: 1, type: 'u', step: 0.2, offset: 0, width: 1, levels: 1, color: '#000000ff',
-                    symmetry: { type: 'renderer', maxIndex: 8, cosets: '' } }), `serialized item: ${JSON.stringify(v)}`);
+                    symmetry: { type: 'renderer', maxIndex: 8, cosets: '', iterations: 0 } }), `serialized item: ${JSON.stringify(v)}`);
     let threw = false;
     try { iso.render({}); } catch (e) { threw = true; }
     check(!threw, 'render before init is a no-op');
