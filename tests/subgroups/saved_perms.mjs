@@ -8,6 +8,9 @@
 
   Layers which are not enabled hold many leftovers of earlier groups, and they are
   only counted. What an enabled layer draws must fit, but for the documents of KNOWN.
+
+  Only the shipped documents are read: the folders .gitignore keeps out of the
+  repository (NOT_SHIPPED) are skipped, so a fresh checkout counts as the working one.
 */
 
 import fs from 'node:fs';
@@ -24,14 +27,21 @@ const APPS = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..',
 
 // fits nothing and is drawn: the relator a*d*b*d of XX does not hold, seams on the screen
 const KNOWN = new Set(['wp_xx.json']);
-// fewer than these and the walk below lost its way
-const AT_LEAST = { Group_WP: 46, Group_KLM: 73 };
+// fewer than these and the walk below lost its way (the shipped documents of 2026-11-13)
+const AT_LEAST = { Group_WP: 52, Group_KLM: 55 };
+// the folders of apps that .gitignore keeps out of the repository, by their paths below
+// apps: the users' own presets (<app>/local/presets: the rest of attractors/local is
+// shipped), the batch renders' output (test-out), the GAP subgroup lists (sympix/gap/sub).
+// Counted, they made the test pass only where they are (KLM 81 layers which fit, 55 without)
+const NOT_SHIPPED = [/(^|\/)local\/presets$/, /(^|\/)test-out$/, /^sympix\/gap\/sub$/];
 
 function jsonFiles(dir, found = []) {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
         const p = path.join(dir, e.name);
         if (e.isDirectory()) {
-            if (e.name !== 'node_modules' && e.name !== 'thumbnails') jsonFiles(p, found);
+            const rel = path.relative(APPS, p).split(path.sep).join('/');
+            if (e.name === 'node_modules' || e.name === 'thumbnails' || NOT_SHIPPED.some(r => r.test(rel))) continue;
+            jsonFiles(p, found);
         } else if (e.name.endsWith('.json')) {
             found.push(p);
         }
