@@ -16,7 +16,7 @@
 import { diffParamList, createParamListUndo } from '../../lib/uilib/ParamListUndo.js';
 import { ParamObjArray, ObjArray } from '../../lib/uilib/paramobj.js';
 import { ParamFloat, ParamString } from '../../lib/uilib/param.js';
-import { UndoStack } from '../../lib/drawlib/UndoStack.js';
+import { UndoStack } from '../../lib/uilib/UndoStack.js';
 
 let failed = 0;
 function check(ok, what){

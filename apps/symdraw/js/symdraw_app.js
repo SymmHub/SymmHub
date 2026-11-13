@@ -59,10 +59,12 @@ function startSymdraw(opt = {}) {
         docFolderId:       'symdraw_doc_folder',
         params:            (hash.preset || hash.params) ? undefined : START_PARAMS,
         // the drawing tools in a palette, their settings in a property bar;
-        // of the renderer's own tools only pan/zoom and the pattern box
-        toolPalette:       { tools: ['move', 'patternTransform'], startTool: 'pattern.select' },
+        // of the renderer's own tools the orientation, the pattern box and the symmetry
+        toolPalette:       { tools: ['move', 'patternTransform', 'symmetry'], startTool: 'pattern.select' },
         // the visualization layers in a window of their own, not in the settings
         visualizationWindow: true,
+        // the symmetry too, the Symmetry tool's panel
+        symmetryWindow:    true,
     });
 
     app.run();
