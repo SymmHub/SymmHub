@@ -2,8 +2,11 @@
   catalog_render.js — boot for the catalog batch renderer.
 
   Same stack as sympix_color.js, plus the catalog driver script loaded at
-  startup (SymRenderer options.scriptUrl).  The driver exposes window.catalog
-  for interactive use and runs a job when the page URL carries ?job=<url>.
+  startup (SymRenderer options.scriptUrl).  The driver lives in the colorsym
+  catalog repo (tools/render/catalog_driver.js) and is served by the catalog's
+  dev server, which serves SymmHub at / and the catalog at /catalog/;
+  ?script=<url> loads another one.  The driver exposes window.catalog for
+  interactive use and runs a job when the page URL carries ?job=<url>.
 */
 
 import {
@@ -46,7 +49,8 @@ const app = SymRenderer({
     groupMakerFactory: GroupMakerFactory({defaultName:'Wallpaper'}),
     navigator:        new InversiveNavigator(),
     samples:          makeSamplesArray(presets, 'presets/color/'),
-    scriptUrl:        './scripts/catalog_driver.js',
+    scriptUrl:        new URLSearchParams(location.search).get('script')
+                      || '/catalog/tools/render/catalog_driver.js',
 });
 
 app.run();
