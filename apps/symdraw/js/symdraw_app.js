@@ -21,6 +21,7 @@ import {
 //  opt.presetsFolder  folder of the page's presets
 //  opt.presets        their file names, one per line (a presets_*.js list)
 //  opt.colorTiles     a Color Tiles layer under the drawing, as in sympix_color
+//  opt.scriptUrl      a script to load at startup (SymRenderer options.scriptUrl)
 //
 
 // a page opened without a document in its hash folds with enough steps to fill
@@ -65,6 +66,8 @@ function startSymdraw(opt = {}) {
         visualizationWindow: true,
         // the symmetry too, the Symmetry tool's panel
         symmetryWindow:    true,
+        // a script loaded at startup, e.g. the catalog batch driver
+        ...(opt.scriptUrl ? { scriptUrl: opt.scriptUrl } : {}),
     });
 
     app.run();
