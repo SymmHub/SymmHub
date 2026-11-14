@@ -6,7 +6,7 @@
     node tests/overlay/upgrade.mjs
 
   fixtures/ holds the visualization block of real presets (old flat format,
-  current ObjArray format) and the catalog driver's layer patch.
+  current ObjArray format).
 
   1. a legacy overlay tree becomes an item list: the features in the drawing
      order of the old shader, disabled features at their defaults dropped,
@@ -16,9 +16,9 @@
      away); save → load → save of the new format is the identity
   3. the same through the visualization manager: old flat format, current
      ObjArray format (layer keyed by name), very old v1 format
-  4. partial patches: the catalog driver's legacy paths reach the items, a
-     missing item is made at its old place; the id keyed patch of
-     ParamObjArray; scripted setParams through the manager
+  4. partial patches: the id keyed patch of ParamObjArray, through the
+     layer's params and through the manager; legacy feature keys are no
+     patch path (ignored)
   5. add / move / remove of items keeps list and serialization in sync
   6. an item works as a layer of its own
 */
@@ -47,7 +47,6 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const fixture = name => JSON.parse(readFileSync(path.join(here, 'fixtures', name), 'utf8'));
 const flat   = fixture('visualization_flat.json').visualization;       // { image, overlay, options }
 const objarr = fixture('visualization_objarray.json').visualization;   // { className: 'VisualizationManager', params: { layers } }
-const patch  = fixture('catalog_patch.json');                           // { layers: { overlay: {...} }, enable: {...} }
 
 const ids     = ov => ov.getItems().map(it => it.getId());
 const save    = ov => getParamValues(ov.getParams());
@@ -202,44 +201,36 @@ say('4. partial patches');
     const mgr = makeManager();
     mgr.setParamsMap(objarrOverlayOnly, true);          // items: fundDomain
     const ov = mgr.getLayer('overlay');
+    ov.addItem('OverlayTiling', 0);                     // items: tiling, fundDomain
+    check(same(ids(ov), ['tiling', 'fundDomain']), `items to patch: ${ids(ov)}`);
 
-    // the catalog driver walks layer.getParams() and calls setValue() where it can
-    setParamValues(ov.getParams(), patch.layers.overlay);
-    check(same(ids(ov), ['tiling', 'fundDomain']), `missing tiling item made below the domain: ${ids(ov)}`);
-    check(cfg(ov, 'tiling').enabled === true && cfg(ov, 'tiling').width === 1 && cfg(ov, 'tiling').color === '#000000FF',
-          'tiling from the legacy defaults plus the patch');
-    setParamValues(ov.getParams(), { enabled: patch.enable.overlay });
-    check(ov.enabled === true, 'enable shorthand');
+    // a job's layer patch, applied by walking layer.getParams() as the catalog driver does
+    setParamValues(ov.getParams(), { enabled: true, overlays: { tiling: { enabled: false, width: 2.5 }, fundDomain: { fill: { enabled: false } } } });
+    check(ov.enabled === true, 'layer enable');
+    check(cfg(ov, 'tiling').width === 2.5 && cfg(ov, 'tiling').enabled === false && cfg(ov, 'tiling').color === '#000000FF',
+          'a patch changes the given values only');
+    check(cfg(ov, 'fundDomain').fill.enabled === false && cfg(ov, 'fundDomain').fill.color === '#ff000023' && cfg(ov, 'fundDomain').enabled === true,
+          'a part patched alone: its other values and the item enable left alone');
 
-    setParamValues(ov.getParams(), { tiling: { outline: { width: 2.5 } }, fundDomain: { fill: { enabled: false } } });
-    check(cfg(ov, 'tiling').width === 2.5 && cfg(ov, 'tiling').enabled === true, 'a patch changes the given values only');
-    check(cfg(ov, 'fundDomain').fill.enabled === false && cfg(ov, 'fundDomain').enabled === true, 'disabling a part leaves the item enabled');
+    // the legacy feature keys are no patch path: ignored, no item made
+    setParamValues(ov.getParams(), { tiling: { outline: { width: 9 } }, ruler: { width: 30 }, generators: { enabled: true } });
+    check(cfg(ov, 'tiling').width === 2.5 && same(ids(ov), ['tiling', 'fundDomain']), `legacy feature keys are ignored: ${ids(ov)}`);
+    check(!Object.keys(save(ov)).some(k => ['tiling', 'fundDomain', 'ruler', 'generators'].includes(k)), 'saved in the new format only');
 
-    setParamValues(ov.getParams(), { isolines: { enabled: true, type: 'mod(uv)' } });
-    check(same(ids(ov), ['isolines', 'tiling', 'fundDomain']) && cfg(ov, 'isolines').dataSource === 'mod(uv)', `isolines made at the bottom: ${ids(ov)}`);
-    setParamValues(ov.getParams(), { ruler: { width: 30 } });
-    check(ids(ov).at(-1) === 'ruler' && cfg(ov, 'ruler').width === 30 && cfg(ov, 'ruler').enabled === false,
-          'ruler made at the top, disabled like its legacy default');
-    setParamValues(ov.getParams(), { generators: { enabled: true } });
-    check(same(ids(ov), ['isolines', 'tiling', 'fundDomain', 'generators', 'ruler']), `generators made between the domain and the ruler: ${ids(ov)}`);
-
-    const saved = save(ov);
-    check(!Object.keys(saved).some(k => ['isolines', 'tiling', 'fundDomain', 'generators', 'ruler'].includes(k)), 'route-only params are not serialized');
-
-    // the id keyed patch of ParamObjArray
+    // the id keyed patch of ParamObjArray, bare and {params} forms
     ov.getParams().overlays.setValue({ fundDomain: { opacity: 0.5 }, tiling: { params: { color: '#ff0000ff' } } });
     check(cfg(ov, 'fundDomain').opacity === 0.5 && cfg(ov, 'tiling').color === '#ff0000ff', 'id keyed patch, bare and {params} forms');
-    check(same(ids(ov), ['isolines', 'tiling', 'fundDomain', 'generators', 'ruler']), 'id keyed patch leaves the list alone');
+    check(same(ids(ov), ['tiling', 'fundDomain']), 'id keyed patch leaves the list alone');
     const warn = console.warn; let warned = 0; console.warn = () => { warned++; };
     ov.getParams().overlays.setValue({ nosuch: { opacity: 0.1 } });
     console.warn = warn;
-    check(warned === 1 && same(ids(ov), ['isolines', 'tiling', 'fundDomain', 'generators', 'ruler']), 'unknown id warns and changes nothing');
+    check(warned === 1 && same(ids(ov), ['tiling', 'fundDomain']), 'unknown id warns and changes nothing');
 
-    // scripted setParams through the manager: layers keyed by id, items by id or by legacy path
-    mgr.setParamsMap({ layers: { overlay: { overlays: { tiling: { width: 4 } }, fundDomain: { outline: { enabled: true, width: 3 } } } } });
+    // scripted setParams through the manager: layers keyed by id, items by id
+    mgr.setParamsMap({ layers: { overlay: { overlays: { tiling: { width: 4 }, fundDomain: { outline: { enabled: true, width: 3 } } } } } });
     check(cfg(ov, 'tiling').width === 4 && cfg(ov, 'fundDomain').outline.width === 3 && cfg(ov, 'fundDomain').outline.enabled === true,
-          'manager patch: item path and legacy path');
-    check(mgr.getLayers().length === 1 && same(ids(ov), ['isolines', 'tiling', 'fundDomain', 'generators', 'ruler']), 'manager patch leaves the lists alone');
+          'manager patch by item id');
+    check(mgr.getLayers().length === 1 && same(ids(ov), ['tiling', 'fundDomain']), 'manager patch leaves the lists alone');
 }
 
 // ── 5. add / move / remove ────────────────────────────────────────────────────
