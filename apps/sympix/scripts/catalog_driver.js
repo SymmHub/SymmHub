@@ -208,6 +208,9 @@ export default function catalogDriver(api) {
             name: gp.type, a: gp.a, b: gp.b, c: gp.c,
             angle_a: (gp.angle_a || 0) * Math.PI / 180,
             angle_b: (gp.angle_b === undefined ? 90 : gp.angle_b) * Math.PI / 180,
+            // the document's fundamental domain: its pairing transforms are the
+            // generators the job's coset tables and words are written in
+            domainShape: gp.domainShape,
         }));
         const H = lib.makeSubgroupGroup({ group: G, cosets });
         api.setGroupOverride(H);
@@ -297,7 +300,7 @@ export default function catalogDriver(api) {
 
     async function subgroupGeo(cosets) {
         const gp = api.getParams().symmetry.group.params;
-        const cacheKey = JSON.stringify([gp.type, gp.a, gp.b, gp.c, cosets]);
+        const cacheKey = JSON.stringify([gp.type, gp.a, gp.b, gp.c, gp.domainShape, cosets]);
         if (geoCache.has(cacheKey)) return geoCache.get(cacheKey);
 
         const lib = await groupLib();
@@ -306,6 +309,9 @@ export default function catalogDriver(api) {
             name: gp.type, a: gp.a, b: gp.b, c: gp.c,
             angle_a: (gp.angle_a || 0) * Math.PI / 180,
             angle_b: (gp.angle_b === undefined ? 90 : gp.angle_b) * Math.PI / 180,
+            // the document's fundamental domain: its pairing transforms are the
+            // generators the job's coset tables and words are written in
+            domainShape: gp.domainShape,
         }));
         const apply = (it, v) => {
             const p = it.transform(inv.iPoint([v[0], v[1], 0, 0]));
@@ -560,6 +566,9 @@ export default function catalogDriver(api) {
             name: gp.type, a: gp.a, b: gp.b, c: gp.c,
             angle_a: (gp.angle_a || 0) * Math.PI / 180,
             angle_b: (gp.angle_b === undefined ? 90 : gp.angle_b) * Math.PI / 180,
+            // the document's fundamental domain: its pairing transforms are the
+            // generators the job's coset tables and words are written in
+            domainShape: gp.domainShape,
         }));
 
         // the transforms to walk: G's pairings, or H's pairing generators
