@@ -947,7 +947,11 @@ const unitOf = v => { const n = Math.hypot(v[0], v[1]) || 1; return [v[0]/n, v[1
     tool.handleKey({ type: 'keydown', key: 'Enter' });
     const plain = doc.getAllItems()[2];
     check(plain && plain.type === 'path' && !plain.geodesic && dist(plain.nodes[0].h1, [2*A[0] - A2[0], 2*A[1] - A2[1]]) < 1e-15 && !plain.outline, 'with the setting off the pen draws the plain path, as before');
-    check(tool.getProperties().length === 2, 'the pen has the geodesic toggle in its bar');
+    const penBar = tool.getProperties();
+    check(penBar.length === 3 && /^geodesic lines/.test(penBar[1].title) && penBar[2].kind === 'group' && penBar[2].controls.length === 2,
+          'the pen has the geodesic toggle and To polyline, To path in its bar');
+    // the path drawn last is selected, for those buttons
+    check(editor.getSelection().length === 1 && editor.getSelection()[0].id === plain.id, 'the path the pen drew is selected');
 }
 
 // 11 ──────────────────────────────────────────────────────────────────────────
@@ -1243,7 +1247,8 @@ for (const [name, group] of [['*237', g237], ['*532', klm(2, 3, 5, true)]]) {
     const widened = shapeWithHandleAt(es, 'rx', X, es, false, false, sp);
     const hx = shapeHandles(editor, widened, null, sp).find(h => h.kind === 'rx');
     const kx = sp.chart(C).to(X), kh = sp.chart(C).to(hx.world), c3 = Math.cos(0.3), s3 = Math.sin(0.3);
-    check(Math.abs((kh[0]*c3 + kh[1]*s3) - (kx[0]*c3 + kx[1]*s3)) < 1e-9 && Math.abs(widened.ry - es.ry) < 1e-12, 'an ellipse\'s rx handle dragged: the handle at the point\'s chart coordinate along the first axis');
+    // the rx handle sits at the left end of the first axis (docs/node_editing_plan.md 5.6), so at minus the point's coordinate
+    check(Math.abs((kh[0]*c3 + kh[1]*s3) + Math.abs(kx[0]*c3 + kx[1]*s3)) < 1e-9 && Math.abs(widened.ry - es.ry) < 1e-12, 'an ellipse\'s rx handle dragged: the handle at the point\'s chart coordinate along the first axis, at its left end');
     // the shape tools: a drag from the centre, a box drag, Shift, the setting off
     const tool = ShapeTool({ editor, kind: 'polygon' });
     const T = [C[0] + 0.2*half, C[1] + 0.15*half];
