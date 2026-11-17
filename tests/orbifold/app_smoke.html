@@ -1,0 +1,99 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>orbifold app smoke</title>
+<body><pre id="out">running</pre>
+<script>
+const msgs = [];
+window.addEventListener('error', e => msgs.push('ERROR: ' + (e.message || e)));
+window.addEventListener('unhandledrejection', e => msgs.push('REJECTION: ' + (e.reason && (e.reason.message || e.reason))));
+const _err = console.error;
+console.error = (...a) => { msgs.push('console.error: ' + a.map(String).join(' ')); _err(...a); };
+window.__msgs = msgs;
+</script>
+<script type="module">
+import { WallPaperGroup_General } from '../../lib/orbilib/WallPaperGroup_General.js';
+import { Group_Orbifold } from '../../lib/orbilib/Group_Orbifold.js';
+import { DataPacking } from '../../lib/invlib/DataPacking.js';
+import { SymRendererPrograms, walledProgramName } from '../../lib/symhublib/SymRendererPrograms.js';
+
+const lines = [];
+let failures = 0;
+const check = (ok, msg) => { if(!ok) failures++; lines.push((ok ? 'ok   ' : 'FAIL ') + msg); };
+
+const canvas = document.createElement('canvas');
+canvas.width = canvas.height = 128;
+document.body.appendChild(canvas);
+const gl = canvas.getContext('webgl2');
+check(!!gl, 'webgl2 context');
+
+const programs = SymRendererPrograms();
+programs.init(gl);
+
+// exercise the full path for each orbifold: build the group, pack its bounds,
+// bind the program the app would pick, set the uniforms and draw.
+for(const [name, twist] of [['*442', 0], ['o3', 0], ['oo', 0], ['oo', 0.25], ['o33', 0.5], ['234oo', 0.25]]){
+    const maker = new Group_Orbifold({ orbifold: name });
+    if(twist !== 0){
+        const p = { ...maker.getParamsMap() };
+        Object.keys(p).filter(k => k.endsWith('_t')).forEach(k => p[k] = twist);
+        maker.setParamsMap(p);
+    }
+    const group = maker.getGroup();
+    check(!!group, `${name}/twist ${twist}: group builds`);
+    if(!group) continue;
+
+    const walled = DataPacking.hasWallBounds(group);
+
+    const groupData = DataPacking.createGroupDataSampler(gl);
+    DataPacking.packGroupToSampler(gl, groupData, group);
+    const boundsData = DataPacking.createGroupDataSampler(gl);
+    const packed = DataPacking.packWallBoundsToSampler(gl, boundsData, group);
+    check(packed === walled, `${name}/twist ${twist}: packing agrees with hasWallBounds (${walled})`);
+
+    const progName = walledProgramName('bufferToScreenImageArray', walled);
+    const prog = programs.getProgram(progName);
+    check(!!(prog && prog.program), `${name}/twist ${twist}: ${progName} available`);
+    if(!prog || !prog.program) continue;
+
+    // a 1x1 array texture to sample, so the draw is real
+    const arrayTex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, arrayTex);
+    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, 1, 1, 1);
+    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0,0,0, 1,1,1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255,0,0,255]));
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    prog.bind();
+    prog.setUniforms({
+        uGroupData:      groupData,
+        uWallBoundsData: boundsData,
+        uImageArray:     arrayTex,
+        uNumImages:      1,
+        uIterations:     20,
+        uSymmetry:       true,
+        uBufScale:       [1, 0],
+        uBufCenter:      [0, 0],
+        uOpacity:        1,
+        uTransparency:   0,
+        u_pixelSize:     2/128,
+    });
+    prog.blit(null);
+    const err = gl.getError();
+    check(err === gl.NO_ERROR, `${name}/twist ${twist}: draws with ${progName}, gl error ${err}`);
+
+    // and something was actually drawn
+    const px = new Uint8Array(4*128*128);
+    gl.readPixels(0, 0, 128, 128, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    let lit = 0;
+    for(let i = 3; i < px.length; i += 4) if(px[i] > 0) lit++;
+    check(lit > 0, `${name}/twist ${twist}: drew ${lit} non-empty pixels`);
+    lines.push(`       ${name}/twist ${twist}: walled=${walled}, ${lit}/${128*128} pixels lit`);
+}
+
+if(window.__msgs.length) lines.push('', 'page messages:', ...window.__msgs.slice(0, 20));
+lines.push('');
+lines.push(failures ? failures + ' CHECKS FAILED' : 'ALL CHECKS PASSED');
+document.getElementById('out').textContent = lines.join('\n');
+document.title = failures ? 'FAILED' : 'PASSED';
+</script>

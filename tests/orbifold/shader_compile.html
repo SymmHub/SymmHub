@@ -1,0 +1,68 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>wall-bounds shader compile check</title>
+<body><pre id="out">running</pre>
+<script>
+window.addEventListener('error', e => {
+  document.getElementById('out').textContent = 'ERROR: ' + (e.message || e) + '\n' + (e.filename||'') + ':' + (e.lineno||'');
+  document.title = 'FAILED';
+});
+window.addEventListener('unhandledrejection', e => {
+  document.getElementById('out').textContent = 'REJECTION: ' + (e.reason && (e.reason.stack || e.reason.message) || e.reason);
+  document.title = 'FAILED';
+});
+const _err = console.error;
+const errs = [];
+console.error = (...a) => { errs.push(a.map(String).join(' ')); _err(...a); };
+window.__errs = errs;
+</script>
+<script type="module">
+import { SymRendererPrograms, walledProgramName } from '../../lib/symhublib/SymRendererPrograms.js';
+
+const lines = [];
+let failures = 0;
+function report(ok, msg){ if(!ok) failures++; lines.push((ok ? 'ok   ' : 'FAIL ') + msg); }
+
+const canvas = document.createElement('canvas');
+canvas.width = canvas.height = 64;
+const gl = canvas.getContext('webgl2');
+
+if(!gl){
+  lines.push('FAIL no webgl2 context');
+  failures++;
+} else {
+  const programs = SymRendererPrograms();
+  programs.init(gl);
+
+  const plain = ['bufferToScreenImageArray', 'overlayTiling', 'overlayIsolines',
+                 'overlayLimitset', 'overlayFundDomain', 'overlayGenerators',
+                 'bufferToScreenImage'];
+
+  for(const name of plain){
+    for(const walled of [false, true]){
+      const progName = walledProgramName(name, walled);
+      let prog = null, err = '';
+      try { prog = programs.getProgram(progName); } catch(e){ err = e.message; }
+      report(!!(prog && prog.program), `${progName} compiles${err ? ' — ' + err : ''}`);
+
+      // the walled twins must declare the bounds sampler; the plain ones must not
+      if(prog && prog.program){
+        const u = prog.getUniforms();
+        const hasBounds = Object.keys(u).some(k => k.indexOf('uWallBoundsData') === 0);
+        const shouldHave = progName.endsWith('Walled');
+        report(hasBounds === shouldHave,
+               `${progName} ${shouldHave ? 'declares' : 'does not declare'} uWallBoundsData` +
+               (hasBounds === shouldHave ? '' : ` (got ${hasBounds})`));
+      }
+    }
+  }
+  report(gl.getError() === gl.NO_ERROR, 'no GL error left behind');
+}
+
+lines.push('');
+lines.push(failures ? failures + ' CHECKS FAILED' : 'ALL CHECKS PASSED');
+document.getElementById('out').textContent = lines.join('\n');
+if(window.__errs && window.__errs.length) lines.push('', 'console.error:', ...window.__errs.slice(0,20));
+document.getElementById('out').textContent = lines.join('\n');
+document.title = failures ? 'FAILED' : 'PASSED';
+</script>

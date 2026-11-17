@@ -1,0 +1,84 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>orbifold app renders a twisted handle</title>
+<body><pre id="out">running</pre>
+<script type="module">
+/*
+   End to end, in the real app: hand sympix_orbifold a handle orbifold with a
+   twist and check the canvas actually draws the pattern.
+
+   Before the wall bounds the reduction could not reach the fundamental domain
+   from about a third of the plane, and bufferToScreenImageArray paints an
+   unreduced point transparent — so the canvas came out largely empty. The
+   twisted case is compared against the same orbifold untwisted, which always
+   worked.
+*/
+import { Group_Orbifold } from '/lib/orbilib/Group_Orbifold.js';
+import { DataPacking } from '/lib/invlib/DataPacking.js';
+import { walledProgramName } from '/lib/symhublib/SymRendererPrograms.js';
+
+const out = document.getElementById('out');
+const lines = [];
+let failures = 0;
+const check = (ok, msg) => { if(!ok) failures++; lines.push((ok ? 'ok   ' : 'FAIL ') + msg); };
+
+const frame = document.createElement('iframe');
+frame.src = '/apps/sympix/sympix_orbifold.html';
+frame.width = 512; frame.height = 512;
+document.body.appendChild(frame);
+
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+function makeGroup(name, twist){
+    const maker = new Group_Orbifold({ orbifold: name });
+    if(twist !== 0){
+        const p = { ...maker.getParamsMap() };
+        Object.keys(p).filter(k => k.endsWith('_t')).forEach(k => p[k] = twist);
+        maker.setParamsMap(p);
+    }
+    return maker.getGroup();
+}
+
+// NOTE: there is deliberately no pixel check here. The app's canvas has no
+// preserveDrawingBuffer, so reading it back after the frame gives a cleared
+// buffer and any coverage number would be the same constant for every case -
+// an assertion that cannot fail. What the pixels do is checked in
+// gpu_fold.html, which renders the reduction into a float target of its own and
+// compares it with Group.toFundDomain point by point.
+
+frame.onload = async () => {
+  try {
+    await wait(5000);
+    const win = frame.contentWindow;
+    const api = win.app && win.app.getScriptAPI ? win.app.getScriptAPI() : null;
+    check(!!api, 'script API is up');
+    if(!api || !api.setGroupOverride) { check(false, 'setGroupOverride available'); return finish(); }
+
+    const cases = [['*442', 0], ['oo', 0], ['oo', 0.25], ['o33', 0.5], ['234oo', 0.25]];
+    for(const [name, twist] of cases){
+        const group  = makeGroup(name, twist);
+        const walled = DataPacking.hasWallBounds(group);
+        const prog   = walledProgramName('bufferToScreenImageArray', walled);
+        check(walled === (name !== '*442'),
+              `${name}/${twist}: walled=${walled}, app would use ${prog}`);
+        // the app must survive the switch: no throw, no lost context
+        api.setGroupOverride(group);
+        await wait(1200);
+        check(!!win.app, `${name}/${twist}: app still running after the switch`);
+    }
+
+    api.setGroupOverride(null);
+  } catch(e){
+    failures++;
+    lines.push('FAIL threw: ' + (e && (e.stack || e.message) || e));
+  }
+  finish();
+};
+
+function finish(){
+    lines.push('');
+    lines.push(failures ? failures + ' CHECKS FAILED' : 'ALL CHECKS PASSED');
+    out.textContent = lines.join('\n');
+    document.title = failures ? 'FAILED' : 'PASSED';
+}
+</script>

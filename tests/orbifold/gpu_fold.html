@@ -1,0 +1,179 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>GPU fold vs CPU fold</title>
+<body><pre id="out">running</pre>
+<script>
+const msgs = [];
+window.addEventListener('error', e => msgs.push('ERROR: ' + (e.message || e)));
+window.addEventListener('unhandledrejection', e => msgs.push('REJECTION: ' + (e.reason && (e.reason.stack || e.reason.message) || e.reason)));
+const _err = console.error;
+console.error = (...a) => { msgs.push('console.error: ' + a.map(String).join(' ')); _err(...a); };
+window.__msgs = msgs;
+</script>
+<script type="module">
+/*
+   The bounded-wall reduction, on the GPU, against the same reduction on the CPU.
+
+   A pixel's vUv is taken as a point of the hyperbolic plane; the shader folds it
+   into the fundamental domain and writes back where it landed. Group.toFundDomain
+   folds the same point in JS. The two must agree — that is the whole claim of the
+   fix, and it is what neither the packing test nor the compile test can show.
+*/
+import { Group_Orbifold } from '../../lib/orbilib/Group_Orbifold.js';
+import { DataPacking } from '../../lib/invlib/DataPacking.js';
+import { iPoint } from '../../lib/invlib/invlib.js';
+import { ShaderFragments as SF } from '../../lib/shaders/modules.js';
+import { programBuilder } from '../../lib/symhublib/program_loader.js';
+import { createFBO } from '../../lib/symhublib/webgl_utils.js';
+
+const SIZE = 64;           // 4096 points per case
+const ITERATIONS = 60;
+
+const lines = [];
+let failures = 0;
+const check = (ok, msg) => { if(!ok) failures++; lines.push((ok ? 'ok   ' : 'FAIL ') + msg); };
+
+const canvas = document.createElement('canvas');
+canvas.width = canvas.height = SIZE;
+const gl = canvas.getContext('webgl2');
+check(!!gl, 'webgl2 context');
+gl.getExtension('EXT_color_buffer_float');
+
+// a fragment shader which folds vUv and reports the result
+const foldMain = /*glsl*/`
+in vec2 vUv;
+out vec4 outColor;
+uniform sampler2D uGroupData;
+uniform int uIterations;
+void main(){
+    vec3 p = vec3(vUv, 0.);
+    int inDomain = 0;
+    int refcount = 0;
+    float scale = 1.;
+    iToFundamentalDomainSampler(p, uGroupData, 0, inDomain, refcount, scale, uIterations);
+    outColor = vec4(p.xy, float(inDomain), float(refcount));
+}
+`;
+const TestFrags = {
+    getName: () => 'GpuFoldTest',
+    foldMain: foldMain,
+};
+
+const vert  = { obj: SF, id: 'canvasVertexShader' };
+const frag  = id => ({ obj: SF, id });
+const local = { obj: TestFrags, id: 'foldMain' };
+const wallDefine = frag('wall_bounds_define');
+
+const progs = programBuilder({
+    fold: {
+        name: 'fold',
+        vs: { frags: [vert] },
+        fs: { frags: [frag('isplane'), frag('inversiveSampler'), frag('complex'), frag('utils'), local] },
+    },
+    foldWalled: {
+        name: 'foldWalled',
+        vs: { frags: [vert] },
+        fs: { frags: [wallDefine, frag('isplane'), frag('inversiveSampler'), frag('complex'), frag('utils'), local] },
+    },
+}, false);
+
+const target = createFBO(gl, SIZE, SIZE, gl.RGBA32F, gl.RGBA, gl.FLOAT, gl.NEAREST);
+
+for(const [name, twist] of [['*442', 0], ['oo', 0], ['oo', 0.25], ['o33', 0.5], ['234oo', 0.25], ['33333o', 0.25]]){
+
+    const maker = new Group_Orbifold({ orbifold: name });
+    if(twist !== 0){
+        const p = { ...maker.getParamsMap() };
+        Object.keys(p).filter(k => k.endsWith('_t')).forEach(k => p[k] = twist);
+        maker.setParamsMap(p);
+    }
+    const group  = maker.getGroup();
+    const walled = DataPacking.hasWallBounds(group);
+
+    const groupData = DataPacking.createGroupDataSampler(gl);
+    DataPacking.packGroupToSampler(gl, groupData, group);
+    const boundsData = DataPacking.createGroupDataSampler(gl);
+    DataPacking.packWallBoundsToSampler(gl, boundsData, group);
+
+    const prog = progs.getProgram(gl, walled ? 'foldWalled' : 'fold');
+    gl.viewport(0, 0, SIZE, SIZE);
+    prog.bind();
+    prog.setUniforms({ uGroupData: groupData, uWallBoundsData: boundsData, uIterations: ITERATIONS,
+                       u_scale: 1., u_aspect: 1., u_center: [0., 0.] });
+    prog.blit(target);
+
+    const px = new Float32Array(4*SIZE*SIZE);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
+    gl.readPixels(0, 0, SIZE, SIZE, gl.RGBA, gl.FLOAT, px);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    // the same points on the CPU.  vUv runs over [-1,1]^2 at pixel centres.
+    let tested = 0, mismatch = 0, gpuStuck = 0, cpuStuck = 0, worst = 0;
+    for(let iy = 0; iy < SIZE; iy++){
+        for(let ix = 0; ix < SIZE; ix++){
+            const x = -1 + 2*(ix + 0.5)/SIZE;
+            const y = -1 + 2*(iy + 0.5)/SIZE;
+            if(x*x + y*y > 0.9*0.9) continue;      // stay well inside the disk
+            tested++;
+
+            const k = 4*(iy*SIZE + ix);
+            const gpuIn = px[k+2] > 0.5;
+            const res = group.toFundDomain({ pnt: iPoint([x, y]), maxIterations: ITERATIONS });
+
+            if(!gpuIn) gpuStuck++;
+            if(!res.inDomain) cpuStuck++;
+            if(!gpuIn || !res.inDomain) continue;   // nothing to compare
+
+            const d = Math.hypot(px[k] - res.pnt.v[0], px[k+1] - res.pnt.v[1]);
+            worst = Math.max(worst, d);
+            if(d > 2e-3) mismatch++;
+        }
+    }
+
+    check(gpuStuck === 0, `${name}/twist ${twist}: ${gpuStuck}/${tested} points the GPU could not fold`);
+    check(cpuStuck === 0, `${name}/twist ${twist}: ${cpuStuck}/${tested} points the CPU could not fold`);
+    check(mismatch === 0, `${name}/twist ${twist}: ${mismatch}/${tested} points landed elsewhere on the GPU`);
+    lines.push(`       ${name}/twist ${twist}: walled=${walled}, ${tested} points, worst gap ${worst.toExponential(2)}`);
+}
+
+// control: the same twisted group through the UNBOUNDED program, which is what
+// the app did before.  It must fail, or the test above proves nothing.
+{
+    const maker = new Group_Orbifold({ orbifold: 'o33' });
+    const p = { ...maker.getParamsMap() };
+    Object.keys(p).filter(k => k.endsWith('_t')).forEach(k => p[k] = 0.5);
+    maker.setParamsMap(p);
+    const group = maker.getGroup();
+
+    const groupData = DataPacking.createGroupDataSampler(gl);
+    DataPacking.packGroupToSampler(gl, groupData, group);
+
+    const prog = progs.getProgram(gl, 'fold');      // deliberately the plain one
+    gl.viewport(0, 0, SIZE, SIZE);
+    prog.bind();
+    prog.setUniforms({ uGroupData: groupData, uIterations: ITERATIONS,
+                       u_scale: 1., u_aspect: 1., u_center: [0., 0.] });
+    prog.blit(target);
+
+    const px = new Float32Array(4*SIZE*SIZE);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
+    gl.readPixels(0, 0, SIZE, SIZE, gl.RGBA, gl.FLOAT, px);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    let tested = 0, stuck = 0;
+    for(let iy = 0; iy < SIZE; iy++) for(let ix = 0; ix < SIZE; ix++){
+        const x = -1 + 2*(ix + 0.5)/SIZE, y = -1 + 2*(iy + 0.5)/SIZE;
+        if(x*x + y*y > 0.9*0.9) continue;
+        tested++;
+        if(px[4*(iy*SIZE + ix) + 2] < 0.5) stuck++;
+    }
+    check(stuck > 0, `control: o33/twist 0.5 without the bounds leaves points unfolded (got ${stuck}/${tested})`);
+    lines.push(`       control: ${stuck}/${tested} points (${(100*stuck/tested).toFixed(1)}%) never reach the domain without the bounds`);
+}
+
+if(window.__msgs.length) lines.push('', 'page messages:', ...window.__msgs.slice(0, 10));
+lines.push('');
+lines.push(failures ? failures + ' CHECKS FAILED' : 'ALL CHECKS PASSED');
+document.getElementById('out').textContent = lines.join('\n');
+document.title = failures ? 'FAILED' : 'PASSED';
+</script>
