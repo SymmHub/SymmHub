@@ -51,7 +51,8 @@
      on Windows with Inkscape's clipboard: types ['image/svg+xml'], its text
      empty): svgHeldBack, then the editor reads the clipboard through the
      async API (stubbed) and imports its SVG; refused, the "Nothing to
-     paste" banner says how to let the page read
+     paste" banner says how to let the page read; Figma's own copy (its
+     marked HTML) gets a banner pointing to Copy as SVG
 */
 
 import { Group_KLM, dirichletBase, selectDirichletSides, makeDirichletGroup } from '../../lib/grouplib/grouplib.js';
@@ -449,6 +450,12 @@ const boxCentre = (pts) => {
                                files: [new File(['%PDF'], 'a.pdf', { type: 'application/pdf' })] });
     check(none.kind === 'none' && none.what === 'text/plain, text/html, application/pdf', `nothing usable: its types named (${none.what})`);
     check(pasteChoice({}).what === 'nothing', 'an empty clipboard: "nothing"');
+    // Figma's own copy (a plain Ctrl+C there): its data in marked HTML comments, nothing else
+    const figma = '<meta charset="utf-8"><div><span data-metadata="<!--(figmeta)eyJmaWxlS2V5Ijoi(/figmeta)-->"></span>'
+                + '<span data-buffer="<!--(figma)ZmlnLWtpd2kA(/figma)-->"></span></div>';
+    const fc = pasteChoice({ html: figma, types: ['text/html'] });
+    check(fc.kind === 'none' && fc.from === 'figma' && fc.what === 'text/html', 'Figma\'s own copy: nothing, known as Figma\'s');
+    check(pasteChoice({ html: '<b>words</b>' }).from === undefined, 'other HTML: not Figma\'s');
 
     // a web page's <svg> without a DOM: cut out, nested ones inside, an xmlns put on
     const cut = svgOfHtml('<p>x</p><svg viewBox="0 0 1 1"><svg><rect/></svg><use xlink:href="#a"/></svg><svg>second</svg>');
@@ -598,6 +605,12 @@ const boxCentre = (pts) => {
         check(prevented && reads === 2 && banners.length === 1 && /^. Nothing pasted\. The browser gives the page the clipboard's SVG only when the page may read the clipboard/.test(banners[0]),
               `refused: nothing pasted, the banner says how to let the page read (${banners[0]})`);
         check(doc.getItems().length === 0, 'nothing added');
+        // Figma's own copy on Ctrl+V: the banner points to Copy as SVG
+        banners.length = 0;
+        const figmaHtml = '<span data-buffer="<!--(figma)ZmlnLWtpd2kA(/figma)-->"></span>';
+        await withBanners(() => listeners.paste.at(-1)({ clipboardData: { types: ['text/html'], files: [], getData: (t) => (t === 'text/html' ? figmaHtml : '') },
+                                                         target: null, preventDefault: () => {} }));
+        check(banners.length === 1 && /Nothing pasted\. The clipboard holds Figma's own copy.*Copy as SVG/.test(banners[0]), `Figma's own copy: the banner says Copy as SVG (${banners[0]})`);
     } finally {
         if (navWas) Object.defineProperty(globalThis, 'navigator', navWas); else delete globalThis.navigator;
     }
