@@ -17,22 +17,31 @@
      removes, undo brings back; paste is one undo step
   4. colour words: kept between documents of the same group, dropped from
      another (groupFingerprint: the same for one group made twice, another for
-     another group, whatever the pattern box)
+     another group, whatever the pattern box and the group transform)
   5. geometry: geodesic paths and shapes into another geometry come as the
      plain curves they were drawn with; in the same geometry they stay
-     geodesic; a group of no absolute only in the same group and pattern box
+     geodesic; a group of no absolute only in the same group
   6. the hyperbolic plane: a paste at the pointer is a move of the geometry
      (the shape and its stroke shrink towards the absolute as the metric says)
   7. a paste of another program's SVG text is taken as an import (whose
      reading then fails here, without a DOM, which it logs: "DOMParser is not
      defined"; tests/drawlib/svg_import.html tests the import in a browser)
+  8. the same group put elsewhere in the world by the group transform goes
+     by the group (world A -> the maker's coordinates -> world B): in place
+     where the tiling has it, its stroke scaled, its colour word kept; at the
+     pointer carried, then moved; another pattern box (the group stays in
+     the world) or another group by the world; a hyperbolic geodesic path
+     stays geodesic; a group drawn by its Dirichlet domain has the
+     fingerprint of the group it was made from
 */
 
-import { Group_KLM } from '../../lib/grouplib/grouplib.js';
+import { Group_KLM, dirichletBase, selectDirichletSides, makeDirichletGroup } from '../../lib/grouplib/grouplib.js';
 import { DrawingDocument } from '../../lib/drawlib/DrawingDocument.js';
 import { DrawingEditor } from '../../lib/drawlib/DrawingEditor.js';
 import { clipboardContent, recordOfText, pastedItems, clipboardPlace, groupFingerprint, drawnItem } from '../../lib/drawlib/Clipboard.js';
 import { savedItem } from '../../lib/drawlib/Paths.js';
+import { poseInverseTransform } from '../../lib/symhublib/PatternPose.js';
+import { groupTransformITransform } from '../../lib/symhublib/sym_utils.js';
 
 globalThis.window = globalThis.window || { addEventListener(){} };
 
@@ -43,15 +52,33 @@ function check(ok, what){
 const near = (a, b, eps = 1e-9) => Math.abs(a - b) <= eps;
 
 const PTC = { centerX: 0, centerY: 0, scale: 1, angle: 0 };
-function newEditor(group = null, ptc = PTC){
+// group: in pattern coordinates (placedGroup), as PatternDrawing has it
+function newEditor(group = null, ptc = PTC, groupTransform = null){
     const doc = DrawingDocument();
     doc.clear();
     const editor = DrawingEditor({
         document: doc,
-        getContext: () => ({ group, ptc, sprites: false, visLayers: [] }),
+        getContext: () => ({ group, ptc, groupTransform, sprites: false, visLayers: [] }),
         view: { toCanvas: w => w, toWorld: c => ({ pnt: c }), isLinear: () => true, pixelSize: () => 0.001 },
     });
     return { doc, editor };
+}
+
+/**
+ * the group as a drawing gets it (SymRenderer.prepareGroupData,
+ * updateTransGroup): the maker's group put in the world by the group transform
+ * ({translationX, translationY, rotation in degrees, scale}), its Dirichlet
+ * domain made there (dirichlet(group)), then the whole put into the pattern box
+ */
+function placedGroup(group, ptc = PTC, transform = null, dirichlet = null){
+    let g = group.clone();
+    if (transform) g.applyTransform(groupTransformITransform({ rotation: transform.rotation*Math.PI/180,
+        translation: [transform.translationX, transform.translationY], scale: transform.scale }));
+    if (dirichlet) g = dirichlet(g);
+    if (!g) return null;
+    const out = g.clone();
+    out.applyTransform(poseInverseTransform(ptc));
+    return out;
 }
 
 function klm(K, L, M, s){
@@ -183,7 +210,11 @@ const boxCentre = (pts) => {
     check(groupFingerprint(g632) !== groupFingerprint(g237), 'another group: another fingerprint');
     check(groupFingerprint(null) === '', 'no group: none');
     const ptc2 = { centerX: 0.3, centerY: -0.2, scale: 1.5, angle: 0.4 };
-    const a = newEditor(g632), b = newEditor(g632b, ptc2), c = newEditor(g237);
+    const t2 = { translationX: -0.3, translationY: 0.25, rotation: -40, scale: 0.7 };
+    check(groupFingerprint(placedGroup(g632b, ptc2), ptc2) === groupFingerprint(g632), 'another pattern box: the same fingerprint');
+    check(groupFingerprint(placedGroup(g632b, ptc2, t2), ptc2, t2) === groupFingerprint(g632), 'another group transform too');
+    check(groupFingerprint(placedGroup(g632b, ptc2), PTC) !== groupFingerprint(g632), 'the group moved in the world: another');
+    const a = newEditor(g632), b = newEditor(placedGroup(g632b, ptc2), ptc2), c = newEditor(g237);
     const s = a.doc.insertItem(square(0.1, 0.1, 0.05, { colorWord: 'a' }));
     a.editor.setSelection([sel(s.id)]);
     const { text } = a.editor.selectionClipboard();
@@ -221,11 +252,15 @@ const boxCentre = (pts) => {
     check(JSON.stringify(plane.items[3].points) === JSON.stringify(square(3, 3, 0.1).points), 'an item of no geodesic the same');
     const moved = into({ kind: 'hyperbolic', c: [0, 0], r: 2 });
     check(!moved.sameGeometry, 'another disk: another geometry');
-    // a group of no absolute: the same only in the same group and pattern box
+    // a group of no absolute: the same in the same group (put elsewhere:
+    // carried, section 8), never in another group
     const kl = { kind: 'euclidean', fallback: 'kleinian' };
     const k1 = recordOfText(clipboardContent([geo], { geometry: kl, group: klm(6, 2, 3, false), ptc: PTC }).text);
     check(pastedItems(k1, clipboardPlace({ geometry: kl, group: klm(6, 2, 3, false), ptc: PTC })).sameGeometry, 'no absolute, same group and box: the same');
-    check(!pastedItems(k1, clipboardPlace({ geometry: kl, group: klm(6, 2, 3, false), ptc: { ...PTC, scale: 2 } })).sameGeometry, 'no absolute, another box: another');
+    const box2 = { ...PTC, scale: 2 };
+    const k2 = pastedItems(k1, clipboardPlace({ geometry: kl, group: placedGroup(klm(6, 2, 3, false), box2), ptc: box2 }));
+    check(k2.sameGeometry && !k2.carried, 'no absolute, the same group in another pattern box: the same, nothing carried');
+    check(!pastedItems(k1, clipboardPlace({ geometry: kl, group: klm(4, 4, 2, false), ptc: PTC })).sameGeometry, 'no absolute, another group: another');
 }
 
 // 6 ───────────────────────────────────────────────────────────────────────────
@@ -267,6 +302,87 @@ const boxCentre = (pts) => {
         svgImported = e;
     }
     check(svgImported === true, 'another program\'s SVG text taken as an import');
+}
+
+// 8 ───────────────────────────────────────────────────────────────────────────
+{
+    // the similarity of a group transform, maker -> world: w = s R (p + t), by hand
+    const tw = (t, p) => { const a = t.rotation*Math.PI/180, x = p[0] + t.translationX, y = p[1] + t.translationY;
+        return [t.scale*(Math.cos(a)*x - Math.sin(a)*y), t.scale*(Math.sin(a)*x + Math.cos(a)*y)]; };
+    const TB = { translationX: 0.1, translationY: -0.2, rotation: 30, scale: 1.5 };
+    const ptcA = { centerX: 0.2, centerY: -0.1, scale: 0.8, angle: 10 };
+    const ptcB = { centerX: -0.5, centerY: 0.3, scale: 1.6, angle: -25 };
+    // A has no group transform: world A is the maker's coordinates
+    const carry = (w) => tw(TB, w);
+    const carriedAll = (src, out) => {
+        let ok = src.length === out.length;
+        for (let i = 0; ok && i + 1 < src.length; i += 2) { const e = carry([src[i], src[i + 1]]); ok = near(e[0], out[i], 1e-9) && near(e[1], out[i + 1], 1e-9); }
+        return ok;
+    };
+    const G = () => klm(6, 2, 3, false);
+    const a = newEditor(placedGroup(G(), ptcA), ptcA), b = newEditor(placedGroup(G(), ptcB, TB), ptcB, TB);
+    const s = a.doc.insertItem(square(0.3, 0.1, 0.05, { colorWord: 'a' }));
+    a.editor.setSelection([sel(s.id)]);
+    const { text } = a.editor.selectionClipboard();
+    b.editor.pasteContent({ text }, true);
+    const p = b.doc.getItems()[0];
+    check(carriedAll(s.points, p.points), 'the same group put elsewhere by the group transform: in place where the tiling has it');
+    check(near(p.style.strokeWidth, 1.5*s.style.strokeWidth, 1e-12), 'its stroke follows the tiling\'s scale');
+    check(p.colorWord === 'a', 'its colour word kept');
+    // at the pointer: carried, then moved there
+    b.editor.notePointer([1, 1]);
+    b.editor.pasteContent({ text });
+    const q = b.doc.getItems()[1];
+    const qc = boxCentre(q.points);
+    check(near(qc[0], 1, 1e-9) && near(qc[1], 1, 1e-9), 'at the pointer: centred there');
+    check(near(Math.hypot(q.points[2] - q.points[0], q.points[3] - q.points[1]), 0.15, 1e-9), 'at the pointer: the size of the tiling\'s scale');
+    // the same group transform in another pattern box (the box moved, the group stays in the world): where it was
+    const c = newEditor(placedGroup(G(), ptcB), ptcB);
+    c.editor.pasteContent({ text }, true);
+    check(JSON.stringify(c.doc.getItems()[0].points) === JSON.stringify(s.points) && c.doc.getItems()[0].colorWord === 'a',
+          'another pattern box: where it was copied, the colour word kept');
+    // another group: by the world, no colour word
+    const d = newEditor(placedGroup(klm(4, 4, 2, false), ptcB, TB), ptcB, TB);
+    d.editor.pasteContent({ text }, true);
+    check(JSON.stringify(d.doc.getItems()[0].points) === JSON.stringify(s.points) && !d.doc.getItems()[0].colorWord, 'another group: by the world');
+
+    // the hyperbolic plane: a geodesic path stays geodesic, carried with the tiling
+    const H = () => klm(2, 3, 7, false);
+    const ha = newEditor(placedGroup(H(), ptcA), ptcA), hb = newEditor(placedGroup(H(), ptcB, TB), ptcB, TB);
+    const ga = ha.editor.drawingGeometry(), gb = hb.editor.drawingGeometry();
+    check(ga.kind === 'hyperbolic' && near(gb.r, 1.5*ga.r, 1e-9) && near(carry(ga.c)[0], gb.c[0], 1e-9) && near(carry(ga.c)[1], gb.c[1], 1e-9),
+          'the group transform takes the one disk onto the other');
+    if (ga.kind === 'hyperbolic') {
+        const r = ga.r, c0 = ga.c;
+        const geo = ha.doc.insertItem({ type: 'path', closed: false, geodesic: true,
+            nodes: [{ p: [c0[0] - 0.3*r, c0[1] + 0.1*r], h1: null, h2: null }, { p: [c0[0] + 0.4*r, c0[1] + 0.2*r], h1: null, h2: null }],
+            style: { stroke: RED, strokeWidth: 0.01, fill: null } });
+        ha.editor.setSelection([sel(geo.id)]);
+        const t = ha.editor.selectionClipboard().text;
+        const rec = recordOfText(t);
+        const pasted = pastedItems(rec, clipboardPlace({ geometry: gb, group: placedGroup(H(), ptcB, TB), ptc: ptcB, groupTransform: TB }));
+        check(pasted.sameGroup && pasted.sameGeometry && pasted.carried && pasted.asDrawn === 0, 'a geodesic path into the same group put elsewhere: not as drawn');
+        hb.editor.pasteContent({ text: t }, true);
+        const hp = hb.doc.getItems()[0];
+        check(!!hp.geodesic, 'it stays geodesic');
+        check(carriedAll(geo.nodes.flatMap(n => n.p), hp.nodes.flatMap(n => n.p)), 'its nodes where the tiling has them');
+        // the same group transform in another pattern box: nothing moves
+        const hc = newEditor(placedGroup(H(), ptcB), ptcB);
+        hc.editor.pasteContent({ text: t }, true);
+        check(!!hc.doc.getItems()[0].geodesic && JSON.stringify(hc.doc.getItems()[0].nodes.map(n => n.p)) === JSON.stringify(geo.nodes.map(n => n.p)),
+              'another pattern box: where it was, geodesic');
+    }
+
+    // a group drawn by its Dirichlet domain is the group it was made from
+    const wp = G();
+    const base = dirichletBase({ baseX: 0.03, baseY: 0.07 });
+    const words = selectDirichletSides(wp, { base, depth: 2 }).words;
+    const dg = makeDirichletGroup(wp, { base, words });
+    check(!!dg && groupFingerprint(dg) === groupFingerprint(wp), 'with the Dirichlet domain: the same fingerprint');
+    check(!!dg && groupFingerprint(dg.clone()) === groupFingerprint(wp), 'a clone of it too');
+    // as SymRenderer draws it: the domain of the group put in the world, then the whole into the pattern box
+    const placedDg = placedGroup(G(), ptcB, TB, (g) => makeDirichletGroup(g, { base: dirichletBase({ baseX: 0.2, baseY: 0.1 }), words }));
+    check(!!placedDg && !!placedDg.dirichletWords && groupFingerprint(placedDg, ptcB, TB) === groupFingerprint(wp), 'its domain put in the world and the box: the same fingerprint');
 }
 
 console.log(failed ? `${failed} FAILED` : 'all passed');
