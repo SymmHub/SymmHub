@@ -47,12 +47,17 @@
      that pastes the root's children without the viewBox (Inkscape) gets
      the size seen on the screen; kept between 16 and 16384 pixels a side,
      1000 without a scale; the editor writes it at its view's scale
+ 12. a paste event that names an SVG it does not give (Chrome's paste event
+     on Windows with Inkscape's clipboard: types ['image/svg+xml'], its text
+     empty): svgHeldBack, then the editor reads the clipboard through the
+     async API (stubbed) and imports its SVG; refused, the "Nothing to
+     paste" banner says how to let the page read
 */
 
 import { Group_KLM, dirichletBase, selectDirichletSides, makeDirichletGroup } from '../../lib/grouplib/grouplib.js';
 import { DrawingDocument } from '../../lib/drawlib/DrawingDocument.js';
 import { DrawingEditor } from '../../lib/drawlib/DrawingEditor.js';
-import { clipboardContent, recordOfText, pastedItems, clipboardPlace, groupFingerprint, drawnItem, pasteChoice } from '../../lib/drawlib/Clipboard.js';
+import { clipboardContent, recordOfText, pastedItems, clipboardPlace, groupFingerprint, drawnItem, pasteChoice, svgHeldBack } from '../../lib/drawlib/Clipboard.js';
 import { savedItem } from '../../lib/drawlib/Paths.js';
 import { poseInverseTransform } from '../../lib/symhublib/PatternPose.js';
 import { groupTransformITransform } from '../../lib/symhublib/sym_utils.js';
@@ -554,6 +559,48 @@ const boxCentre = (pts) => {
     editor.setSelection([sel(s.id)]);
     const e = read(editor.selectionClipboard().text);
     check(e.m[0] === 1000, `the editor's copy at the view's scale: 1000 pixels a unit (${e.m[0]})`);
+}
+
+// 12 ──────────────────────────────────────────────────────────────────────────
+{
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
+    const png = new File([new Uint8Array([137, 80, 78, 71])], 'image.png', { type: 'image/png' });
+    const { text } = clipboardContent([square(0, 0, 0.1)], {});
+    check(svgHeldBack({ types: ['image/svg+xml'] }) === true, 'an SVG named, none given: held back');
+    check(svgHeldBack({ types: ['image/svg+xml', 'Files'], files: [png] }) === true, 'with a picture beside it: still read (shapes before a picture)');
+    check(svgHeldBack({ types: ['image/svg+xml'], svg }) === false, 'the SVG given: not');
+    check(svgHeldBack({ types: ['text/plain', 'image/svg+xml'], text }) === false, 'a record beside it: not');
+    check(svgHeldBack({ types: ['text/plain', 'image/svg+xml'], text: svg }) === false, 'SVG text beside it: not');
+    check(svgHeldBack({ types: ['text/plain'], text: 'words' }) === false, 'no SVG named: not');
+
+    // the editor's Ctrl+V: the event as Chrome gives it with Inkscape's clipboard
+    const navWas = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+    let reads = 0, refuse = false;
+    Object.defineProperty(globalThis, 'navigator', { configurable: true, writable: true, value: { clipboard: {
+        read: async () => { reads++; if (refuse) throw new Error('NotAllowedError'); return [{ types: ['image/svg+xml'], getType: async (t) => new Blob([svg], { type: t }) }]; },
+    } } });
+    try {
+        await new Promise(r => setTimeout(r, 20));
+        const { doc, editor } = newEditor();
+        const event = () => {
+            let prevented = false;
+            listeners.paste.at(-1)({ clipboardData: { types: ['image/svg+xml'], files: [], getData: () => '' }, target: null, preventDefault: () => { prevented = true; } });
+            return prevented;
+        };
+        banners.length = 0;
+        let prevented = await withBanners(event);
+        check(prevented && reads === 1, 'the event taken, the clipboard read through the async API');
+        // the SVG reached the import (whose reading fails here, without a DOM)
+        check(banners.length === 1 && /could not be read/.test(banners[0]), `its SVG imported (${banners[0]})`);
+        refuse = true;
+        banners.length = 0;
+        prevented = await withBanners(event);
+        check(prevented && reads === 2 && banners.length === 1 && /^. Nothing pasted\. The browser gives the page the clipboard's SVG only when the page may read the clipboard/.test(banners[0]),
+              `refused: nothing pasted, the banner says how to let the page read (${banners[0]})`);
+        check(doc.getItems().length === 0, 'nothing added');
+    } finally {
+        if (navWas) Object.defineProperty(globalThis, 'navigator', navWas); else delete globalThis.navigator;
+    }
 }
 
 console.log(failed ? `${failed} FAILED` : 'all passed');
