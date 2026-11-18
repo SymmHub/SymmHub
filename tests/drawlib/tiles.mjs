@@ -206,6 +206,8 @@ for (const type of ['632', '442', '333', '2222', '4*2', '3*3', '22x']) {
     const group = new Group_WP({ type: '632' }).getGroup();
     const { doc, editor } = newEditor(group);
     const mapWord = editor.pairingMap;
+    check(editor.getStyleConfig().curvedTiles === true, 'Curved sides is on by default (docs/tile_tool_ui_plan.md D3)');
+    editor.setStyleValue('curvedTiles', false);
     const tile = editor.addTileFromDomain();
     check(tile.type === 'polyline' && !tile.nodes, 'with Curved sides off a tile of points, as before');
     editor.convertSelection(true);
@@ -250,6 +252,7 @@ for (const [name, group, kind] of [['237', klm(2, 3, 7, false), 'hyperbolic'], [
     const { doc, editor } = newEditor(group);
     const mapWord = editor.pairingMap;
     if (editor.drawingGeometry().kind !== kind) { check(false, `${name}: a ${kind} group (${editor.drawingGeometry().kind})`); continue; }
+    editor.setStyleValue('curvedTiles', false);
     const points = editor.addTileFromDomain();
     if (!points) { check(false, `${name}: a tile from the domain`); continue; }
     check(points.type === 'polyline' && points.tile.edges.some(e => e.count > 1), `${name}: the tile of points has its arcs as runs of points`);
