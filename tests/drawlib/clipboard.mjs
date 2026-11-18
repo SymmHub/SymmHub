@@ -33,17 +33,52 @@
      the world) or another group by the world; a hyperbolic geodesic path
      stays geodesic; a group drawn by its Dirichlet domain has the
      fingerprint of the group it was made from
+  9. what a paste takes (pasteChoice, plan 3.3): a record before anything,
+     an SVG (image/svg+xml, a file, text, a web page's <svg>) before a
+     picture, a picture alone said so, else what the clipboard holds named;
+     a web page's <svg> cut out of its HTML without a DOM (svgOfHtml)
+ 10. the richer copy (uilib writeClipboardItems with a stubbed async
+     clipboard): the types the browser writes, a function called only for a
+     type written, a refusal; the PNG's size (svgPictureSize); the editor's
+     copy event writes the text, the SVG and the PNG, and without the PNG
+     (it cannot be drawn without a DOM) the text and the SVG
+ 11. the copy's SVG has pixels for its own units (viewBox = width x
+     height) and its content's group takes the world to them, so a program
+     that pastes the root's children without the viewBox (Inkscape) gets
+     the size seen on the screen; kept between 16 and 16384 pixels a side,
+     1000 without a scale; the editor writes it at its view's scale
 */
 
 import { Group_KLM, dirichletBase, selectDirichletSides, makeDirichletGroup } from '../../lib/grouplib/grouplib.js';
 import { DrawingDocument } from '../../lib/drawlib/DrawingDocument.js';
 import { DrawingEditor } from '../../lib/drawlib/DrawingEditor.js';
-import { clipboardContent, recordOfText, pastedItems, clipboardPlace, groupFingerprint, drawnItem } from '../../lib/drawlib/Clipboard.js';
+import { clipboardContent, recordOfText, pastedItems, clipboardPlace, groupFingerprint, drawnItem, pasteChoice } from '../../lib/drawlib/Clipboard.js';
 import { savedItem } from '../../lib/drawlib/Paths.js';
 import { poseInverseTransform } from '../../lib/symhublib/PatternPose.js';
 import { groupTransformITransform } from '../../lib/symhublib/sym_utils.js';
+import { writeClipboardItems, svgPictureSize, svgOfHtml } from '../../lib/uilib/clipboard.js';
 
-globalThis.window = globalThis.window || { addEventListener(){} };
+// the editors' copy, cut and paste listeners, the last editor's last
+const listeners = {};
+globalThis.window = globalThis.window || { addEventListener(kind, fn){ (listeners[kind] ||= []).push(fn); }, removeEventListener(){} };
+
+// banners shown while a section lends a document (showWarningBanner)
+const banners = [];
+async function withBanners(run){
+    const had = Object.getOwnPropertyDescriptor(globalThis, 'document');
+    globalThis.document = {
+        createElement: () => ({ style: {}, addEventListener(){}, remove(){}, set textContent(t){ banners.push(t); } }),
+        body: { appendChild(){} },
+    };
+    try {
+        const out = run();
+        // what the run left pending (an import's reading) done while the document is lent
+        await new Promise(r => setTimeout(r, 20));
+        return out;
+    } finally {
+        if (had) Object.defineProperty(globalThis, 'document', had); else delete globalThis.document;
+    }
+}
 
 let failed = 0;
 function check(ok, what){
@@ -290,18 +325,19 @@ const boxCentre = (pts) => {
 
 // 7 ───────────────────────────────────────────────────────────────────────────
 {
+    // the writes the cut of section 3 left pending (refused here: no clipboard, no document) done first
+    await new Promise(r => setTimeout(r, 20));
     const { editor } = newEditor();
-    let svgImported = null;
     // the SVG import needs a DOM: what pasteContent hands it is enough here
-    const taken = editor.pasteContent({ text: 'plain words' });
+    banners.length = 0;
+    const taken = await withBanners(() => editor.pasteContent({ text: 'plain words' }));
     check(taken === false, 'plain text is not taken (the browser\'s own paste)');
+    check(banners.length === 1 && /Nothing to paste: no shapes, SVG or picture on the clipboard \(it holds only text\)/.test(banners[0]), `a banner says what the clipboard holds (${banners[0]})`);
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
-    try {
-        svgImported = editor.pasteContent({ text: svg });
-    } catch (e) {
-        svgImported = e;
-    }
+    banners.length = 0;
+    const svgImported = await withBanners(() => editor.pasteContent({ text: svg }));
     check(svgImported === true, 'another program\'s SVG text taken as an import');
+    check(banners.length === 1 && /could not be read/.test(banners[0]), 'whose reading fails here, which a banner says');
 }
 
 // 8 ───────────────────────────────────────────────────────────────────────────
@@ -383,6 +419,141 @@ const boxCentre = (pts) => {
     // as SymRenderer draws it: the domain of the group put in the world, then the whole into the pattern box
     const placedDg = placedGroup(G(), ptcB, TB, (g) => makeDirichletGroup(g, { base: dirichletBase({ baseX: 0.2, baseY: 0.1 }), words }));
     check(!!placedDg && !!placedDg.dirichletWords && groupFingerprint(placedDg, ptcB, TB) === groupFingerprint(wp), 'its domain put in the world and the box: the same fingerprint');
+}
+
+// 9 ───────────────────────────────────────────────────────────────────────────
+{
+    const { text } = clipboardContent([square(0, 0, 0.1)], {});
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
+    const png = new File([new Uint8Array([137, 80, 78, 71])], 'image.png', { type: 'image/png' });
+    const svgFile = new File([svg], 'shape.svg', { type: 'image/svg+xml' });
+    const page = '<html><body><p>a drawing</p><svg viewBox="0 0 4 4"><circle r="2"/></svg></body></html>';
+    const kind = (got) => pasteChoice(got).kind + (pasteChoice(got).from ? ':' + pasteChoice(got).from : '');
+    check(kind({ text, svg, html: page, files: [png] }) === 'record', 'a record first');
+    check(kind({ text: 'words', svg: text }) === 'record', 'a record in the SVG');
+    check(kind({ svg, files: [svgFile, png] }) === 'svg:svg', 'image/svg+xml next');
+    check(kind({ files: [png, svgFile] }) === 'svgFile', 'an SVG file before a picture');
+    check(kind({ text: svg, files: [png] }) === 'svg:text', 'SVG text before a picture (shapes before a picture of them)');
+    check(kind({ html: page, files: [png] }) === 'svg:html', 'a web page\'s <svg> before a picture');
+    const alone = pasteChoice({ files: [png], types: ['Files'] });
+    check(alone.kind === 'picture' && alone.file === png && alone.only, 'a picture alone: said so');
+    const withPage = pasteChoice({ html: '<img src="x.png">', files: [png] });
+    check(withPage.kind === 'picture' && !withPage.only, 'a picture copied from a page (HTML with it): not alone');
+    check(pasteChoice({ text: 'words' }).what === 'only text', 'text alone: "only text"');
+    const none = pasteChoice({ text: 'words', html: '<b>words</b>', types: ['text/plain', 'text/html', 'Files'],
+                               files: [new File(['%PDF'], 'a.pdf', { type: 'application/pdf' })] });
+    check(none.kind === 'none' && none.what === 'text/plain, text/html, application/pdf', `nothing usable: its types named (${none.what})`);
+    check(pasteChoice({}).what === 'nothing', 'an empty clipboard: "nothing"');
+
+    // a web page's <svg> without a DOM: cut out, nested ones inside, an xmlns put on
+    const cut = svgOfHtml('<p>x</p><svg viewBox="0 0 1 1"><svg><rect/></svg><use xlink:href="#a"/></svg><svg>second</svg>');
+    check(!!cut && cut.startsWith('<svg') && /\sxmlns="http:\/\/www\.w3\.org\/2000\/svg"/.test(cut) && /\sxmlns:xlink=/.test(cut)
+          && cut.endsWith('<use xlink:href="#a"/></svg>') && !cut.includes('second'), 'the first <svg> with what it holds, namespaces put on');
+    check(svgOfHtml('<svg viewBox="0 0 1 1"/>') === '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"/>', 'an empty <svg/>');
+    check(svgOfHtml('<p>no drawing</p>') === null && svgOfHtml(null) === null, 'no <svg>: none');
+}
+
+// 10 ──────────────────────────────────────────────────────────────────────────
+{
+    // the PNG's size: unitPx pixels to a unit of the viewBox, the longer side at most maxSide
+    const sz = (t, o) => JSON.stringify(svgPictureSize(t, o));
+    const vb = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -0.5 2 1" width="1000" height="500"><g/></svg>';
+    check(sz(vb, { unitPx: 100 }) === '{"width":200,"height":100}', 'by the viewBox, not the width');
+    check(sz(vb, { unitPx: 100, maxSide: 150 }) === '{"width":150,"height":75}', 'at most maxSide a side');
+    check(sz('<svg width="30" height="10"/>', { unitPx: 2 }) === '{"width":60,"height":20}', 'no viewBox: by width and height');
+    check(sz('<svg viewBox="0 0 1000 1"/>', { unitPx: 1, maxSide: 100 }) === '{"width":100,"height":1}', 'never below a pixel');
+    check(svgPictureSize('<svg/>', { unitPx: 1 }) === null && svgPictureSize('no svg') === null, 'no size: none');
+
+    // a stubbed async clipboard: ClipboardItem with supports, write awaiting each type as Chrome does
+    const navWas = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+    let supported = ['text/plain', 'image/png'];
+    let refuse = false;
+    const writes = [];
+    class FakeItem {
+        constructor(data){ this.data = data; this.types = Object.keys(data); }
+        async getType(t){ return await this.data[t]; }
+        static supports(t){ return supported.includes(t); }
+    }
+    globalThis.ClipboardItem = FakeItem;
+    Object.defineProperty(globalThis, 'navigator', { configurable: true, writable: true, value: { clipboard: {
+        write: async (items) => {
+            if (refuse) throw new Error('NotAllowedError');
+            const out = {};
+            for (const t of items[0].types) out[t] = await (await items[0].getType(t)).text();
+            writes.push(out);
+        } } } });
+    try {
+        const called = { svg: false, png: false };
+        const ok = await writeClipboardItems({ 'text/plain': 'the text', 'image/svg+xml': () => { called.svg = true; return '<svg/>'; },
+            'image/png': () => { called.png = true; return Promise.resolve(new Blob(['png bytes'], { type: 'image/png' })); } });
+        check(ok && writes.length === 1 && Object.keys(writes[0]).join() === 'text/plain,image/png' && writes[0]['text/plain'] === 'the text'
+              && writes[0]['image/png'] === 'png bytes', 'the types the browser writes, as one item');
+        check(called.png && !called.svg, 'a function called only for a type written');
+        refuse = true;
+        check(await writeClipboardItems({ 'text/plain': 'x' }) === false, 'refused: false');
+        refuse = false;
+        check(await writeClipboardItems({ 'image/gif': 'x' }) === false, 'no type it writes: false');
+
+        // the editor's copy event: the text at once, then the text, the SVG and the PNG, without the PNG where it cannot be drawn
+        supported = ['text/plain', 'image/svg+xml', 'image/png'];
+        writes.length = 0;
+        const { doc, editor } = newEditor();
+        const s = doc.insertItem(square(1, 2, 0.25));
+        editor.setSelection([sel(s.id)]);
+        const set = {};
+        let prevented = false;
+        listeners.copy.at(-1)({ clipboardData: { setData: (t, v) => { set[t] = v; } }, target: null, preventDefault: () => { prevented = true; } });
+        check(prevented && !!recordOfText(set['text/plain']), 'the copy event: the text with the record, the browser\'s own copy prevented');
+        for (let k = 0; k < 20 && !writes.length; k++) await new Promise(r => setTimeout(r, 5));
+        check(writes.length === 1 && Object.keys(writes[0]).join() === 'text/plain,image/svg+xml'
+              && writes[0]['text/plain'] === set['text/plain'] && writes[0]['image/svg+xml'] === set['text/plain'],
+              `then the text and the SVG through the async clipboard, no PNG without a DOM (${writes.map(w => Object.keys(w).join('+')).join(' | ')})`);
+        // refused: the event's text stays, nothing more is written
+        refuse = true;
+        writes.length = 0;
+        listeners.copy.at(-1)({ clipboardData: { setData: () => {} }, target: null, preventDefault: () => {} });
+        await new Promise(r => setTimeout(r, 30));
+        check(writes.length === 0, 'refused: the event\'s text left as it was');
+    } finally {
+        delete globalThis.ClipboardItem;
+        if (navWas) Object.defineProperty(globalThis, 'navigator', navWas); else delete globalThis.navigator;
+    }
+}
+
+// 11 ──────────────────────────────────────────────────────────────────────────
+{
+    // the root's size and the content group's matrix, as a program pasting the root's children sees them
+    const read = (text) => {
+        const root = text.match(/<svg[^>]*>/)[0];
+        const num = (name) => parseFloat(root.match(new RegExp(`\\s${name}="([^"]*)"`))[1]);
+        const vb = root.match(/viewBox="([^"]*)"/)[1].split(' ').map(Number);
+        const m = text.match(/<g transform="matrix\(([^)]*)\)">/);
+        return { width: num('width'), height: num('height'), vb, m: m ? m[1].split(' ').map(Number) : null };
+    };
+    const at = (m, p) => [m[0]*p[0] + m[2]*p[1] + m[4], m[1]*p[0] + m[3]*p[1] + m[5]];
+    // a square of side 0.5 at (1, 2), its stroke 0.01: the SVG's box round it, with the stroke and a margin
+    const sq = square(1, 2, 0.25);
+    const r = read(clipboardContent([sq], {}, { unitPx: 200 }).text);
+    check(r.vb.join() === `0,0,${r.width},${r.height}` && near(r.width, r.height, 1e-9) && r.width > 100 && r.width < 120,
+          `its own units pixels: viewBox 0 0 w h = its size (${r.vb.join(' ')}; ${r.width} x ${r.height})`);
+    const c0 = at(r.m, [0.75, 2.25]), c1 = at(r.m, [1.25, 1.75]);
+    const margin = 0.5*(r.width - 100);
+    check(!!r.m && r.m[0] === 200 && r.m[3] === -200 && near(c0[0], margin, 1e-6) && near(c0[1], margin, 1e-6)
+          && near(c1[0], r.width - margin, 1e-6) && near(c1[1], r.height - margin, 1e-6),
+          `the content's group takes the world to them, y down, the square in the middle (${c0.map(v => v.toFixed(3))} .. ${c1.map(v => v.toFixed(3))})`);
+    // the content alone, its viewBox left out: 100 pixels for the square's 0.5
+    check(near(c1[0] - c0[0], 100, 1e-6), 'the root\'s children alone: the size as seen');
+    const big = read(clipboardContent([sq], {}, { unitPx: 1e6 }).text), small = read(clipboardContent([sq], {}, { unitPx: 1 }).text);
+    const plain = read(clipboardContent([sq], {}).text);
+    check(big.m[0] === 16384/0.5 && small.m[0] === 16/0.5 && plain.m[0] === 1000/0.5,
+          `the shapes kept to 16 .. 16384 pixels a side, 1000 without a scale (${big.m[0]}, ${small.m[0]}, ${plain.m[0]} a unit)`);
+    check(!!recordOfText(clipboardContent([sq], {}, { unitPx: 200 }).text), 'the record as before');
+    // the editor: its view's scale (0.001 world units a pixel here, one device pixel to a CSS pixel)
+    const { doc, editor } = newEditor();
+    const s = doc.insertItem(square(1, 2, 0.25));
+    editor.setSelection([sel(s.id)]);
+    const e = read(editor.selectionClipboard().text);
+    check(e.m[0] === 1000, `the editor's copy at the view's scale: 1000 pixels a unit (${e.m[0]})`);
 }
 
 console.log(failed ? `${failed} FAILED` : 'all passed');
