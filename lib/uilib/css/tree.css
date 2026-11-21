@@ -43,14 +43,8 @@ ul {
   font-weight: var(--font-weight, 400);
 }
 
-.tree-row.tree_node_clickable,
-.tree-row.tree-folder-row {
+.tree-row.tree_node_clickable {
   cursor: pointer;
-}
-
-/* a folder's title, as dat.gui's */
-.tree-row.tree-folder-row:hover .tree-label {
-  text-decoration: underline;
 }
 
 .tree-row.tree_node_clickable:hover:not(.selected-node) {
@@ -73,15 +67,18 @@ ul {
   color: var(--soft-text-color, #777);
 }
 
+/* the arrows of dat.gui's folder titles (dat-gui-mod.css li.title::before):
+   the 10px picture in a 15px place, 4px before the text; the whole place
+   takes the click */
 .folder-arrow-right {
   flex: none;
   display: inline-block;
   width: 15px;
-  height: 15px;
-  margin-right: 2px;
+  height: 27px;
+  margin-right: 4px;
   background-repeat: no-repeat;
   background-position: center;
-  background-size: contain;
+  background-size: 10px 10px;
   background-image: url('images/ui_arrow_right.svg');
   cursor: pointer;
 }
