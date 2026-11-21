@@ -24,6 +24,18 @@
   - To polyline on a curved tile gives a tile of points whose pairs are
     exact images point by point;
   - Release tile drops the pairing;
+  - in a Kleinian group (bent KLMN, KLx, 22222, *KLMN, a cusp, Grandma's)
+    New tile with Curved sides on is a plain path: the corners of the tile
+    of points, a cubic for each quarter turn of a side's arc at most (on the
+    domain's circles to 3e-4 of the radius), the pairs' nodes the images and
+    their curves the images to 1e-4 of the tile; a side bent, the pair fits
+    the image (to 3e-3 of the tile), smooth nodes stay smooth, the other way
+    round too and with a node inserted; To polyline and To path keep the
+    pairing; the fitted pair (marked fitted, the edge it follows not) is
+    drawn as the exact image: the tile's outline (the document's, the
+    outliner's tileOutline) has it within 3e-6 of the tile, new, bent, bent
+    back (the marks swapped) and with a node inserted; with the pattern box
+    moved (the pairs no longer hold) the tile is drawn by its own nodes;
   - every triangle group K L M and *K L M (K L M in 2..8) and every rotation
     group of the sphere gives a tile that lies in its domain, a hyperbolic
     one inside the disk (the arcs of the sides the short way round), *K L M
@@ -724,6 +736,8 @@ for (const [name, group, kind] of [['237', klm(2, 3, 7, false), 'hyperbolic'], [
     {
         const group = made(Group_KLMN, { bend: 20 }, true);
         const { doc, editor } = newEditor(group);
+        // (tiles of points: these checks are of the place, the curved tiles have theirs below)
+        editor.setStyleValue('curvedTiles', false);
         const toWorld = patternToWorldMap(PTC);
         const upper = tileFromDomain(group, ID, {});
         const p = mirror(mean(upper));
@@ -936,6 +950,7 @@ for (const [name, group, kind] of [['237', klm(2, 3, 7, false), 'hyperbolic'], [
             const far = mean(tileFromDomain(group, ID, {}, mirror(mean(tileFromDomain(group, ID, {})))));
             const dg = dirichlet(group, far).clone();
             const { doc, editor } = newEditor(dg);
+            editor.setStyleValue('curvedTiles', false);
             const toWorld = patternToWorldMap(PTC);
             const expected = cornersOf(tileFromDomain(dg, ID, {})).map(q => toWorld.map(q[0], q[1]));
             const tile = editor.addTileFromDomain();
@@ -947,21 +962,223 @@ for (const [name, group, kind] of [['237', klm(2, 3, 7, false), 'hyperbolic'], [
     }
 }
 
-// ── a Kleinian group: its tiles stay tiles of points ────────────────────────
+// ── a Kleinian group: curved tiles of cubics, their pairs fitted ────────────
 {
-    const mk = new Group_Grandma();
-    Object.assign(mk.params, { ta_re: 1.9, ta_im: 0.05, tb_re: 3, tb_im: 0 });
-    mk.state.paramChanged = true;
-    const { doc, editor } = newEditor(mk.getGroup());
-    editor.setStyleValue('curvedTiles', true);
-    const tile = editor.addTileFromDomain();
-    check(editor.drawingGeometry().fallback === 'kleinian' && !editor.canCurveTiles(), 'Kleinian: tiles cannot be curved');
-    if (tile) {
-        check(tile.type === 'polyline' && !!tile.tile && editor.curvedTileOf(tile) === null, 'Kleinian: with Curved sides on the tile is still a tile of points');
-        editor.convertSelection(true);
-        const plain = doc.getItem(tile.id);
-        check(plain.type === 'path' && !plain.tile, 'Kleinian: To path makes it a plain path, its pairing dropped (as before)');
+    const hushed = (make) => { const log = console.log; console.log = () => {}; try { return make(); } finally { console.log = log; } };
+    const makeK = (Maker, values, uhp) => hushed(() => { const m = new Maker({}); Object.assign(m.params, values, uhp === undefined ? {} : { uhp }); if (m.state) m.state.paramChanged = true; return m.getGroup(); });
+    const cubicOf = (item, v) => { const n = item.nodes.length, a = item.nodes[v % n], b = item.nodes[(v + 1) % n]; return [a.p, a.h2 || a.p, b.h1 || b.p, b.p]; };
+    const bez = (cp, t) => { const u = 1 - t; return [0, 1].map(i => u*u*u*cp[0][i] + 3*u*u*t*cp[1][i] + 3*u*t*t*cp[2][i] + t*t*t*cp[3][i]); };
+    const toSegment = (q, a, b) => { const d = [b[0] - a[0], b[1] - a[1]], L2 = d[0]*d[0] + d[1]*d[1]; const t = L2 > 0 ? Math.max(0, Math.min(1, ((q[0] - a[0])*d[0] + (q[1] - a[1])*d[1])/L2)) : 0; return dist(q, [a[0] + t*d[0], a[1] + t*d[1]]); };
+    const starts = (item) => tileEdgeStarts(item.tile);
+    const cornersK = (item) => starts(item).slice(0, -1).map(v => (item.nodes ? item.nodes[v % item.nodes.length].p : [item.points[2*v], item.points[2*v + 1]]));
+    const sizeOf = (item) => { const c = cornersK(item); let d = 0; for (const a of c) for (const b of c) d = Math.max(d, dist(a, b)); return d; };
+    /** {nodes, curve}: how far the pair's nodes lie from the images of the edge's, and the image of the edge's curve from the pair's curve */
+    function curvePairError(item, mapWord){
+        const st = starts(item), n = item.nodes.length;
+        let nodes = 0, curve = 0;
+        item.tile.edges.forEach((e, k) => {
+            if (e.pair === null || e.pair === undefined || e.pair === k || e.locked) return;
+            const map = mapWord(e.word);
+            const src = [], dst = [];
+            for (let v = st[k]; v <= st[k + 1]; v++) src.push(item.nodes[v % n].p);
+            for (let v = st[e.pair]; v <= st[e.pair + 1]; v++) dst.push(item.nodes[v % n].p);
+            if (e.reversed) dst.reverse();
+            if (src.length !== dst.length) { nodes = Infinity; return; }
+            src.forEach((p, i) => { nodes = Math.max(nodes, dist(map(p), dst[i])); });
+            const fine = [];
+            for (let v = st[e.pair]; v < st[e.pair + 1]; v++) for (let i = 0; i <= 200; i++) fine.push(bez(cubicOf(item, v), i/200));
+            for (let v = st[k]; v < st[k + 1]; v++) for (let i = 0; i <= 24; i++) {
+                const q = map(bez(cubicOf(item, v), i/24));
+                let best = Infinity;
+                for (let j = 0; j + 1 < fine.length; j++) best = Math.min(best, toSegment(q, fine[j], fine[j + 1]));
+                curve = Math.max(curve, best);
+            }
+        });
+        return { nodes, curve };
     }
+    /**
+     * {curve, edges}: the farthest a point of the image of an edge lies from the drawn
+     * pair (its outline's pieces), over the edges marked fitted; Infinity without an outline
+     */
+    function outlinePairError(item, mapWord){
+        const o = item.outline;
+        if (!o || !o.nodes) return { curve: item.tile.edges.some(e => e.fitted) ? Infinity : 0, edges: 0 };
+        const st = starts(item), on = o.nodes.length;
+        let curve = 0, edges = 0;
+        item.tile.edges.forEach((e, j) => {
+            if (!e.fitted) return;
+            const k = e.pair, map = mapWord(item.tile.edges[k].word);
+            const fine = [];
+            for (let q = 0; q < on; q++) {
+                const s = o.source[q];
+                if (!s || s.seg < st[j] || s.seg >= st[j + 1]) continue;
+                const a = o.nodes[q], b = o.nodes[(q + 1) % on];
+                for (let i = 0; i <= 200; i++) fine.push(bez([a.p, a.h2 || a.p, b.h1 || b.p, b.p], i/200));
+            }
+            for (let v = st[k]; v < st[k + 1]; v++) for (let i = 0; i <= 32; i++) {
+                const q = map(bez(cubicOf(item, v), i/32));
+                let best = Infinity;
+                for (let f = 0; f + 1 < fine.length; f++) best = Math.min(best, toSegment(q, fine[f], fine[f + 1]));
+                curve = Math.max(curve, best);
+            }
+            edges++;
+        });
+        return { curve, edges };
+    }
+    /** is every pair marked once: the pair of the edge `of` (an edge edited) fitted, else the higher-indexed edge */
+    const marksRight = (item, of = null) => item.tile.edges.every((e, j) => {
+        if (e.locked || e.pair === null || e.pair === undefined || e.pair === j) return !e.fitted;
+        if (!!e.fitted === !!item.tile.edges[e.pair].fitted) return false;
+        if (of === j) return !e.fitted;
+        if (of === e.pair) return !!e.fitted;
+        return !!e.fitted === (j > e.pair);
+    });
+    /** the farthest a point of the curved tile's edges lies from the arc (a line) through the tile of points' edge */
+    function offTheSides(curved, points){
+        const sp = starts(points), sc = starts(curved), P = (v) => [points.points[2*(v % (points.points.length/2))], points.points[2*(v % (points.points.length/2)) + 1]];
+        let off = 0;
+        curved.tile.edges.forEach((e, k) => {
+            const a = P(sp[k]), b = P(sp[k + 1]), m = P(sp[k] + (points.tile.edges[k].count >> 1));
+            const D = 2*(a[0]*(m[1] - b[1]) + m[0]*(b[1] - a[1]) + b[0]*(a[1] - m[1]));
+            const circle = Math.abs(D) > 1e-12*sizeOf(points)**2 ? (() => {
+                const s2 = q => q[0]*q[0] + q[1]*q[1];
+                const c = [(s2(a)*(m[1] - b[1]) + s2(m)*(b[1] - a[1]) + s2(b)*(a[1] - m[1]))/D, (s2(a)*(b[0] - m[0]) + s2(m)*(a[0] - b[0]) + s2(b)*(m[0] - a[0]))/D];
+                return { c, R: dist(a, c) };
+            })() : null;
+            for (let v = sc[k]; v < sc[k + 1]; v++) for (let i = 0; i <= 16; i++) {
+                const q = bez(cubicOf(curved, v), i/16);
+                off = Math.max(off, circle ? Math.abs(dist(q, circle.c) - circle.R)/circle.R : toSegment(q, a, b)/sizeOf(points));
+            }
+        });
+        return off;
+    }
+    const grandma = (() => { const mk = new Group_Grandma(); Object.assign(mk.params, { ta_re: 1.9, ta_im: 0.05, tb_re: 3, tb_im: 0 }); mk.state.paramChanged = true; return mk.getGroup(); })();
+    const groupsK = [
+        ['Grandma 1.9+0.05i, 3', grandma],
+        ['KLMN bent by 20, half plane', makeK(Group_KLMN, { bend: 20 }, true)],
+        ['KLMN bent by 20, disk', makeK(Group_KLMN, { bend: 20 }, false)],
+        ['KLMN 2 3 4 5 bent by -20', makeK(Group_KLMN, { K: 2, L: 3, M: 4, N: 5, bend: -20 }, false)],
+        ['KLMN with a cusp, bent by 20', makeK(Group_KLMN, { K: 0, bend: 20 }, true)],
+        ['KLx bent by 20', makeK(Group_KLx, { bend: 20 }, false)],
+        ['22222, A2 20, A3 -15', makeK(Group_22222, { A2: 20, A3: -15 }, false)],
+        ['*KLMN bent by -20', makeK(Group_KLMN, { s: true, bend: -20 }, false)],
+    ];
+    const bad = [], badBend = [], badConv = [];
+    let cornerOff = 0, sideOff = 0, nodeErr = 0, curveErr = 0, bendNodeErr = 0, bendCurveErr = 0, backCurveErr = 0, insertCurveErr = 0, convErr = 0, mostNodes = 0, fewer = 0, smoothBroken = 0;
+    const badOutline = [];
+    let outNew = 0, outBent = 0, outBack = 0, outIns = 0, outPieces = 0;
+    // the pattern box moved: the world's maps of the words differ, the pairs no longer hold
+    const PTC2 = { ...PTC, centerX: PTC.centerX + 0.05, angle: PTC.angle + 3 };
+    for (const [name, group] of groupsK) {
+        const { doc, editor } = newEditor(group);
+        const mapWord = editor.pairingMap;
+        const outliner = groupOutliner(group, PTC);
+        const drawn = (item) => ({ ...item, outline: outliner.tileOutline(item) });
+        if (editor.drawingGeometry().fallback !== 'kleinian') { bad.push(`${name}: not Kleinian`); continue; }
+        editor.setStyleValue('curvedTiles', false);
+        const pts = editor.addTileFromDomain();
+        editor.undo();
+        editor.setStyleValue('curvedTiles', true);
+        const tile = editor.addTileFromDomain();
+        if (!tile || !pts) { bad.push(`${name}: no tile`); continue; }
+        const size = sizeOf(pts);
+        const sameEdges = tile.tile.edges.every((e, k) => ['pair', 'word', 'reversed', 'locked'].every(f => e[f] === pts.tile.edges[k][f]));
+        if (tile.type !== 'path' || tile.geodesic || tile.tile.edges.length !== pts.tile.edges.length || !sameEdges) { bad.push(`${name}: ${tile.type}, ${tile.tile.edges.length} edges`); continue; }
+        cornerOff = Math.max(cornerOff, ...cornersK(tile).map((c, i) => dist(c, cornersK(pts)[i])/size));
+        mostNodes = Math.max(mostNodes, ...tile.tile.edges.map(e => e.count));
+        if (tile.nodes.length < pts.points.length/2) fewer++;
+        sideOff = Math.max(sideOff, offTheSides(tile, pts));
+        const err = curvePairError(tile, mapWord);
+        nodeErr = Math.max(nodeErr, err.nodes/size);
+        curveErr = Math.max(curveErr, err.curve/size);
+        // the fitted pairs drawn as the exact images: the document's outline of the tile
+        const held = doc.getItem(tile.id);
+        const pairs = tile.tile.edges.filter((e, j) => !e.locked && e.pair !== null && e.pair !== j).length/2;
+        const on = outlinePairError(held, mapWord);
+        if (!held.outline || held.outline.key !== outliner.key || on.edges !== pairs || !marksRight(held)) badOutline.push(`${name}: the new tile's outline (${on.edges} of ${pairs} pairs)`);
+        outNew = Math.max(outNew, on.curve/size);
+        outPieces = Math.max(outPieces, held.outline && held.outline.nodes ? held.outline.nodes.length/held.nodes.length : 0);
+        if (groupOutliner(group, PTC2).tileOutline(held)) badOutline.push(`${name}: the pattern box moved, the pairs still drawn as images`);
+
+        // a side bent (its first segment's handles moved off by 15% of its chord): the pair follows
+        const k = tile.tile.edges.findIndex((e, j) => !e.locked && e.pair !== null && e.pair !== j);
+        if (k < 0) continue;
+        const bend = (item, edge, by) => {
+            const v = starts(item)[edge], n = item.nodes.length;
+            const a = item.nodes[v % n].p, b = item.nodes[(v + 1) % n].p, nrm = [-(b[1] - a[1])*by, (b[0] - a[0])*by];
+            const nodes = item.nodes.map(q => ({ ...q }));
+            const h2 = nodes[v % n].h2 || [a[0] + (b[0] - a[0])/3, a[1] + (b[1] - a[1])/3], h1 = nodes[(v + 1) % n].h1 || [a[0] + 2*(b[0] - a[0])/3, a[1] + 2*(b[1] - a[1])/3];
+            nodes[v % n] = { ...nodes[v % n], h2: [h2[0] + nrm[0], h2[1] + nrm[1]] };
+            nodes[(v + 1) % n] = { ...nodes[(v + 1) % n], h1: [h1[0] + nrm[0], h1[1] + nrm[1]] };
+            return tileWithNodes(item, nodes, mapWord, edge);
+        };
+        const bent = bend(tile, k, 0.15);
+        if (!bent) { badBend.push(`${name}: the bend refused`); continue; }
+        const eb = curvePairError(bent, mapWord);
+        bendNodeErr = Math.max(bendNodeErr, eb.nodes/size);
+        bendCurveErr = Math.max(bendCurveErr, eb.curve/size);
+        if (!marksRight(bent, k)) badOutline.push(`${name}: the bent edge's pair not marked fitted`);
+        outBent = Math.max(outBent, outlinePairError(drawn(bent), mapWord).curve/size);
+        if (cornersK(bent).some((c, i) => dist(c, cornersK(tile)[i]) > 1e-15)) badBend.push(`${name}: a corner moved`);
+        // the pair's inner nodes stay smooth: their two handles in line
+        const st = starts(bent), pe = bent.tile.edges[k].pair;
+        for (let v = st[pe] + 1; v < st[pe + 1]; v++) {
+            const q = bent.nodes[v];
+            if (!q.smooth || !q.h1 || !q.h2) continue;
+            const u = [q.p[0] - q.h1[0], q.p[1] - q.h1[1]], w = [q.h2[0] - q.p[0], q.h2[1] - q.p[1]];
+            if (Math.abs(u[0]*w[1] - u[1]*w[0]) > 1e-9*Math.hypot(...u)*Math.hypot(...w)) smoothBroken++;
+        }
+        // the pair bent the other way: the edge follows it
+        const back = bend(bent, pe, -0.1);
+        if (!back) badBend.push(`${name}: the pair's bend refused`);
+        else {
+            backCurveErr = Math.max(backCurveErr, curvePairError(back, mapWord).curve/size);
+            if (!marksRight(back, pe)) badOutline.push(`${name}: the marks not swapped`);
+            outBack = Math.max(outBack, outlinePairError(drawn(back), mapWord).curve/size);
+        }
+        // a node in the middle of the bent segment: the pair takes its image
+        const ins = tileInsertedVertex(bent, st[k], null, mapWord, 0.5);
+        if (!ins || ins.tile.edges[pe].count !== bent.tile.edges[pe].count + 1) badBend.push(`${name}: the inserted node`);
+        else {
+            insertCurveErr = Math.max(insertCurveErr, curvePairError(ins, mapWord).curve/size);
+            outIns = Math.max(outIns, outlinePairError(drawn(ins), mapWord).curve/size);
+        }
+
+        // To polyline: a tile of points, the pairs exact point by point; To path again: curved, the pairs fitted
+        editor.applyReplace(new Map([[tile.id, bent]]));
+        editor.setSelection([{ id: tile.id, frame: null, frameInv: null }]);
+        editor.convertSelection(false);
+        const flat = doc.getItem(tile.id);
+        if (!flat || flat.type !== 'polyline' || !flat.tile) { badConv.push(`${name}: To polyline`); continue; }
+        if (flat.outline || flat.tile.edges.some(e => e.fitted)) badConv.push(`${name}: To polyline keeps an outline or a mark`);
+        const fs = starts(flat), P = (v) => [flat.points[2*(v % (flat.points.length/2))], flat.points[2*(v % (flat.points.length/2)) + 1]];
+        flat.tile.edges.forEach((e, j) => {
+            if (e.pair === null || e.pair === j || e.locked) return;
+            const map = mapWord(e.word), src = [], dst = [];
+            for (let v = fs[j]; v <= fs[j + 1]; v++) src.push(P(v));
+            for (let v = fs[e.pair]; v <= fs[e.pair + 1]; v++) dst.push(P(v));
+            if (e.reversed) dst.reverse();
+            if (src.length !== dst.length) convErr = Infinity;
+            else src.forEach((p, i) => { convErr = Math.max(convErr, dist(map(p), dst[i])/size); });
+        });
+        editor.convertSelection(true);
+        const again = doc.getItem(tile.id);
+        if (!again || again.type !== 'path' || !again.tile) badConv.push(`${name}: To path`);
+        else if (curvePairError(again, mapWord).curve/size > 1e-4) badConv.push(`${name}: To path's pairs off by ${fmt(curvePairError(again, mapWord).curve/size)}`);
+        else if (!marksRight(again) || outlinePairError(again, mapWord).curve/size > 3e-6) badConv.push(`${name}: To path's outline`);
+    }
+    check(bad.length === 0, `Kleinian (${groupsK.length} groups): with Curved sides on, New tile is a plain path over the edges of the tile of points` + (bad.length ? ` (not: ${bad.join('; ')})` : ''));
+    check(cornerOff < 1e-12 && fewer === groupsK.length && mostNodes <= 4, `Kleinian: its corners those of the tile of points (${fmt(cornerOff)}), fewer nodes (at most ${mostNodes} cubics a side, against 8 segments an arc)`);
+    check(sideOff < 3e-4, `Kleinian: its sides on the domain's circles (${fmt(sideOff)} of the radius at most)`);
+    check(nodeErr < 1e-12 && curveErr < 1e-4, `Kleinian: the pairs' nodes the images (${fmt(nodeErr)} of the tile), their curves the images to ${fmt(curveErr)} of the tile`);
+    check(badBend.length === 0 && bendNodeErr < 1e-12 && bendCurveErr < 3e-3 && backCurveErr < 3e-3 && insertCurveErr < 3e-3 && smoothBroken === 0,
+          `Kleinian: a side bent, the pair follows: its nodes the images (${fmt(bendNodeErr)}), its curve fitted to the image to ${fmt(bendCurveErr)} of the tile ` +
+          `(the pair bent back: ${fmt(backCurveErr)}; a node inserted: ${fmt(insertCurveErr)}); smooth nodes stay smooth, the corners stay` + (badBend.length ? ` (not: ${badBend.join('; ')})` : ''));
+    check(badOutline.length === 0 && Math.max(outNew, outBent, outBack, outIns) < 3e-6,
+          `Kleinian: the fitted pairs drawn as the exact images (the document's outline): new ${fmt(outNew)}, bent ${fmt(outBent)}, bent back ${fmt(outBack)}, ` +
+          `a node inserted ${fmt(outIns)} of the tile (at most ${outPieces.toFixed(1)} outline nodes a node); the marks follow the edit; ` +
+          `the pattern box moved (the pairs no longer hold), the tile drawn by its nodes` + (badOutline.length ? ` (not: ${badOutline.join('; ')})` : ''));
+    check(badConv.length === 0 && convErr < 1e-12, `Kleinian: To polyline gives a tile of points whose pairs are the images point by point (${fmt(convErr)}), To path a curved tile again` + (badConv.length ? ` (not: ${badConv.join('; ')})` : ''));
 }
 
 console.log(failed ? `${failed} check(s) FAILED` : 'tiles: all checks passed');
