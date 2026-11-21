@@ -1,0 +1,223 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>GPU subgroup fold vs CPU</title>
+<body><pre id="out">running</pre>
+<script>
+const msgs = [];
+window.addEventListener('error', e => msgs.push('ERROR: ' + (e.message || e)));
+window.addEventListener('unhandledrejection', e => msgs.push('REJECTION: ' + (e.reason && (e.reason.stack || e.reason.message) || e.reason)));
+const _err = console.error;
+console.error = (...a) => { msgs.push('console.error: ' + a.map(String).join(' ')); _err(...a); };
+window.__msgs = msgs;
+</script>
+<script type="module">
+/*
+   The subgroup fold of the overlay items with the bounds of an orbifold's walls,
+   on the GPU, against the same fold on the CPU.
+
+   overlay_subgroup.glsl.mjs subFold folds a point into the domain F of the
+   renderer's group G and follows the class of its cell in the domain of a
+   subgroup H; SubgroupDomain.js subgroupFold is its CPU twin. With sides of F
+   sharing one splane (a handle, a second crosscap) both cross a side only within
+   its stretch: the bounds come with G's packed data (uGroupData), the cells and
+   the class table with packSubgroupDomain (uSubData). The points are taken inside
+   the disk and outside it (the apps show the whole sphere), the gap measured
+   relative to the point's size, as outside the domain reaches infinity.
+
+   Then the overlay programs that read the walls are compiled: the overlay items'
+   tiling and fundamental domain, and the legacy single pass overlay (iso_main),
+   which no view uses since the overlay items.
+*/
+import { Group_Orbifold } from '../../lib/orbilib/Group_Orbifold.js';
+import { DataPacking } from '../../lib/invlib/DataPacking.js';
+import { iPoint } from '../../lib/invlib/invlib.js';
+import { ShaderFragments as SF } from '../../lib/shaders/modules.js';
+import { programBuilder } from '../../lib/symhublib/program_loader.js';
+import { createFBO } from '../../lib/symhublib/webgl_utils.js';
+import { SymRendererPrograms } from '../../lib/symhublib/SymRendererPrograms.js';
+import { groupPresentation } from '../../lib/grouplib/GroupPresentation.js';
+import { buildSubgroupDomain, subgroupDomainTable, subgroupFold, packSubgroupDomain } from '../../lib/grouplib/SubgroupDomain.js';
+import { subgroupsData } from '../../lib/sublib/src/sublib.js';
+
+const SIZE = 64;           // 4096 points per case
+const ITERATIONS = 60;
+
+const lines = [];
+let failures = 0;
+const check = (ok, msg) => { if(!ok) failures++; lines.push((ok ? 'ok   ' : 'FAIL ') + msg); };
+
+const canvas = document.createElement('canvas');
+canvas.width = canvas.height = SIZE;
+const gl = canvas.getContext('webgl2');
+check(!!gl, 'webgl2 context');
+gl.getExtension('EXT_color_buffer_float');
+
+// what overlay_pre declares for overlay_subgroup
+const subPre = /*glsl*/`
+uniform sampler2D uGroupData;
+uniform bool      uSubEnabled;
+uniform sampler2D uSubData;
+uniform int       uAnchorClass;
+`;
+// fold vUv with the subgroup and report the point, its class and whether it got there
+const subMain = /*glsl*/`
+in vec2 vUv;
+out vec4 outColor;
+uniform int uIterations;
+uniform float uZoom;
+void main(){
+    vec3 p = vec3(uZoom*vUv, 0.);
+    float scale = 1.;
+    int cls = 0;
+    int inDomain = 0;
+    subFold(p, scale, cls, inDomain, uIterations);
+    outColor = vec4(p.xy, float(cls), float(inDomain));
+}
+`;
+const TestFrags = { getName: () => 'GpuSubFoldTest', subPre, subMain };
+
+const frag  = id => ({ obj: SF, id });
+const progs = programBuilder({
+    subfold: {
+        name: 'subfold',
+        vs: { frags: [frag('canvasVertexShader')] },
+        fs: { frags: [frag('isplane'), frag('utils'), frag('inversiveSampler'), frag('complex'),
+                      { obj: TestFrags, id: 'subPre' }, frag('overlay_subgroup'), { obj: TestFrags, id: 'subMain' }] },
+    },
+}, false);
+
+const target = createFBO(gl, SIZE, SIZE, gl.RGBA32F, gl.RGBA, gl.FLOAT, gl.NEAREST);
+
+// the relaxation starts at random; about 1 in 100 twisted handles comes out with a
+// pairing whose mirror has a zero normal (an open task in TASKS.md): built again
+const brokenMirror = (group) => [...group.getTransforms(), ...group.getReverseTransforms()].some(t => t.some(s => s.v.every(x => x === 0)));
+function makeGroup(name, twist){
+    for(let attempt = 0; ; attempt++){
+        const maker = new Group_Orbifold({ orbifold: name });
+        if(twist !== 0){
+            const p = { ...maker.getParamsMap() };
+            Object.keys(p).filter(k => k.endsWith('_t')).forEach(k => p[k] = twist);
+            maker.setParamsMap(p);
+        }
+        const group = maker.getGroup();
+        if(!brokenMirror(group) || attempt === 5) return group;
+    }
+}
+
+function sampler(data){
+    const s = DataPacking.createGroupDataSampler(gl);
+    gl.bindTexture(gl.TEXTURE_2D, s);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, data.length/4, 1, 0, gl.RGBA, gl.FLOAT, data);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    return s;
+}
+
+// fold the pixels on the GPU: [x, y, class, inDomain] per pixel
+function gpuSubFold(groupLike, domain, zoom = 1){
+    const groupData = DataPacking.createGroupDataSampler(gl);
+    DataPacking.packGroupToSampler(gl, groupData, groupLike);
+    const subData = sampler(packSubgroupDomain(domain));
+    const prog = progs.getProgram(gl, 'subfold');
+    gl.viewport(0, 0, SIZE, SIZE);
+    prog.bind();
+    prog.setUniforms({ uGroupData: groupData, uSubData: subData, uSubEnabled: true, uAnchorEnabled: false, uAnchorClass: 0,
+                       uIterations: ITERATIONS, uZoom: zoom, u_scale: 1., u_aspect: 1., u_center: [0., 0.] });
+    prog.blit(target);
+    const px = new Float32Array(4*SIZE*SIZE);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
+    gl.readPixels(0, 0, SIZE, SIZE, gl.RGBA, gl.FLOAT, px);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.deleteTexture(groupData);
+    gl.deleteTexture(subData);
+    return px;
+}
+
+// vUv runs over [-1,1]^2 at pixel centres; stay well inside the disk
+function forDisk(f){
+    for(let iy = 0; iy < SIZE; iy++) for(let ix = 0; ix < SIZE; ix++){
+        const x = -1 + 2*(ix + 0.5)/SIZE, y = -1 + 2*(iy + 0.5)/SIZE;
+        if(x*x + y*y > 0.9*0.9) continue;
+        f(x, y, 4*(iy*SIZE + ix));
+    }
+}
+// the same pixels at OUTSIDE_ZOOM times: the group acts on the whole sphere, and the
+// apps show the outside of the absolute as well (the mirror image of the inside)
+const OUTSIDE_ZOOM = 3;
+function forOutside(f){
+    for(let iy = 0; iy < SIZE; iy++) for(let ix = 0; ix < SIZE; ix++){
+        const x = OUTSIDE_ZOOM*(-1 + 2*(ix + 0.5)/SIZE), y = OUTSIDE_ZOOM*(-1 + 2*(iy + 0.5)/SIZE);
+        const r2 = x*x + y*y;
+        if(r2 < 1.15*1.15 || r2 > 2.8*2.8) continue;
+        f(x, y, 4*(iy*SIZE + ix));
+    }
+}
+
+function subgroupsOf(group, name, maxIndex){
+    const pres = groupPresentation(group);
+    return subgroupsData({ name, gens: pres.gens, relators: pres.relators, maxIndex }).subgroups.filter(s => s.index > 1);
+}
+
+for(const [name, twist] of [['o33', 0], ['o33', 0.5], ['oo', 0.25], ['2xo', 0.25], ['234oo', 0.25]]){
+    const group = makeGroup(name, twist);
+    const subs = subgroupsOf(group, name, 3);
+    // the first subgroups of index 2 and 3
+    for(const sub of [subs.find(s => s.index === 2), subs.find(s => s.index === 3)].filter(s => s)){
+        const domain = buildSubgroupDomain({ group, cosets: sub.cosets, convex: false });
+        const table = subgroupDomainTable(domain);
+        for(const [where, zoom, forEach] of [['', 1, forDisk], [' outside', OUTSIDE_ZOOM, forOutside]]){
+        const px = gpuSubFold(group, domain, zoom);
+        let tested = 0, gpuStuck = 0, cpuStuck = 0, apart = 0, classes = 0, worst = 0;
+        forEach((x, y, k) => {
+            tested++;
+            const gpuIn = px[k+3] > 0.5;
+            const f = subgroupFold({ group, table, pnt: iPoint([x, y]), maxIterations: ITERATIONS });
+            if(!gpuIn) gpuStuck++;
+            if(!f.inDomain) cpuStuck++;
+            if(!gpuIn || !f.inDomain) return;
+            // relative to the point's size: outside the absolute the domain reaches infinity
+            const d = Math.hypot(px[k] - f.pnt.v[0], px[k+1] - f.pnt.v[1]) / Math.max(1, Math.hypot(f.pnt.v[0], f.pnt.v[1]));
+            worst = Math.max(worst, d);
+            if(d > 2e-3) apart++;
+            else if(Math.round(px[k+2]) !== f.cls) classes++;
+        });
+        const tag = `${name}/twist ${twist} ${sub.subgroup}${where}`;
+        check(gpuStuck === 0, `${tag}: ${gpuStuck}/${tested} points the GPU could not fold`);
+        check(cpuStuck === 0, `${tag}: ${cpuStuck}/${tested} points the CPU could not fold`);
+        check(apart === 0, `${tag}: ${apart}/${tested} points landed elsewhere on the GPU`);
+        check(classes === 0, `${tag}: ${classes}/${tested} points got another class on the GPU`);
+        lines.push(`       ${tag}: ${domain.n} cells, ${tested} points, worst relative gap ${worst.toExponential(2)}`);
+        }
+    }
+}
+
+// control: the renderer's group without its walls, as the shaders had it before
+{
+    const group = makeGroup('o33', 0.5);
+    const sub = subgroupsOf(group, 'o33', 2)[0];
+    const domain = buildSubgroupDomain({ group, cosets: sub.cosets, convex: false });
+    const px = gpuSubFold({ s: group.getFundDomain(), t: group.getReverseTransforms() }, domain);
+    let tested = 0, stuck = 0;
+    forDisk((x, y, k) => { tested++; if(px[k+3] < 0.5) stuck++; });
+    check(stuck > 0, `control: o33/twist 0.5 without the bounds leaves points unfolded (got ${stuck}/${tested})`);
+    lines.push(`       control: ${stuck}/${tested} points (${(100*stuck/tested).toFixed(1)}%) never reach the domain without the bounds`);
+}
+
+// the overlay programs which read the walls compile
+{
+    const before = window.__msgs.length;
+    const P = SymRendererPrograms();
+    P.init(gl);
+    for(const name of ['overlay', 'overlayTiling', 'overlayFundDomain', 'overlayGenerators']){
+        let prog = null;
+        try { prog = P.getProgram(name); } catch(e){ window.__msgs.push(`${name}: ${e.message}`); }
+        check(!!prog, `program ${name} compiles`);
+    }
+    check(window.__msgs.length === before, `no compile messages (${window.__msgs.length - before})`);
+}
+
+if(window.__msgs.length) lines.push('', 'page messages:', ...window.__msgs.slice(0, 10));
+lines.push('');
+lines.push(failures ? failures + ' CHECKS FAILED' : 'ALL CHECKS PASSED');
+document.getElementById('out').textContent = lines.join('\n');
+document.title = failures ? 'FAILED' : 'PASSED';
+</script>

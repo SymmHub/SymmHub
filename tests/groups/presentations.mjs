@@ -238,6 +238,38 @@ section('Group_Orbifold', () => {
     }
     const orbifold = factory.getObject('Orbifold');
     check(!!orbifold.getCopy().getPresentation(), 'Orbifold: a copy of the maker has a presentation');
+
+    // bounded walls (a handle or a second crosscap: sides sharing one splane, told apart
+    // by bounds), straight and twisted: a twisted domain is not convex, with reflex
+    // corners. The twist deforms the group, not the abstract group: as many subgroups
+    // the relaxation starts at random; about 1 in 100 twisted handles comes out with a
+    // pairing whose mirror has a zero normal (an open task in TASKS.md): built again
+    const brokenMirror = (group) => [...group.getTransforms(), ...group.getReverseTransforms()].some(t => t.some(s => s.v.every(x => x === 0)));
+    const twisted = (symbol, twist) => {
+        for (let attempt = 0; ; attempt++) {
+            const maker = factory.getObject('Orbifold');
+            maker._wg.guiParams.name = symbol;
+            maker._compute();
+            if (twist) {
+                const p = { ...maker.getParamsMap() };
+                Object.keys(p).filter(k => k.endsWith('_t')).forEach(k => { p[k] = twist; });
+                maker.setParamsMap(p);
+            }
+            if (!brokenMirror(maker.getGroup()) || attempt === 5) return maker;
+        }
+    };
+    for (const symbol of ['o33', 'oo', '2xo', '234oo', '33333o']) {
+        const counts = [];
+        for (const twist of [0, 0.25, 0.5]) {
+            const maker = twisted(symbol, twist);
+            const walls = maker.getGroup().getFundDomainWalls();
+            check(walls && walls.some(w => w.length > 1), `${symbol}: bounded walls`);
+            checkMaker(maker, `${symbol} twist ${twist}`, { maxIndex: 3, maxPlaces: 100 });
+            const pres = maker.getPresentation();
+            if (pres) counts.push(subgroupTable(pres, { maxIndex: 3 }).subgroups.length);
+        }
+        check(counts.length === 3 && counts.every(c => c === counts[0]), `${symbol}: subgroups of index 3 or less, untwisted and twisted: ${counts}`);
+    }
 });
 
 section('Group_Cyclic', () => {
