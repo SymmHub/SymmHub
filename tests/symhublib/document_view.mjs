@@ -8,10 +8,14 @@
      canvases and frames), 'cover' fills the canvas, 'exact' keeps the zoom;
      the frame on a canvas of its own shape keeps its zoom
   2. a document saved before the document view: no aspect, the legacy square
-  3. pickView takes the view's keys of the navigator's values and copies them
-  4. filePartValue: the view's keys in the live value, the other keys (the
-     pole) live, the aspect after the euclidean keys, the projection whole;
-     a pick of the file value gives the view back
+  3. a view is the canvas part alone (2026-11-19: the transforms are the
+     document's content): pickView takes the euclidean keys of the navigator's
+     values and copies them, nothing of the Moebius part, the sphere view or
+     the maps; the place of the view (PLACE_PARTS, what back returns) is the
+     canvas part and the Moebius transform, without its switch and the pole
+  4. filePartValue: the view's keys in the live euclidean value, the aspect
+     after them; a pick of the file value gives the view back; the stamp of a
+     document view does not change with the transforms
   5. viewStamp: the same for a copy, another for any change
   6. the frame (3.7): its corners are the canvas's corners when the canvas has
      the frame's shape (CanvasTransform, turned too); frameLocal inverts
@@ -22,6 +26,7 @@
 
 import {
     VIEW_PARTS,
+    PLACE_PARTS,
     LEGACY_ASPECT,
     pickView,
     filePartValue,
@@ -94,13 +99,22 @@ const live = {
     projection: { className: 'ProjectionTransform', params: { enabled: true, bandMap: { enabled: true, fraction: 0.3 } } },
 };
 const view = pickView(live);
-check(Object.keys(view).join() === Object.keys(VIEW_PARTS).join(), 'the parts of a view');
+check(Object.keys(VIEW_PARTS).join() === 'euclidean', 'a view is the canvas part alone');
+check(Object.keys(view).join() === 'euclidean', 'the parts of a view picked');
 check(sameViewValue(view.euclidean, live.euclidean), 'the euclidean part');
-check(!('poleSet' in view.inversive) && sameViewValue(view.inversive.itrans, itrans), 'the inversive part without the pole');
-check(sameViewValue(view.projection, live.projection), 'the projection whole');
-check(view.inversive.itrans !== itrans && view.projection !== live.projection, 'the view is a copy');
+check(!('inversive' in view) && !('spherical' in view) && !('projection' in view), 'no transform in a view');
+check(view.euclidean !== live.euclidean, 'the view is a copy');
+live.euclidean.centerX = 9;
+check(view.euclidean.centerX === 0.3, 'a change of the live value leaves the view');
+live.euclidean.centerX = 0.3;
+// the place of the view: the canvas part and the Moebius transform
+const place = pickView(live, PLACE_PARTS);
+check(Object.keys(place).join() === 'euclidean,inversive', 'the parts of a place');
+check(Object.keys(place.inversive).join() === 'itrans,anchored', 'the Moebius transform without its switch and the pole');
+check(sameViewValue(place.inversive.itrans, itrans) && place.inversive.itrans !== itrans, 'the place holds a copy of the transform');
+check(sameViewValue(place.inversive.anchored, live.inversive.anchored), 'the anchored view in the place');
 itrans[0].v[0] = 9;
-check(view.inversive.itrans[0].v[0] === 0.1, 'a change of the live value leaves the view');
+check(place.inversive.itrans[0].v[0] === 0.1, 'a change of the live transform leaves the place');
 itrans[0].v[0] = 0.1;
 
 // 4 ───────────────────────────────────────────────────────────────────────────
@@ -113,17 +127,18 @@ const docView = pickView({
 const eFile = filePartValue('euclidean', live.euclidean, docView, 0.75);
 check(eFile.centerX === 1 && eFile.zoom === 0.5 && eFile.aspect === 0.75, 'the euclidean file value');
 check(Object.keys(eFile).join() === 'centerX,centerY,zoom,angle,aspect', 'the aspect after the euclidean keys');
-const iFile = filePartValue('inversive', live.inversive, docView, 0.75);
-check(iFile.enabled === false && iFile.itrans.length === 0 && iFile.anchored === null, 'the inversive file value');
-check(iFile.poleSet === true && iFile.poleX === 0.5, 'the pole stays live');
-check(Object.keys(iFile).join() === Object.keys(live.inversive).join(), 'the inversive keys in their order');
-check(!('aspect' in iFile), 'no aspect outside euclidean');
-check(filePartValue('spherical', live.spherical, docView).enabled === true, 'the spherical file value');
-check(sameViewValue(filePartValue('projection', live.projection, docView), docView.projection), 'the projection file value');
 check(filePartValue('euclidean', live.euclidean, null, 1) === live.euclidean, 'no view: the live value');
-const back = pickView({ euclidean: eFile, inversive: iFile, spherical: filePartValue('spherical', live.spherical, docView),
-                        projection: filePartValue('projection', live.projection, docView) });
+const back = pickView({ euclidean: eFile, inversive: live.inversive, spherical: live.spherical, projection: live.projection });
 check(sameViewValue(back, docView), 'the file values give the view back');
+// a document view made under other transforms is the same view, with the same stamp
+const docViewOther = pickView({
+    euclidean:  { centerX: 1, centerY: 2, zoom: 0.5, angle: 0 },
+    inversive:  live.inversive,
+    spherical:  { enabled: false },
+    projection: live.projection,
+});
+check(sameViewValue(docViewOther, docView), 'the transforms are no part of the document view');
+check(viewStamp({ view: docViewOther, aspect: 0.75 }) === viewStamp({ view: docView, aspect: 0.75 }), 'nor of its stamp');
 
 // 5 ───────────────────────────────────────────────────────────────────────────
 // the stamp: equal for the same view, another for any change

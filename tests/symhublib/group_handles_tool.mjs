@@ -443,5 +443,67 @@ function labelCentre(at, toward) {
     check(l2 && !nearP(l2.at(), l1.at(), 1e-6), `KLM: L's corner moves with the triangle (${l1.at()} to ${l2 && l2.at()})`);
 }
 
+// 6 ───────────────────────────────────────────────────────────────────────────
+
+{
+    // a view that shows the world on copies 500 pixels apart along x (a periodic wrap of the
+    // view's conformal transformations), on a canvas 800 wide: shownAt gives the copy at the
+    // pointer when it is on the canvas, else the one at the canvas centre, and none for a
+    // point the picture leaves out; toCanvas(w, seed) the copy at the seed
+    const P = 500, W = 800;
+    let pointer = [400, 300];
+    const copyAt = (c, near) => [c[0] + P*Math.round((near[0] - c[0])/P), c[1]];
+    const onCanvas = (c) => c[0] >= 0 && c[0] <= W;
+    let hidden = false;
+    const sheets = {
+        toWorld: view.toWorld,
+        scaleAt: view.scaleAt,
+        toCanvas: (w, seed) => copyAt(view.toCanvas(w), seed || pointer),
+        shownAt: (w) => {
+            if (hidden) return null;
+            const c = copyAt(view.toCanvas(w), pointer);
+            return onCanvas(c) ? c : copyAt(view.toCanvas(w), [W/2, 300]);
+        },
+    };
+    // an order at a corner whose world point shows at x = 650, its domain to the left of it (toward 350)
+    const corner = g.fromWorld(view.toWorld([650, 300])), toward = g.fromWorld(view.toWorld([350, 300]));
+    const maker = { params: { K: 3 }, onParamChanged(){} };
+    maker.getHandles = () => [orderHandle(maker, { key: 'K', at: () => corner, toward, ideal: 'max', title: 'K' })];
+    const canvas = { style: { cursor: '' }, title: '' };
+    const tool = GroupHandlesTool({ getHandles: () => maker.getHandles(), toWorld: g.toWorld, fromWorld: g.fromWorld, view: sheets, canvas, repaint(){} });
+    tool.setActive(true);
+    const drawn = () => {
+        const texts = [];
+        const ctx = new Proxy({}, {
+            get: (o, k) => (k in o) ? o[k] : (k === 'fillText' ? (t, x, y) => { texts.push([t, x, y]); } : () => {}),
+            set: (o, k, v) => { o[k] = v; return true; },
+        });
+        tool.renderText(ctx);
+        return texts.find(t => t[0] === '3') || null;
+    };
+    // the pointer by the corner: the label 20 pixels from the corner toward its domain
+    pointer = [600, 300];
+    let l = drawn();
+    check(l && near(l[1], 630, 1e-6) && near(l[2], 300.5, 1e-6), `the label by its corner, toward the domain: ${l && l[1]}`);
+    // the pointer at the left: the corner's copy there (x = 150) is on the canvas, its domain's
+    // copy (x = -150) is not. The label goes with its corner, to the side of its domain there
+    pointer = [100, 300];
+    l = drawn();
+    check(l && near(l[1], 130, 1e-6), `the corner's copy at the pointer, the label toward the domain's copy there: ${l && l[1]} (170: toward another copy)`);
+    // found there by the pointer
+    tool.handleEvent(hover([130, 300]));
+    check(tool.getHover() && tool.getHover().id === 'K' && tool.getHover().part === 'box', 'and picked where it is drawn');
+    tool.handleEvent(hover([400, 500]));
+    // the pointer at the right: the corner's copy there (x = 1150) is off the canvas, the one at the centre is taken
+    pointer = [790, 300];
+    l = drawn();
+    check(l && near(l[1], 630, 1e-6), `the copy at the pointer off the canvas: the label by the copy at the centre (${l && l[1]})`);
+    // a point the picture does not show has no label
+    hidden = true;
+    check(drawn() === null, 'a corner the picture does not show has no label');
+    tool.handleEvent(hover([630, 300]));
+    check(tool.getHover() === null, 'and none is picked');
+}
+
 say(failed ? `${failed} of ${checks} FAILED` : `all ${checks} passed`);
 if (failed) process.exitCode = 1;

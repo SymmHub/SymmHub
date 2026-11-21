@@ -66,6 +66,8 @@ function startSymdraw(opt = {}) {
         visualizationWindow: true,
         // the symmetry too, the Symmetry tool's panel
         symmetryWindow:    true,
+        // and the conformal transformations: a list with the selected one's settings
+        transformsWindow:  true,
         // a script loaded at startup, e.g. the catalog batch driver
         ...(opt.scriptUrl ? { scriptUrl: opt.scriptUrl } : {}),
     });

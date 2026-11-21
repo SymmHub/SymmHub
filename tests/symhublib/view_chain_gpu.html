@@ -1,0 +1,460 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>view chain: the list's shader against the fixed chain</title>
+<!--
+  The shaders' chain of conformal transformations on the GPU: the loop over the list
+  (lib/shaders/projection_v2.glsl.mjs with the uniforms of lib/symhublib/ProjectionTransform.js)
+  against the fixed chain it replaced (the frozen copies in tests/symhublib/legacy), for the
+  projection of every document under apps/ (docs/conformal_transforms_plan.md, phase A).
+
+    node tests/symhublib/view_chain_gpu_list.mjs      writes test-out/chain_values.json
+    open this page from the server's root: tests/symhublib/view_chain_gpu.html
+    (the result shows in the page; from a script: await window.runChainCheck())
+
+  For each projection both programs draw the world point and the scale of every pixel of a
+  64 x 64 target into float textures: the window of the document's canvas, and the square
+  -2 ... 2 of the plane. A pixel differs when its points are farther apart than 1e-4 of
+  their size (the periodic wrap can put a point on a cell's edge into either neighbour:
+  those are counted apart, as lattice jumps). The scales are compared apart: the rational
+  map's is its derivative now, where the fixed chain took a difference of neighbouring
+  pixels.
+
+  The kinds added after the list (the power) are not in the fixed chain: for them the
+  loop is compared with the CPU's chain of the same steps, every pixel,
+    await window.runKindsCheck()      (NEW_LISTS below has the lists; the result in window.__kinds)
+  A new kind gets its lists there.
+
+  The band's scale far along the band, against its closed form in doubles:
+    await window.runBandCheck()       (the result in window.__band)
+-->
+<pre id="out">loading</pre>
+<script type="module">
+import { isplane } from '../../lib/shaders/isplane.glsl.mjs';
+import { complex } from '../../lib/shaders/complex.glsl.mjs';
+import { projection } from '../../lib/shaders/projection_v2.glsl.mjs';
+import { projection as projectionFixed } from './legacy/projection_fixed.glsl.mjs';
+import { ProjectionTransform } from '../../lib/symhublib/ProjectionTransform.js';
+import { ProjectionTransform as FixedProjectionTransform } from './legacy/ProjectionTransform_fixed.js';
+import { viewChainToWorld, viewChainScale } from '../../lib/symhublib/ViewChain.js';
+import { setParamValues } from '../../lib/uilib/uilib.js';
+
+const SIZE = 64;
+const HEADER = `#version 300 es
+precision highp float;
+precision highp sampler2D;
+`;
+const VS = HEADER + `
+in vec2 aPos; out vec2 vUv;
+uniform vec2 uCentre; uniform float uHalf;
+void main(){ vUv = uCentre + aPos*uHalf; gl_Position = vec4(aPos, 0., 1.); }`;
+const MAIN = `
+in vec2 vUv; out vec4 outColor;
+void main(){ vec2 p = vUv; float scale = 1.; makeProjection(p, scale); outColor = vec4(p, scale, 1.); }`;
+// the complex tanh of the plane point, on its own (runBandCheck)
+const MAIN_TANH = `
+in vec2 vUv; out vec4 outColor;
+void main(){ outColor = vec4(cTanh(vUv), 0., 1.); }`;
+
+const out = document.getElementById('out');
+const say = (s) => { out.textContent = s; };
+
+const canvas = document.createElement('canvas');
+const gl = canvas.getContext('webgl2', { antialias: false });
+const floatOk = gl && gl.getExtension('EXT_color_buffer_float');
+
+function makeProgram(fsBody){
+    const v = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(v, VS); gl.compileShader(v);
+    const f = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(f, HEADER + fsBody); gl.compileShader(f);
+    const p = gl.createProgram();
+    gl.attachShader(p, v); gl.attachShader(p, f);
+    gl.bindAttribLocation(p, 0, 'aPos');
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS))
+        throw new Error('link: ' + gl.getProgramInfoLog(p) + '\n' + gl.getShaderInfoLog(f) + '\n' + gl.getShaderInfoLog(v));
+    // the uniforms by name: {loc, type, size}
+    const uniforms = {};
+    const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for (let i = 0; i < n; i++) {
+        const info = gl.getActiveUniform(p, i);
+        const name = info.name.replace(/\[0\]$/, '');
+        uniforms[name] = { loc: gl.getUniformLocation(p, info.name), type: info.type, size: info.size };
+    }
+    return { program: p, uniforms };
+}
+
+// set the uniforms a program has from an object of values (numbers, booleans, arrays)
+function setUniforms(prog, values){
+    gl.useProgram(prog.program);
+    for (const [name, value] of Object.entries(values)) {
+        const u = prog.uniforms[name];
+        if (!u || value === undefined || value === null) continue;
+        const arr = (typeof value === 'number' || typeof value === 'boolean') ? [Number(value)] : Array.from(value, Number);
+        switch (u.type) {
+        case gl.FLOAT:      gl.uniform1fv(u.loc, new Float32Array(arr)); break;
+        case gl.FLOAT_VEC2: gl.uniform2fv(u.loc, new Float32Array(arr)); break;
+        case gl.FLOAT_VEC4: gl.uniform4fv(u.loc, new Float32Array(arr)); break;
+        case gl.INT: case gl.BOOL: gl.uniform1iv(u.loc, new Int32Array(arr)); break;
+        case gl.INT_VEC2:   gl.uniform2iv(u.loc, new Int32Array(arr)); break;
+        default: throw new Error('uniform type of ' + name);
+        }
+    }
+}
+
+function makeTarget(){
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, SIZE, SIZE, 0, gl.RGBA, gl.FLOAT, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    const fb = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    return fb;
+}
+
+function draw(prog, fb, centre, half){
+    gl.useProgram(prog.program);
+    gl.uniform2fv(prog.uniforms.uCentre.loc, new Float32Array(centre));
+    gl.uniform1f(prog.uniforms.uHalf.loc, half);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.viewport(0, 0, SIZE, SIZE);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    const buf = new Float32Array(SIZE*SIZE*4);
+    gl.readPixels(0, 0, SIZE, SIZE, gl.RGBA, gl.FLOAT, buf);
+    return buf;
+}
+
+// the lattice of a projection's periodic map, when it is on: [a1, a2] (old shape or a row)
+function latticeOf(pr){
+    let v = pr.periodicMap;
+    if (!v && pr.maps) { const row = pr.maps.params.children.find(r => r.className === 'ConformalPeriodic'); v = row && row.params; }
+    return (v && v.enabled) ? [[v.a1x ?? 1, v.a1y ?? 0], [v.a2x ?? 0, v.a2y ?? 1]] : null;
+}
+
+// is d a vector of the lattice (whole numbers of a1 and a2), up to eps
+function isLatticeVector(d, lat, eps){
+    const det = lat[0][0]*lat[1][1] - lat[0][1]*lat[1][0];
+    const m = (d[0]*lat[1][1] - d[1]*lat[1][0])/det, n = (-d[0]*lat[0][1] + d[1]*lat[0][0])/det;
+    return Math.abs(m - Math.round(m)) < eps && Math.abs(n - Math.round(n)) < eps && (Math.round(m) !== 0 || Math.round(n) !== 0);
+}
+
+window.runChainCheck = async function(){
+    if (!gl || !floatOk) { say('no WebGL2 with float targets'); return { error: 'no float targets' }; }
+    const values = await fetch('./test-out/chain_values.json').then(r => r.json());
+    const lib = isplane + complex;
+    const fixed = makeProgram(lib + projectionFixed + MAIN);
+    const loop = makeProgram(lib + projection + MAIN);
+    const quad = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    const fb = makeTarget();
+
+    const quiet = console.log; console.log = () => {};
+    const res = { projections: values.length, withSteps: 0, pixels: 0, differ: 0, latticeJumps: 0, undefinedBoth: 0, undefinedOne: 0,
+                  worst: 0, scalePixels: 0, scaleDiffer: 0, scaleWorst: 0, rationalScalePixels: 0, rationalScaleDiffer: 0,
+                  // the loop against the CPU's chain (ViewChain.js), a sample of the pixels
+                  cpuPixels: 0, cpuDiffer: 0, cpuWorst: 0, cpuScalePixels: 0, cpuScaleDiffer: 0, cpuScaleWorst: 0,
+                  bad: [], badPixels: [] };
+    try {
+        for (const v of values) {
+            // the fixed chain's uniforms
+            const old = FixedProjectionTransform({});
+            setParamValues(old.getParams(), JSON.parse(JSON.stringify(v.projection)), true);
+            const unOld = old.getUniforms({ u_hasMoebiusTransform: 0 }, 0);
+            // the list's uniforms
+            const pt = ProjectionTransform({});
+            pt.setParamsMap(JSON.parse(JSON.stringify(v.projection)), true);
+            const unNew = pt.getUniforms({ u_hasMoebiusTransform: 0 }, 0);
+            if (unNew.uViewChainCount > 0) res.withSteps++;
+            const lattice = latticeOf(v.projection);
+            const rational = pt.getChain(0).some(s => s.kind === 'rational');
+            setUniforms(fixed, unOld);
+            setUniforms(loop, unNew);
+            let docDiffer = 0;
+            for (const [centre, half] of [[v.centre, 1/v.zoom], [[0.0371, -0.0213], 2]]) {
+                const a = draw(fixed, fb, centre, half), b = draw(loop, fb, centre, half);
+                for (let i = 0; i < a.length; i += 4) {
+                    const fa = Number.isFinite(a[i]) && Number.isFinite(a[i + 1]), fbb = Number.isFinite(b[i]) && Number.isFinite(b[i + 1]);
+                    if (!fa && !fbb) { res.undefinedBoth++; continue; }
+                    if (fa !== fbb) { res.undefinedOne++; docDiffer++; continue; }
+                    res.pixels++;
+                    const d = [a[i] - b[i], a[i + 1] - b[i + 1]];
+                    const size = 1 + Math.hypot(a[i], a[i + 1]);
+                    const rel = Math.hypot(d[0], d[1])/size;
+                    if (rel > 1e-4) {
+                        if (lattice && isLatticeVector(d, lattice, 1e-3)) { res.latticeJumps++; continue; }
+                        res.differ++; docDiffer++;
+                        if (rel > res.worst) res.worst = rel;
+                        if (res.badPixels.length < 6) {
+                            const k = i/4, ix = k % SIZE, iy = Math.floor(k/SIZE);
+                            const p = [centre[0] + ((ix + 0.5)/SIZE*2 - 1)*half, centre[1] + ((iy + 0.5)/SIZE*2 - 1)*half];
+                            const cpu = viewChainToWorld({ steps: pt.getChain(0) }, p);
+                            res.badPixels.push({ file: v.file, plane: p, fixed: [a[i], a[i + 1]], loop: [b[i], b[i + 1]], cpu: cpu.pnt, rel,
+                                                 chain: pt.getChain(0).map(s => s.kind).join(' ') });
+                        }
+                        continue;
+                    }
+                    // the scales, where both are defined
+                    const sa = a[i + 2], sb = b[i + 2];
+                    if (!Number.isFinite(sa) || !Number.isFinite(sb) || !(sa > 0) || !(sb > 0)) continue;
+                    const sr = Math.abs(sa - sb)/Math.max(sa, sb);
+                    if (rational) { res.rationalScalePixels++; if (sr > 0.05) res.rationalScaleDiffer++; }
+                    else { res.scalePixels++; if (sr > 1e-3) { res.scaleDiffer++; if (sr > res.scaleWorst) res.scaleWorst = sr; } }
+                }
+                // the loop against the CPU's chain of the same steps: every 53rd pixel
+                const chain = { steps: pt.getChain(0) };
+                for (let k = 7; k < SIZE*SIZE; k += 53) {
+                    const i = 4*k, ix = k % SIZE, iy = Math.floor(k/SIZE);
+                    const p = [centre[0] + ((ix + 0.5)/SIZE*2 - 1)*half, centre[1] + ((iy + 0.5)/SIZE*2 - 1)*half];
+                    const w = viewChainToWorld(chain, p);
+                    if (!w.exact || !Number.isFinite(b[i]) || !Number.isFinite(b[i + 1])) continue;
+                    res.cpuPixels++;
+                    const d = [w.pnt[0] - b[i], w.pnt[1] - b[i + 1]];
+                    const rel = Math.hypot(d[0], d[1])/(1 + Math.hypot(w.pnt[0], w.pnt[1]));
+                    if (rel > 1e-3) {
+                        // the floats' logarithm, tanh and wrap near their edges
+                        if (lattice && isLatticeVector(d, lattice, 1e-2)) continue;
+                        res.cpuDiffer++;
+                        if (rel > res.cpuWorst) res.cpuWorst = rel;
+                        if (res.badPixels.length < 6)
+                            res.badPixels.push({ file: v.file, plane: p, loop: [b[i], b[i + 1]], fixed: [a[i], a[i + 1]], cpu: w.pnt, rel,
+                                                 chain: chain.steps.map(s => s.kind).join(' '), against: 'cpu' });
+                        continue;
+                    }
+                    // the scale: the shader's own against the CPU's difference quotient of the chain
+                    const sc = viewChainScale(chain, p, 1e-6*(1 + Math.hypot(p[0], p[1])));
+                    const sb = b[i + 2];
+                    if (!(sc > 0) || !(sb > 0) || !Number.isFinite(sb)) continue;
+                    res.cpuScalePixels++;
+                    const sr = Math.abs(sc - sb)/Math.max(sc, sb);
+                    if (sr > 0.02) { res.cpuScaleDiffer++; if (sr > res.cpuScaleWorst) res.cpuScaleWorst = sr; }
+                }
+            }
+            if (docDiffer && res.bad.length < 8) res.bad.push(`${v.file}: ${docDiffer} pixels`);
+        }
+    } finally {
+        console.log = quiet;
+    }
+    // floats: a pixel in a hundred thousand may sit where the chain is ill-conditioned (next to a
+    // pole, a cut of the logarithm, an edge of the periodic cell) and differ; more is an error
+    res.ok = res.differ <= 1e-5*res.pixels && res.undefinedOne === 0 && res.scaleDiffer === 0
+          && res.cpuDiffer <= 1e-4*res.cpuPixels && res.cpuScaleDiffer <= 1e-3*res.cpuScalePixels;
+    say(JSON.stringify(res, null, 1));
+    window.__result = res;
+    return res;
+};
+
+//
+//  The kinds added after the list (the power, docs/conformal_transforms_plan.md section 16):
+//  the fixed chain never had them, so the loop on the GPU is compared with the CPU's chain
+//  of the same steps (lib/symhublib/conformal/ConformalKinds.js), every pixel of the square
+//  -2 ... 2 and of a small one about the origin: the points, and the shader's scale against
+//  the CPU's difference quotient.
+//      await window.runKindsCheck()      (the result also in window.__kinds)
+//
+const kindRow = (className, id, values = {}) => ({ className, params: { id, enabled: true, ...values } });
+const NEW_LISTS = [
+    ['power 2',                     [kindRow('ConformalPower', 'power', { n: 2 })]],
+    ['power 3',                     [kindRow('ConformalPower', 'power', { n: 3 })]],
+    ['power -1',                    [kindRow('ConformalPower', 'power', { n: -1 })]],
+    ['power -2',                    [kindRow('ConformalPower', 'power', { n: -2 })]],
+    ['power 0.5',                   [kindRow('ConformalPower', 'power', { n: 0.5 })]],
+    ['power 2.5',                   [kindRow('ConformalPower', 'power', { n: 2.5 })]],
+    ['power 1',                     [kindRow('ConformalPower', 'power', { n: 1 })]],
+    // the first row acts on the pattern first: the shader takes the last row first
+    ['power 2, then a band',        [kindRow('ConformalPower', 'power', { n: 2 }), kindRow('ConformalBand', 'band', { fraction: 1 })]],
+    ['a band, then power 3',        [kindRow('ConformalBand', 'band', { fraction: 1 }), kindRow('ConformalPower', 'power', { n: 3 })]],
+    ['a scale, the exponent, power 2', [kindRow('ConformalScale', 'scale', { n1: 4 }), kindRow('ConformalExp', 'exponent'), kindRow('ConformalPower', 'power', { n: 2 })]],
+    ['power 2 twice',               [kindRow('ConformalPower', 'power', { n: 2 }), kindRow('ConformalPower', 'power2', { n: 2 })]],
+];
+
+window.runKindsCheck = async function(){
+    if (!gl || !floatOk) return { error: 'no float targets' };
+    const loop = makeProgram(isplane + complex + projection + MAIN);
+    const quad = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    const fb = makeTarget();
+    const quiet = console.log; console.log = () => {};
+    const res = { lists: [], pixels: 0, differ: 0, worst: 0, scalePixels: 0, scaleDiffer: 0, scaleWorst: 0, bad: [] };
+    try {
+        for (const [name, rows] of NEW_LISTS) {
+            const pt = ProjectionTransform({});
+            pt.setParamsMap({ enabled: true, maps: { className: 'ObjArray', params: { id: 'maps', children: JSON.parse(JSON.stringify(rows)) } } }, true);
+            setUniforms(loop, pt.getUniforms({ u_hasMoebiusTransform: 0 }, 0));
+            const chain = { steps: pt.getChain(0) };
+            const one = { name, chain: chain.steps.map(s => s.kind).join(' '), pixels: 0, differ: 0, worst: 0, scalePixels: 0, scaleDiffer: 0, scaleWorst: 0 };
+            for (const [centre, half] of [[[0.0371, -0.0213], 2], [[0.0113, 0.0071], 0.3]]) {
+                const b = draw(loop, fb, centre, half);
+                for (let k = 0; k < SIZE*SIZE; k++) {
+                    const i = 4*k, ix = k % SIZE, iy = Math.floor(k/SIZE);
+                    const p = [centre[0] + ((ix + 0.5)/SIZE*2 - 1)*half, centre[1] + ((iy + 0.5)/SIZE*2 - 1)*half];
+                    const w = viewChainToWorld(chain, p);
+                    if (!w.exact || !Number.isFinite(b[i]) || !Number.isFinite(b[i + 1])) continue;
+                    one.pixels++;
+                    const rel = Math.hypot(w.pnt[0] - b[i], w.pnt[1] - b[i + 1])/(1 + Math.hypot(w.pnt[0], w.pnt[1]));
+                    if (rel > 1e-3) {
+                        one.differ++;
+                        if (rel > one.worst) one.worst = rel;
+                        if (res.bad.length < 6) res.bad.push({ name, plane: p, loop: [b[i], b[i + 1]], cpu: w.pnt, rel });
+                        continue;
+                    }
+                    // the scale: the shader's must be a positive number within 2% of the CPU's. Every
+                    // pixel is compared since the band's scale is 1/|cosh|^2 (2026-11-20): with a cube
+                    // behind a band the plane is squeezed a thousand million times in the corners here,
+                    // and the scale as 1 - tanh^2 had no digits from a ten thousandth on (runBandCheck)
+                    const sc = viewChainScale(chain, p, 1e-6*(1 + Math.hypot(p[0], p[1])));
+                    const sb = b[i + 2];
+                    one.scalePixels++;
+                    const sr = (sb > 0 && Number.isFinite(sb)) ? Math.abs(sc - sb)/Math.max(sc, sb) : Infinity;
+                    if (sr > 0.02) { one.scaleDiffer++; if (sr > one.scaleWorst) one.scaleWorst = sr; }
+                }
+            }
+            res.lists.push(one);
+            for (const key of ['pixels', 'differ', 'scalePixels', 'scaleDiffer']) res[key] += one[key];
+            res.worst = Math.max(res.worst, one.worst);
+            res.scaleWorst = Math.max(res.scaleWorst, one.scaleWorst);
+        }
+    } finally {
+        console.log = quiet;
+    }
+    // a pixel next to a cut of the logarithm (the negative real axis under an exponent that is
+    // no whole number) may fall to its other side in floats: a few in a thousand at most. The
+    // CPU's scale is a difference of two doubles: at the smallest scales here (a thousand
+    // millionth) it has two digits itself
+    res.ok = res.differ <= 2e-3*res.pixels && res.scaleDiffer <= 2e-3*res.scalePixels;
+    window.__kinds = res;
+    return res;
+};
+
+//
+//  The band far along the band (docs/conformal_transforms_plan.md section 17): the shader's
+//  tanh and its scale, both in closed form by e = exp(-2|x|) since 2026-11-20 (complex.glsl.mjs,
+//  cTanh).
+//  The scale, |tanh'| = 1/|cosh|^2, was |1 - tanh^2|, the difference of two numbers next to 1
+//  out there: off by a hundredth at 6 units along a whole band, by a half at 9, by any factor
+//  beyond. Here the band's scale is compared with the closed form in doubles, pixel by pixel,
+//  for five fractions, in windows along the band (u = a x at their centres) out to where a
+//  float holds no such number: there it must be a number still, and next to nothing (tiny,
+//  tinyBad).
+//  The points of those windows must be numbers everywhere and the CPU's (pointUndefined,
+//  pointDiffer): tanh as (e^z - e^-z)/(e^z + e^-z) gave the disk's centre from a x = 43.7 and
+//  no number further.
+//  tanh itself is compared with the doubles' in windows along the real axis (the result's
+//  tanh): from |x| = 3 on within two steps of the floats; it is within 0.53 of one, and was
+//  4.3 to 4.7 off.
+//  ok says all of it.
+//      await window.runBandCheck()       (the result also in window.__band)
+//
+window.runBandCheck = async function(){
+    if (!gl || !floatOk) return { error: 'no float targets' };
+    const loop = makeProgram(isplane + complex + projection + MAIN);
+    const quad = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    const fb = makeTarget();
+    const quiet = console.log; console.log = () => {};
+    const TINY = 1e-30;         // below this a float has no digits to compare
+    const FAR = 3;              // |x| from which tanh is judged by the floats' steps
+    const floatStep = (v) => 2**(Math.floor(Math.log2(v)) - 23);    // the step of the floats at v
+    const res = { windows: [], pixels: 0, scalePixels: 0, scaleDiffer: 0, scaleWorst: 0, tiny: 0, tinyBad: 0,
+                  pointDiffer: 0, pointUndefined: 0,
+                  tanh: { windows: [], pixels: 0, differ: 0, undefined: 0, farPixels: 0, farWorst: 0, nearWorst: 0 } };
+    try {
+        // the row's values; the shader's fraction is the step's (below 1 the row's runs through decades)
+        for (const value of [1, 0.5, 0.1, 0.05, 1.5]) {
+            const pt = ProjectionTransform({});
+            pt.setParamsMap({ enabled: true, maps: { className: 'ObjArray', params: { id: 'maps', children: [kindRow('ConformalBand', 'band', { fraction: value })] } } }, true);
+            setUniforms(loop, pt.getUniforms({ u_hasMoebiusTransform: 0 }, 0));
+            const chain = { steps: pt.getChain(0) };
+            const fraction = chain.steps[0].data[0];
+            const a = (Math.PI/4)*fraction, b = 1/Math.tan(a);
+            // the windows by a x at their centres, the same for every fraction; both ways along the band
+            for (const u0 of [0, 2, 4, 5, 6, 7, 8, 9, 10, 14, 20, 30, 43, 46, 60, 87, 90, 120, -6, -9, -30, -60]) {
+                const centre = [u0/a, 0.0213], half = 1;
+                const g = draw(loop, fb, centre, half);
+                const one = { fraction, u: u0, x: centre[0], scalePixels: 0, scaleDiffer: 0, scaleWorst: 0, tiny: 0, tinyBad: 0,
+                              pointDiffer: 0, pointUndefined: 0 };
+                for (let k = 0; k < SIZE*SIZE; k++) {
+                    const i = 4*k, ix = k % SIZE, iy = Math.floor(k/SIZE);
+                    const p = [centre[0] + ((ix + 0.5)/SIZE*2 - 1)*half, centre[1] + ((iy + 0.5)/SIZE*2 - 1)*half];
+                    res.pixels++;
+                    // the point: a number everywhere, within 1e-5 of the CPU's (the shader has the
+                    // band's factor b = 1/tan a in floats, a few of their steps off for a fraction
+                    // that is not 1: tanh itself is judged more closely below)
+                    const w = viewChainToWorld(chain, p);
+                    if (!Number.isFinite(g[i]) || !Number.isFinite(g[i + 1])) one.pointUndefined++;
+                    else {
+                        const d = Math.hypot(w.pnt[0] - g[i], w.pnt[1] - g[i + 1]);
+                        if (d > 1e-5*(1 + Math.hypot(w.pnt[0], w.pnt[1]))) one.pointDiffer++;
+                    }
+                    // the scale: a b/(sinh^2 u + cos^2 v), by e = exp(-2|u|)
+                    const e = Math.exp(-2*Math.abs(a*p[0])), c = Math.cos(a*p[1]);
+                    const exact = a*b*4*e/((1 - e)*(1 - e) + 4*e*c*c);
+                    const s = g[i + 2];
+                    if (exact < TINY) {
+                        one.tiny++;
+                        if (!Number.isFinite(s) || s < 0 || s > 10*TINY) one.tinyBad++;
+                        continue;
+                    }
+                    one.scalePixels++;
+                    const sr = Number.isFinite(s) ? Math.abs(s - exact)/exact : Infinity;
+                    if (sr > 1e-3) one.scaleDiffer++;
+                    if (sr > one.scaleWorst) one.scaleWorst = sr;
+                }
+                res.windows.push(one);
+                for (const key of ['scalePixels', 'scaleDiffer', 'tiny', 'tinyBad', 'pointDiffer', 'pointUndefined']) res[key] += one[key];
+                res.scaleWorst = Math.max(res.scaleWorst, one.scaleWorst);
+            }
+        }
+        // tanh itself, the shader's cTanh(z) of the plane point against the doubles'
+        // (sinh 2x + i sin 2y)/(cosh 2x + cos 2y), in windows along the real axis. From |x| = FAR
+        // on it must be within two steps of the floats there: next to 1 that is what tells the
+        // points of a band's end apart. Nearer the origin within 1e-6 (the GPU's exp, sin and
+        // cos), with what a last digit of the pixel's place moves the value by
+        const fn = makeProgram(complex + MAIN_TANH);
+        const T = res.tanh;
+        for (const x0 of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 14, 20, 30, 43, 46, 60, 87, 90, 120, -3, -6, -9, -30, -60]) {
+            const centre = [x0, 0.0213], half = 0.7;
+            const g = draw(fn, fb, centre, half);
+            const one = { x: x0, differ: 0, undefined: 0, farPixels: 0, farWorst: 0, nearWorst: 0 };
+            for (let k = 0; k < SIZE*SIZE; k++) {
+                const i = 4*k, ix = k % SIZE, iy = Math.floor(k/SIZE);
+                const p = [centre[0] + ((ix + 0.5)/SIZE*2 - 1)*half, centre[1] + ((iy + 0.5)/SIZE*2 - 1)*half];
+                T.pixels++;
+                if (!Number.isFinite(g[i]) || !Number.isFinite(g[i + 1])) { one.undefined++; continue; }
+                const den = Math.cosh(2*p[0]) + Math.cos(2*p[1]);
+                const w = [Math.sinh(2*p[0])/den, Math.sin(2*p[1])/den];
+                const d = Math.hypot(w[0] - g[i], w[1] - g[i + 1]);
+                const size = Math.hypot(w[0], w[1]);
+                const slope = 2/den;        // |tanh'| = 1/|cosh|^2 = 2/(cosh 2x + cos 2y)
+                const far = Math.abs(p[0]) >= FAR;
+                if (far) { one.farPixels++; one.farWorst = Math.max(one.farWorst, d/floatStep(size)); }
+                else one.nearWorst = Math.max(one.nearWorst, d);
+                const limit = (far ? 2*floatStep(size) : 1e-6*(1 + size)) + 1e-6*Math.hypot(p[0], p[1])*slope;
+                if (d > limit) one.differ++;
+            }
+            T.windows.push(one);
+            for (const key of ['differ', 'undefined', 'farPixels']) T[key] += one[key];
+            T.farWorst = Math.max(T.farWorst, one.farWorst);
+            T.nearWorst = Math.max(T.nearWorst, one.nearWorst);
+        }
+    } finally {
+        console.log = quiet;
+    }
+    res.ok = res.scaleDiffer === 0 && res.tinyBad === 0 && res.pointDiffer === 0 && res.pointUndefined === 0
+          && res.tanh.differ === 0 && res.tanh.undefined === 0;
+    window.__band = res;
+    return res;
+};
+
+window.runChainCheck().catch(e => say('error: ' + (e && e.stack || e)));
+</script>

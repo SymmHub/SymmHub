@@ -222,6 +222,35 @@ check(itemIds() === '', 'the first item undone');
 stack.redo(); stack.redo();
 check(itemIds() === itemId && items().getItems()[0].obj.getParams().x.getValue() === 2, 'the item and its value done again');
 
+// the owner's own change told exactly, flush() before it and rebase() after it,
+// in the task of the user's edits: the edit before it is a step without it, the
+// edit after it a step too (changed(true) would have dropped both)
+{
+    gesture++;
+    obj('a').getParams().x.setValue(30);            // the user's
+    undo.flush();
+    check(stack.undoLabel() === 'vis: a x', 'flush: the edit so far is a step at once');
+    system = true;
+    obj('b').getParams().s.setValue('own');         // the owner's
+    system = false;
+    undo.rebase();
+    gesture++;
+    obj('b').getParams().x.setValue(31);            // the user's again
+    await settle();
+    check(stack.undoLabel() === 'vis: b x', 'the edit after the owner\'s change is a step');
+    stack.undo();
+    check(x('b') === 9 && obj('b').getParams().s.getValue() === 'own', 'undone: its value back, the owner\'s change stays');
+    stack.undo();
+    check(x('a') === 3 && obj('b').getParams().s.getValue() === 'own' && x('b') === 9, 'the edit before it undone alone');
+    stack.redo(); stack.redo();
+    check(x('a') === 30 && x('b') === 31 && obj('b').getParams().s.getValue() === 'own', 'both done again');
+    stack.undo(); stack.undo();
+    // a flush with nothing to look at does nothing
+    const label = stack.undoLabel();
+    undo.flush();
+    check(stack.undoLabel() === label, 'flush without a change: no step');
+}
+
 // a load: the earlier steps do nothing
 gesture++;
 obj('a').getParams().x.setValue(11);
