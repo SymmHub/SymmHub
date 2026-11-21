@@ -1,0 +1,1029 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>the fold into the fundamental domain on the GPU, against doubles</title>
+<!--
+  How exact is the shaders' fold into the fundamental domain far from the centre of the
+  hyperbolic disk, and what would make it better (docs/fold_precision_assessment.md, outside
+  the repository; docs/fold_precision_proto.mjs there has the same in emulated floats).
+
+  The group is the 2 3 7 of apps/symdraw/presets/klm/symdraw-237-kites.json (Group_KLM, its
+  sides and pairings packed by DataPacking as the app sends them). The GPU's result is read as
+  floats and compared with the same fold in doubles on the CPU; the error is the hyperbolic
+  distance of the two results.
+
+  open from the server's root: tests/symhublib/fold_gpu.html, then from a script
+
+    await window.runFoldCheck()      the fold alone, from float points at the distance D from the
+                                     centre: lib's iToFundamentalDomainSampler, and the other
+                                     forms of the reflection written here (window.__fold)
+    await window.runBandCheck()      a band's pixels through lib's makeProjection and fold, by the
+                                     place along the band; the other forms; the two-float band
+                                     and fold (window.__bandFold)
+    await window.runAnchorCheck()    the view anchor along a band: step 1a as lib has it
+                                     (applyAnchor, ViewAnchor.js) and the band's pan composed
+                                     with the anchor in doubles (window.__anchor)
+    await window.runTiming()         the cost of the forms per pixel (window.__timing)
+    window.showBand(x)               to look at it: a strip of the band about x drawn four ways
+                                     (the field above the picture does the same)
+
+  Nothing here is used by the app: the forms are prototypes for the assessment.
+-->
+<pre id="out">loading</pre>
+<script type="module">
+import { isplane } from '../../lib/shaders/isplane.glsl.mjs';
+import { complex } from '../../lib/shaders/complex.glsl.mjs';
+import { projection } from '../../lib/shaders/projection_v2.glsl.mjs';
+import { inversiveSampler } from '../../lib/shaders/inversiveSampler.glsl.mjs';
+import { Group_KLM, makeViewAnchor, mirrorsToMap, composeMaps } from '../../lib/grouplib/grouplib.js';
+import { DataPacking } from '../../lib/invlib/invlib.js';
+
+const out = document.getElementById('out');
+const say = (s) => { out.textContent = s; };
+
+const f = Math.fround;
+const SPHERE = 1, PLANE = 2;
+const EPS = 1e-7;
+const STEP = 2**-24;                 // the step of the floats from 0.5 to 1
+const SIZE = 64;                     // the targets: SIZE x SIZE points a draw
+const A_BAND = Math.PI/4;            // a whole band: z -> tanh(a z)
+const PLANE_PER_H = 2/Math.PI;       // plane units along a band per unit of hyperbolic length
+
+// ── the group ────────────────────────────────────────────────────────────────────────────
+function makeGroup(K, L, M){
+    const quiet = console.log; console.log = () => {};
+    try {
+        const maker = new Group_KLM();
+        maker.setParamsMap({ s: false, K, L, M, hasR: false });
+        return maker.getGroup();
+    } finally { console.log = quiet; }
+}
+function gensDouble(group){
+    const cp = (s) => ({ type: s.type, v: Array.from(s.v) });
+    return { sides: group.getFundDomain().map(cp), pairs: group.getReverseTransforms().map(t => (t.getRef ? t.getRef() : t).map(cp)) };
+}
+
+// ── doubles ──────────────────────────────────────────────────────────────────────────────
+const AD = {
+    dist(s, p){
+        const v = s.v;
+        if (s.type === SPHERE) { const d = Math.hypot(p[0] - v[0], p[1] - v[1]) - Math.abs(v[3]); return v[3] > 0 ? d : -d; }
+        return p[0]*v[0] + p[1]*v[1] - v[3];
+    },
+    reflect(s, p){
+        const v = s.v;
+        if (s.type === SPHERE) {
+            const x = p[0] - v[0], y = p[1] - v[1], k = v[3]*v[3]/(x*x + y*y);
+            return [x*k + v[0], y*k + v[1]];
+        }
+        const t = (p[0] - v[0]*v[3])*v[0] + (p[1] - v[1]*v[3])*v[1];
+        return [p[0] - 2*t*v[0], p[1] - 2*t*v[1]];
+    },
+};
+function fold(p0, G, maxIter = 4000){
+    let p = [p0[0], p0[1]], steps = 0;
+    for (let it = 0; it < maxIter; it++) {
+        let found = -1;
+        for (let g = 0; g < G.sides.length; g++) if (AD.dist(G.sides[g], p) > EPS) { found = g; break; }
+        if (found < 0) return { p, steps, inDomain: true };
+        for (const r of G.pairs[found]) p = AD.reflect(r, p);
+        steps++;
+    }
+    return { p, steps, inDomain: false };
+}
+function distH(z, w){
+    const nx = z[0] - w[0], ny = z[1] - w[1];
+    const dx = 1 - (z[0]*w[0] + z[1]*w[1]), dy = -(z[0]*w[1] - z[1]*w[0]);
+    const t = Math.hypot(nx, ny)/Math.hypot(dx, dy);
+    return (t < 1) ? 2*Math.atanh(t) : Infinity;
+}
+const depthOf = (p) => 1 - p[0]*p[0] - p[1]*p[1];
+// the images of a point of the domain by the words of up to two pairings: two folds that took
+// different ways end at such images of each other when the point is next to a side
+function nearImages(p, G){
+    const o = [p];
+    for (const t of G.pairs) { let q = p; for (const r of t) q = AD.reflect(r, q); o.push(q); }
+    for (let i = 1, n = o.length; i < n; i++) for (const t of G.pairs) { let q = o[i]; for (const r of t) q = AD.reflect(r, q); o.push(q); }
+    return o;
+}
+function errH(p, images){ let e = Infinity; for (const q of images) e = Math.min(e, distH(p, q)); return e; }
+function stats(a){
+    const s = a.filter(Number.isFinite).sort((x, y) => x - y);
+    const q = (t) => s.length ? s[Math.min(s.length - 1, Math.floor(t*s.length))] : NaN;
+    return { n: a.length, bad: a.length - s.length, med: q(0.5), p90: q(0.9), max: s.length ? s[s.length - 1] : NaN };
+}
+function rng(seed){
+    let a = seed >>> 0;
+    return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0)/4294967296; };
+}
+const round3 = (x) => Number.isFinite(x) ? Number(x.toPrecision(3)) : x;
+
+// tanh(a (x + i y)) in doubles: (sinh 2u + i sin 2v)/(cosh 2u + cos 2v) by e = exp(-2|u|)
+function tanhD(u, v){
+    const e = Math.exp(-2*Math.abs(u)), c = Math.cos(v), s = Math.sin(v);
+    const t = 1 - e, d = t*t + 4*e*c*c;
+    const re = 1 - 2*e*(2*c*c - t)/d;
+    return [u < 0 ? -re : re, 4*e*s*c/d];
+}
+
+// ── the GPU ──────────────────────────────────────────────────────────────────────────────
+const canvas = document.createElement('canvas');
+const gl = canvas.getContext('webgl2', { antialias: false, preserveDrawingBuffer: true });
+const floatOk = gl && gl.getExtension('EXT_color_buffer_float');
+const timerExt = gl && gl.getExtension('EXT_disjoint_timer_query_webgl2');
+
+const HEADER = `#version 300 es
+precision highp float;
+precision highp int;
+precision highp sampler2D;
+`;
+const VS = HEADER + `
+in vec2 aPos;
+void main(){ gl_Position = vec4(aPos, 0., 1.); }`;
+
+function makeProgram(fsBody, vs = VS){
+    const v = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(v, vs); gl.compileShader(v);
+    const fs = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fs, HEADER + fsBody); gl.compileShader(fs);
+    const p = gl.createProgram();
+    gl.attachShader(p, v); gl.attachShader(p, fs);
+    gl.bindAttribLocation(p, 0, 'aPos');
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS))
+        throw new Error('link: ' + gl.getProgramInfoLog(p) + '\n' + gl.getShaderInfoLog(fs) + '\n' + gl.getShaderInfoLog(v));
+    const uniforms = {};
+    const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for (let i = 0; i < n; i++) {
+        const info = gl.getActiveUniform(p, i);
+        uniforms[info.name.replace(/\[0\]$/, '')] = { loc: gl.getUniformLocation(p, info.name), type: info.type };
+    }
+    return { program: p, uniforms };
+}
+// numbers, booleans, arrays; a texture as {texture}
+function setUniforms(prog, values){
+    gl.useProgram(prog.program);
+    let unit = 0;
+    for (const [name, value] of Object.entries(values)) {
+        const u = prog.uniforms[name];
+        if (!u || value === undefined || value === null) continue;
+        if (value.texture) {
+            gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, value.texture); gl.uniform1i(u.loc, unit++);
+            continue;
+        }
+        const arr = (typeof value === 'number' || typeof value === 'boolean') ? [Number(value)] : Array.from(value, Number);
+        switch (u.type) {
+        case gl.FLOAT:      gl.uniform1fv(u.loc, new Float32Array(arr)); break;
+        case gl.FLOAT_VEC2: gl.uniform2fv(u.loc, new Float32Array(arr)); break;
+        case gl.FLOAT_VEC3: gl.uniform3fv(u.loc, new Float32Array(arr)); break;
+        case gl.FLOAT_VEC4: gl.uniform4fv(u.loc, new Float32Array(arr)); break;
+        case gl.INT: case gl.BOOL: gl.uniform1iv(u.loc, new Int32Array(arr)); break;
+        case gl.INT_VEC2:   gl.uniform2iv(u.loc, new Int32Array(arr)); break;
+        default: throw new Error('uniform type of ' + name);
+        }
+    }
+}
+function dataTexture(array, width, height){
+    const tex = gl.createTexture();
+    // on a unit of its own: a texture made between setUniforms and the draw (a new target)
+    // must not take the place of one the program reads
+    gl.activeTexture(gl.TEXTURE7);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, array);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return tex;
+}
+let mQuad = null;
+const mTargets = new Map();
+function target(size){
+    if (!mTargets.has(size)) {
+        const tex = dataTexture(null, size, size);
+        const fb = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+        mTargets.set(size, fb);
+    }
+    return mTargets.get(size);
+}
+function draw(prog, size = SIZE, read = true){
+    if (!mQuad) {
+        mQuad = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, mQuad);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    }
+    gl.useProgram(prog.program);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target(size));
+    gl.viewport(0, 0, size, size);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    if (!read) return null;
+    const buf = new Float32Array(size*size*4);
+    gl.readPixels(0, 0, size, size, gl.RGBA, gl.FLOAT, buf);
+    return buf;
+}
+// the points of a draw as a texture: [x, y, xlo, ylo] each
+function pointsTexture(pts, size = SIZE){
+    const a = new Float32Array(size*size*4);
+    for (let i = 0; i < pts.length && i < size*size; i++) a.set(pts[i], 4*i);
+    return dataTexture(a, size, size);
+}
+
+// ── the shaders ──────────────────────────────────────────────────────────────────────────
+// the points of a draw: one per pixel of the target
+const POINTS = `
+uniform sampler2D uPoints;
+vec4 thePoint(){ return texelFetch(uPoints, ivec2(gl_FragCoord.xy), 0); }
+out vec4 outColor;
+`;
+// the result: the point, the scale, the steps (-1 - steps when the fold ran out of them)
+const RESULT = `outColor = vec4(p.xy, scale, (inDomain == 1) ? float(steps) : -1. - float(steps));`;
+
+// lib's fold of the points
+const MAIN_LIB_FOLD = `
+uniform sampler2D uGroupData; uniform int uIterations;
+void main(){
+    vec3 p = vec3(thePoint().xy, 0.);
+    float scale = 1.; int inDomain = 0; int steps = 0;
+    iToFundamentalDomainSampler(p, uGroupData, 0, inDomain, steps, scale, uIterations);
+    ${RESULT}
+}`;
+// the points as plane points: lib's chain (a band), then lib's fold; uMode 1: the chain's point alone
+const MAIN_LIB_BAND_FOLD = `
+uniform sampler2D uGroupData; uniform int uIterations; uniform int uMode;
+void main(){
+    vec2 pp = thePoint().xy; float scale = 1.;
+    makeProjection(pp, scale);
+    vec3 p = vec3(pp, 0.);
+    int inDomain = 1; int steps = 0;
+    if(uMode == 0){
+        applyAnchor(p, scale);
+        iToFundamentalDomainSampler(p, uGroupData, 0, inDomain, steps, scale, uIterations);
+    }
+    ${RESULT}
+}`;
+// the anchored band: the points as offsets from the view's centre (with the centre's height),
+// lib's band of them, then the Moebius map uT (the band's pan composed with the anchor in
+// doubles), then lib's fold
+const MAIN_ANCHORED_BAND = `
+uniform sampler2D uGroupData; uniform int uIterations;
+uniform vec4 uTab, uTcd; uniform bool uTanti;
+void main(){
+    vec2 pp = thePoint().xy; float scale = 1.;
+    makeProjection(pp, scale);
+    if(uTanti) pp.y = -pp.y;
+    vec2 den = cMul(uTcd.xy, pp) + uTcd.zw;
+    pp = cDiv(cMul(uTab.xy, pp) + uTab.zw, den);
+    scale /= dot(den, den);
+    vec3 p = vec3(pp, 0.);
+    int inDomain = 0; int steps = 0;
+    iToFundamentalDomainSampler(p, uGroupData, 0, inDomain, steps, scale, uIterations);
+    ${RESULT}
+}`;
+
+//
+//  the fold written again with the reflection in another form (FORM), the group from a
+//  texture of its own (uGroupX, packGroupX below):
+//     0  as lib: v = p - c, r^2/|v|^2, back
+//     1  moebius form: (c conj(z) - 1)/(conj(z) - conj(c)), a circle at right angles to the unit circle
+//     2  local form: the unit vector u to the centre, the distance d of the nearest point, the curvature
+//     3  low parts: what the floats of the centre and of r^2 lack, added in
+//     4  two floats: the point, the centre and r^2 as pairs of floats, error-free sums and products
+//
+const XFOLD = `
+uniform sampler2D uGroupX;
+uniform float uOne;
+#define MAXREF 2
+struct XSplane { int type; vec4 v; vec4 loc; vec4 low; };
+XSplane xFetch(int o){
+    XSplane s;
+    s.v = texelFetch(uGroupX, ivec2(o, 0), 0);
+    s.type = int(texelFetch(uGroupX, ivec2(o + 1, 0), 0).x);
+    s.loc = texelFetch(uGroupX, ivec2(o + 2, 0), 0);
+    s.low = texelFetch(uGroupX, ivec2(o + 3, 0), 0);
+    return s;
+}
+float xDistance(XSplane s, vec2 p){
+    if(s.type == SPLANE_SPHERE){ vec2 v = p - s.v.xy; float d = sqrt(dot(v, v)) - abs(s.v.w); return (s.v.w > 0.) ? d : -d; }
+    if(s.type == SPLANE_PLANE) return dot(p, s.v.xy) - s.v.w;
+    return 1.;
+}
+#if FORM < 4
+void xReflect(XSplane s, inout vec2 p, inout float scale){
+    if(s.type == SPLANE_PLANE){
+        float vn = dot(p - s.v.xy*s.v.w, s.v.xy);
+        p -= 2.*vn*s.v.xy;
+    } else if(s.type == SPLANE_SPHERE){
+#if FORM == 0
+        vec2 v = p - s.v.xy;
+        float len2 = dot(v, v);
+        float r2 = s.v.w; r2 *= r2;
+        float factor = r2/len2;
+        v *= factor; scale *= factor;
+        p = v + s.v.xy;
+#elif FORM == 1
+        vec2 zc = vec2(p.x, -p.y);
+        vec2 c = s.v.xy;
+        vec2 num = vec2(c.x*zc.x - c.y*zc.y - 1., c.x*zc.y + c.y*zc.x);
+        vec2 den = vec2(zc.x - c.x, zc.y + c.y);
+        float dd = dot(den, den);
+        scale *= (s.v.w*s.v.w)/dd;
+        p = vec2(dot(num, den), num.y*den.x - num.x*den.y)/dd;
+#elif FORM == 2
+        vec2 u = s.loc.xy; float d = s.loc.z, ka = s.loc.w;
+        vec2 y = p - u*d;
+        float g = ka*dot(y, y) - 2.*dot(u, y);
+        vec2 w = y*ka - u;
+        float ww = dot(w, w);
+        scale /= ww;
+        p -= (g/ww)*w;
+#else
+        vec2 v = (p - s.v.xy) - s.low.xy;
+        float len2 = dot(v, v);
+        float k = s.low.z/len2, k2 = s.low.w/len2;
+        scale *= k;
+        p = (v*k + s.v.xy) + (v*k2 + s.low.xy);
+#endif
+    }
+}
+void xFold(inout vec2 p, inout float scale, out int steps, out int inDomain, int iterations){
+    float EPS = 1.e-7;
+    int n = int(texelFetch(uGroupX, ivec2(0, 0), 0).x);
+    int pairs = 1 + 4*n;
+    steps = 0; inDomain = 0;
+    for(int count = 0; count < iterations; count++){
+        int found = 0;
+        for(int g = 0; g < n; g++){
+            XSplane sp = xFetch(1 + 4*g);
+            if(xDistance(sp, p) > EPS){
+                int o = pairs + g*(1 + 4*MAXREF);
+                int refs = int(texelFetch(uGroupX, ivec2(o, 0), 0).x);
+                for(int r = 0; r < refs; r++) xReflect(xFetch(o + 1 + 4*r), p, scale);
+                steps++; found = 1; break;
+            }
+        }
+        if(found == 0){ inDomain = 1; break; }
+    }
+}
+#else
+// two floats (hi, lo). K() keeps a compiler from taking (a + b) - a for b: a product with a
+// uniform that is 1 (GUARD), as luma.gl's fp64 does
+#ifdef GUARD
+#define K(x) ((x)*uOne)
+#else
+#define K(x) (x)
+#endif
+vec2 twoSum(float a, float b){ float s = K(a + b); float bb = K(s - a); float e = K(a - K(s - bb)) + K(b - bb); return vec2(s, e); }
+vec2 quickSum(float a, float b){ float s = K(a + b); return vec2(s, b - K(s - a)); }
+vec2 splitF(float a){ float t = K(4097.*a); float hi = K(t - K(t - a)); return vec2(hi, a - hi); }
+vec2 twoProd(float a, float b){
+    float p = K(a*b); vec2 A = splitF(a), B = splitF(b);
+    float e = K(K(K(A.x*B.x) - p) + K(A.x*B.y) + K(A.y*B.x)) + K(A.y*B.y);
+    return vec2(p, e);
+}
+vec2 dfAdd(vec2 a, vec2 b){ vec2 s = twoSum(a.x, b.x); vec2 t = twoSum(a.y, b.y); s.y += t.x; s = quickSum(s.x, s.y); s.y += t.y; return quickSum(s.x, s.y); }
+vec2 dfMul(vec2 a, vec2 b){ vec2 p = twoProd(a.x, b.x); p.y += K(a.x*b.y) + K(a.y*b.x); return quickSum(p.x, p.y); }
+vec2 dfDiv(vec2 a, vec2 b){
+    float q1 = a.x/b.x;
+    vec2 r = dfAdd(a, -dfMul(b, vec2(q1, 0.)));
+    float q2 = r.x/b.x;
+    r = dfAdd(r, -dfMul(b, vec2(q2, 0.)));
+    float q3 = r.x/b.x;
+    vec2 q = quickSum(q1, q2);
+    return dfAdd(q, vec2(q3, 0.));
+}
+void dfReflect(XSplane s, inout vec2 px, inout vec2 py, inout float scale){
+    if(s.type == SPLANE_PLANE){
+        vec2 nx = vec2(s.v.x, s.low.x), ny = vec2(s.v.y, s.low.y), d = vec2(s.v.w, s.low.z);
+        vec2 t = dfAdd(dfAdd(dfMul(px, nx), dfMul(py, ny)), -d);
+        t *= 2.;
+        px = dfAdd(px, -dfMul(t, nx));
+        py = dfAdd(py, -dfMul(t, ny));
+    } else if(s.type == SPLANE_SPHERE){
+        vec2 cx = vec2(s.v.x, s.low.x), cy = vec2(s.v.y, s.low.y), r2 = s.low.zw;
+        vec2 vx = dfAdd(px, -cx), vy = dfAdd(py, -cy);
+        vec2 len2 = dfAdd(dfMul(vx, vx), dfMul(vy, vy));
+        vec2 k = dfDiv(r2, len2);
+        scale *= k.x;
+        px = dfAdd(dfMul(vx, k), cx);
+        py = dfAdd(dfMul(vy, k), cy);
+    }
+}
+void dfFold(inout vec2 px, inout vec2 py, inout float scale, out int steps, out int inDomain, int iterations){
+    float EPS = 1.e-7;
+    int n = int(texelFetch(uGroupX, ivec2(0, 0), 0).x);
+    int pairs = 1 + 4*n;
+    steps = 0; inDomain = 0;
+    for(int count = 0; count < iterations; count++){
+        int found = 0;
+        for(int g = 0; g < n; g++){
+            XSplane sp = xFetch(1 + 4*g);
+            if(xDistance(sp, vec2(px.x, py.x)) > EPS){
+                int o = pairs + g*(1 + 4*MAXREF);
+                int refs = int(texelFetch(uGroupX, ivec2(o, 0), 0).x);
+                for(int r = 0; r < refs; r++) dfReflect(xFetch(o + 1 + 4*r), px, py, scale);
+                steps++; found = 1; break;
+            }
+        }
+        if(found == 0){ inDomain = 1; break; }
+    }
+}
+// tanh(z) as two floats a part: far along, the real part is 1 less a small number that a
+// float holds with all its digits; 1 - small as an exact sum
+void tanhDf(vec2 z, out vec2 re, out vec2 im, out float ds){
+    float e = exp(-2.*abs(z.x));
+    float c = cos(z.y), s = sin(z.y);
+    float t = 1. - e;
+    float d = t*t + 4.*e*c*c;
+    float small = 2.*e*(2.*c*c - t)/d;
+    vec2 r = twoSum(1., -small);
+    re = (z.x < 0.) ? -r : r;
+    im = vec2(4.*e*s*c/d, 0.);
+    ds = 4.*e/d;
+}
+#endif
+`;
+// the points folded by the form
+const MAIN_XFOLD = `
+uniform int uIterations;
+void main(){
+    vec4 t = thePoint();
+    float scale = 1.; int steps; int inDomain;
+#if FORM == 4
+    vec2 px = vec2(t.x, t.z), py = vec2(t.y, t.w);
+    dfFold(px, py, scale, steps, inDomain, uIterations);
+    vec2 p = vec2(px.x + px.y, py.x + py.y);
+#else
+    vec2 p = t.xy;
+    xFold(p, scale, steps, inDomain, uIterations);
+#endif
+    ${RESULT}
+}`;
+// the points as plane points of a whole band, then the form's fold; with two floats the band's
+// tanh gives both floats
+const MAIN_XBAND_FOLD = `
+uniform int uIterations;
+void main(){
+    vec4 t = thePoint();
+    float scale = 1.; int steps; int inDomain;
+    float a = PI/4.;
+#if FORM == 4
+    vec2 px, py; float ds;
+    tanhDf(a*t.xy, px, py, ds);
+    scale *= a*ds;
+    dfFold(px, py, scale, steps, inDomain, uIterations);
+    vec2 p = vec2(px.x + px.y, py.x + py.y);
+#else
+    float ds;
+    vec2 p = cTanh(a*t.xy, ds);
+    scale *= a*ds;
+    xFold(p, scale, steps, inDomain, uIterations);
+#endif
+    ${RESULT}
+}`;
+
+// the group for the forms: a row of vec4s
+//   0: (sides)   1 + 4 g: side g: (the splane) (type) (local: ux, uy, d, kappa) (low parts)
+//   1 + 4 n + g (1 + 4 MAXREF): pairing g: (reflections), then each as a side
+// low parts: a circle's (cx_lo, cy_lo, r2_hi, r2_lo), a line's (nx_lo, ny_lo, d_lo, 0)
+const MAXREF = 2;
+function packGroupX(G){
+    const n = G.sides.length;
+    const a = new Float32Array(4*(1 + 4*n + n*(1 + 4*MAXREF)));
+    const put = (o, s) => {
+        const v = s.v;
+        a.set([v[0], v[1], v[2], v[3]], 4*o);
+        a[4*(o + 1)] = s.type;
+        if (s.type === SPHERE) {
+            const ml = Math.hypot(v[0], v[1]), r = Math.abs(v[3]), r2 = v[3]*v[3];
+            a.set([v[0]/ml, v[1]/ml, ml - r, 1/r], 4*(o + 2));
+            a.set([v[0] - f(v[0]), v[1] - f(v[1]), r2, r2 - f(r2)], 4*(o + 3));
+        } else {
+            a.set([v[0] - f(v[0]), v[1] - f(v[1]), v[3] - f(v[3]), 0], 4*(o + 3));
+        }
+    };
+    a[0] = n;
+    G.sides.forEach((s, g) => put(1 + 4*g, s));
+    G.pairs.forEach((t, g) => {
+        const o = 1 + 4*n + g*(1 + 4*MAXREF);
+        if (t.length > MAXREF) throw new Error('a pairing of more reflections than MAXREF');
+        a[4*o] = t.length;
+        t.forEach((s, r) => put(o + 1 + 4*r, s));
+    });
+    return dataTexture(a, a.length/4, 1);
+}
+
+// ── what is common to the runs ───────────────────────────────────────────────────────────
+let mSetup = null;
+function setup(){
+    if (mSetup) return mSetup;
+    if (!gl || !floatOk) throw new Error('no WebGL2 with float targets');
+    const group = makeGroup(2, 3, 7);
+    const GD = gensDouble(group);
+    const packed = DataPacking.packGroupToArray(group);
+    const groupData = dataTexture(packed, packed.length/4, 1);
+    const groupX = packGroupX(GD);
+    const lib = isplane + complex + projection + inversiveSampler;
+    const forms = {};
+    const form = (key, n, guard = false) => {
+        const defs = `#define FORM ${n}\n` + (guard ? '#define GUARD\n' : '');
+        forms[key] = {
+            fold: makeProgram(defs + isplane + complex + POINTS + XFOLD + MAIN_XFOLD),
+            band: makeProgram(defs + isplane + complex + POINTS + XFOLD + MAIN_XBAND_FOLD),
+        };
+    };
+    form('as lib', 0); form('moebius form', 1); form('local form', 2); form('low parts', 3);
+    form('two floats', 4); form('two floats, guarded', 4, true);
+    // the translation of the group along the real axis: twice the sides 2-3, 3-7 and 7-2 of the triangle
+    const [A, B, C] = [Math.PI/2, Math.PI/3, Math.PI/7];
+    const period = 2*(Math.acosh(Math.cos(C)/Math.sin(B)) + Math.acosh(Math.cos(B)*Math.cos(C)/(Math.sin(B)*Math.sin(C))) + Math.acosh(Math.cos(B)/Math.sin(C)));
+    mSetup = {
+        group, GD, groupData, groupX, forms, period,
+        libFold: makeProgram(isplane + inversiveSampler + POINTS + MAIN_LIB_FOLD),
+        libBand: makeProgram(lib + POINTS + MAIN_LIB_BAND_FOLD),
+        anchoredBand: makeProgram(lib + POINTS + MAIN_ANCHORED_BAND),
+        info: { renderer: gl.getParameter(gl.RENDERER), vendor: gl.getParameter(gl.VENDOR) },
+    };
+    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+    if (dbg) mSetup.info.renderer = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL);
+    return mSetup;
+}
+// a whole band as lib's chain: one step of the kind 8 (VC_BAND), its fraction 1
+function bandUniforms(){
+    const steps = new Int32Array(32); steps[0] = 8; steps[1] = 0;
+    const data = new Float32Array(256); data[0] = 1;
+    return { u_hasMoebiusTransform: 0, uViewChainCount: 1, uViewChainStep: steps, uViewChainData: data, uAnchorEnabled: 0 };
+}
+// the true fold of the plane point (x, y) of a whole band: the group has the translation by
+// its period along the band's axis, so the point is brought next to the centre first
+function bandTruth(S, x, y){
+    const P = S.period*PLANE_PER_H;
+    const xr = x - Math.round(x/P)*P;
+    return fold(tanhD(A_BAND*xr, A_BAND*y), S.GD);
+}
+// the hyperbolic length of a plane unit at the height y of a whole band
+const bandMetric = (y) => (Math.PI/2)/Math.cos(Math.PI*y/2);
+
+// float points at the hyperbolic distance D from the centre, any direction or next to the positive real axis
+function pointsAt(D, n, rand, spread = Math.PI){
+    const o = [], r = Math.tanh(D/2);
+    for (let tries = 0; o.length < n && tries < 50*n; tries++) {
+        const t = (2*rand() - 1)*spread;
+        const p = [f(r*Math.cos(t)), f(r*Math.sin(t))];
+        if (depthOf(p) > 0) o.push(p);
+    }
+    return o;
+}
+// the GPU's results of the points against their true folds: the error as a hyperbolic length,
+// in float steps of the starting point (by its 1 - |z|^2), the steps of the fold
+function judge(S, g, pts, truthOf, depthOfPoint){
+    const errs = [], units = [], steps = [];
+    let notFolded = 0;
+    for (let i = 0; i < pts.length; i++) {
+        const t = truthOf(pts[i]);
+        if (!t.inDomain) continue;
+        const k = 4*i;
+        if (!(g[k + 3] >= 0) || !Number.isFinite(g[k]) || !Number.isFinite(g[k + 1])) { notFolded++; errs.push(Infinity); units.push(Infinity); continue; }
+        const e = errH([g[k], g[k + 1]], nearImages(t.p, S.GD));
+        errs.push(e); steps.push(g[k + 3]);
+        units.push(e*depthOfPoint(pts[i])/2/STEP);
+    }
+    const s = stats(errs), u = stats(units), st = stats(steps);
+    return { n: pts.length, notFolded, err: [round3(s.med), round3(s.p90), round3(s.max)], floatSteps: [round3(u.med), round3(u.p90)], foldSteps: [st.med, st.max] };
+}
+
+//
+//  1. The fold alone. Float points at the hyperbolic distance D from the centre (any direction;
+//  then next to the positive real axis, where a band's end is), folded by lib's shader and by
+//  the other forms, against the fold of the same float point in doubles.
+//
+window.runFoldCheck = async function(){
+    const S = setup();
+    const rand = rng(11);
+    const res = { gpu: S.info, rows: [] };
+    const run = (D, spread) => {
+        const pts = pointsAt(D, SIZE*SIZE, rand, spread);
+        const tex = pointsTexture(pts);
+        const truth = (p) => fold(p, S.GD);
+        const row = { D, where: spread === Math.PI ? 'any direction' : 'band end', planeUnits: round3(D*PLANE_PER_H) };
+        setUniforms(S.libFold, { uPoints: { texture: tex }, uGroupData: { texture: S.groupData }, uIterations: 2000, uAnchorEnabled: 0 });
+        row.lib = judge(S, draw(S.libFold), pts, truth, depthOf);
+        for (const [key, pr] of Object.entries(S.forms)) {
+            setUniforms(pr.fold, { uPoints: { texture: tex }, uGroupX: { texture: S.groupX }, uIterations: 2000, uOne: 1 });
+            row[key] = judge(S, draw(pr.fold), pts, truth, depthOf);
+        }
+        gl.deleteTexture(tex);
+        res.rows.push(row);
+    };
+    for (const D of [4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16]) run(D, Math.PI);
+    for (const D of [6, 8, 10, 12, 14]) run(D, 2*Math.exp(-D));
+    // two floats from a point of two floats: points beyond what one float holds (their true
+    // place hi + lo), folded with two floats, against the fold of hi + lo in doubles
+    res.twoFloatPoints = [];
+    for (const D of [10, 14, 18, 22, 26, 30]) {
+        const pts = [], r = 1 - 2*Math.exp(-D);      // tanh(D/2) next to 1
+        while (pts.length < SIZE*SIZE) {
+            const t = (2*rand() - 1)*2*Math.exp(-D/2);
+            const x = r*Math.cos(t), y = r*Math.sin(t);
+            pts.push([f(x), f(y), f(x - f(x)), f(y - f(y))]);
+        }
+        const tex = pointsTexture(pts);
+        const exact = (p) => [p[0] + p[2], p[1] + p[3]];
+        const truth = (p) => fold(exact(p), S.GD);
+        const row = { D, planeUnits: round3(D*PLANE_PER_H) };
+        for (const key of ['two floats', 'two floats, guarded']) {
+            setUniforms(S.forms[key].fold, { uPoints: { texture: tex }, uGroupX: { texture: S.groupX }, uIterations: 2000, uOne: 1 });
+            row[key] = judge(S, draw(S.forms[key].fold), pts, truth, (p) => depthOf(exact(p)));
+        }
+        gl.deleteTexture(tex);
+        res.twoFloatPoints.push(row);
+    }
+    window.__fold = res;
+    say(JSON.stringify(res, null, 1));
+    return res;
+};
+
+//
+//  2. A band's pixels. A window of SIZE x SIZE pixels, 256 to 2 plane units as in the truth
+//  frames of the picture (so SIZE/128 plane units a side), its middle at x along the band and
+//  0.2 off the axis; each pixel through lib's makeProjection (the band's tanh) and lib's fold,
+//  and through the other forms, against the true fold (bandTruth). The error in pixels: its
+//  hyperbolic length by the pixel's.
+//
+window.runBandCheck = async function(xs = [0, 2, 3, 4, 4.5, 5.1, 5.7, 6.4, 7, 7.6, 8.3, 8.9, 9.5, 10.2, 12, 14, 16, 18, 19.1, 22, 26, 30, 40, 50]){
+    const S = setup();
+    const res = { gpu: S.info, pixel: 2/256, rows: [] };
+    const px = 2/256;
+    for (const x0 of xs) {
+        const pts = [];
+        for (let j = 0; j < SIZE; j++) for (let i = 0; i < SIZE; i++)
+            pts.push([f(x0 + (i + 0.5 - SIZE/2)*px), f(0.2 + (j + 0.5 - SIZE/2)*px)]);
+        const tex = pointsTexture(pts);
+        const truth = (p) => bandTruth(S, p[0], p[1]);
+        // the error in pixels: the hyperbolic error by a pixel's hyperbolic length there
+        const inPixels = (g) => {
+            const e = [], st = [];
+            let notFolded = 0;
+            for (let k = 0; k < pts.length; k++) {
+                const t = truth(pts[k]);
+                if (!(g[4*k + 3] >= 0) || !Number.isFinite(g[4*k])) { notFolded++; e.push(Infinity); continue; }
+                e.push(errH([g[4*k], g[4*k + 1]], nearImages(t.p, S.GD))/(bandMetric(pts[k][1])*px));
+                st.push(g[4*k + 3]);
+            }
+            const s = stats(e), ss = stats(st);
+            const over = (lim) => round3(e.filter(v => !(v <= lim)).length/e.length);
+            return { px: [round3(s.med), round3(s.p90), round3(s.max)], over8th: over(0.125), overHalf: over(0.5), notFolded, foldSteps: [ss.med, ss.max] };
+        };
+        const row = { x: x0, D: round3(x0/PLANE_PER_H) };
+        setUniforms(S.libBand, { ...bandUniforms(), uPoints: { texture: tex }, uGroupData: { texture: S.groupData }, uIterations: 2000, uMode: 0 });
+        row.lib = inPixels(draw(S.libBand));
+        // the band's point itself, before any fold: the float point against the true one, in
+        // pixels and in float steps (what a fold of that float point starts from)
+        if (x0 <= 18) {
+            setUniforms(S.libBand, { uMode: 1 });
+            const gp = draw(S.libBand);
+            const e = [], u = [];
+            for (let k = 0; k < pts.length; k++) {
+                const t = tanhD(A_BAND*pts[k][0], A_BAND*pts[k][1]);
+                const d = distH([gp[4*k], gp[4*k + 1]], t);
+                e.push(d/(bandMetric(pts[k][1])*px)); u.push(d*depthOf(t)/2/STEP);
+            }
+            const s = stats(e), su = stats(u);
+            row.point = { px: [round3(s.med), round3(s.p90), round3(s.max)], floatSteps: [round3(su.med), round3(su.p90)], outside: s.bad };
+        }
+        for (const [key, pr] of Object.entries(S.forms)) {
+            if (key === 'as lib' || key === 'low parts') continue;
+            setUniforms(pr.band, { uPoints: { texture: tex }, uGroupX: { texture: S.groupX }, uIterations: 2000, uOne: 1 });
+            row[key] = inPixels(draw(pr.band));
+        }
+        gl.deleteTexture(tex);
+        res.rows.push(row);
+    }
+    window.__bandFold = res;
+    say(JSON.stringify(res, null, 1));
+    return res;
+};
+
+//
+//  3. The view anchor along a band (docs/infinite_navigation_plan.md). The window of
+//  runBandCheck with its middle as the view's centre.
+//    1a      lib's applyAnchor with lib's ViewAnchor folding the centre's world point: the
+//            pixel's world point is a float next to the unit circle, the anchor takes its
+//            difference from the centre's
+//    pan     the band's pan along its axis is a motion of the disk, tanh(a(c + v)) =
+//            M(tanh(a v)), M = the translation by c: the shader takes the band of the offset
+//            v alone and then one Moebius map, M composed with the anchor in doubles on the
+//            CPU. The anchor is kept as the navigator's phase 2 keeps it: the map moved along
+//            the band in steps and folded back into the domain after each, so nothing in it
+//            grows. Judged twice: against the band's true point (pan), and against the same
+//            map in doubles (panOwn): the doubles place the far view exp(D) 3e-16 off, which
+//            shows against the truth from 18 plane units on and not in the picture's sharpness
+//
+const cMulJ = (a, b) => [a[0]*b[0] - a[1]*b[1], a[0]*b[1] + a[1]*b[0]];
+function applyMapJ(T, p){
+    const z = T.anti ? [p[0], -p[1]] : p, M = T.m;
+    const n = cMulJ(M[0], z), d = cMulJ(M[2], z);
+    const nx = n[0] + M[1][0], ny = n[1] + M[1][1], dx = d[0] + M[3][0], dy = d[1] + M[3][1], k = dx*dx + dy*dy;
+    return [(nx*dx + ny*dy)/k, (ny*dx - nx*dy)/k];
+}
+// the translation of the disk along the real axis by the hyperbolic length 2u
+const translation = (u) => ({ m: [[Math.cosh(u), 0], [Math.sinh(u), 0], [Math.sinh(u), 0], [Math.cosh(u), 0]], anti: false });
+
+//
+//  the anchored map of a view of a whole band with its centre at (x, cy): T = a o M(x), a an
+//  element of the group that keeps the centre's image in the domain. Moved along the band in
+//  steps of a quarter of a plane unit from the band's middle, folded back after each: the
+//  same x gives the same map whatever was looked at before
+//
+function makePanAnchor(S, cy = 0){
+    const sideMaps = S.GD.pairs.map(t => mirrorsToMap(t));
+    const local0 = tanhD(0, A_BAND*cy);              // the view centre's own band point: its height alone
+    const GRID = 0.25;
+    const identity = () => ({ m: [[1, 0], [0, 0], [0, 0], [1, 0]], anti: false });
+    // the map kept at a point of the grid (k quarters of a plane unit along)
+    let kept = { T: identity(), k: 0, letters: 0 };
+    // a step along the band, then back into the domain
+    const step = (st, dx) => {
+        let T = composeMaps(st.T, translation(A_BAND*dx)), letters = st.letters;
+        for (let it = 0; it < 1000; it++) {
+            const q = applyMapJ(T, local0);
+            let found = -1;
+            for (let g = 0; g < S.GD.sides.length; g++) if (AD.dist(S.GD.sides[g], q) > EPS) { found = g; break; }
+            if (found < 0) break;
+            T = composeMaps(sideMaps[found], T);
+            letters++;
+        }
+        return { T, letters };
+    };
+    const me = { letters: 0 };
+    me.moveTo = (x) => {
+        const k = Math.trunc(x/GRID);
+        if (Math.abs(k) < Math.abs(kept.k) || (k !== 0 && kept.k !== 0 && Math.sign(k) !== Math.sign(kept.k))) kept = { T: identity(), k: 0, letters: 0 };
+        while (kept.k !== k) {
+            const d = Math.sign(k - kept.k);
+            kept = { ...step(kept, d*GRID), k: kept.k + d };
+        }
+        const last = step(kept, x - k*GRID);
+        me.letters = last.letters;
+        return last.T;
+    };
+    return me;
+}
+
+window.runAnchorCheck = async function(xs = [0, 2, 4, 5.1, 5.7, 6.4, 7, 7.6, 8.3, 8.9, 9.5, 10.2, 12, 14, 16, 18, 20, 30, 50, 100, 300, 1000]){
+    const S = setup();
+    const res = { gpu: S.info, pixel: 2/256, rows: [] };
+    const px = 2/256, cy = 0.2;
+    const pan = makePanAnchor(S, cy);
+    const anchor = makeViewAnchor();
+    for (const x0 of xs) {
+        const offs = [], pts = [];
+        for (let j = 0; j < SIZE; j++) for (let i = 0; i < SIZE; i++) {
+            const v = [(i + 0.5 - SIZE/2)*px, (j + 0.5 - SIZE/2)*px];
+            offs.push([f(v[0]), f(cy + v[1])]);
+            pts.push([f(x0 + v[0]), f(cy + v[1])]);
+        }
+        const inPixels = (g, P, truthOf = (q) => bandTruth(S, q[0], q[1])) => {
+            const e = [], st = [];
+            let notFolded = 0;
+            for (let k = 0; k < P.length; k++) {
+                const t = truthOf(P[k], k);
+                if (!(g[4*k + 3] >= 0) || !Number.isFinite(g[4*k])) { notFolded++; e.push(Infinity); continue; }
+                e.push(errH([g[4*k], g[4*k + 1]], nearImages(t.p, S.GD))/(bandMetric(P[k][1])*px));
+                st.push(g[4*k + 3]);
+            }
+            const s = stats(e), ss = stats(st);
+            return { px: [round3(s.med), round3(s.p90), round3(s.max)], over8th: round3(e.filter(v => !(v <= 0.125)).length/e.length), notFolded, foldSteps: [ss.med, ss.max] };
+        };
+        const row = { x: x0, D: round3(x0/PLANE_PER_H) };
+
+        // 1a as lib has it: the anchor of the centre's world point, the float world point of the pixel
+        if (x0 <= 20) {
+            const ref = tanhD(A_BAND*x0, A_BAND*cy);
+            const quiet = console.log; console.log = () => {};
+            try {
+                for (let k = 0; k < 2000; k++) { anchor.update({ group: S.group, refPoint: ref, enabled: true, budgetMs: 50 }); if (!anchor.isPending()) break; }
+            } finally { console.log = quiet; }
+            const tex = pointsTexture(pts);
+            setUniforms(S.libBand, { ...bandUniforms(), ...anchor.getUniforms(), uPoints: { texture: tex }, uGroupData: { texture: S.groupData }, uIterations: 2000, uMode: 0 });
+            row.anchor1a = inPixels(draw(S.libBand), pts);
+            row.anchor1a.word = anchor.getWord().length;
+            gl.deleteTexture(tex);
+        }
+
+        // the pan composed with the anchor: the offsets' band, then T
+        const T = pan.moveTo(x0), letters = pan.letters;
+        {
+            const tex = pointsTexture(offs);
+            const M = T.m;
+            setUniforms(S.anchoredBand, { ...bandUniforms(), uPoints: { texture: tex }, uGroupData: { texture: S.groupData }, uIterations: 2000,
+                                         uTab: [...M[0], ...M[1]], uTcd: [...M[2], ...M[3]], uTanti: T.anti });
+            // the true place of a pixel: the centre's place and its offset as the shader has it (floats)
+            const P = offs.map(o => [x0 + o[0], o[1]]);
+            const g = draw(S.anchoredBand);
+            row.pan = inPixels(g, P);
+            // and against the same map in doubles: is the frame a sharp picture of the pattern,
+            // wherever along the band the doubles' rounding has put it
+            row.panOwn = inPixels(g, P, (q, k) => fold(applyMapJ(T, tanhD(A_BAND*offs[k][0], A_BAND*offs[k][1])), S.GD));
+            // how far the map is from a motion of the disk: |alpha|^2 - |beta|^2 - 1, alpha - conj(delta), beta - conj(gamma)
+            const [al, be, ga, de] = T.m;
+            row.pan.offMotion = round3(Math.max(Math.abs(al[0]*al[0] + al[1]*al[1] - be[0]*be[0] - be[1]*be[1] - 1),
+                                                Math.hypot(al[0] - de[0], al[1] + de[1]), Math.hypot(be[0] - ga[0], be[1] + ga[1])));
+            row.pan.letters = letters;
+            row.pan.mapSize = round3(Math.max(...M.map(e => Math.hypot(e[0], e[1]))));
+            gl.deleteTexture(tex);
+        }
+        res.rows.push(row);
+    }
+    window.__anchor = res;
+    say(JSON.stringify(res, null, 1));
+    return res;
+};
+
+//
+//  4. The cost: the time of a draw of 1024 x 1024 pixels of a band at x (all of them fold
+//  about as long), by the GPU's timer where there is one, else by the clock around a read
+//
+window.runTiming = async function(xs = [0, 5, 8], repeats = 6){
+    const S = setup();
+    const N = 1024, px = 2/256/16;
+    const res = { gpu: S.info, timer: !!timerExt, size: N, rows: [] };
+    const timeDraw = async (prog) => {
+        const times = [];
+        for (let r = 0; r < repeats + 2; r++) {
+            let ms;
+            if (timerExt) {
+                const q = gl.createQuery();
+                gl.beginQuery(timerExt.TIME_ELAPSED_EXT, q);
+                draw(prog, N, false);
+                gl.endQuery(timerExt.TIME_ELAPSED_EXT);
+                gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.FLOAT, new Float32Array(4));
+                for (let k = 0; k < 200 && !gl.getQueryParameter(q, gl.QUERY_RESULT_AVAILABLE); k++) await new Promise(r => setTimeout(r, 5));
+                ms = gl.getQueryParameter(q, gl.QUERY_RESULT_AVAILABLE) ? gl.getQueryParameter(q, gl.QUERY_RESULT)/1e6 : NaN;
+                gl.deleteQuery(q);
+            } else {
+                const t0 = performance.now();
+                draw(prog, N, false);
+                gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.FLOAT, new Float32Array(4));
+                ms = performance.now() - t0;
+            }
+            if (r >= 2) times.push(ms);
+        }
+        times.sort((a, b) => a - b);
+        return round3(times[Math.floor(times.length/2)]);
+    };
+    for (const x0 of xs) {
+        const a = new Float32Array(N*N*4);
+        for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+            a[4*(j*N + i)] = x0 + (i + 0.5 - N/2)*px;
+            a[4*(j*N + i) + 1] = 0.2 + (j + 0.5 - N/2)*px;
+        }
+        const tex = dataTexture(a, N, N);
+        const row = { x: x0 };
+        setUniforms(S.libBand, { ...bandUniforms(), uPoints: { texture: tex }, uGroupData: { texture: S.groupData }, uIterations: 2000, uMode: 1 });
+        row['the band alone'] = await timeDraw(S.libBand);
+        setUniforms(S.libBand, { uMode: 0 });
+        row.lib = await timeDraw(S.libBand);
+        const g = draw(S.libBand, N);
+        let steps = 0; for (let k = 3; k < g.length; k += 4) steps += Math.max(0, g[k]);
+        row.foldSteps = round3(steps/(N*N));
+        for (const [key, pr] of Object.entries(S.forms)) {
+            if (key === 'low parts') continue;
+            setUniforms(pr.band, { uPoints: { texture: tex }, uGroupX: { texture: S.groupX }, uIterations: 2000, uOne: 1 });
+            row[key] = await timeDraw(pr.band);
+        }
+        gl.deleteTexture(tex);
+        res.rows.push(row);
+    }
+    window.__timing = res;
+    say(JSON.stringify(res, null, 1));
+    return res;
+};
+
+//
+//  5. To look at it. A strip of a whole band about x, 5 plane units long and 1 high (the
+//  middle half of the band), drawn four ways, top to bottom:
+//     today          lib's makeProjection and fold, as the app without infinite pan
+//     infinite pan   the same with lib's applyAnchor (step 1a), the anchor of the strip's centre
+//     pan composed   the band of the pixel's offset from the centre, then the map of the pan
+//                    composed with the anchor in doubles (the proposal)
+//     the truth      the same piece of the pattern whole periods nearer the band's middle
+//  The picture of a folded point: the triangles of *2 3 7 in two colours with rings of shade
+//  across them, their sides one pixel wide (by the scale the fold carries); white where the
+//  fold did not end.
+//
+const VS_VIEW = HEADER + `
+in vec2 aPos; out vec2 vUv;
+uniform vec2 uCentre; uniform vec2 uHalf;
+void main(){ vUv = uCentre + aPos*uHalf; gl_Position = vec4(aPos, 0., 1.); }`;
+const PICTURE = `
+in vec2 vUv; out vec4 outColor;
+uniform sampler2D uGroupData; uniform int uIterations;
+uniform vec3 uCircle; uniform float uPixel;
+vec4 picture(vec2 p, float scale, int inDomain){
+    if(inDomain != 1 || !(dot(p, p) < 1.)) return vec4(1.);
+    float d = min(abs(p.x), abs(p.y));
+    d = min(d, abs(length(p - uCircle.xy) - uCircle.z));
+    d = min(d, abs(length(p - vec2(uCircle.x, -uCircle.y)) - uCircle.z));
+    float px = scale*uPixel;
+    float line = 1. - smoothstep(0.5*px, 1.5*px, d);
+    vec3 c = (p.y > 0.) ? vec3(0.98, 0.86, 0.55) : vec3(0.58, 0.78, 0.96);
+    c *= 0.8 + 0.2*cos(60.*length(p - vec2(0.13, 0.)));
+    return vec4(mix(c, vec3(0.05), line), 1.);
+}`;
+const MAIN_SHOW_LIB = `
+void main(){
+    vec2 pp = vUv; float scale = 1.;
+    makeProjection(pp, scale);
+    vec3 p = vec3(pp, 0.);
+    int inDomain = 0; int steps = 0;
+    applyAnchor(p, scale);
+    iToFundamentalDomainSampler(p, uGroupData, 0, inDomain, steps, scale, uIterations);
+    outColor = picture(p.xy, scale, inDomain);
+}`;
+const MAIN_SHOW_PAN = `
+uniform vec4 uTab, uTcd; uniform bool uTanti;
+void main(){
+    vec2 pp = vUv; float scale = 1.;
+    makeProjection(pp, scale);
+    if(uTanti) pp.y = -pp.y;
+    vec2 den = cMul(uTcd.xy, pp) + uTcd.zw;
+    pp = cDiv(cMul(uTab.xy, pp) + uTab.zw, den);
+    scale /= dot(den, den);
+    vec3 p = vec3(pp, 0.);
+    int inDomain = 0; int steps = 0;
+    iToFundamentalDomainSampler(p, uGroupData, 0, inDomain, steps, scale, uIterations);
+    outColor = picture(p.xy, scale, inDomain);
+}`;
+let mShow = null;
+window.showBand = function(x = 8, halfHeight = 0.5){
+    const S = setup();
+    const W = 800, H = 160;                 // a strip: 5 to 1
+    if (!mShow) {
+        const lib = isplane + complex + projection + inversiveSampler;
+        mShow = {
+            lib: makeProgram(lib + PICTURE + MAIN_SHOW_LIB, VS_VIEW),
+            pan: makeProgram(lib + PICTURE + MAIN_SHOW_PAN, VS_VIEW),
+            pan0: makePanAnchor(S), panRef: makePanAnchor(S), anchor: makeViewAnchor(),
+            note: document.createElement('pre'),
+        };
+        canvas.width = W; canvas.height = 4*H;
+        canvas.style.cssText = `display:block;width:${W}px;height:${4*H}px`;
+        const box = document.createElement('div');
+        box.style.cssText = 'margin:8px 0';
+        const field = document.createElement('input');
+        field.type = 'number'; field.step = '0.5'; field.value = String(x); field.title = 'the place along the band, plane units';
+        field.addEventListener('change', () => window.showBand(Number(field.value), halfHeight));
+        const label = document.createElement('label');
+        label.textContent = 'x along the band ';
+        label.appendChild(field);
+        box.append(label, mShow.note, canvas);
+        document.body.insertBefore(box, out);
+        mShow.field = field;
+    }
+    mShow.field.value = String(x);
+    const half = [halfHeight*W/H, halfHeight];
+    const c = S.GD.sides.find(s => s.type === SPHERE).v;
+    const common = { ...bandUniforms(), uGroupData: { texture: S.groupData }, uCircle: [c[0], Math.abs(c[1]), Math.abs(c[3])], uPixel: 2*halfHeight/H, uHalf: half };
+    const strip = (k, prog, uniforms) => {
+        if (!mQuad) draw(S.libFold);        // the quad's buffer
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        setUniforms(prog, { ...common, ...uniforms });
+        gl.viewport(0, (3 - k)*H, W, H);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    };
+    const mapUniforms = (T) => ({ uTab: [...T.m[0], ...T.m[1]], uTcd: [...T.m[2], ...T.m[3]], uTanti: T.anti });
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, W, 4*H);
+    gl.clearColor(0.5, 0.5, 0.5, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+    // today
+    strip(0, mShow.lib, { uCentre: [x, 0], uIterations: 400, uAnchorEnabled: 0 });
+    // infinite pan (1a): the anchor of the centre's world point, while doubles hold that point
+    let word = null;
+    if (Math.abs(x) <= 22) {
+        const quiet = console.log; console.log = () => {};
+        try { for (let k = 0; k < 2000; k++) { mShow.anchor.update({ group: S.group, refPoint: tanhD(A_BAND*x, 0), enabled: true, budgetMs: 50 }); if (!mShow.anchor.isPending()) break; } }
+        finally { console.log = quiet; }
+        word = mShow.anchor.getWord().length;
+        strip(1, mShow.lib, { uCentre: [x, 0], uIterations: 400, ...mShow.anchor.getUniforms() });
+    }
+    // the pan composed with the anchor
+    const T = mShow.pan0.moveTo(x);
+    strip(2, mShow.pan, { uCentre: [0, 0], uIterations: 400, ...mapUniforms(T) });
+    // the truth: whole periods nearer the middle
+    const P = S.period*PLANE_PER_H, xr = x - Math.round(x/P)*P;
+    strip(3, mShow.pan, { uCentre: [0, 0], uIterations: 400, ...mapUniforms(mShow.panRef.moveTo(xr)) });
+    mShow.note.textContent = `the band about x = ${x} (the distance ${round3(Math.abs(x)/PLANE_PER_H)} from the centre), ${2*half[0]} plane units long, ${2*half[1]} high, top to bottom:\n`
+        + ` 1 today: makeProjection and the fold in floats\n`
+        + ` 2 infinite pan (step 1a)` + (word === null ? ': not drawn, doubles do not hold the centre\'s world point this far' : `, the anchor ${word} letters`) + `\n`
+        + ` 3 the pan composed with the anchor in doubles, the anchor ${mShow.pan0.letters} letters\n`
+        + ` 4 the truth: the same piece ${Math.round(x/P)} periods nearer the middle (x = ${round3(xr)})`;
+    return { x, anchor1a: word, panLetters: mShow.pan0.letters, truthAt: xr };
+};
+
+try { setup(); say('ready: ' + JSON.stringify(mSetup.info)); window.__ready = true; }
+catch (e) { say('error: ' + (e && e.stack || e)); window.__error = String(e && e.stack || e); }
+</script>
