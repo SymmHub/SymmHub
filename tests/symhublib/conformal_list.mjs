@@ -14,7 +14,9 @@
      made of its values gives the same world points as the fixed chain it replaces (the
      frozen copies in tests/symhublib/legacy: the old ProjectionTransform.getChainParts
      and the old viewChainToWorld), on a grid of the document's canvas and one of the
-     plane; the list saved and loaded again is the same value and the same chain
+     plane; a document saved with the list has no fixed chain to compare with (the frozen
+     copy does not read a list: it would act as the identity), it is counted apart; the
+     list saved and loaded again is the same value and the same chain
   3. the list edited through its ParamObjArray, as the panel and the window do: a row
      added (its id the next free one), moved, switched off, duplicated, renamed, removed;
      the chain follows in the shaders' order (the last row first); the listeners hear of
@@ -132,7 +134,7 @@ const kindsOf = (chain) => chain.map(s => s.kind).join(' ');
     for (let i = 0; i < 9; i++) for (let j = 0; j < 9; j++) planeGrid.push([-2 + 0.5*i + 0.0371, -2 + 0.5*j - 0.0213]);
 
     let docs = 0, withMaps = 0, points = 0, undefinedPoints = 0, worst = 0, worstFile = '', wholeOff = 0;
-    let mismatched = 0, notIdempotent = 0, fractional = 0, rowsTotal = 0, rowsOff = 0, differentExact = 0;
+    let mismatched = 0, notIdempotent = 0, fractional = 0, rowsTotal = 0, rowsOff = 0, differentExact = 0, savedWithList = 0;
     let backPoints = 0, backNone = 0, backHidden = 0, backFar = 0, backMissed = 0, backWorst = 0;
     const backBad = [];
     const fmtP = (p) => '(' + p.map(x => x.toPrecision(8)).join(', ') + ')';
@@ -162,6 +164,9 @@ const kindsOf = (chain) => chain.map(s => s.kind).join(' ');
         rowsOff += rows.filter(r => !r.params.enabled).length;
         if (pr.enabled === false) wholeOff++;
         if (steps.length) withMaps++;
+        // saved with the list (since 2d300da): the fixed chain cannot read it
+        const listed = !!pr.maps;
+        if (listed) savedWithList++;
 
         // an exponent of the rational map that is no whole number: the old CPU chain rounded
         // it, the shader cut it, and the new chain cuts it as the shader does
@@ -174,7 +179,7 @@ const kindsOf = (chain) => chain.map(s => s.kind).join(' ');
         const grid = planeGrid.slice();
         for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) grid.push([cx + (-1 + (2*i + 0.731)/8)/zoom, cy + (-1 + (2*j + 0.317)/8)/zoom]);
         let docWorst = 0, docBad = false;
-        if (!frac) {
+        if (!frac && !listed) {
             for (const p of grid) {
                 const a = legacyToWorld(oldChain, p), b = viewChainToWorld(chain, p);
                 if (a.exact !== b.exact) { differentExact++; docBad = true; continue; }
@@ -219,7 +224,7 @@ const kindsOf = (chain) => chain.map(s => s.kind).join(' ');
     }
     say(`2. ${docs} documents with a projection (${withMaps} with a row acting, ${wholeOff} with the whole switched off): ${rowsTotal} rows, ${rowsOff} of them off;`
         + ` ${points} points compared, ${undefinedPoints} undefined in both, the largest difference ${worst.toExponential(2)}${worstFile ? ' (' + worstFile + ')' : ''};`
-        + ` ${fractional} with an exponent that is no whole number left out`);
+        + ` ${fractional} with an exponent that is no whole number left out, ${savedWithList} saved with the list (no fixed chain to compare with)`);
     for (const b of bad) say('   ' + b);
     check(docs > 0, 'there are documents to compare');
     check(mismatched === 0, `the list's chain gives the fixed chain's points in every document (${mismatched} differ)`);
