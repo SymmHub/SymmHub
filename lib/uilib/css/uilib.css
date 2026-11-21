@@ -32,7 +32,8 @@
   width: 100%;
   top: var(--drag-header-size);
   cursor: crosshair;
-  background-color: #eee;
+  /* the panels' colour: every window looks alike on the off-white page */
+  background-color: var(--background-color, #f9f9f9);
   overflow: auto;
 
 }

@@ -1,87 +1,89 @@
-ul, #myUL {
+/* the tree view (treeView.js) in the look of the dat.gui panels: rows of
+   their height with a line under each, their font, their folder arrows */
+
+/* global, as ever: the lists of the pages count on it */
+ul {
   list-style-type: none;
   padding-inline-start: 10px;
 }
 
-#myUL {
+.tree-view {
+  list-style: none;
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif !important;
-  font-size: 0.9rem !important;
-  color: var(--text-color, #111111) !important;
-  text-shadow: none !important;
+  background: var(--background-color, #f9f9f9);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-size: 0.9rem;
+  color: var(--text-color, #111111);
+  text-shadow: none;
+  cursor: default;
 }
 
-#myUL * {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif !important;
-  text-shadow: none !important;
+.tree-view ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-#myUL ul {
-  margin: 0 !important;
-  padding-left: 0 !important;
-  padding-inline-start: 0 !important;
-  list-style: none !important;
-}
-
-#myUL ul ul {
-  padding-left: 12px !important;
-  padding-inline-start: 12px !important;
-}
-
-#myUL li {
-  list-style: none !important;
-  margin: 1px 0 !important;
+.tree-view li {
+  list-style: none;
+  margin: 0;
 }
 
 .tree-row {
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 3px 6px !important;
-  border-radius: 4px !important;
-  transition: background 0.1s ease !important;
-  user-select: none !important;
-  font-weight: var(--font-weight, 400) !important;
+  display: flex;
+  align-items: center;
+  height: 27px;
+  line-height: 27px;
+  box-sizing: border-box;
+  padding-right: 6px;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+  user-select: none;
+  font-weight: var(--font-weight, 400);
 }
 
 .tree-row.tree_node_clickable,
 .tree-row.tree-folder-row {
-  cursor: pointer !important;
+  cursor: pointer;
 }
 
-.tree-row.tree_node_clickable:hover:not(.selected-node),
-.tree-row.tree-folder-row:hover:not(.selected-node) {
-  background: var(--hover-background-color, #f8f8f8) !important;
+/* a folder's title, as dat.gui's */
+.tree-row.tree-folder-row:hover .tree-label {
+  text-decoration: underline;
 }
 
-.tree-row.selected-node {
-  background-color: var(--toggled-on-hover-color, #b6d4fa) !important;
-  color: var(--text-color, #111111) !important;
+.tree-row.tree_node_clickable:hover:not(.selected-node) {
+  background: var(--views-hover-color, #eee);
 }
 
-.selected-node {
-  background-color: var(--toggled-on-hover-color, #b6d4fa) !important;
-  color: var(--text-color, #111111) !important;
+.tree-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree-note {
+  flex: none;
+  margin-left: 6px;
+  font-size: 0.8em;
+  color: var(--soft-text-color, #777);
+}
+
+.tree-row--dim .tree-label {
+  color: var(--soft-text-color, #777);
 }
 
 .folder-arrow-right {
+  flex: none;
   display: inline-block;
-  width: 12px;
-  height: 12px;
-  margin-right: 4px;
+  width: 15px;
+  height: 15px;
+  margin-right: 2px;
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
   background-image: url('images/ui_arrow_right.svg');
   cursor: pointer;
-  opacity: 0.65;
-  transition: opacity 0.1s ease;
-  vertical-align: middle;
-}
-
-.folder-arrow-right:hover {
-  opacity: 1;
 }
 
 .folder-arrow-down {
@@ -97,7 +99,40 @@ ul, #myUL {
   display: none;
 }
 
+/* global, as ever: FolderPickerDialog's folders and selection and ParamImage's
+   buttons take them too */
 .active {
   display: block;
 }
 
+.selected-node {
+  background-color: var(--toggled-on-hover-color, #b6d4fa) !important;
+  color: var(--text-color, #111111) !important;
+}
+
+.tree-row.selected-node,
+.tree-row.selected-node:hover {
+  background-color: var(--active-button-background-color, #cbe2ff) !important;
+}
+
+/* createTreeWindow: a note above the tree, the tree scrolls */
+.interior-style.tree-window {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  cursor: default;
+}
+
+.tree-window__note {
+  flex: none;
+  padding: 2px 6px 4px;
+  font: 11px Verdana, sans-serif;
+  color: #707070;
+  border-bottom: 1px solid #eee;
+}
+
+.tree-window__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
