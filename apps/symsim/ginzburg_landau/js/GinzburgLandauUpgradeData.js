@@ -7,14 +7,23 @@
  * SymmetrizationWorker.
  *
  * Old patternParams structure:
- *   { className: "Ginzburg-Landau",
+ *   { className: "Ginzburg-Landau",      (or "simulation" in files before mid 2025)
  *     params: {
- *       simParams:   { stepsCount, alpha, beta, alphaGradient, betaGradient, Da, Db, timestep, useHMetric },
- *       initType:    "noise" | "clear" | "sym noise",
+ *       simParams:   { stepsCount, alpha, beta, alphaGradient, betaGradient, Da, Db, timestep, useHMetric,
+ *                      buffer },
+ *       simInit:     { initType: "noise" | "clear" | "sym noise" },
+ *       simmetry:    { useSym, symIterations, symMix },     (sic: the files spell it so)
  *       clearValue:  { value0, value1 },
  *       simpleNoise: { noiseForce, noiseOffset, noiseCell },
  *     }
  *   }
+ *
+ * The oldest files (2024, e.g. the local presets) saved the same content
+ * without the class: params.simulation = { preset, presetsPlot, simParams,
+ * simInit, simmetry }, with the buffer inline as { width, height, buffer: <string> }.
+ * SymRendererUpgradeData moves params.simulation to params.pattern.patternParams
+ * as it is, so here it arrives as patternParams with no className and with
+ * simParams directly inside ("flat" format).
  *
  * New patternParams structure:
  *   { className: "PipelineManager",
@@ -35,23 +44,36 @@
  */
 
 const MYNAME = 'GinzburgLandauUpgradeData';
-const OLD_CLASS_NAME = 'Ginzburg-Landau';
+// Class names of the old simulation objects:
+//   'simulation'       — original name (files saved 2024 to mid 2025)
+//   'Ginzburg-Landau'  — the name before the PipelineManager migration
+const OLD_CLASS_NAMES = new Set(['Ginzburg-Landau', 'simulation']);
+
+/** True when pp is one of the named old formats or the flat (no className) one. */
+function isOldGLFormat(pp) {
+    if (!pp) return false;
+    if (OLD_CLASS_NAMES.has(pp.className)) return true;
+    return pp.className == null && pp.simParams != null;
+}
 
 function upgrade(data) {
     const pattern = data?.params?.pattern;
     if (!pattern) return;
 
     const pp = pattern.patternParams;
-    if (!pp || pp.className !== OLD_CLASS_NAME) return;
+    if (!isOldGLFormat(pp)) return;
 
-    console.log(`${MYNAME}: upgrading old "${OLD_CLASS_NAME}" format to PipelineManager`);
+    console.log(`${MYNAME}: upgrading old "${pp.className ?? 'flat'}" format to PipelineManager`);
 
-    const old = pp.params ?? {};
+    // the named format wraps its content in pp.params, the flat one is pp itself
+    const old = (pp.className != null) ? (pp.params ?? {}) : pp;
+    // the files spell the symmetry group "simmetry"
+    const oldSym = old.simmetry ?? old.symmetry ?? {};
 
     // ── GinzburgLandauInitializer params ──────────────────────────────────────
     // Old key "simpleNoise" becomes "noiseParams" in the new initializer.
     const initParams = {
-        initType:   old.initType   ?? 'noise',
+        initType:   old.simInit?.initType ?? old.initType ?? 'noise',
         clearValue: old.clearValue ?? { value0: 0, value1: 0 },
         noiseParams: {
             noiseForce:  old.simpleNoise?.noiseForce  ?? 0.5,
@@ -82,9 +104,9 @@ function upgrade(data) {
                         { className: 'GinzburgLandauInitializer', params: initParams },
                         { className: 'GinzburgLandauWorker',      params: workerParams },
                         { className: 'SymmetrizationWorker', params: {
-                            enabled:       old.symmetry?.symSim        ?? true,
-                            symMix:        old.symmetry?.symMix        ?? 1.0,
-                            symIterations: old.symmetry?.symIterations ?? 2,
+                            enabled:       oldSym.useSym ?? oldSym.symSim ?? true,
+                            symMix:        oldSym.symMix        ?? 1.0,
+                            symIterations: oldSym.symIterations ?? 2,
                         }},
                     ],
                 },

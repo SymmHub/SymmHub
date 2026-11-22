@@ -15,7 +15,8 @@
   2. a document load into the overlay replaces the item list (stale items go
      away); save → load → save of the new format is the identity
   3. the same through the visualization manager: old flat format, current
-     ObjArray format (layer keyed by name), very old v1 format
+     ObjArray format (layer keyed by name), very old v1 format (top level
+     isolines; the overlayVis of June 2025, its grid as the screen grid)
   4. partial patches: the id keyed patch of ParamObjArray, through the
      layer's params and through the manager; legacy feature keys are no
      patch path (ignored)
@@ -193,6 +194,44 @@ say('3. document load through the visualization manager');
     const ov3 = mgr3.getLayer('overlay');
     check(ov3 && same(ids(ov3), ['isolines']) && cfg(ov3, 'isolines').dataSource === 'v' && cfg(ov3, 'isolines').step === 0.25,
           `v1 document: ${ov3 && ids(ov3)}`);
+    check(ov3 && ov3.enabled === true, 'v1 document: the layer is on');
+
+    // v1 with the GL overlay of June 2025 (visualization.overlayVis, the local
+    // Ginzburg-Landau presets): its features become items, its grid (drawn in
+    // the view's coordinates, its step fixed) the screen grid
+    const mgr4 = makeManager();
+    mgr4.setParamsMap({
+        renderStyle: 'colormap', colormap: {}, texture: {}, bump: {},
+        overlayVis: {
+            fundDomain: { fill: { enabled: false, color: '#FF0000AA' }, outline: { enabled: false, width: 1, color: '#000000AA' } },
+            isolines:   { enabled: false, step: 1, offset: 0, width: 1, levels: 1, color: '#000000ff' },
+            tiling:     { fill: { enabled: false, color: '#FFFF0055' }, outline: { enabled: true, width: 1, color: '#ea0606ff' } },
+            limitset:   { enabled: true, color: '#1229dfff', width: 1 },
+            generators: { enabled: true, width: 1, color: '#0000AAAA', shadow: { enabled: true, color: '#0000AA55', width: 10 } },
+            grid:       { enabled: true, step: 0.5, levels: 2, color: '#000000ff', width: 1 },
+            ruler:      { enabled: false, color: '#000000ff', background: '#AAAAAAAA', width: 20 },
+        },
+    }, true);
+    const ov4 = mgr4.getLayer('overlay');
+    check(ov4 && ov4.enabled === true, 'v1 overlayVis: the layer is on');
+    check(ov4 && same(ids(ov4), ['isolines', 'tiling', 'limitset', 'generators', 'screenGrid']),
+          `v1 overlayVis: the items in the old drawing order, defaults dropped: ${ov4 && ids(ov4)}`);
+    if (ov4) {
+        check(cfg(ov4, 'isolines').enabled === false && cfg(ov4, 'isolines').step === 1, 'v1 overlayVis: tuned but disabled isolines kept');
+        check(cfg(ov4, 'tiling').enabled === true && cfg(ov4, 'tiling').color === '#ea0606ff', 'v1 overlayVis: tiling outline');
+        check(cfg(ov4, 'limitset').enabled === true && cfg(ov4, 'limitset').color === '#1229dfff', 'v1 overlayVis: limit set');
+        check(cfg(ov4, 'generators').enabled === true && cfg(ov4, 'generators').width === 1 && cfg(ov4, 'generators').shadow.width === 10,
+              'v1 overlayVis: generators with their shadow');
+        const g = cfg(ov4, 'screenGrid');
+        check(g.enabled === true && g.stepAuto === false && g.step === 0.5 && g.width === 1,
+              `v1 overlayVis: grid as the screen grid with its step fixed: ${JSON.stringify(g)}`);
+    }
+
+    // v1 with no overlay at all: the layer stays off
+    const mgr5 = makeManager();
+    mgr5.setParamsMap({ renderStyle: 'colormap', colormap: {}, texture: {}, bump: {} }, true);
+    const ov5 = mgr5.getLayer('overlay');
+    check(!ov5 || ov5.enabled === false, 'v1 document without an overlay: the layer is off');
 }
 
 // ── 4. partial patches ────────────────────────────────────────────────────────
