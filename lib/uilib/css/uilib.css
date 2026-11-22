@@ -470,9 +470,18 @@
     border: 2px solid #0055ff;
 }
 
+/* the image buttons of a toolbox (until 2026-11-21 partly in the apps'
+   main-style.css); the pressed one is on: a toggle, the active tool */
 input.imgbutton {
     box-sizing: border-box !important;
     border: 1px solid transparent !important;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+input.imgbutton:hover {
+    background-color: rgba(80, 80, 80, 0.9);
 }
 
 input.imgbutton:disabled {
@@ -484,4 +493,21 @@ input.imgbutton.pressed {
     background-color: #bae6fd !important;
     border-color: #0284c7 !important;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* the toolbox: its row of buttons, and the window's interior that fits them */
+.toolbox-row {
+    position: relative;
+}
+
+.interior-style.toolbox-interior {
+    overflow: hidden;
+    width: max-content;
+    height: max-content;
+}
+
+/* the backdrop that shows a picture's transparent parts */
+.checker-backdrop {
+    background-image: conic-gradient(#e0e0e0 25%, #ffffff 25% 50%, #e0e0e0 50% 75%, #ffffff 75%);
+    background-size: 20px 20px;
 }

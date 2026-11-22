@@ -8,6 +8,7 @@ import {
     ImageLayerFactory,
     ImageLayerUpgradeMapping,
     SymRenderer,
+    ClassicUI,
     makeSamplesArray,
     PatternsCreator,
 } from "./modules.js";
@@ -26,6 +27,7 @@ const visManager = VisualizationManager({
 });
 
 const app = SymRenderer({
+      ui:             ClassicUI,
       patternCreator: PatternsCreator,
       visualization: visManager, 
       groupMaker: new Group_WP({type: '2222',a: 0.4}), // maker of the groups

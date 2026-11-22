@@ -1,0 +1,583 @@
+# ui census /apps/symdraw/symdraw_wp.html viewport 1280x800
+## windows
+window "from URL" region shown
+  rect 1,1 960x600
+window "layers" region shown closable
+  rect 1030,120 250x170
+window "samples" region shown closable
+  rect 1,500 600x160
+window "settings" region hidden
+  rect 940,10 320x520
+window "style" region shown closable
+  rect 990,300 290x140
+window "symmetry" region hidden
+  rect 52,120 320x520
+window "tool: Select" region shown closable
+  rect 329,1 440x82
+window "toolbox" region shown
+  rect 1,1 322x63
+window "tools" region shown closable
+  rect 1,68 42x599
+window "transformations" region hidden
+  rect 380,120 290x340
+window "visualization" region shown closable
+  rect 680,120 290x440
+## toolbox
+button "settings" btn_settings.svg
+button "files: samples, open, save" btn_file_menu.svg
+button "windows: shown, hidden, brought to the top" btn_windows.svg
+button "undo (Ctrl+Z)" btn_undo.svg disabled
+button "redo (Ctrl+Y)" btn_redo.svg disabled
+button "recording" btn_record_start.svg
+button "export: an image, the files of the pattern" btn_download.svg
+button "full screen" btn_full_screen.svg
+## palette
+group
+  tool "Select (V)" btn_select.svg checked active
+  tool "Node (N)" btn_node.svg
+rule
+group
+  tool "Polyline (P)" btn_polyline.svg
+  tool "Pen (B)" btn_pen.svg
+rule
+group
+  tool "Rectangle (R)" btn_rect.svg
+  tool "Ellipse (E)" btn_ellipse.svg
+  tool "Polygon" btn_polygon.svg
+  tool "Star (*)" btn_star.svg
+  tool "Spiral (I)" btn_spiral.svg
+  tool "Image (G)" btn_image.svg
+  tool "Tile from domain (T)" btn_tile.svg
+rule
+group
+  tool "Orientation (H)" btn_move2.svg
+  tool "Pattern box (M)" btn_pattern_transform.svg
+  tool "Symmetry (Y)" btn_symmetry.svg
+bottom
+## menus
+menu "files: samples, open, save"
+  item "Samples…"
+  item "Files…"
+  separator
+  item "Save"
+  item "Save New…"
+  item "Save As…"
+menu "windows: shown, hidden, brought to the top"
+  item "Tools" checked
+  item "Tool" checked
+  item "Style" checked
+  item "Layers" checked
+  item "Visualization" checked
+  item "Symmetry"
+  item "Transformations"
+menu "export: an image, the files of the pattern"
+  item "Image (PNG)…"
+  separator
+  item "Drawing SVG…"
+  item "Pattern SVG, the box…"
+  item "Pattern SVG, the view…"
+## tools
+tool "Select (V)"
+  cursor default
+  bar
+    group "editing inside" hidden (2 inside #8f496c)
+    group ""
+      button "snap to the vertices of the copies, mirrors and cone points" prop_snap.svg pressed on
+      button "move, turn and scale in the geometry of the grou…"#0ca14e svg#8cc8e7 pressed on
+      button "incremental motion: a dragged shape is carried a…"#65c3ce svg#8271ad
+      button "a dragged shape stays inside its cell: in a Klei…"#e7d0db svg#8e6d7a pressed on
+      button "align and spread, as seen on their copies" svg#5d1440 popup=menu hidden
+      button "duplicate, cut, copy, paste, delete, select all,…"#b61c0e svg#838694 popup=menu
+      text "opacity" title="opacity of the selected shapes, whole: an image,…"#e9a287
+      input text "opacity of the selected shapes, whole: an image,…"#5c5cdc hidden
+    group "box: its centre, width and height; the shapes brought home" hidden (9 inside #211cec)
+    group "group" hidden (2 inside #b082f8)
+    group "flip and turn" hidden (4 inside #0e605e)
+    group "order" hidden (6 inside #625ffc)
+    group "the selected outlines as polylines or paths" hidden (2 inside #e34fb1)
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    hint #22636d "click any copy, Shift adds, drag moves; the box's corners tu"
+    opens "duplicate, cut, copy, paste, delete, select all,…"#b61c0e
+      item "Duplicate Ctrl+D" disabled
+      item "Cut Ctrl+X" disabled
+      item "Copy Ctrl+C" disabled
+      item "Paste Ctrl+V"
+      item "Paste in place Ctrl+Alt+V"
+      separator
+      item "Delete Delete" disabled
+      item "Select all Ctrl+A"
+      separator
+      item "Fit to the view" disabled
+      item "Fit to the cell" disabled
+      item "Normalize" disabled
+      separator
+      item "To geodesic" disabled
+      item "To Euclidean" disabled
+      separator
+      item "Selection as fill" disabled
+      item "Release content" disabled
+      item "Replace image…" disabled
+tool "Node (N)"
+  cursor default
+  bar
+    group "editing inside" hidden (2 inside #8f496c)
+    group ""
+      button "snap to the vertices of the copies, mirrors and cone points" prop_snap.svg pressed on
+      button "fit curves, to geodesic, to Euclidean, release tile" svg#838694 popup=menu hidden
+    group "the selected outlines as polylines or paths" hidden (2 inside #e34fb1)
+    group "the picked node" hidden (13 inside #399f16)
+    group "the selected shape" hidden (28 inside #f8fc2c)
+    group "the selected shape" hidden (6 inside #7969b7)
+    group "depth" hidden (4 inside #0cb873)
+    group "the picture" hidden (1 inside #25abb3)
+    group "the picture in its frame" hidden (5 inside #1c54d9)
+    break
+    group "the picture thumbnail" hidden (1 inside #2c6a75)
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    hint #6b295d "click a shape (any copy) to edit it, Shift adds; click a nod"
+tool "Polyline (P)"
+  cursor crosshair
+  bar
+    button "snap to the vertices of the copies, mirrors and cone points" prop_snap.svg pressed on
+    button "freehand strokes fitted with curves" prop_fit.svg
+    button "geodesic lines: straight sides are the straight …"#60674e svg#a5f93b hidden
+    group "the selected outlines as polylines or paths"
+      button "To polyline: the selected paths, shapes and curv…"#c25ee4 svg#788909 disabled
+      button "To path (Ctrl+Shift+C): the selected polylines, …"#fb7712 svg#fd9dbf disabled
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    hint #37a78c "click adds a vertex (snapped to the copies), drag draws free"
+tool "Pen (B)"
+  cursor crosshair
+  bar
+    button "snap to the vertices of the copies, mirrors and cone points" prop_snap.svg pressed on
+    button "geodesic lines: straight sides are the straight …"#60674e svg#a5f93b hidden
+    group "the selected outlines as polylines or paths"
+      button "To polyline: the selected paths, shapes and curv…"#c25ee4 svg#788909 disabled
+      button "To path (Ctrl+Shift+C): the selected polylines, …"#fb7712 svg#fd9dbf disabled
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    hint #38dc8d "click adds a corner node (snapped to the copies), drag pulls"
+tool "Rectangle (R)"
+  cursor crosshair
+  bar
+    text "round" title="rounding of the corners (of the shorter side) (d…"#3a848f
+    input text "rounding of the corners (of the shorter side) wh…"#3c6a29
+    text "corners" title="corners of the polygon (drag to change)"
+    input text "corners of the polygon wheel, ↑ ↓ or the arrows …"#fabe46 hidden
+    text "count" title="outer corners of the star, and as many inner one…"#56b305
+    input text "outer corners of the star, and as many inner one…"#cc6a13 hidden
+    text "radius" title="radius of the corners, of a star the outer ones …"#544fa3
+    input text "radius of the corners, of a star the outer ones …"#8b5ce9 hidden
+    text "aspect" title="radius of the inner corners, of the outer ones (…"#3820dc
+    input text "radius of the inner corners, of the outer ones w…"#883c0f hidden
+    text "twist" title="turn of the inner corners, in steps between oute…"#b26584
+    input text "turn of the inner corners, in steps between oute…"#05fb8f hidden
+    button "Curves: the corners joined by cubics, each corne…"#a49434 svg#1cba35 hidden
+    button "Curves: the corners joined by cubics, each corne…"#a49434 svg#5071fa hidden
+    button "Smooth corners (of a star the outer ones): a dra…"#8dfb82 svg#3f053f hidden
+    button "Smooth inner corners: a drag of one handle turns…"#e07072 svg#06622a hidden
+    text "turns" title="turns of the spiral (drag to change)"
+    input text "turns of the spiral wheel, ↑ ↓ or the arrows at …"#de1875 hidden
+    text "start" title="start of the arc: degrees counterclockwise from …"#e0cd5e
+    input text "start of the arc: degrees counterclockwise from …"#a4f37d hidden
+    text "end" title="end of the arc: degrees counterclockwise from th…"#0d0a34
+    input text "end of the arc: degrees counterclockwise from th…"#da0338 hidden
+    choices "how the arc is closed" hidden (3 inside #69fdb4)
+    button "Whole: the whole ellipse again, its start and en…"#dd0d64 svg#a6f03f hidden
+    button "Circle: both radii their geometric mean, the cen…"#ea8c70 svg#a3f3e8 hidden
+    button "snap to the vertices of the copies, mirrors and cone points" prop_snap.svg pressed on
+    button "geodesic lines: straight sides are the straight …"#60674e svg#a5f93b hidden
+    group "the selected outlines as polylines or paths"
+      button "To polyline: the selected paths, shapes and curv…"#c25ee4 svg#788909 disabled
+      button "To path (Ctrl+Shift+C): the selected polylines, …"#fb7712 svg#fd9dbf disabled
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    hint #de83d6 "drag the box of a rectangle (round: its corners), Shift keep"
+tool "Ellipse (E)"
+  cursor crosshair
+  bar
+    button "From the centre: an ellipse is drawn from its ce…"#dbd11f svg#3665e1 pressed on
+    text "round" title="rounding of the corners (of the shorter side) (d…"#3a848f
+    input text "rounding of the corners (of the shorter side) wh…"#3c6a29 hidden
+    text "corners" title="corners of the polygon (drag to change)"
+    input text "corners of the polygon wheel, ↑ ↓ or the arrows …"#fabe46 hidden
+    text "count" title="outer corners of the star, and as many inner one…"#56b305
+    input text "outer corners of the star, and as many inner one…"#cc6a13 hidden
+    text "radius" title="radius of the corners, of a star the outer ones …"#544fa3
+    input text "radius of the corners, of a star the outer ones …"#8b5ce9 hidden
+    text "aspect" title="radius of the inner corners, of the outer ones (…"#3820dc
+    input text "radius of the inner corners, of the outer ones w…"#883c0f hidden
+    text "twist" title="turn of the inner corners, in steps between oute…"#b26584
+    input text "turn of the inner corners, in steps between oute…"#05fb8f hidden
+    button "Curves: the corners joined by cubics, each corne…"#a49434 svg#1cba35 hidden
+    button "Curves: the corners joined by cubics, each corne…"#a49434 svg#5071fa hidden
+    button "Smooth corners (of a star the outer ones): a dra…"#8dfb82 svg#3f053f hidden
+    button "Smooth inner corners: a drag of one handle turns…"#e07072 svg#06622a hidden
+    text "turns" title="turns of the spiral (drag to change)"
+    input text "turns of the spiral wheel, ↑ ↓ or the arrows at …"#de1875 hidden
+    text "start" title="start of the arc: degrees counterclockwise from …"#e0cd5e
+    input text "start of the arc: degrees counterclockwise from …"#a4f37d
+    text "end" title="end of the arc: degrees counterclockwise from th…"#0d0a34
+    input text "end of the arc: degrees counterclockwise from th…"#da0338
+    choices "how the arc is closed"
+      button "Slice: closed through the centre (an end of the …"#c250eb svg#c79d24 checked on
+      button "Chord: closed by the straight line from its end to its start" svg#a5353c
+      button "Arc: open, a stroke only (an end of the arc drag…"#17c917 svg#a2518a
+    button "Whole: the whole ellipse again, its start and en…"#dd0d64 svg#a6f03f
+    button "Circle: both radii their geometric mean, the cen…"#ea8c70 svg#a3f3e8 disabled
+    button "snap to the vertices of the copies, mirrors and cone points" prop_snap.svg pressed on
+    button "geodesic lines: straight sides are the straight …"#60674e svg#a5f93b hidden
+    group "the selected outlines as polylines or paths"
+      button "To polyline: the selected paths, shapes and curv…"#c25ee4 svg#788909 disabled
+      button "To path (Ctrl+Shift+C): the selected polylines, …"#fb7712 svg#fd9dbf disabled
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    hint #565133 "drag from the centre of an ellipse to a corner of its box, S"
+tool "Polygon"
+  cursor crosshair
+  bar
+    text "round" title="rounding of the corners (of the shorter side) (d…"#3a848f
+    input text "rounding of the corners (of the shorter side) wh…"#3c6a29 hidden
+    text "corners" title="corners of the polygon (drag to change)"
+    input text "corners of the polygon wheel, ↑ ↓ or the arrows …"#fabe46
+    text "count" title="outer corners of the star, and as many inner one…"#56b305
+    input text "outer corners of the star, and as many inner one…"#cc6a13 hidden
+    text "radius" title="radius of the corners, of a star the outer ones …"#544fa3
+    input text "radius of the corners, of a star the outer ones …"#8b5ce9
+    text "aspect" title="radius of the inner corners, of the outer ones (…"#3820dc
+    input text "radius of the inner corners, of the outer ones w…"#883c0f hidden
+    text "twist" title="turn of the inner corners, in steps between oute…"#b26584
+    input text "turn of the inner corners, in steps between oute…"#05fb8f hidden
+    button "Curves: the corners joined by cubics, each corne…"#a49434 svg#1cba35
+    button "Curves: the corners joined by cubics, each corne…"#a49434 svg#5071fa hidden
+    button "Smooth corners (of a star the outer ones): a dra…"#8dfb82 svg#3f053f hidden
+    button "Smooth inner corners: a drag of one handle turns…"#e07072 svg#06622a hidden
+    text "turns" title="turns of the spiral (drag to change)"
+    input text "turns of the spiral wheel, ↑ ↓ or the arrows at …"#de1875 hidden
+    text "start" title="start of the arc: degrees counterclockwise from …"#e0cd5e
+    input text "start of the arc: degrees counterclockwise from …"#a4f37d hidden
+    text "end" title="end of the arc: degrees counterclockwise from th…"#0d0a34
+    input text "end of the arc: degrees counterclockwise from th…"#da0338 hidden
+    choices "how the arc is closed" hidden (3 inside #69fdb4)
+    button "Whole: the whole ellipse again, its start and en…"#dd0d64 svg#a6f03f hidden
+    button "Circle: both radii their geometric mean, the cen…"#ea8c70 svg#a3f3e8 hidden
+    button "snap to the vertices of the copies, mirrors and cone points" prop_snap.svg pressed on
+    button "geodesic lines: straight sides are the straight …"#60674e svg#a5f93b hidden
+    group "the selected outlines as polylines or paths"
+      button "To polyline: the selected paths, shapes and curv…"#c25ee4 svg#788909 disabled
+      button "To path (Ctrl+Shift+C): the selected polylines, …"#fb7712 svg#fd9dbf disabled
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    hint #11e840 "drag from the centre of a polygon to its tip (Shift turns by"
+tool "Star (*)"
+  cursor crosshair
+  bar
+    text "round" title="rounding of the corners (of the shorter side) (d…"#3a848f
+    input text "rounding of the corners (of the shorter side) wh…"#3c6a29 hidden
+    text "corners" title="corners of the polygon (drag to change)"
+    input text "corners of the polygon wheel, ↑ ↓ or the arrows …"#fabe46 hidden
+    text "count" title="outer corners of the star, and as many inner one…"#56b305
+    input text "outer corners of the star, and as many inner one…"#cc6a13
+    text "radius" title="radius of the corners, of a star the outer ones …"#544fa3
+    input text "radius of the corners, of a star the outer ones …"#8b5ce9
+    text "aspect" title="radius of the inner corners, of the outer ones (…"#3820dc
+    input text "radius of the inner corners, of the outer ones w…"#883c0f
+    text "twist" title="turn of the inner corners, in steps between oute…"#b26584
+    input text "turn of the inner corners, in steps between oute…"#05fb8f
+    button "Curves: the corners joined by cubics, each corne…"#a49434 svg#1cba35 hidden
+    button "Curves: the corners joined by cubics, each corne…"#a49434 svg#5071fa
+    button "Smooth corners (of a star the outer ones): a dra…"#8dfb82 svg#3f053f hidden
+    button "Smooth inner corners: a drag of one handle turns…"#e07072 svg#06622a hidden
+    text "turns" title="turns of the spiral (drag to change)"
+    input text "turns of the spiral wheel, ↑ ↓ or the arrows at …"#de1875 hidden
+    text "start" title="start of the arc: degrees counterclockwise from …"#e0cd5e
+    input text "start of the arc: degrees counterclockwise from …"#a4f37d hidden
+    text "end" title="end of the arc: degrees counterclockwise from th…"#0d0a34
+    input text "end of the arc: degrees counterclockwise from th…"#da0338 hidden
+    choices "how the arc is closed" hidden (3 inside #69fdb4)
+    button "Whole: the whole ellipse again, its start and en…"#dd0d64 svg#a6f03f hidden
+    button "Circle: both radii their geometric mean, the cen…"#ea8c70 svg#a3f3e8 hidden
+    button "snap to the vertices of the copies, mirrors and cone points" prop_snap.svg pressed on
+    button "geodesic lines: straight sides are the straight …"#60674e svg#a5f93b hidden
+    group "the selected outlines as polylines or paths"
+      button "To polyline: the selected paths, shapes and curv…"#c25ee4 svg#788909 disabled
+      button "To path (Ctrl+Shift+C): the selected polylines, …"#fb7712 svg#fd9dbf disabled
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    hint #44fc56 "drag from the centre of a star to its tip (Shift turns by 15"
+tool "Spiral (I)"
+  cursor crosshair
+  bar
+    text "round" title="rounding of the corners (of the shorter side) (d…"#3a848f
+    input text "rounding of the corners (of the shorter side) wh…"#3c6a29 hidden
+    text "corners" title="corners of the polygon (drag to change)"
+    input text "corners of the polygon wheel, ↑ ↓ or the arrows …"#fabe46 hidden
+    text "count" title="outer corners of the star, and as many inner one…"#56b305
+    input text "outer corners of the star, and as many inner one…"#cc6a13 hidden
+    text "radius" title="radius of the corners, of a star the outer ones …"#544fa3
+    input text "radius of the corners, of a star the outer ones …"#8b5ce9 hidden
+    text "aspect" title="radius of the inner corners, of the outer ones (…"#3820dc
+    input text "radius of the inner corners, of the outer ones w…"#883c0f hidden
+    text "twist" title="turn of the inner corners, in steps between oute…"#b26584
+    input text "turn of the inner corners, in steps between oute…"#05fb8f hidden
+    button "Curves: the corners joined by cubics, each corne…"#a49434 svg#1cba35 hidden
+    button "Curves: the corners joined by cubics, each corne…"#a49434 svg#5071fa hidden
+    button "Smooth corners (of a star the outer ones): a dra…"#8dfb82 svg#3f053f hidden
+    button "Smooth inner corners: a drag of one handle turns…"#e07072 svg#06622a hidden
+    text "turns" title="turns of the spiral (drag to change)"
+    input text "turns of the spiral wheel, ↑ ↓ or the arrows at …"#de1875
+    text "start" title="start of the arc: degrees counterclockwise from …"#e0cd5e
+    input text "start of the arc: degrees counterclockwise from …"#a4f37d hidden
+    text "end" title="end of the arc: degrees counterclockwise from th…"#0d0a34
+    input text "end of the arc: degrees counterclockwise from th…"#da0338 hidden
+    choices "how the arc is closed" hidden (3 inside #69fdb4)
+    button "Whole: the whole ellipse again, its start and en…"#dd0d64 svg#a6f03f hidden
+    button "Circle: both radii their geometric mean, the cen…"#ea8c70 svg#a3f3e8 hidden
+    button "snap to the vertices of the copies, mirrors and cone points" prop_snap.svg pressed on
+    button "geodesic lines: straight sides are the straight …"#60674e svg#a5f93b hidden
+    group "the selected outlines as polylines or paths"
+      button "To polyline: the selected paths, shapes and curv…"#c25ee4 svg#788909 disabled
+      button "To path (Ctrl+Shift+C): the selected polylines, …"#fb7712 svg#fd9dbf disabled
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    hint #4ed24e "drag the box of a spiral, Shift keeps it round; click one to"
+tool "Image (G)"
+  cursor crosshair
+  bar
+    group "add a file as it is"
+      button "Add an image file in its own proportions into th…"#08b332 svg#fc9a76
+      button "Add the shapes of an SVG file, editable, in a fr…"#cc34c0 svg#191fee
+    button "snap to the vertices of the copies, mirrors and cone points" prop_snap.svg pressed on
+    group "the picture"
+      choices "how the picture sits in the frame"
+        button "Cover: the frame covered, unstretched, the rest cut off" svg#8d3dcc checked on
+        button "Fit: the whole picture in the frame, unstretched" svg#e44dff
+        button "Stretch: the picture stretched to the frame" svg#a4030c
+    group "the picture in its frame" hidden (5 inside #1c54d9)
+    break
+    group "the picture thumbnail"
+      button "The picture of the next frames (and of the selec…"#98494b data#8a5f8e
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    hint #46108d "drag the box of a frame holding the picture (Shift: in its p"
+tool "Tile from domain (T)"
+  cursor default
+  bar
+    group ""
+      button "New tile (Shift+T): the tile of the fundamental …"#ff9be6 svg#ea3ab5
+      button "Curved sides: new tiles are curved tiles, paths …"#b6a526 svg#1d26a2 pressed on
+    group ""
+      button "snap to the vertices of the copies, mirrors and cone points" prop_snap.svg pressed on
+    group "the selected outlines as polylines or paths"
+      button "To polyline: the selected paths, shapes and curv…"#c25ee4 svg#788909
+      button "To path (Ctrl+Shift+C): the selected polylines, …"#fb7712 svg#fd9dbf disabled
+    group "the picked node"
+      button "Add nodes (Insert): in the middle of each segmen…"#e8c781 svg#2a2231 disabled
+      button "Remove the picked nodes (Delete; Alt+click remov…"#4b4353 svg#be2263 disabled
+      choices "the type of the picked nodes (Ctrl+click a node cycles them)"
+        button "Corner (Shift+C): its handles apart" svg#ed61cd disabled
+        button "Smooth (Shift+S): its handles in line (or double click it)" svg#f53e43 disabled
+        button "Symmetric (Shift+Y): its handles in line and as long" svg#b2ccbd disabled
+        button "Auto (Shift+A): its handles from its neighbours,…"#873167 svg#f1a913 disabled
+      button "Make segments curves (Shift+U): the straight seg…"#21e220 svg#67b05d disabled
+      button "Make segments lines (Shift+L): the handles of th…"#d80fca svg#65aa61 disabled
+      text "X" title="X: the centre of the box round the picked nodes,…"#1e2ece
+      input text "X: the centre of the box round the picked nodes,…"#5e6e92 hidden
+      text "Y" title="Y: the centre of the box round the picked nodes,…"#08f115
+      input text "Y: the centre of the box round the picked nodes,…"#721e77 hidden
+    button "Release tile: the selected tiles as plain outlin…"#f8f983 svg#dc25a0
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    hint #809a11 "T takes up the tile of the active layer (a selected tile sta"
+tool "Orientation (H)"
+  cursor cur_move3.svg 15 15, move
+  bar
+    button "home: the document view, the frame saved with th…"#4b9f2f svg#e59363
+    button "back (` key): the view before home or a reset; a…"#293e82 svg#2a8503 disabled
+    button "set document view: the view on the canvas become…"#72623e svg#a73df0
+    button "the document's frame on the canvas, the outside …"#b0d21f svg#6bad6a
+    button "reset the canvas: centre 0, zoom 1, upright; the…"#910aa9 svg#f81f7b
+    button "reset the Moebius transform: the motions of the …"#a2f6f4 svg#28a101
+    button "zoom 1: the zoom of the start about the canvas c…"#9ca044 svg#892343
+    button "upright: the canvas turned back to angle 0 about its centre" svg#135c75
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    break
+    choices "navigation mode: the geometry whose motions the drags make"
+      button "Euclidean navigation: the canvas pans, zooms (and turns)" svg#655ae3 checked on
+      button "spherical navigation: drags turn the sphere whos…"#078701 svg#16af1c
+      button "hyperbolic navigation: drags move the hyperbolic…"#a15005 svg#2578e6
+      button "inversive navigation: Moebius moves about the po…"#7a14fd svg#9727b5
+    button "sphere view: the plane shown on a sphere (stereo…"#cdf772 svg#94e45d
+    button "infinite pan: the folding starts at the view (th…"#c6240b svg#e36ae8
+    button "transformations: the conformal transformations t…"#1b2f8e svg#011380
+    break
+    group "the pole O of the inversive moves" hidden (5 inside #9147e3)
+    break
+    group "the document's frame: the rectangle the document…"#df60a9 hidden (11 inside #7eb5d5)
+    break
+    group "the canvas: the world point at its centre, the w…"#2fe238
+      label "view" title="the view on the canvas: the world point at its c…"#7ca7b8
+      text "x" title="the world point at the canvas centre, x (drag to change)"
+      input text "the world point at the canvas centre, x wheel, ↑…"#1ae012
+      text "y" title="the world point at the canvas centre, y (drag to change)"
+      input text "the world point at the canvas centre, y wheel, ↑…"#6bdfd7
+      text "w" title="the width of the view, world units (2 / its zoom…"#795970
+      input text "the width of the view, world units (2 / its zoom…"#d25144
+      text "angle" title="turn of the canvas, degrees counterclockwise (Ct…"#765000
+      input text "turn of the canvas, degrees counterclockwise (Ct…"#5ed2a1
+    hint #3f31d3 "drag moves the view, the wheel scrolls (Shift: sideways), Ct"
+tool "Pattern box (M)"
+  cursor cur_move3.svg 15 15, move
+  bar
+    group "centre"
+      text "x" title="centre of the pattern box, x (drag to change)"
+      input text "centre of the pattern box, x wheel, ↑ ↓ or the a…"#7546b6
+      text "y" title="centre of the pattern box, y (drag to change)"
+      input text "centre of the pattern box, y wheel, ↑ ↓ or the a…"#c6467b
+    group "size and turn"
+      text "scale" title="size of the pattern box (drag to change)"
+      input text "size of the pattern box wheel, ↑ ↓ or the arrows…"#970289
+      text "angle" title="turn of the pattern box, degrees (drag to change)"
+      input text "turn of the pattern box, degrees wheel, ↑ ↓ or t…"#23ba6e
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    hint #ca37e6 "drag moves the box of the pattern, drag near its corners tur"
+tool "Symmetry (Y)"
+  cursor default
+  bar
+    button "the group's handles on the canvas: the orders at…"#35338e svg#278013 pressed on
+    button "the group transform on the canvas, a frame round…"#c37f84 svg#72f3a1 pressed on
+    button "the Dirichlet domain on the canvas, as the switc…"#202508 svg#12b1a5
+    button "the help line under the settings: show or hide" svg#1fbdf6 pressed on
+    group "the group transform"
+      text "x" title="the frame's centre, x: where the centre of the f…"#81590a
+      input text "the frame's centre, x: where the centre of the f…"#11464e
+      text "y" title="the frame's centre, y: where the centre of the f…"#115d03
+      input text "the frame's centre, y: where the centre of the f…"#234a75
+      text "angle" title="the turn of the group about the centre, degrees …"#c380ea
+      input text "the turn of the group about the centre, degrees …"#c8c923
+      text "scale" title="the scale of the group about the centre (drag to change)"
+      input text "the scale of the group about the centre wheel, ↑…"#b92bb6
+      button "commands of the group transform: Reset, Centre t…"#67f1a3 svg#838694 popup=menu
+    hint #e33e6a "edits the symmetry on the canvas, each set of handles by its"
+    opens "commands of the group transform: Reset, Centre t…"#67f1a3
+      item "Reset"
+      item "Centre to #"
+      item "Origin to #"
+## settings
+gui in "settings" hidden
+  folder "files" hidden
+    cr function "Global Options..." hidden
+    cr function "Samples..." hidden
+    cr function "Files..." hidden
+    cr function "Save" hidden
+    cr function "Save New..." hidden
+    cr function "Save As..." hidden
+    cr function "Export Image..." hidden
+  folder "display" hidden
+    cr string "canvasSize" hidden
+    cr number.has-slider "custom width" hidden
+    cr number.has-slider "custom height" hidden
+    cr number.has-slider "size multiplier" hidden
+    cr color "background" hidden
+    cr function "show timing..." hidden
+    cr boolean "Checker" hidden
+    cr boolean "Grid" hidden
+    cr boolean "Ruler" hidden
+  folder "recording" hidden
+    cr number "animTime" hidden
+    cr number "animSpeed" hidden
+    cr number.has-slider "start Frame" hidden
+    cr number.has-slider "End Frame" hidden
+    cr number.has-slider "frame" hidden
+    cr function "Start Recording" hidden
+  folder "pattern" hidden
+    folder "pattern params" hidden
+      cr string "id" hidden
+      cr string "resolution" hidden
+      cr boolean "crown" hidden
+      cr boolean "sprites" hidden
+      cr string "sprite size" hidden
+    folder "pattern transform" hidden
+      cr number.has-slider "center X" hidden
+      cr number.has-slider "center Y" hidden
+      cr number.has-slider "scale" hidden
+      cr number.has-slider "angle(deg)" hidden
+      cr number "pivot X" hidden
+      cr number "pivot Y" hidden
+      cr number.has-slider "bend X" hidden
+      cr number.has-slider "bend Y" hidden
+      cr boolean "in geometry" hidden
+  folder "tools" hidden
+    cr string "tool" hidden
+    folder "move" hidden
+      cr string "mode" hidden
+      folder "inversive" hidden
+        cr boolean "enabled" hidden
+        cr string "inv trans" hidden
+        cr function "reset" hidden
+        cr boolean "pole placed" hidden
+        cr number "pole x" hidden
+        cr number "pole y" hidden
+      folder "spherical" hidden
+        cr boolean "enabled" hidden
+        cr function "reset" hidden
+      folder "euclidean" hidden
+        cr function "reset" hidden
+        cr number "x-center" hidden
+        cr number "y-center" hidden
+        cr number "zoom" hidden
+        cr number "angle°" hidden
+      folder "options" hidden
+        cr boolean "animation" hidden
+        cr boolean "infinite pan" hidden
+      folder "document view" hidden
+        cr function "home (document view)" hidden
+        cr function "back (the view before home, ` key)" hidden
+        cr function "set from the view" hidden
+    folder "draw" hidden
+      cr boolean "symmetry" hidden
+      cr number "R" hidden
+      cr number "G" hidden
+      cr number "B" hidden
+      cr number "A" hidden
+      cr number "radius" hidden
+      cr number "blur" hidden
+      cr number "x" hidden
+      cr number "y" hidden
+      cr function "Draw Dot" hidden
+  folder "scripting" hidden
+    cr function "Open Script..." hidden
+    folder "script params" hidden
+  folder "test" hidden
+    cr function "Render Files Comparison..." hidden
+gui in "symmetry" shown
+  cr string "group type"
+  folder "group params"
+    cr string "group type"
+    cr string "domain shape"
+    cr number.has-slider "a"
+    cr number.has-slider "b"
+    cr number.has-slider "c"
+    cr number.has-slider "angle a (deg)"
+    cr number.has-slider "angle b (deg)"
+  cr param-ui-row.number "transform"
+  cr number.has-slider "translate X" hidden
+  cr number.has-slider "translate Y" hidden
+  cr number.has-slider "rotation" hidden
+  cr number.has-slider "scale" hidden
+  folder "dirichlet domain"
+    cr param-ui-row.boolean "useautoedit"
+    cr boolean "use" hidden
+    cr boolean "auto" hidden
+    cr boolean "edit" hidden
+    cr param-ui-row.number "base"
+    cr number.has-slider "base X" hidden
+    cr number.has-slider "base Y" hidden
+    cr param-menu-row.param-menu-status "off"
+    cr param-list-row "" hidden
+    cr param-ui-row.boolean "pointsplanessideslabels"
+    cr boolean "points" hidden
+    cr boolean "planes" hidden
+    cr boolean "sides" hidden
+    cr boolean "labels" hidden
+    folder "options"
+      cr string "sides"
+      cr number.has-slider "search time"
+      cr number.has-slider "depth"
+      cr number.has-slider "min scale"
+      cr number.has-slider "fold iterations"
+  folder "symmetry options"
+    cr number.has-slider "iterations"
+gui in "visualization" shown

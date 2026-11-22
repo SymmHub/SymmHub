@@ -5,6 +5,7 @@
 
 export {
     SymRenderer,
+    WorkspaceUI,
     VisualizationManager,
     VisualizationColorSym,
     VisualizationColorTiles,

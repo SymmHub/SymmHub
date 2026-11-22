@@ -1,0 +1,299 @@
+# ui census /apps/sympix/sympix_wp.html viewport 1280x800
+## windows
+window "samples" region shown closable
+  rect 1,500 600x160
+window "settings" region shown closable
+  rect 940,10 320x520
+window "toolbox" region shown
+  rect 1,1 442x63
+window "visualization" region shown
+  rect 1,1 960x600
+## toolbox
+button "settings" btn_settings.svg pressed
+button "windows: shown, hidden, brought to the top" btn_windows.svg
+button "recording" btn_record_start.svg
+button "export image" btn_download.svg
+button "full screen" btn_full_screen.svg
+separator
+button "move" btn_move2.svg pressed
+button "symmetry: the group's handles, the group transfo…"#e3d970 btn_symmetry.svg
+button "pattern transform" btn_pattern_transform.svg
+button "draw" btn_draw.svg
+button "pick" btn_pick.svg
+## palette
+none
+## menus
+menu "windows: shown, hidden, brought to the top"
+  item "Samples" checked
+  item "Files"
+## tools
+tool "move"
+  cursor cur_move3.svg 15 15, move
+  on "move"
+  bar: none
+tool "symmetry: the group's handles, the group transfo…"#e3d970
+  cursor default
+  on "symmetry: the group's handles, the group transfo…"#e3d970
+  bar: none
+tool "pattern transform"
+  cursor cur_move3.svg 15 15, move
+  on "pattern transform"
+  bar: none
+tool "draw"
+  cursor cur_draw2.svg 1 31, pointer
+  on "draw"
+  bar: none
+tool "pick"
+  cursor cur_pick2.svg 1 31, crosshair
+  on "pick"
+  bar: none
+## settings
+gui in "settings" shown
+  folder "files"
+    cr function "Global Options..."
+    cr function "Samples..."
+    cr function "Files..."
+    cr function "Save"
+    cr function "Save New..."
+    cr function "Save As..."
+    cr function "Export Image..."
+  folder "display"
+    cr string "canvasSize"
+    cr number.has-slider "custom width"
+    cr number.has-slider "custom height"
+    cr number.has-slider "size multiplier"
+    cr color "background"
+    cr function "show timing..."
+    cr boolean "Checker"
+    cr boolean "Grid"
+    cr boolean "Ruler"
+  folder "recording"
+    cr number "animTime"
+    cr number "animSpeed"
+    cr number.has-slider "start Frame"
+    cr number.has-slider "End Frame"
+    cr number.has-slider "frame"
+    cr function "Start Recording"
+  folder "pattern"
+    folder "pattern params"
+      cr string "id"
+      cr number "transparency"
+      cr boolean "useCrown"
+      folder "transform"
+        cr number "centerX"
+        cr number "centerY"
+        cr number "scale"
+        cr number "angle"
+        cr boolean "flipX"
+        cr boolean "flipY"
+      folder "texture"
+        cr string "name"
+        cr function "Browse…"
+        cr param-image-row "haeckel #"
+        cr boolean "frame"
+        cr string "interpolation"
+        cr number.has-slider "size"
+      folder "adjust"
+        cr boolean "negative"
+        cr boolean "useOKLCH"
+        cr number.has-slider "hueShift"
+        cr number.has-slider "satMult"
+        cr number.has-slider "lightOffset"
+        cr number.has-slider "contrastMult"
+    folder "pattern transform"
+      cr number.has-slider "center X"
+      cr number.has-slider "center Y"
+      cr number.has-slider "scale"
+      cr number.has-slider "angle(deg)"
+      cr number "pivot X"
+      cr number "pivot Y"
+      cr number.has-slider "bend X"
+      cr number.has-slider "bend Y"
+      cr boolean "in geometry"
+  folder "visualization"
+    folder "visualization layers+"
+      folder "image"
+        cr string.gui-row-in-title "id" hidden
+        cr boolean.gui-row-in-title "enabled" hidden
+        cr boolean "symmetry"
+        cr number.has-slider "opacity"
+        cr string.param-image-list-row "images"
+        cr string "frame"
+        cr string "dataSource"
+        folder "rendering"
+          cr param-ui-row.boolean "crowndepth sort"
+          cr boolean "crown" hidden
+          cr boolean "depth sort" hidden
+          cr number.has-slider "tilt angle°"
+          cr param-ui-row.string "interp"
+          cr string "interpolation" hidden
+          cr boolean "mipmap" hidden
+      folder "overlay"
+        cr string.gui-row-in-title "id" hidden
+        cr boolean.gui-row-in-title "enabled" hidden
+        cr number.has-slider "opacity"
+        folder "overlays+"
+          folder "tiling"
+            cr string.gui-row-in-title "id" hidden
+            cr boolean.gui-row-in-title "enabled" hidden
+            cr number.has-slider "opacity"
+            cr number "width"
+            cr color "color"
+            folder "symmetry"
+              cr string "type"
+              cr number.has-slider "maxIndex"
+              cr string "index"
+              cr string "subgroup"
+              cr string "cosets"
+              cr number.has-slider "iterations"
+          folder "fundDomain"
+            cr string.gui-row-in-title "id" hidden
+            cr boolean.gui-row-in-title "enabled" hidden
+            cr number.has-slider "opacity"
+            folder "fill"
+              cr boolean "enabled"
+              cr color "color"
+            folder "outline"
+              cr boolean "enabled"
+              cr number "width"
+              cr color "color"
+              cr number "shadowsWidth"
+              cr color "shadowsColor"
+            folder "walls"
+              cr boolean "enabled"
+              cr number "width"
+              cr color "color"
+            folder "symmetry"
+              cr string "type"
+              cr number.has-slider "maxIndex"
+              cr string "index"
+              cr string "subgroup"
+              cr string "cosets"
+              cr number.has-slider "iterations"
+          folder "generators"
+            cr string.gui-row-in-title "id" hidden
+            cr boolean.gui-row-in-title "enabled" hidden
+            cr number.has-slider "opacity"
+            cr boolean "sides"
+            cr number "width"
+            cr color "color"
+            folder "shadow"
+              cr boolean "enabled"
+              cr color "color"
+              cr number "width"
+            folder "elements"
+              cr boolean "enabled"
+              cr number.has-slider "width"
+              folder "cone points"
+                cr boolean "enabled"
+                cr number.has-slider "size"
+                cr color "order #"
+                cr color "order #"
+                cr color "order #"
+                cr color "order #"
+                cr color "other orders"
+                cr color "outline"
+              folder "mirrors"
+                cr boolean "enabled"
+                cr color "color"
+              folder "glides"
+                cr boolean "enabled"
+                cr color "color"
+                cr number.has-slider "dash"
+              folder "translations"
+                cr boolean "enabled"
+                cr color "color"
+            folder "symmetry"
+              cr string "type"
+              cr number.has-slider "maxIndex"
+              cr string "index"
+              cr string "subgroup"
+              cr string "cosets"
+              cr number.has-slider "iterations"
+  folder "symmetry"
+    cr param-ui-row.boolean "handles"
+    cr boolean "group" hidden
+    cr boolean "transform" hidden
+    cr string "group type"
+    folder "group params"
+      cr string "group type"
+      cr string "domain shape"
+      cr number.has-slider "a"
+      cr number.has-slider "b"
+      cr number.has-slider "c"
+      cr number.has-slider "angle a (deg)"
+      cr number.has-slider "angle b (deg)"
+    cr param-ui-row.number "transform"
+    cr number.has-slider "translate X" hidden
+    cr number.has-slider "translate Y" hidden
+    cr number.has-slider "rotation" hidden
+    cr number.has-slider "scale" hidden
+    folder "dirichlet domain"
+      cr param-ui-row.boolean "useautoedit"
+      cr boolean "use" hidden
+      cr boolean "auto" hidden
+      cr boolean "edit" hidden
+      cr param-ui-row.number "base"
+      cr number.has-slider "base X" hidden
+      cr number.has-slider "base Y" hidden
+      cr param-menu-row.param-menu-status "off"
+      cr param-list-row "" hidden
+      cr param-ui-row.boolean "pointsplanessideslabels"
+      cr boolean "points" hidden
+      cr boolean "planes" hidden
+      cr boolean "sides" hidden
+      cr boolean "labels" hidden
+      folder "options"
+        cr string "sides"
+        cr number.has-slider "search time"
+        cr number.has-slider "depth"
+        cr number.has-slider "min scale"
+        cr number.has-slider "fold iterations"
+    folder "symmetry options"
+      cr number.has-slider "iterations"
+  folder "tools"
+    cr string "tool"
+    folder "move"
+      cr string "mode"
+      folder "transforms"
+        cr boolean "enabled"
+        folder "list+"
+      folder "inversive"
+        cr boolean "enabled"
+        cr string "inv trans"
+        cr function "reset"
+        cr boolean "pole placed"
+        cr number "pole x"
+        cr number "pole y"
+      folder "spherical"
+        cr boolean "enabled"
+        cr function "reset"
+      folder "euclidean"
+        cr function "reset"
+        cr number "x-center"
+        cr number "y-center"
+        cr number "zoom"
+        cr number "angle°"
+      folder "options"
+        cr boolean "animation"
+        cr boolean "infinite pan"
+      folder "document view"
+        cr function "home (document view)"
+        cr function "back (the view before home, ` key)"
+        cr function "set from the view"
+    folder "draw"
+      cr boolean "symmetry"
+      cr number "R"
+      cr number "G"
+      cr number "B"
+      cr number "A"
+      cr number "radius"
+      cr number "blur"
+      cr number "x"
+      cr number "y"
+      cr function "Draw Dot"
+  folder "scripting"
+    cr function "Open Script..."
+    folder "script params"
+  folder "test"
+    cr function "Render Files Comparison..."

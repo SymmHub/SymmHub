@@ -6,6 +6,7 @@ import {
     VisualizationImage,
     VisualizationOverlay,
     SymRenderer,
+    ClassicUI,
     makeSamplesArray,
     PatternImageArrayCreator,
     SympixLayerFactory,
@@ -29,6 +30,7 @@ const visManager = VisualizationManager({
 });
 
 const app = SymRenderer({
+      ui:                ClassicUI,
       patternCreator:    PatternImageArrayCreator,
       visualization:    visManager, 
       groupMakerFactory: GroupMakerFactory({defaultName:'Wallpaper'}),

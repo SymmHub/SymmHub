@@ -1,5 +1,6 @@
 import {
     SymRenderer,
+    WorkspaceUI,
     VisualizationManager,
     VisualizationColorSym,
     VisualizationColorTiles,
@@ -59,15 +60,20 @@ function startSymdraw(opt = {}) {
         samples:           makeSamplesArray(opt.presets || '', opt.presetsFolder || ''),
         docFolderId:       'symdraw_doc_folder',
         params:            (hash.preset || hash.params) ? undefined : START_PARAMS,
-        // the drawing tools in a palette, their settings in a property bar;
-        // of the renderer's own tools the orientation, the pattern box and the symmetry
-        toolPalette:       { tools: ['move', 'patternTransform', 'symmetry'], startTool: 'pattern.select' },
-        // the visualization layers in a window of their own, not in the settings
-        visualizationWindow: true,
-        // the symmetry too, the Symmetry tool's panel
-        symmetryWindow:    true,
-        // and the conformal transformations: a list with the selected one's settings
-        transformsWindow:  true,
+        // the drawing workspace: the drawing tools in a palette, their settings in a
+        // property bar
+        ui:                WorkspaceUI,
+        uiOptions: {
+            // of the renderer's own tools the orientation, the pattern box and the symmetry
+            tools:               ['move', 'patternTransform', 'symmetry'],
+            startTool:           'pattern.select',
+            // the visualization layers in a window of their own, not in the settings
+            visualizationWindow: true,
+            // the symmetry too, the Symmetry tool's panel
+            symmetryWindow:      true,
+            // and the conformal transformations: a list with the selected one's settings
+            transformsWindow:    true,
+        },
         // a script loaded at startup, e.g. the catalog batch driver
         ...(opt.scriptUrl ? { scriptUrl: opt.scriptUrl } : {}),
     });

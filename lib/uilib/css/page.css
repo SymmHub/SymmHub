@@ -1,0 +1,24 @@
+/*
+ * page.css: the page around an app, imported by the apps' main.css after
+ * uilib.css. It was the main-style.css each app kept a copy of (until
+ * 2026-11-21); the canvas stack is now positioned by the code that makes it.
+ * The rules no page used were dropped: #container, #buttons, button.uibutton,
+ * a and img.thumbnail (the thumbnail pages have their own thumbnails.css).
+ */
+
+/* every box measures its border and padding inside its size */
+html {
+    box-sizing: border-box;
+}
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
+html, body {
+    overflow: hidden;
+    background-color: var(--page-background-color, #FFF);
+}
+
+body {
+    margin: 0;
+}

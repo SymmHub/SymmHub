@@ -7,6 +7,7 @@ export {
     EventDispatcher, 
     InversiveNavigator,
     SymRenderer, 
+    ClassicUI,
     createDoubleFBO, 
     buildProgramsCached,
     programBuilder,

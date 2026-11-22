@@ -4,6 +4,7 @@ import {
     EventDispatcher,
     InversiveNavigator,
     SymRenderer,
+    ClassicUI,
     createDoubleFBO, 
     makeBufferRenderer, 
     makeSamplesArray,
@@ -105,6 +106,7 @@ const SymmHubApp = options =>
     getClassName: () => `${options.name}`,
   }
   const app = SymRenderer({
+      ui: ClassicUI,
       patternCreator,
       groupMakerFactory: options.groupMakerFactory,
       navigator: options.navigator,

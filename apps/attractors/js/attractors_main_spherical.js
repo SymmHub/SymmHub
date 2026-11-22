@@ -7,6 +7,7 @@ import {
     ImageLayerFactory,
     ImageLayerUpgradeMapping,
     SymRenderer,
+    ClassicUI,
     makeSamplesArray,
     IteratedAttractorCreator,
     GroupMakerFactory,
@@ -26,6 +27,7 @@ const visManager = VisualizationManager({
 });
 
 const app = SymRenderer({
+      ui:             ClassicUI,
       patternCreator: IteratedAttractorCreator,
       visualization: visManager, 
       groupMakerFactory: GroupMakerFactory({defaultName: 'Spherical'}), 

@@ -19,6 +19,7 @@ import {
     VisualizationColorTiles,
     VisualizationImage,
     SymRenderer,
+    ClassicUI,
     makeSamplesArray,
     PatternImageArrayCreator,
 } from "./modules.js";
@@ -44,6 +45,7 @@ const visManager = VisualizationManager({
 });
 
 const app = SymRenderer({
+    ui:                ClassicUI,
     patternCreator:    PatternImageArrayCreator,
     visualization:    visManager,
     groupMakerFactory: GroupMakerFactory({defaultName:'Wallpaper'}),

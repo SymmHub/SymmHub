@@ -1,6 +1,6 @@
 //
-//  OrbifoldMenu.js - the settings panel of sympix_orbifold (SymRenderer's option
-//  menuBuilder), forked from the shared layout (uilib createParamUI) so that this
+//  OrbifoldMenu.js - the settings panel of sympix_orbifold (the UI builder's
+//  option menuBuilder), forked from the shared layout (uilib createParamUI) so that this
 //  page's menu can be reorganized without touching the other sympix pages.
 //
 //  Only the layout: every Param comes from SymRenderer.getParams(), the same objects

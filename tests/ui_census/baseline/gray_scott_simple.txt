@@ -1,0 +1,395 @@
+# ui census /apps/symsim/gray_scott/symsim_gray_scott_simple.html viewport 1280x800
+## windows
+window "Gray-Scott parameters" region hidden
+  rect 13,0 640x160
+window "settings" region hidden
+  rect 940,10 320x520
+window "simulation data" region hidden
+  rect 13,0 640x160
+## toolbox
+button "settings" btn_settings.svg
+button "windows: shown, hidden, brought to the top" btn_windows.svg
+button "Run" btn_play.svg
+button "Restart" btn_restart.svg
+button "initialize" btn_initialize.svg
+button "recording" btn_record_start.svg
+button "export image" btn_download.svg
+button "full screen" btn_full_screen.svg
+separator
+button "move" btn_move2.svg pressed
+button "symmetry: the group's handles, the group transfo…"#e3d970 btn_symmetry.svg
+button "pattern transform" btn_pattern_transform.svg
+button "draw" btn_draw.svg
+button "pick" btn_pick.svg
+## palette
+none
+## menus
+menu "windows: shown, hidden, brought to the top"
+  item "Samples"
+  item "Files"
+  separator
+  item "Gray-Scott parameters"
+  item "simulation data"
+## tools
+tool "move"
+  cursor cur_move3.svg 15 15, move
+  on "move"
+  bar: none
+tool "symmetry: the group's handles, the group transfo…"#e3d970
+  cursor default
+  on "symmetry: the group's handles, the group transfo…"#e3d970
+  bar: none
+tool "pattern transform"
+  cursor cur_move3.svg 15 15, move
+  on "pattern transform"
+  bar: none
+tool "draw"
+  cursor cur_draw2.svg 1 31, pointer
+  on "draw"
+  bar: none
+tool "pick"
+  cursor cur_pick2.svg 1 31, crosshair
+  on "pick"
+  bar: none
+## settings
+gui in "settings" hidden
+  folder "files" hidden
+    cr function "Global Options..." hidden
+    cr function "Samples..." hidden
+    cr function "Files..." hidden
+    cr function "Save" hidden
+    cr function "Save New..." hidden
+    cr function "Save As..." hidden
+    cr function "Export Image..." hidden
+  folder "display" hidden
+    cr string "canvasSize" hidden
+    cr number.has-slider "custom width" hidden
+    cr number.has-slider "custom height" hidden
+    cr number.has-slider "size multiplier" hidden
+    cr color "background" hidden
+    cr function "show timing..." hidden
+    cr boolean "Checker" hidden
+    cr boolean "Grid" hidden
+    cr boolean "Ruler" hidden
+  folder "recording" hidden
+    cr number "animTime" hidden
+    cr number "animSpeed" hidden
+    cr number.has-slider "start Frame" hidden
+    cr number.has-slider "End Frame" hidden
+    cr number.has-slider "frame" hidden
+    cr function "Start Recording" hidden
+  folder "pattern" hidden
+    folder "pattern params" hidden
+      folder "pipeline" hidden
+        cr boolean "enabled" hidden
+        cr function "Initialize" hidden
+        cr function "Single step" hidden
+        cr number.has-slider "stepsPerFrame" hidden
+        folder "workers+" hidden
+          folder "GS initialization" hidden
+            cr string "init type" hidden
+            cr number.has-slider "Feed" hidden
+            cr number.has-slider "Kill" hidden
+            folder "noise params" hidden
+              cr number.has-slider "noise cell" hidden
+              cr number.has-slider "noise factor" hidden
+              cr number.has-slider "line thickness" hidden
+              cr number.has-slider "noise x" hidden
+              cr number.has-slider "noise y" hidden
+              cr number.has-slider "cap size x" hidden
+              cr number.has-slider "cap size y" hidden
+              cr number.has-slider "cap center x" hidden
+              cr number.has-slider "cap center y" hidden
+              cr number.has-slider "crown count" hidden
+          folder "GS simulation" hidden
+            cr boolean.gui-row-in-title "enabled" hidden
+            cr string "preset" hidden
+            folder "presets" hidden
+              cr function "show plot" hidden
+              cr number.has-slider "plotType" hidden
+              folder "viewport" hidden
+                cr number "xmin" hidden
+                cr number "xmax" hidden
+                cr number "ymin" hidden
+                cr number "ymax" hidden
+              folder "viewbox" hidden
+                cr number "plot width" hidden
+                cr number "plot height" hidden
+                cr number "plot left" hidden
+                cr number "plot bottom" hidden
+                cr number "center X" hidden
+                cr number "center Y" hidden
+                cr number "zoom" hidden
+            cr number.has-slider "Feed" hidden
+            cr number.has-slider "Kill" hidden
+            cr number "feed grad" hidden
+            cr number "kill grad" hidden
+            cr number.has-slider "steps/frame" hidden
+            cr number "time step" hidden
+            cr number "DiffR" hidden
+            cr number "DiffG" hidden
+            cr boolean "use H-metric" hidden
+            cr number "H-scale" hidden
+            cr boolean "Laplacian #" hidden
+          folder "Symmetrization" hidden
+            cr boolean.gui-row-in-title "enabled" hidden
+            cr number.has-slider "iterations" hidden
+            cr number "symMix" hidden
+    folder "pattern transform" hidden
+      cr number.has-slider "center X" hidden
+      cr number.has-slider "center Y" hidden
+      cr number.has-slider "scale" hidden
+      cr number.has-slider "angle(deg)" hidden
+      cr number "pivot X" hidden
+      cr number "pivot Y" hidden
+      cr number.has-slider "bend X" hidden
+      cr number.has-slider "bend Y" hidden
+      cr boolean "in geometry" hidden
+  folder "visualization" hidden
+    folder "visualization layers+" hidden
+      folder "colormap" hidden
+        cr string.gui-row-in-title "id" hidden
+        cr boolean.gui-row-in-title "enabled" hidden
+        cr boolean "symmetry" hidden
+        cr number.has-slider "opacity" hidden
+        cr string "dataSource" hidden
+        cr string "colormap" hidden
+        cr function "edit colormap..." hidden
+        cr number.has-slider "minValue" hidden
+        cr number.has-slider "maxValue" hidden
+        cr number.has-slider "cmBanding" hidden
+        cr string "cmWrap" hidden
+        cr boolean "useMipmap" hidden
+        cr string "interpolation" hidden
+      folder "colormap2" hidden
+        cr string.gui-row-in-title "id" hidden
+        cr boolean.gui-row-in-title "enabled" hidden
+        cr boolean "symmetry" hidden
+        cr number.has-slider "opacity" hidden
+        cr string "dataSource" hidden
+        cr string "colormap" hidden
+        cr function "edit colormap..." hidden
+        cr number.has-slider "minValue" hidden
+        cr number.has-slider "maxValue" hidden
+        cr number.has-slider "cmBanding" hidden
+        cr string "cmWrap" hidden
+        cr boolean "useMipmap" hidden
+        cr string "interpolation" hidden
+      folder "texmap" hidden
+        cr string.gui-row-in-title "id" hidden
+        cr boolean.gui-row-in-title "enabled" hidden
+        cr boolean "symmetry" hidden
+        cr number "opacity" hidden
+        cr number "minValue" hidden
+        cr number "maxValue" hidden
+        cr boolean "useMipmap" hidden
+        folder "texture" hidden
+          cr string "name" hidden
+          cr function "Browse…" hidden
+          cr param-image-row "maroon arrow" hidden
+          cr boolean "frame" hidden
+          cr string "interpolation" hidden
+          cr number.has-slider "size" hidden
+        folder "transform" hidden
+          cr number.has-slider "scale" hidden
+          cr number.has-slider "angle" hidden
+          cr number.has-slider "texCenterX" hidden
+          cr number.has-slider "texCenterY" hidden
+          cr number.has-slider "uvOriginX" hidden
+          cr number.has-slider "uvOriginY" hidden
+      folder "bumpmap" hidden
+        cr string.gui-row-in-title "id" hidden
+        cr boolean.gui-row-in-title "enabled" hidden
+        cr boolean "symmetry" hidden
+        cr number.has-slider "opacity" hidden
+        cr number "bumpHeight" hidden
+        cr number.has-slider "minValue" hidden
+        cr number.has-slider "maxValue" hidden
+        cr number.has-slider "bumpSmooth" hidden
+        cr boolean "useMipmap" hidden
+      folder "overlay" hidden
+        cr string.gui-row-in-title "id" hidden
+        cr boolean.gui-row-in-title "enabled" hidden
+        cr number.has-slider "opacity" hidden
+        folder "overlays+" hidden
+          folder "tiling" hidden
+            cr string.gui-row-in-title "id" hidden
+            cr boolean.gui-row-in-title "enabled" hidden
+            cr number.has-slider "opacity" hidden
+            cr number "width" hidden
+            cr color "color" hidden
+            folder "symmetry" hidden
+              cr string "type" hidden
+              cr number.has-slider "maxIndex" hidden
+              cr string "index" hidden
+              cr string "subgroup" hidden
+              cr string "cosets" hidden
+              cr number.has-slider "iterations" hidden
+          folder "fundDomain" hidden
+            cr string.gui-row-in-title "id" hidden
+            cr boolean.gui-row-in-title "enabled" hidden
+            cr number.has-slider "opacity" hidden
+            folder "fill" hidden
+              cr boolean "enabled" hidden
+              cr color "color" hidden
+            folder "outline" hidden
+              cr boolean "enabled" hidden
+              cr number "width" hidden
+              cr color "color" hidden
+              cr number "shadowsWidth" hidden
+              cr color "shadowsColor" hidden
+            folder "walls" hidden
+              cr boolean "enabled" hidden
+              cr number "width" hidden
+              cr color "color" hidden
+            folder "symmetry" hidden
+              cr string "type" hidden
+              cr number.has-slider "maxIndex" hidden
+              cr string "index" hidden
+              cr string "subgroup" hidden
+              cr string "cosets" hidden
+              cr number.has-slider "iterations" hidden
+          folder "generators" hidden
+            cr string.gui-row-in-title "id" hidden
+            cr boolean.gui-row-in-title "enabled" hidden
+            cr number.has-slider "opacity" hidden
+            cr boolean "sides" hidden
+            cr number "width" hidden
+            cr color "color" hidden
+            folder "shadow" hidden
+              cr boolean "enabled" hidden
+              cr color "color" hidden
+              cr number "width" hidden
+            folder "elements" hidden
+              cr boolean "enabled" hidden
+              cr number.has-slider "width" hidden
+              folder "cone points" hidden
+                cr boolean "enabled" hidden
+                cr number.has-slider "size" hidden
+                cr color "order #" hidden
+                cr color "order #" hidden
+                cr color "order #" hidden
+                cr color "order #" hidden
+                cr color "other orders" hidden
+                cr color "outline" hidden
+              folder "mirrors" hidden
+                cr boolean "enabled" hidden
+                cr color "color" hidden
+              folder "glides" hidden
+                cr boolean "enabled" hidden
+                cr color "color" hidden
+                cr number.has-slider "dash" hidden
+              folder "translations" hidden
+                cr boolean "enabled" hidden
+                cr color "color" hidden
+            folder "symmetry" hidden
+              cr string "type" hidden
+              cr number.has-slider "maxIndex" hidden
+              cr string "index" hidden
+              cr string "subgroup" hidden
+              cr string "cosets" hidden
+              cr number.has-slider "iterations" hidden
+  folder "misc" hidden
+    folder "plot" hidden
+      cr function "show plot" hidden
+      cr number.has-slider "plotType" hidden
+      folder "viewport" hidden
+        cr number "xmin" hidden
+        cr number "xmax" hidden
+        cr number "ymin" hidden
+        cr number "ymax" hidden
+      folder "viewbox" hidden
+        cr number "plot width" hidden
+        cr number "plot height" hidden
+        cr number "plot left" hidden
+        cr number "plot bottom" hidden
+        cr number "center X" hidden
+        cr number "center Y" hidden
+        cr number "zoom" hidden
+  folder "symmetry" hidden
+    cr param-ui-row.boolean "handles" hidden
+    cr boolean "group" hidden
+    cr boolean "transform" hidden
+    cr string "group type" hidden
+    folder "group params" hidden
+      cr string "group type" hidden
+      cr string "domain shape" hidden
+      cr number.has-slider "a" hidden
+      cr number.has-slider "b" hidden
+      cr number.has-slider "c" hidden
+      cr number.has-slider "angle a (deg)" hidden
+      cr number.has-slider "angle b (deg)" hidden
+    cr param-ui-row.number "transform" hidden
+    cr number.has-slider "translate X" hidden
+    cr number.has-slider "translate Y" hidden
+    cr number.has-slider "rotation" hidden
+    cr number.has-slider "scale" hidden
+    folder "dirichlet domain" hidden
+      cr param-ui-row.boolean "useautoedit" hidden
+      cr boolean "use" hidden
+      cr boolean "auto" hidden
+      cr boolean "edit" hidden
+      cr param-ui-row.number "base" hidden
+      cr number.has-slider "base X" hidden
+      cr number.has-slider "base Y" hidden
+      cr param-menu-row.param-menu-status "off" hidden
+      cr param-list-row "" hidden
+      cr param-ui-row.boolean "pointsplanessideslabels" hidden
+      cr boolean "points" hidden
+      cr boolean "planes" hidden
+      cr boolean "sides" hidden
+      cr boolean "labels" hidden
+      folder "options" hidden
+        cr string "sides" hidden
+        cr number.has-slider "search time" hidden
+        cr number.has-slider "depth" hidden
+        cr number.has-slider "min scale" hidden
+        cr number.has-slider "fold iterations" hidden
+    folder "symmetry options" hidden
+      cr number.has-slider "iterations" hidden
+  folder "tools" hidden
+    cr string "tool" hidden
+    folder "move" hidden
+      cr string "mode" hidden
+      folder "transforms" hidden
+        cr boolean "enabled" hidden
+        folder "list+" hidden
+      folder "inversive" hidden
+        cr boolean "enabled" hidden
+        cr string "inv trans" hidden
+        cr function "reset" hidden
+        cr boolean "pole placed" hidden
+        cr number "pole x" hidden
+        cr number "pole y" hidden
+      folder "spherical" hidden
+        cr boolean "enabled" hidden
+        cr function "reset" hidden
+      folder "euclidean" hidden
+        cr function "reset" hidden
+        cr number "x-center" hidden
+        cr number "y-center" hidden
+        cr number "zoom" hidden
+        cr number "angle°" hidden
+      folder "options" hidden
+        cr boolean "animation" hidden
+        cr boolean "infinite pan" hidden
+      folder "document view" hidden
+        cr function "home (document view)" hidden
+        cr function "back (the view before home, ` key)" hidden
+        cr function "set from the view" hidden
+    folder "draw" hidden
+      cr boolean "symmetry" hidden
+      cr number "R" hidden
+      cr number "G" hidden
+      cr number "B" hidden
+      cr number "A" hidden
+      cr number "radius" hidden
+      cr number "blur" hidden
+      cr number "x" hidden
+      cr number "y" hidden
+      cr function "Draw Dot" hidden
+  folder "scripting" hidden
+    cr function "Open Script..." hidden
+    folder "script params" hidden
+  folder "test" hidden
+    cr function "Render Files Comparison..." hidden

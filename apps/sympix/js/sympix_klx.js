@@ -6,6 +6,7 @@ import {
     VisualizationImage,
     VisualizationOverlay,
     SymRenderer,
+    ClassicUI,
     makeSamplesArray,
     PatternImageCreator,
     SympixLayerFactory,
@@ -29,6 +30,7 @@ const visManager = VisualizationManager({
 });
 
 const app = SymRenderer({
+      ui:                   ClassicUI,
       patternCreator:       PatternImageCreator,
       visualization:    visManager, 
       groupMakerFactory: GroupMakerFactory({defaultName:'KLx'}),

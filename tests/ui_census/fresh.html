@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ui census: storage</title>
+</head>
+<body>
+<p id="msg"></p>
+<script>
+//
+//  fresh.html?next=<path>  keeps this origin's localStorage in sessionStorage
+//                          (only the first time, so the kept state is the
+//                          user's), clears it and opens <path>: the page
+//                          starts from its defaults (ui_census.js)
+//  fresh.html?restore=1    puts the kept localStorage back
+//
+//  The page that is left has already unloaded here, so nothing it saves on
+//  the way out lands after the clearing.
+//
+const KEPT = 'uiCensus.keptLocalStorage';
+const args = new URLSearchParams(location.search);
+const msg = (t) => { document.getElementById('msg').textContent = t; };
+
+function snapshot() {
+    const o = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        o[k] = localStorage.getItem(k);
+    }
+    return o;
+}
+
+if (args.get('restore')) {
+    const kept = sessionStorage.getItem(KEPT);
+    if (kept) {
+        const o = JSON.parse(kept);
+        localStorage.clear();
+        for (const [k, v] of Object.entries(o)) localStorage.setItem(k, v);
+        sessionStorage.removeItem(KEPT);
+        msg(`restored ${Object.keys(o).length} localStorage entries`);
+    } else {
+        msg('nothing kept');
+    }
+} else {
+    if (!sessionStorage.getItem(KEPT)) sessionStorage.setItem(KEPT, JSON.stringify(snapshot()));
+    localStorage.clear();
+    const next = args.get('next');
+    if (next) location.replace(next);
+    else msg('localStorage cleared');
+}
+</script>
+</body>
+</html>

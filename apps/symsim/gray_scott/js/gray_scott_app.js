@@ -12,6 +12,10 @@
 
 import {
     SymRenderer,
+    ClassicUI,
+    SimpleUI,
+    pickUI,
+    DataPlotPanel,
     makeSamplesArray,
     InversiveNavigator,
     GroupMakerFactory,
@@ -74,6 +78,10 @@ export function runGrayScott({ presets, presetsPath, groupName, gridSize = 512, 
         });
 
         const ss = SymRenderer({
+            // the classic UI, or ?ui=simple: the picture with the toolbox over it
+            ui:                pickUI({ classic: ClassicUI, simple: SimpleUI }, 'classic'),
+            // the plot of a row of the simulation's buffer
+            uiOptions:         { panels: [DataPlotPanel] },
             patternCreator:    creator,
             samples:           makeSamplesArray(presets, presetsPath),
             groupMakerFactory: GroupMakerFactory({ defaultName: groupName }),
