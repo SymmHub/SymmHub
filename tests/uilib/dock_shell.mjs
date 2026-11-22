@@ -181,12 +181,20 @@ check(wStyle.isVisible() === true, '1: secondary split tab reports visible');
 check(wSym.isVisible() === false, '1: inactive tab reports not visible');
 check(shell.isDrawerOpen() === true, '1: samples drawer starts open');
 
-// 2. Switching primary tab + swapping with split tab
+// 2. Switching primary tab + swapping with split tab + open:false respects collapsed dock
 shell.activateTab('symmetry');
 check(shell.getState().activeTab === 'symmetry', '2: activateTab switches to symmetry');
 check(wSym.isVisible() === true && wLayers.isVisible() === false, '2: symmetry visible, layers hidden');
 shell.activateTab('style');
 check(shell.getState().activeTab === 'style' && shell.getState().splitTab === 'symmetry', '2: activating splitTab swaps upper/lower panes');
+
+shell.setRightOpen(false);
+const resizesBeforeSilentTab = stageResizes;
+shell.activateTab('layers', { open: false });
+check(shell.isRightOpen() === false, '2: activateTab({ open: false }) keeps collapsed right dock closed');
+check(shell.getState().activeTab === 'layers', '2: activateTab({ open: false }) preselects requested tab');
+check(stageResizes === resizesBeforeSilentTab, '2: activateTab({ open: false }) does not fire onStageResize');
+shell.setRightOpen(true);
 
 // 3. Undock -> floating -> redock round-trip
 shell.undockPanel('style');
