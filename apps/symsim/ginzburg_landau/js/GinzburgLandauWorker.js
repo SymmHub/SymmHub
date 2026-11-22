@@ -59,10 +59,10 @@ function GinzburgLandauWorker(options = {}) {
 
     function makePresetsPlot() {
         return createDataPlot({
-            left:                '2%',
-            top:                 '2px',
-            width:               '40%',
-            height:              '40%',
+            left:                4,
+            bottom:              4,
+            width:               32,
+            height:              40,
             bounds:              Presets.getBounds(),
             plotType:            1,
             eventHandler:        makePresetsHandler(),
@@ -199,6 +199,7 @@ function GinzburgLandauWorker(options = {}) {
         getName:      () => 'GL simulation',
         getClassName: () => MYNAME,
         getParams,
+        getPresetsPlot: () => mPresetsPlot,
         process,
     };
 

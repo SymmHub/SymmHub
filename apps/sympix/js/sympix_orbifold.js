@@ -6,7 +6,8 @@ import {
     VisualizationImage,
     VisualizationOverlay,
     SymRenderer,
-    ClassicUI,
+    sympixUI,
+    sympixUIOptions,
     makeSamplesArray,
     PatternImageArrayCreator,
     SympixLayerFactory,
@@ -39,8 +40,8 @@ const app = SymRenderer({
       // the page opens on a pattern of two images in 2*34 rather than the bare defaults
       preset:            'presets/orbifold/basic_default.json',
       // the classic UI with the page's own layout of the settings panel (OrbifoldMenu.js)
-      ui:                ClassicUI,
-      uiOptions:         { menuBuilder: buildOrbifoldMenu },
+      ui:                sympixUI(),
+      uiOptions:         sympixUIOptions({ menuBuilder: buildOrbifoldMenu }),
 });
 
 app.run();

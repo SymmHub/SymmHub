@@ -8,8 +8,15 @@ import {
     WallPaperGroup_General,
     SymmetryUIController,
     InversiveNavigator,
+    initTheme,
+    getTheme,
+    cycleTheme,
+    onThemeChange,
+    themeLabel,
 }
 from './modules.js';
+
+initTheme();
 
 
 //import {
@@ -300,6 +307,61 @@ let myGroupRenderer = new GroupRenderer({
 
 
 myGroupRenderer.init();
+
+// Compact top-left navigation & theme pill + bottom-left collapsible Interaction HUD
+(function mountOrbifoldChrome() {
+    const nav = document.createElement('div');
+    nav.className = 'orbifold-nav-pill';
+    const homeLink = document.createElement('a');
+    homeLink.href = '../../index.html';
+    homeLink.textContent = '\u2190 SymmHub';
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = 'Orbifold';
+    const sep1 = document.createElement('span');
+    sep1.className = 'orbifold-nav-sep';
+    const sep2 = document.createElement('span');
+    sep2.className = 'orbifold-nav-sep';
+
+    const themeBtn = document.createElement('button');
+    themeBtn.type = 'button';
+    themeBtn.className = 'orbifold-nav-btn';
+    const syncTheme = (mode) => {
+        const info = themeLabel(mode);
+        themeBtn.textContent = `${info.icon} ${info.label}`;
+        themeBtn.title = info.title;
+    };
+    syncTheme(getTheme());
+    onThemeChange(syncTheme);
+    themeBtn.addEventListener('click', () => cycleTheme());
+
+    nav.append(homeLink, sep1, titleSpan, sep2, themeBtn);
+    document.body.appendChild(nav);
+
+    const hud = document.createElement('div');
+    hud.className = 'orbifold-hud';
+    const text = document.createElement('span');
+    text.className = 'orbifold-hud__text';
+    text.textContent = 'Hover red edges to highlight \u00B7 Drag to adjust length \u00B7 Shift+Wheel to twist \u00B7 Space to toggle domain';
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'orbifold-hud__toggle';
+    const HUD_KEY = 'orbifold_hud_collapsed';
+    let collapsed = false;
+    try { collapsed = localStorage.getItem(HUD_KEY) === 'true'; } catch (e) { /* ignore */ }
+    const syncHud = () => {
+        hud.classList.toggle('orbifold-hud--collapsed', collapsed);
+        toggle.textContent = collapsed ? '? Controls' : '\u00D7';
+        toggle.title = collapsed ? 'Show interaction controls hint' : 'Hide interaction hint';
+    };
+    toggle.addEventListener('click', () => {
+        collapsed = !collapsed;
+        try { localStorage.setItem(HUD_KEY, String(collapsed)); } catch (e) { /* ignore */ }
+        syncHud();
+    });
+    syncHud();
+    hud.append(text, toggle);
+    document.body.appendChild(hud);
+})();
 
 // debug access to the app internals from the browser console
 globalThis.ORBIFOLD_APP = {

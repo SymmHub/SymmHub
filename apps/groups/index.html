@@ -5,21 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Groups — subgroup enumeration</title>
 <meta name="description" content="playground for groups calculations">
+<script src="../../css/portal_theme.js"></script>
 <style>
   :root {
     --bg: #ffffff; --fg: #1a1a1a; --muted: #666; --line: #d8d8d8;
     --accent: #0b5fa5; --chip: #eef3f8; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
+  :root[data-theme="dark"] {
+    --bg: #11141a; --fg: #e6edf3; --muted: #8b949e; --line: #30363d;
+    --accent: #58a6ff; --chip: #222935;
+    color-scheme: dark;
+  }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #16181c; --fg: #e8e8e8; --muted: #9aa0a6; --line: #33373d;
-            --accent: #62a8e8; --chip: #22262c; }
+    :root[data-theme="system"] {
+      --bg: #11141a; --fg: #e6edf3; --muted: #8b949e; --line: #30363d;
+      --accent: #58a6ff; --chip: #222935;
+      color-scheme: dark;
+    }
   }
   * { box-sizing: border-box; }
   body { margin: 0; padding: 1.5rem; background: var(--bg); color: var(--fg);
          font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  .page-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 1rem; margin-bottom: .25rem; }
+  .page-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; margin-bottom: .25rem; }
+  .page-head__actions { display: inline-flex; align-items: center; gap: .75rem; }
   .crumb { font-size: .88rem; color: var(--accent); text-decoration: none; }
   .crumb:hover { text-decoration: underline; }
+  .sympix-link { display: inline-block; padding: .15rem .5rem; border-radius: 4px; font-size: .8rem; font-weight: 500;
+                 color: var(--accent); background: var(--chip); border: 1px solid var(--line);
+                 text-decoration: none; white-space: nowrap; }
+  .sympix-link:hover { border-color: var(--accent); text-decoration: none; }
   h1 { font-size: 1.35rem; margin: 0; }
   p.lede { color: var(--muted); margin: 0 0 1.25rem; max-width: 72ch; }
   fieldset { border: 1px solid var(--line); border-radius: 6px; padding: .9rem 1rem 1rem; margin: 0 0 1rem; }
@@ -57,7 +71,10 @@
 <body>
 <div class="page-head">
   <h1>Groups</h1>
-  <a class="crumb" href="../../index.html">← SymmHub</a>
+  <div class="page-head__actions">
+    <a class="crumb" href="../../index.html">← SymmHub</a>
+    <button type="button" class="ghost" data-theme-toggle aria-label="Switch color theme">☀ Light</button>
+  </div>
 </div>
 <p class="lede">Enumerates the conjugacy classes of subgroups of a finitely presented group and
 shows the permutations each generator induces on the cosets — the
@@ -99,7 +116,7 @@ shows the permutations each generator induces on the cosets — the
 <div id="status"></div>
 <div class="chips" id="chips"></div>
 <div class="tablewrap"><table>
-  <thead><tr><th>subgroup</th><th>index</th><th class="mono">generators</th><th class="mono">cosets</th><th class="mono">invcos</th></tr></thead>
+  <thead><tr><th>subgroup</th><th>index</th><th class="mono">generators</th><th class="mono">cosets</th><th class="mono">invcos</th><th>visualize</th></tr></thead>
   <tbody id="rows"></tbody>
 </table></div>
 <div class="note" id="note"></div>
@@ -142,6 +159,65 @@ function setStatus(text, isError = false) {
   $('status').classList.toggle('err', isError);
 }
 
+function buildSymPixUrl(presetKey, s) {
+  if (!presetKey || !s || !s.cosets) return null;
+  let symmetry = null;
+  if (presetKey.startsWith('wallpaper:')) {
+    const wpType = presetKey.slice('wallpaper:'.length);
+    symmetry = {
+      groupType: 'Wallpaper',
+      group: { className: 'Group_WP', params: { type: wpType } },
+      options: { useSymm: true, iterations: 40 },
+    };
+  } else if (presetKey.startsWith('klm:') || presetKey.startsWith('sklm:')) {
+    const isRef = presetKey.startsWith('sklm:');
+    const raw = presetKey.slice(presetKey.indexOf(':') + 1).replace(/^\*/, '');
+    if (raw.length === 3 && /^\d{3}$/.test(raw)) {
+      symmetry = {
+        groupType: 'KLM',
+        group: {
+          className: 'Group_KLM',
+          params: { s: isRef, K: Number(raw[0]), L: Number(raw[1]), M: Number(raw[2]), hasR: false },
+        },
+        options: { useSymm: true, iterations: 40 },
+      };
+    }
+  }
+  if (!symmetry) return null;
+  const payload = {
+    params: {
+      symmetry,
+      visualization: {
+        className: 'VisualizationManager',
+        params: {
+          layers: {
+            className: 'ObjArray',
+            params: {
+              id: 'layers',
+              children: [
+                {
+                  className: 'VisualizationColorTiles',
+                  params: {
+                    id: 'colorTiles',
+                    enabled: true,
+                    opacity: 0.9,
+                    permutations: s.cosets,
+                    colorTiles: {
+                      className: 'ColorTiles',
+                      params: { count: Math.max(2, s.index || 2) },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+  };
+  return `../sympix/sympix_color.html#${encodeURIComponent(JSON.stringify(payload))}`;
+}
+
 function render() {
   const chips = $('chips');
   chips.textContent = '';
@@ -155,6 +231,7 @@ function render() {
   const shown = data.subgroups.filter(s => filterIndex === null || s.index === filterIndex);
   const rows = $('rows');
   rows.textContent = '';
+  const activePresetKey = $('preset').value;
   for (const s of shown.slice(0, MAX_ROWS)) {
     const tr = document.createElement('tr');
     for (const [v, cls] of [[s.subgroup, ''], [s.index, ''], [s.generators || '—', 'mono-wrap copyable'],
@@ -171,6 +248,19 @@ function render() {
       }
       tr.appendChild(td);
     }
+    const vizTd = document.createElement('td');
+    const url = buildSymPixUrl(activePresetKey, s);
+    if (url) {
+      const a = document.createElement('a');
+      a.className = 'sympix-link';
+      a.href = url;
+      a.textContent = 'SymPix \u2192';
+      a.title = `Visualize subgroup ${s.subgroup} (index ${s.index}) in SymPix Color`;
+      vizTd.appendChild(a);
+    } else {
+      vizTd.textContent = '—';
+    }
+    tr.appendChild(vizTd);
     rows.appendChild(tr);
   }
   $('note').textContent = shown.length > MAX_ROWS

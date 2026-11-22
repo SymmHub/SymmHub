@@ -236,6 +236,7 @@ function GrayScottWorker(options = {}) {
         getName:      () => 'GS simulation',
         getClassName: () => MYNAME,
         getParams,
+        getPresetsPlot: () => mPresetsPlot,
         process,
     };
 

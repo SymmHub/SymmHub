@@ -12,6 +12,8 @@ export {
     getParam,
     getHashParams,
     ObjectFactory,
+    createParamUI,
+    createInternalWindow,
 } from '../../../lib/uilib/uilib.js';
 
 export {
@@ -41,10 +43,14 @@ export {
 
 
 export { 
+    DatGUI,
     EventDispatcher, 
     InversiveNavigator,
     SymRenderer, 
     ClassicUI,
+    StudioUI,
+    SimpleUI,
+    pickUI,
     VisualizationManager,
     VisualizationOverlay,
     VisualizationColormap,
@@ -135,3 +141,11 @@ export {
 export {
     PointShapes 
 } from './PointShapes.js';
+
+export {
+    createAttractorPanel,
+} from './AttractorPanel.js';
+
+export {
+    runAttractorApp,
+} from './attractors_app.js';

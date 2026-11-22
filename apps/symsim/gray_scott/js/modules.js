@@ -38,6 +38,7 @@ export {
 
 
 export {
+    DatGUI,
     Colormaps,
     EventDispatcher,
     createDataPlot,
@@ -50,6 +51,7 @@ export {
     PlaneNavigator,
     SymRenderer,
     ClassicUI,
+    StudioUI,
     SimpleUI,
     pickUI,
     DataPlotPanel,
@@ -121,6 +123,10 @@ export {
 export {
     GrayScottUpgradeData,
 } from './GrayScottUpgradeData.js';
+
+export {
+    createSimControlPanel,
+} from './SimControlPanel.js';
 
 export {
     runGrayScott,

@@ -13,6 +13,7 @@
 import {
     SymRenderer,
     ClassicUI,
+    StudioUI,
     SimpleUI,
     pickUI,
     DataPlotPanel,
@@ -26,6 +27,7 @@ import {
     GrayScottWorker,
     GrayScottInitializer,
     GrayScottUpgradeData,
+    createSimControlPanel,
 } from './modules.js';
 
 // ── Worker factory (shared across all variants) ────────────────────────────────
@@ -78,10 +80,19 @@ export function runGrayScott({ presets, presetsPath, groupName, gridSize = 512, 
         });
 
         const ss = SymRenderer({
-            // the classic UI, or ?ui=simple: the picture with the toolbox over it
-            ui:                pickUI({ classic: ClassicUI, simple: SimpleUI }, 'classic'),
-            // the plot of a row of the simulation's buffer
-            uiOptions:         { panels: [DataPlotPanel] },
+            // docked StudioUI by default; ?ui=classic and ?ui=simple remain available
+            ui:                pickUI({ studio: StudioUI, classic: ClassicUI, simple: SimpleUI }, 'studio'),
+            uiOptions:         {
+                tools:               ['move', 'patternTransform', 'symmetry', 'draw', 'pick'],
+                startTool:           'move',
+                visualizationWindow: true,
+                symmetryWindow:      true,
+                transformsWindow:    true,
+                patternPanel:        createSimControlPanel,
+                leaveOut:            ['pattern'],
+                defaultTab:          'simulation',
+                panels:              [DataPlotPanel],
+            },
             patternCreator:    creator,
             samples:           makeSamplesArray(presets, presetsPath),
             groupMakerFactory: GroupMakerFactory({ defaultName: groupName }),

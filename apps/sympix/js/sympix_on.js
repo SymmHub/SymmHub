@@ -6,7 +6,8 @@ import {
     VisualizationImage,
     VisualizationOverlay,
     SymRenderer,
-    ClassicUI,
+    sympixUI,
+    sympixUIOptions,
     makeSamplesArray,
     PatternImageCreator,
     SympixLayerFactory,
@@ -30,7 +31,8 @@ const visManager = VisualizationManager({
 });
 
 const app = SymRenderer({
-      ui:                   ClassicUI,
+      ui:                sympixUI(),
+      uiOptions:         sympixUIOptions(),
       patternCreator:       PatternImageCreator,
       visualization:    visManager, 
       groupMakerFactory: GroupMakerFactory({defaultName:'oN'}),

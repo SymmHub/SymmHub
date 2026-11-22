@@ -208,6 +208,14 @@ function PatternImageArray(options = {}) {
         setParamsMap,
         getPatternData,
         getImageTransforms,
+        loadImageBytes: (bytes, name) => {
+            const first = mConfig.images.getChildren()[0];
+            if (first && first.loadImageBytes) first.loadImageBytes(bytes, name);
+        },
+        browseTexture: () => {
+            const first = mConfig.images.getChildren()[0];
+            if (first && first.browseTexture) first.browseTexture();
+        },
         // the pattern box may be placed by a bent pose (PatternPose.js): the pattern
         // transform tool then moves the images in the geometry of the group
         canBend: () => true,

@@ -735,6 +735,22 @@ function IteratedAttractor(options){
         getSimBuffer    : getSimBuffer,
         getPatternData  : getPatternData,
         setParamsMap    : setParamsMap,
+        randomize       : () => {
+            const rnd = mConfig.state.attractor?.getParams?.()?.random;
+            if (rnd && rnd.call) rnd.call();
+        },
+        restart         : () => onRestart(),
+        getProgress     : () => ({
+            batchCount:    mConfig.iterations.batchCount || 0,
+            maxBatchCount: mConfig.iterations.maxBatchCount || 0,
+            totalCount:    mConfig.state.totalCount || 0,
+        }),
+        getStatusText   : () => {
+            const it = mConfig.iterations;
+            if (!it || !it.maxBatchCount) return '';
+            const bc = Math.min(it.batchCount || 0, it.maxBatchCount);
+            return `${bc}/${it.maxBatchCount} batches`;
+        },
         get canAnimate() {return true;},
     };
     return myself;

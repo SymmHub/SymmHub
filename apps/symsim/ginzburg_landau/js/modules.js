@@ -35,6 +35,10 @@ export {
 } from './GinzburgLandauUpgradeData.js';
 
 export {
+    createSimControlPanel,
+} from './SimControlPanel.js';
+
+export {
     runGinzburgLandau,
 } from './ginzburg_landau_app.js';
 
@@ -47,6 +51,7 @@ export {
 
 
 export {
+    DatGUI,
     Colormaps,
     EventDispatcher,
     createDataPlot,
@@ -59,6 +64,7 @@ export {
     PlaneNavigator,
     SymRenderer,
     ClassicUI,
+    StudioUI,
     SimpleUI,
     pickUI,
     DataPlotPanel,

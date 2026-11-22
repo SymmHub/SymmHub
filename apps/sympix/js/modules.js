@@ -22,6 +22,8 @@ export {
     setParamValues,
     getParamValues,
     ParamImage,
+    createParamUI,
+    createInternalWindow,
 } from '../../../lib/uilib/uilib.js';
 
 export {
@@ -30,10 +32,14 @@ export {
 } from '../../../lib/invlib/invlib.js';
 
 export { 
+    DatGUI,
     EventDispatcher, 
     InversiveNavigator,
     SymRenderer, 
     ClassicUI,
+    StudioUI,
+    SimpleUI,
+    pickUI,
     VisualizationManager,
     VisualizationOverlay,
     OverlayIsolines,
@@ -96,3 +102,12 @@ export {
 export {
     buildOrbifoldMenu,
 } from './OrbifoldMenu.js';
+
+export {
+    createSymPixPatternPanel,
+} from './SymPixPatternPanel.js';
+
+export {
+    sympixUI,
+    sympixUIOptions,
+} from './sympix_app.js';

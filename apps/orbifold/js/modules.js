@@ -99,6 +99,11 @@ export {
     createParamUI,
     setParamValues,
     getParamValues,
+    initTheme,
+    getTheme,
+    cycleTheme,
+    onThemeChange,
+    themeLabel,
     
 } from '../../../lib/uilib/uilib.js'
 

@@ -5,6 +5,9 @@ import {
     InversiveNavigator,
     SymRenderer,
     ClassicUI,
+    StudioUI,
+    SimpleUI,
+    pickUI,
     createDoubleFBO, 
     makeBufferRenderer, 
     makeSamplesArray,
@@ -106,7 +109,14 @@ const SymmHubApp = options =>
     getClassName: () => `${options.name}`,
   }
   const app = SymRenderer({
-      ui: ClassicUI,
+      ui: pickUI({ studio: StudioUI, classic: ClassicUI, simple: SimpleUI }, 'studio'),
+      uiOptions: {
+          tools:               ['move', 'patternTransform', 'symmetry'],
+          startTool:           'move',
+          visualizationWindow: true,
+          symmetryWindow:      true,
+          transformsWindow:    true,
+      },
       patternCreator,
       groupMakerFactory: options.groupMakerFactory,
       navigator: options.navigator,
@@ -131,9 +141,10 @@ try {
 
   // parameters cannot be set in a granular fashion, but a group can be set as a whole
   const visParam = app .getParams() .visualization .getValue();
-  console.dir( visParam );
-  visParam .colormap .colormap = 'rainbow';
-  app .getParams() .visualization .setValue( visParam );
+  if (visParam && visParam.colormap) {
+    visParam.colormap.colormap = 'rainbow';
+    app.getParams().visualization.setValue(visParam);
+  }
 } catch (err) {
   console.error('error: ', err);
 }

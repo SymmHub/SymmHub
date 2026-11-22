@@ -343,6 +343,15 @@ function PatternImage(options){
         getPatternData  : getPatternData,
         getTransform    : getTransform,
         setTransform    : setTransform,
+        /** Load raw image file bytes (e.g. from OS drag-and-drop) into this pattern's texture. */
+        loadImageBytes  : (bytes, name) => {
+            const p = mTextureMaker.getParams ? mTextureMaker.getParams() : mTextureMaker.mParams;
+            if (p && p.image && p.image.setImageData) p.image.setImageData(bytes, name);
+        },
+        /** Open/toggle the built-in texture browser selector. */
+        browseTexture   : () => {
+            if (mTextureMaker._toggleSelector) mTextureMaker._toggleSelector();
+        },
         // the pattern box may be placed by a bent pose (PatternPose.js): the pattern
         // transform tool then moves the image in the geometry of the group
         canBend         : () => true,
