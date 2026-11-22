@@ -6,6 +6,9 @@
 export {
     SymRenderer,
     WorkspaceUI,
+    StudioUI,
+    SimpleUI,
+    pickUI,
     VisualizationManager,
     VisualizationColorSym,
     VisualizationColorTiles,

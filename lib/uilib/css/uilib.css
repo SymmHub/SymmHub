@@ -4,6 +4,7 @@
 @import url('tree.css');
 @import url('thumbnails.css');
 @import url('folder-picker.css');
+@import url('dock-shell.css');
 
 .drag-style  {
     position: absolute;
@@ -35,15 +36,27 @@
 
 }
 
+.interior-style--docked {
+  position: static !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: auto !important;
+}
+
 .header-style  {
     
     position : absolute;
     top : 0px;
     height : var(--drag-header-size);
     width : 100%;
+    display: flex;
+    align-items: center;
     cursor: move;
     background-color: var(--bg-header, #BBB);
     color: var(--text-primary, #181c22);
+    border-bottom: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.12));
     /* the header IS the drag surface: a finger must move the window, not
        scroll the page. The interior deliberately has no touch-action, so its
        own content still scrolls. */
@@ -64,14 +77,39 @@
   right:   0px;
   height: var(--drag-header-size);
   width:  var(--drag-header-size);
-  cursor:  default;  
+  cursor:  pointer;  
   background-color: #FFF0;
   background-image: url('images/btn_close.svg');
-  background-size:  var(--drag-header-size);
+  background-size:  16px 16px;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .close-button-style:hover {
   background-color: var(--danger, #c42b1c);
+}
+
+.dock-button-style {
+  position: absolute;
+  top: 0;
+  right: var(--drag-header-size);
+  height: var(--drag-header-size);
+  width: var(--drag-header-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.dock-button-style:hover {
+  background-color: var(--accent-soft, rgba(9, 105, 218, 0.2));
 }
 
 /* Corner resize grip. Replaces CSS `resize: both`, which no finger can use and
@@ -484,7 +522,7 @@ input.imgbutton {
     border: 1px solid transparent !important;
     width: 40px;
     height: 40px;
-    background-color: var(--bg-elevated, rgba(255, 255, 255, 0.8));
+    background-color: transparent;
 }
 
 input.imgbutton:hover {
@@ -508,6 +546,7 @@ input.imgbutton.pressed {
     display: inline-flex;
     align-items: center;
     white-space: nowrap;
+    background-color: var(--bg-panel, rgba(255, 255, 255, 0.9));
 }
 
 .interior-style.toolbox-interior {

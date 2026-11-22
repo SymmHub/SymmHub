@@ -1,6 +1,9 @@
 import {
     SymRenderer,
     WorkspaceUI,
+    StudioUI,
+    SimpleUI,
+    pickUI,
     VisualizationManager,
     VisualizationColorSym,
     VisualizationColorTiles,
@@ -60,9 +63,8 @@ function startSymdraw(opt = {}) {
         samples:           makeSamplesArray(opt.presets || '', opt.presetsFolder || ''),
         docFolderId:       'symdraw_doc_folder',
         params:            (hash.preset || hash.params) ? undefined : START_PARAMS,
-        // the drawing workspace: the drawing tools in a palette, their settings in a
-        // property bar
-        ui:                WorkspaceUI,
+        // docked studio workspace by default; ?ui=classic and ?ui=simple remain available
+        ui:                pickUI({ studio: StudioUI, classic: WorkspaceUI, simple: SimpleUI }, 'studio'),
         uiOptions: {
             // of the renderer's own tools the orientation, the pattern box and the symmetry
             tools:               ['move', 'patternTransform', 'symmetry'],
@@ -73,6 +75,9 @@ function startSymdraw(opt = {}) {
             symmetryWindow:      true,
             // and the conformal transformations: a list with the selected one's settings
             transformsWindow:    true,
+            // StudioUI right-dock defaults: Layers on top, Style in the lower split pane
+            defaultTab:          'layers',
+            defaultSplitTab:     'style',
         },
         // a script loaded at startup, e.g. the catalog batch driver
         ...(opt.scriptUrl ? { scriptUrl: opt.scriptUrl } : {}),

@@ -1,0 +1,636 @@
+/*
+ * dock-shell.css — Full-viewport docked workspace layout for StudioUI.
+ * Uses tokens from tokens.css (Light default + Dark/System support).
+ */
+
+.studio-shell {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100dvh;
+  overflow: hidden;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  z-index: 1;
+}
+
+.studio-shell > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* ── Row 1: Top Command Bar ─────────────────────────────────────────────── */
+.studio-topbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 3px 8px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-subtle);
+  user-select: none;
+  z-index: 20;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.studio-topbar::-webkit-scrollbar {
+  display: none;
+}
+
+.studio-topbar__group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.studio-topbar__spacer {
+  flex: 1 1 8px;
+  min-width: 8px;
+}
+
+.studio-topbar__sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--border-strong);
+  flex: 0 0 auto;
+}
+
+.studio-topbar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 8px 0 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font: 700 12.5px/1 var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.studio-topbar__brand:hover,
+.studio-topbar__brand[aria-expanded="true"] {
+  background: var(--bg-hover);
+  border-color: var(--border-subtle);
+}
+
+.studio-topbar__brand img {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.studio-topbar__caret {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.studio-doc-title {
+  max-width: 220px;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.studio-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0 7px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font: 500 12px/1 var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.studio-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--border-subtle);
+}
+
+.studio-btn--active,
+.studio-btn--active:hover {
+  background: var(--bg-active);
+  border-color: var(--accent-border);
+}
+
+.studio-btn--recording {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.studio-btn:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.studio-btn img {
+  width: 17px;
+  height: 17px;
+  display: block;
+  pointer-events: none;
+}
+
+.studio-btn svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  pointer-events: none;
+}
+
+:root[data-theme="dark"] .studio-btn img {
+  filter: invert(0.86) hue-rotate(180deg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .studio-btn img {
+    filter: invert(0.86) hue-rotate(180deg);
+  }
+}
+
+/* ── Row 2: Full-Width Contextual PropertyBar ───────────────────────────── */
+.studio-propbar {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 2px 8px;
+  min-height: 0;
+  z-index: 15;
+}
+
+.studio-propbar:empty {
+  display: none;
+}
+
+.studio-propbar__tool {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  margin-top: 4px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-chip);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font: 600 11.5px/1 var(--font-sans);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.studio-propbar__tool:empty {
+  display: none;
+}
+
+.studio-propbar .property-bar {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 2px 0;
+  background: transparent;
+}
+
+/* ── Row 3: Middle Workspace Row (Left Rail | Stage | Right Dock) ───────── */
+.studio-middle {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.studio-left {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 10;
+}
+
+.studio-left:empty {
+  display: none;
+}
+
+.studio-stage {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-page);
+}
+
+/* ── Right Inspector Dock ───────────────────────────────────────────────── */
+.studio-right-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  min-height: 0;
+  z-index: 12;
+  background: var(--bg-panel);
+}
+
+.studio-right-wrap.studio-hidden {
+  display: none;
+}
+
+.studio-sash-v {
+  width: 5px;
+  flex: 0 0 5px;
+  cursor: ew-resize;
+  background: transparent;
+  border-left: 1px solid var(--border-subtle);
+  touch-action: none;
+  transition: background-color 0.12s ease;
+}
+
+.studio-sash-v:hover,
+.studio-sash-v--dragging {
+  background: var(--accent-soft);
+  border-left-color: var(--accent);
+}
+
+.studio-right {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 340px;
+  background: var(--bg-panel);
+}
+
+.studio-right__head {
+  display: flex;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-input);
+  min-height: 30px;
+  flex: 0 0 auto;
+}
+
+.studio-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 2px;
+  padding: 3px 4px;
+}
+
+.studio-tab {
+  flex: 0 0 auto;
+  padding: 0 7px;
+  height: 23px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: 500 11px/1 var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.studio-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.studio-tab--active {
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-weight: 600;
+  border-color: var(--accent-border);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.studio-dock-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 3px;
+  flex: 0 0 auto;
+  border-left: 1px solid var(--border-subtle);
+  align-self: stretch;
+}
+
+.studio-icon-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.studio-icon-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.studio-icon-btn--on {
+  background: var(--bg-active);
+  color: var(--text-primary);
+  border-color: var(--accent-border);
+}
+
+.studio-right__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.studio-pane {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.studio-pane__slot {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  overflow: auto;
+}
+
+.studio-pane__slot > .interior-style--docked {
+  display: block;
+}
+
+.studio-pane__slot > .studio-slot-hidden {
+  display: none !important;
+}
+
+.studio-split-sash {
+  height: 6px;
+  flex: 0 0 6px;
+  cursor: row-resize;
+  background: var(--bg-input);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  touch-action: none;
+}
+
+.studio-split-sash:hover,
+.studio-split-sash--dragging {
+  background: var(--accent-soft);
+}
+
+.studio-split-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  height: 26px;
+  padding: 0 4px 0 6px;
+  background: var(--bg-input);
+  border-bottom: 1px solid var(--border-subtle);
+  flex: 0 0 auto;
+}
+
+.studio-split-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 20px;
+  font: 600 11.5px/1 var(--font-sans);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  padding: 0 4px;
+}
+
+.studio-empty-note {
+  padding: 16px 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ── Row 4: Collapsible Bottom Samples Drawer ───────────────────────────── */
+.studio-drawer {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-subtle);
+  min-height: 0;
+  height: 206px;
+  z-index: 12;
+}
+
+.studio-drawer.studio-hidden {
+  display: none;
+}
+
+.studio-drawer__sash {
+  height: 5px;
+  flex: 0 0 5px;
+  cursor: ns-resize;
+  background: transparent;
+  touch-action: none;
+}
+
+.studio-drawer__sash:hover,
+.studio-drawer__sash--dragging {
+  background: var(--accent-soft);
+}
+
+.studio-drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--bg-input);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  user-select: none;
+  flex: 0 0 auto;
+}
+
+.studio-drawer__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Horizontal single-row scrolling filmstrip contained strictly inside the drawer */
+.studio-drawer__body .interior-style--docked {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
+.studio-drawer__body .interior-style--docked > div {
+  position: static !important;
+  width: max-content !important;
+  min-width: 100% !important;
+  height: auto !important;
+  min-height: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  overflow: visible !important;
+  padding: 4px 6px;
+  gap: 2px;
+  box-sizing: border-box;
+}
+
+.studio-drawer__body .thumbnail-container {
+  flex: 0 0 auto;
+}
+
+/* ── Row 5: Bottom Status Bar ───────────────────────────────────────────── */
+.studio-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-subtle);
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  user-select: none;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.studio-status__hint {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+}
+
+.studio-status__metrics {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.studio-status__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--bg-chip);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.studio-status__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 19px;
+  padding: 0 7px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font: 500 11px/1 var(--font-sans);
+  cursor: pointer;
+}
+
+.studio-status__btn:hover {
+  border-color: var(--accent);
+}
+
+.studio-status__btn--on {
+  background: var(--bg-active);
+  border-color: var(--accent-border);
+}
+
+/* ── Narrow / Mobile Viewport Mode (< 960px) ────────────────────────────── */
+.studio-shell--narrow .studio-topbar {
+  flex-wrap: wrap;
+  overflow-x: visible;
+  gap: 2px 4px;
+  padding: 3px 6px;
+  min-height: 32px;
+}
+
+.studio-shell--narrow .studio-topbar__sep {
+  margin: 0 2px;
+}
+
+.studio-shell--narrow .studio-btn {
+  padding: 0 5px;
+  height: 26px;
+  min-width: 26px;
+}
+
+.studio-shell--narrow .studio-right-wrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  max-width: calc(100vw - 44px);
+  box-shadow: var(--shadow-popup);
+  z-index: 40;
+}
+
+.studio-shell--narrow .studio-doc-title {
+  max-width: 110px;
+}
+
+.studio-shell--narrow .studio-status__coords {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .studio-shell--narrow .studio-doc-title {
+    display: none;
+  }
+}

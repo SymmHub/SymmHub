@@ -51,7 +51,7 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
-  --drag-header-size: 17px;
+  --drag-header-size: 24px;
 
   /* Focus Ring */
   --focus-ring: 0 0 0 2px var(--accent);
@@ -178,10 +178,19 @@
 }
 
 :root[data-theme="dark"] .property-bar__button svg [stroke="#303030"],
-:root[data-theme="dark"] .property-bar__button svg[stroke="#303030"] {
+:root[data-theme="dark"] .property-bar__button svg[stroke="#303030"],
+:root[data-theme="dark"] .property-bar__button svg [stroke="#202020"],
+:root[data-theme="dark"] .property-bar__button svg[stroke="#202020"],
+:root[data-theme="dark"] .layer-list__button svg [stroke="#303030"],
+:root[data-theme="dark"] .layer-list__button svg[stroke="#303030"],
+:root[data-theme="dark"] .layer-list__button svg [stroke="#202020"],
+:root[data-theme="dark"] .layer-list__button svg[stroke="#202020"] {
   stroke: currentColor;
 }
-:root[data-theme="dark"] .property-bar__button svg [fill="#303030"] {
+:root[data-theme="dark"] .property-bar__button svg [fill="#303030"],
+:root[data-theme="dark"] .property-bar__button svg [fill="#202020"],
+:root[data-theme="dark"] .layer-list__button svg [fill="#303030"],
+:root[data-theme="dark"] .layer-list__button svg [fill="#202020"] {
   fill: currentColor;
 }
 
@@ -194,10 +203,19 @@
     filter: invert(0.86) hue-rotate(180deg);
   }
   :root[data-theme="system"] .property-bar__button svg [stroke="#303030"],
-  :root[data-theme="system"] .property-bar__button svg[stroke="#303030"] {
+  :root[data-theme="system"] .property-bar__button svg[stroke="#303030"],
+  :root[data-theme="system"] .property-bar__button svg [stroke="#202020"],
+  :root[data-theme="system"] .property-bar__button svg[stroke="#202020"],
+  :root[data-theme="system"] .layer-list__button svg [stroke="#303030"],
+  :root[data-theme="system"] .layer-list__button svg[stroke="#303030"],
+  :root[data-theme="system"] .layer-list__button svg [stroke="#202020"],
+  :root[data-theme="system"] .layer-list__button svg[stroke="#202020"] {
     stroke: currentColor;
   }
-  :root[data-theme="system"] .property-bar__button svg [fill="#303030"] {
+  :root[data-theme="system"] .property-bar__button svg [fill="#303030"],
+  :root[data-theme="system"] .property-bar__button svg [fill="#202020"],
+  :root[data-theme="system"] .layer-list__button svg [fill="#303030"],
+  :root[data-theme="system"] .layer-list__button svg [fill="#202020"] {
     fill: currentColor;
   }
 }
