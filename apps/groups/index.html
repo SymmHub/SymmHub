@@ -17,8 +17,11 @@
   * { box-sizing: border-box; }
   body { margin: 0; padding: 1.5rem; background: var(--bg); color: var(--fg);
          font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  h1 { font-size: 1.35rem; margin: 0 0 .25rem; }
-  p.lede { color: var(--muted); margin: 0 0 1.25rem; max-width: 60ch; }
+  .page-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 1rem; margin-bottom: .25rem; }
+  .crumb { font-size: .88rem; color: var(--accent); text-decoration: none; }
+  .crumb:hover { text-decoration: underline; }
+  h1 { font-size: 1.35rem; margin: 0; }
+  p.lede { color: var(--muted); margin: 0 0 1.25rem; max-width: 72ch; }
   fieldset { border: 1px solid var(--line); border-radius: 6px; padding: .9rem 1rem 1rem; margin: 0 0 1rem; }
   legend { padding: 0 .4rem; color: var(--muted); font-size: .85rem; }
   .row { display: flex; flex-wrap: wrap; gap: .75rem 1rem; align-items: flex-end; }
@@ -33,14 +36,18 @@
   #status { margin: .25rem 0 1rem; color: var(--muted); font-size: .9rem; min-height: 1.4em; }
   #status.err { color: #c0392b; }
   .chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: 1rem; }
-  .chip { background: var(--chip); border: 1px solid var(--line); border-radius: 999px;
-          padding: .1rem .6rem; font-size: .82rem; cursor: pointer; font-family: var(--mono); }
+  .chip { background: var(--chip); color: var(--fg); border: 1px solid var(--line); border-radius: 999px;
+          padding: .15rem .65rem; font-size: .82rem; cursor: pointer; font-family: var(--mono); }
+  .chip:hover { border-color: var(--accent); }
   .chip.on { background: var(--accent); color: #fff; border-color: transparent; }
   .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; }
   table { border-collapse: collapse; width: 100%; font-size: .85rem; }
-  th, td { text-align: left; padding: .3rem .6rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  th { position: sticky; top: 0; background: var(--bg); color: var(--muted); font-weight: 600; }
+  th, td { text-align: left; padding: .35rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { position: sticky; top: 0; background: var(--bg); color: var(--muted); font-weight: 600; white-space: nowrap; }
   td.mono, th.mono { font-family: var(--mono); }
+  td.mono-wrap { font-family: var(--mono); max-width: 34ch; white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
+  td.copyable { cursor: copy; }
+  td.copyable:hover { background: var(--chip); }
   tr:last-child td { border-bottom: none; }
   .note { color: var(--muted); font-size: .82rem; margin-top: .6rem; }
   footer { margin-top: 1.5rem; font-size: .9rem; }
@@ -48,7 +55,10 @@
 </style>
 </head>
 <body>
-<h1>Groups</h1>
+<div class="page-head">
+  <h1>Groups</h1>
+  <a class="crumb" href="../../index.html">← SymmHub</a>
+</div>
 <p class="lede">Enumerates the conjugacy classes of subgroups of a finitely presented group and
 shows the permutations each generator induces on the cosets — the
 <code>color_groups</code> JSON the sympix viewer consumes.</p>
@@ -147,11 +157,18 @@ function render() {
   rows.textContent = '';
   for (const s of shown.slice(0, MAX_ROWS)) {
     const tr = document.createElement('tr');
-    for (const [v, mono] of [[s.subgroup, false], [s.index, false], [s.generators || '—', true],
-                             [s.cosets, true], [s.invcos, true]]) {
+    for (const [v, cls] of [[s.subgroup, ''], [s.index, ''], [s.generators || '—', 'mono-wrap copyable'],
+                            [s.cosets, 'mono copyable'], [s.invcos, 'mono copyable']]) {
       const td = document.createElement('td');
-      if (mono) td.className = 'mono';
+      if (cls) td.className = cls;
       td.textContent = v;
+      if (cls.includes('copyable') && v && v !== '—') {
+        td.title = 'Click to copy';
+        td.onclick = async () => {
+          await navigator.clipboard.writeText(String(v));
+          setStatus(`Copied "${String(v).slice(0, 48)}${String(v).length > 48 ? '…' : ''}"`);
+        };
+      }
       tr.appendChild(td);
     }
     rows.appendChild(tr);

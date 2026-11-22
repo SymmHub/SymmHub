@@ -148,8 +148,8 @@ function toolboxWindow() {
 // image buttons outside every window
 function toolboxButtons() {
     const win = toolboxWindow();
-    if (win) return [...win.querySelectorAll('input.imgbutton, button')];
-    return [...document.querySelectorAll('input.imgbutton')].filter(b => !b.closest('.drag-style'));
+    if (win) return [...win.querySelectorAll('input.imgbutton, button, .vbar-separator')];
+    return [...document.querySelectorAll('input.imgbutton, .vbar-separator')].filter(b => !b.closest('.drag-style'));
 }
 
 function censusToolbox(out) {

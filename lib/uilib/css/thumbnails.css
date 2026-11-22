@@ -7,12 +7,12 @@ img.thumbnail {
 
 
 .thumbnail-image {
-    border: 1px solid #888;
+    border: 1px solid var(--border-strong, #888);
     width:  128px;
     height: 128px;
     display: block;
     object-fit: contain;
-    background-color: #e8e8e8;  /* fills letterbox / pillarbox area */
+    background-color: var(--bg-input, #e8e8e8);  /* fills letterbox / pillarbox area */
 }
 
 .thumbnail-caption {
@@ -20,15 +20,14 @@ img.thumbnail {
     bottom: 0px;         
     left: 0px; 
     width: 100%;
-    color: black;
-    background-color: #FFF0;
-    font-size: 12px;
-    padding: 2px;
+    color: var(--text-primary, #181c22);
+    background-color: transparent;
+    padding: 3px 2px;
     margin: 0px;
     overflow: hidden;
     white-space: nowrap;
     text-align: center;
-    font: 12px "Helvetica Neue", sans-serif;
+    font: 12px/1.3 var(--font-sans, "Helvetica Neue", system-ui, sans-serif);
     text-overflow: ellipsis;
     user-select: none;   /* a double click opens the tile, it must not select the text */
     /*pointer-events: none;  */
@@ -38,17 +37,18 @@ img.thumbnail {
     margin: 4px;
     width: 128px;
     position: relative;
-    border: noone; /*1px solid blue;*/
+    border: none;
+    border-radius: 4px;
     display: inline-block;
     vertical-align: top;
 }
 
 .thumbnail-container:hover {
-    background-color: #DEF;
+    background-color: var(--bg-hover, #DEF);
 }
 
 .thumbnail-container.selected {
-    background-color: #CDF;
+    background-color: var(--bg-active, #CDF);
 }
 
 /* ParamImage thumbnail row inside dat.gui folder.

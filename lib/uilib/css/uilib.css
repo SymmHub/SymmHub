@@ -1,22 +1,18 @@
+@import url('tokens.css');
 @import url('dat-gui-mod.css');
 /*@import url('../../datgui/css/datgui.css');*/
 @import url('tree.css');
 @import url('thumbnails.css');
 @import url('folder-picker.css');
 
-:root {
-    --drag-header-size: 17px;
-}
-
 .drag-style  {
     position: absolute;
     overflow-x: auto;
-    border:  1px solid #aaa;
+    border:  1px solid var(--border-strong, #aaa);
     border-radius: 6px;
-    background-color: #500;
-    box-shadow: 0 5px 10px #1113;
-
-    
+    background-color: var(--bg-panel, #f9f9f9);
+    box-shadow: var(--shadow-panel, 0 5px 10px #1113);
+    color: var(--text-primary, #181c22);
 }
 
 .hide-overflow  {
@@ -31,9 +27,10 @@
   height: calc(100% - var(--drag-header-size));
   width: 100%;
   top: var(--drag-header-size);
-  cursor: crosshair;
+  cursor: default;
   /* the panels' colour: every window looks alike on the off-white page */
-  background-color: var(--background-color, #f9f9f9);
+  background-color: var(--bg-panel, #f9f9f9);
+  color: var(--text-primary, #181c22);
   overflow: auto;
 
 }
@@ -45,7 +42,8 @@
     height : var(--drag-header-size);
     width : 100%;
     cursor: move;
-    background-color: #BBB;
+    background-color: var(--bg-header, #BBB);
+    color: var(--text-primary, #181c22);
     /* the header IS the drag surface: a finger must move the window, not
        scroll the page. The interior deliberately has no touch-action, so its
        own content still scrolls. */
@@ -55,7 +53,8 @@
 
 .header-style:hover  {
     
-    background-color: #0078d4;
+    background-color: var(--bg-header-hover, #0078d4);
+    color: var(--text-inverse, #fff);
 }
 
 .close-button-style {
@@ -72,7 +71,7 @@
 }
 
 .close-button-style:hover {
-  background-color: #c42b1c;
+  background-color: var(--danger, #c42b1c);
 }
 
 /* Corner resize grip. Replaces CSS `resize: both`, which no finger can use and
@@ -87,7 +86,7 @@
   display: grid;
   place-items: center;
   cursor: nwse-resize;
-  color: #666;
+  color: var(--text-muted, #666);
   touch-action: none;
   z-index: 2;
 }
@@ -99,7 +98,7 @@
 }
 
 .drag-grip:hover {
-  color: #0078d4;
+  color: var(--accent, #0078d4);
 }
 
 /* a window whose height fits its content: the grip sets the width */
@@ -140,7 +139,13 @@
 }
 
 .vbar-separator {
-    width: 20px;
+    display: inline-block;
+    width: 1px;
+    height: 26px;
+    margin: 0 5px;
+    background-color: var(--border-strong, rgba(0, 0, 0, 0.24));
+    pointer-events: none;
+    flex: 0 0 auto;
 }
 
 /* Colormap Editor Styles */
@@ -149,10 +154,10 @@
     flex-direction: column;
     padding: 10px;
     box-sizing: border-box;
-    font-family: Verdana, sans-serif;
+    font-family: var(--font-sans, Verdana, sans-serif);
     font-size: 12px;
-    color: #333;
-    background-color: #f5f5f5;
+    color: var(--text-primary, #333);
+    background-color: var(--bg-panel, #f5f5f5);
     height: calc(100% - var(--drag-header-size));
     width: 100%;
 }
@@ -177,7 +182,9 @@
 .colormap-editor-select {
     padding: 2px 4px;
     border-radius: 3px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-input, #ccc);
+    background-color: var(--bg-input, #fff);
+    color: var(--text-primary, #333);
 }
 
 .colormap-editor-preview-wrapper {
@@ -188,7 +195,7 @@
     flex-direction: column;
     border-radius: 4px;
     overflow: hidden;
-    border: 1px solid #999;
+    border: 1px solid var(--border-strong, #999);
     box-shadow: inset 0 0 4px rgba(0,0,0,0.2);
 }
 
@@ -204,7 +211,7 @@
     height: 30px;
     flex-shrink: 0;
     display: block;
-    border-top: 1px solid #aaa;
+    border-top: 1px solid var(--border-subtle, #aaa);
 }
 
 .colormap-editor-track-container {
@@ -221,14 +228,14 @@
     left: 0;
     right: 0;
     height: 2px;
-    background-color: #888;
+    background-color: var(--border-strong, #888);
 }
 
 .colormap-editor-detail-box {
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-subtle, #ccc);
     border-radius: 4px;
     padding: 10px;
-    background-color: #fff;
+    background-color: var(--bg-elevated, #fff);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -253,9 +260,9 @@
 .colormap-editor-col-header {
     font-weight: bold;
     font-size: 12px;
-    color: #333;
+    color: var(--text-primary, #333);
     text-align: center;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-subtle, #ddd);
     padding-bottom: 3px;
     margin-bottom: 2px;
 }
@@ -293,29 +300,29 @@
     height: 28px;
     min-width: 28px;
     padding: 0;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border-strong, #cbd5e1);
     border-radius: 4px;
-    background: linear-gradient(to bottom, #ffffff, #f1f5f9);
+    background: var(--bg-elevated, #ffffff);
     box-shadow: 0 1px 2px rgba(0,0,0,0.08);
     cursor: pointer;
     transition: all 0.1s ease-in-out;
-    color: #1e293b;
+    color: var(--text-primary, #1e293b);
     margin: 0;
     align-self: center;
 }
 
 .colormap-editor-link-btn svg {
-    stroke: #1e293b;
+    stroke: currentColor;
 }
 
 .colormap-editor-link-btn:hover {
-    background-color: #e2e8f0;
-    border-color: #94a3b8;
-    color: #0f172a;
+    background-color: var(--bg-hover, #e2e8f0);
+    border-color: var(--border-input, #94a3b8);
+    color: var(--text-primary, #0f172a);
 }
 
 .colormap-editor-link-btn:hover svg {
-    stroke: #0f172a;
+    stroke: currentColor;
 }
 
 .colormap-icon-btn {
@@ -325,47 +332,47 @@
     width: 24px;
     height: 24px;
     padding: 0;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border-strong, #cbd5e1);
     border-radius: 4px;
-    background: linear-gradient(to bottom, #ffffff, #f1f5f9);
+    background: var(--bg-elevated, #ffffff);
     box-shadow: 0 1px 2px rgba(0,0,0,0.08);
     cursor: pointer;
     transition: all 0.1s ease-in-out;
-    color: #1e293b;
+    color: var(--text-primary, #1e293b);
 }
 
 .colormap-icon-btn svg {
-    stroke: #1e293b;
+    stroke: currentColor;
 }
 
 .colormap-icon-btn:hover {
-    background: #e2e8f0;
-    border-color: #94a3b8;
-    color: #0f172a;
+    background: var(--bg-hover, #e2e8f0);
+    border-color: var(--border-input, #94a3b8);
+    color: var(--text-primary, #0f172a);
 }
 
 .colormap-icon-btn:hover svg {
-    stroke: #0f172a;
+    stroke: currentColor;
 }
 
 .colormap-icon-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
-    background: #f1f5f9;
-    color: #94a3b8;
+    background: var(--bg-input, #f1f5f9);
+    color: var(--text-muted, #94a3b8);
 }
 
 .colormap-icon-btn:disabled svg {
-    stroke: #94a3b8;
+    stroke: currentColor;
 }
 
 .colormap-editor-link-btn.pressed,
 .colormap-editor-link-btn.active,
 .colormap-icon-btn.pressed,
 .colormap-icon-btn.active {
-    background-color: #bae6fd;
-    border-color: #0284c7;
-    color: #1e293b;
+    background-color: var(--bg-active, #bae6fd);
+    border-color: var(--accent-border, #0284c7);
+    color: var(--text-primary, #1e293b);
     box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.25);
     transform: translateY(1px);
 }
@@ -374,23 +381,23 @@
 .colormap-editor-link-btn.active svg,
 .colormap-icon-btn.pressed svg,
 .colormap-icon-btn.active svg {
-    stroke: #222222;
+    stroke: currentColor;
 }
 
 .colormap-icon-btn.pressed:hover,
 .colormap-icon-btn.active:hover,
 .colormap-editor-link-btn.pressed:hover,
 .colormap-editor-link-btn.active:hover {
-    background-color: #7dd3fc;
-    border-color: #0284c7;
-    color: #0f172a;
+    background-color: var(--bg-active, #7dd3fc);
+    border-color: var(--accent-border, #0284c7);
+    color: var(--text-primary, #0f172a);
 }
 
 .colormap-icon-btn.pressed:hover svg,
 .colormap-icon-btn.active:hover svg,
 .colormap-editor-link-btn.pressed:hover svg,
 .colormap-editor-link-btn.active:hover svg {
-    stroke: #222222;
+    stroke: currentColor;
 }
 
 .colormap-editor-btn-row {
@@ -409,13 +416,13 @@
     min-width: 60px;
     padding: 5px 6px;
     cursor: pointer;
-    background-color: #e0e0e0;
-    border: 1px solid #b0b0b0;
+    background-color: var(--bg-input, #e0e0e0);
+    border: 1px solid var(--border-strong, #b0b0b0);
     border-radius: 3px;
-    font-family: Verdana, sans-serif;
+    font-family: var(--font-sans, Verdana, sans-serif);
     font-size: 11px;
-    font-weight: bold;
-    color: #222;
+    font-weight: 600;
+    color: var(--text-primary, #222);
     outline: none;
     text-align: center;
     white-space: nowrap;
@@ -423,11 +430,11 @@
 }
 
 .colormap-editor-btn:hover:not(:disabled) {
-    background-color: #d5d5d5;
+    background-color: var(--bg-hover, #d5d5d5);
 }
 
 .colormap-editor-btn-danger {
-    color: #aa0000;
+    color: var(--danger, #aa0000);
 }
 
 .colormap-interval-bar {
@@ -477,11 +484,11 @@ input.imgbutton {
     border: 1px solid transparent !important;
     width: 40px;
     height: 40px;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--bg-elevated, rgba(255, 255, 255, 0.8));
 }
 
 input.imgbutton:hover {
-    background-color: rgba(80, 80, 80, 0.9);
+    background-color: var(--bg-hover, rgba(80, 80, 80, 0.2));
 }
 
 input.imgbutton:disabled {
@@ -490,14 +497,17 @@ input.imgbutton:disabled {
 }
 
 input.imgbutton.pressed {
-    background-color: #bae6fd !important;
-    border-color: #0284c7 !important;
+    background-color: var(--bg-active, #bae6fd) !important;
+    border-color: var(--accent-border, #0284c7) !important;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* the toolbox: its row of buttons, and the window's interior that fits them */
 .toolbox-row {
     position: relative;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
 }
 
 .interior-style.toolbox-interior {

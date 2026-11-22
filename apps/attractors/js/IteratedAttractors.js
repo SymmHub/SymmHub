@@ -593,7 +593,7 @@ function IteratedAttractor(options){
             name:   'attractor transform',
             params: {        
                 absolute:       ParamBool({obj:tcfg, key: 'absolute', onChange: onc}),
-                abs2rel:        ParamFunc({func: onConvertTransformAbs2Rel,name: 'ans<->rel'}),
+                abs2rel:        ParamFunc({func: onConvertTransformAbs2Rel,name: 'abs<->rel'}),
                 centerX:        ParamFloat({obj:tcfg, key: 'centerX', onChange: onc}),
                 centerY:        ParamFloat({obj:tcfg, key: 'centerY', onChange: onc}),
                 scale:          ParamFloat({obj:tcfg, key: 'scale', onChange: onc}),

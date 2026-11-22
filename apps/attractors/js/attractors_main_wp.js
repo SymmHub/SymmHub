@@ -9,6 +9,7 @@ import {
     SymRenderer,
     ClassicUI,
     makeSamplesArray,
+    getHashParams,
     IteratedAttractorCreator,
     GroupMakerFactory,
 } from "./modules.js";
@@ -26,13 +27,18 @@ const visManager = VisualizationManager({
     ],
 });
 
+const samples = makeSamplesArray(presets, 'presets/wp/');
+const hash = getHashParams() || {};
+const defaultPreset = (!hash.preset && !hash.params && samples.length) ? samples[0].data.jsonUrl : undefined;
+
 const app = SymRenderer({
       ui:             ClassicUI,
       patternCreator: IteratedAttractorCreator,
       visualization: visManager, 
       groupMakerFactory: GroupMakerFactory({defaultName: 'Wallpaper'}), 
       navigator:  new InversiveNavigator(),
-      samples:    makeSamplesArray(presets, 'presets/wp/'),
+      samples,
+      ...(defaultPreset ? { preset: defaultPreset } : {}),
 });
 
 app.run();

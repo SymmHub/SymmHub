@@ -9,6 +9,7 @@ import {
     SymRenderer,
     ClassicUI,
     makeSamplesArray,
+    getHashParams,
     IteratedAttractorCreator,
     GroupMakerFactory,
 } from "./modules.js";
@@ -26,6 +27,9 @@ const visManager = VisualizationManager({
     ],
 });
 
+const samples = makeSamplesArray(presets, 'presets/nosym/');
+const hash = getHashParams() || {};
+const defaultPreset = (!hash.preset && !hash.params && samples.length) ? samples[0].data.jsonUrl : undefined;
 
 const app = SymRenderer({
       ui:             ClassicUI,
@@ -33,7 +37,8 @@ const app = SymRenderer({
       visualization: visManager, 
       groupMakerFactory: GroupMakerFactory(), 
       navigator:  new InversiveNavigator(),
-      samples:    makeSamplesArray(presets, 'presets/nosym/'),
+      samples,
+      ...(defaultPreset ? { preset: defaultPreset } : {}),
 });
 
 app.run();

@@ -5,113 +5,170 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SymmHub</title>
-  <link rel="icon" type="image/x-icon" href="./css/icon_symmhub.svg">
+  <link rel="icon" type="image/svg+xml" href="./css/icon_symmhub.svg">
   <link rel="stylesheet" href="./css/index.css"/>
+  <script src="./css/portal_theme.js"></script>
 </head>
 
 <body>
-  <header>
-    <h1>SymmHub</h1>
-  </header>
+  <nav class="portal-nav" aria-label="Primary navigation">
+    <div class="portal-nav__inner">
+      <a class="portal-brand" href="./index.html">
+        <img src="./css/icon_symmhub.svg" alt="">
+        SymmHub
+      </a>
+      <div class="portal-nav__actions">
+        <ul class="portal-nav__links">
+          <li><a href="#applications">Applications</a></li>
+          <li><a href="#tutorials">Tutorials</a></li>
+          <li><a href="#labs">Under Development</a></li>
+          <li><a href="outline.html">Architecture</a></li>
+          <li><a href="https://github.com/SymmHub/SymmHub" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        </ul>
+        <button type="button" class="theme-btn" data-theme-toggle>☀ Light</button>
+      </div>
+    </div>
+  </nav>
 
-  <div class="container">
-    <h2>About</h2>
-    <p>SymmHub is a platform for creating symmetry-based applications, and a small collection of such apps.
-      It is authored by <a href="https://bulatov.org" target="_blank" rel="noopener noreferrer">Vladimir Bulatov</a>
-      and <a href="https://chaimgoodmanstrauss.com" target="_blank" rel="noopener noreferrer">Chaim Goodman-Strauss</a>,
-      with assistance from <a href="https://www.vzome.com/" target="_blank" rel="noopener noreferrer">Scott Vorthmann</a>.
-    </p>
+  <main class="container">
+    <section class="portal-hero">
+      <h1>SymmHub</h1>
+      <p class="portal-hero__lead">
+        A WebGL platform for creating and exploring symmetry-based applications — from wallpaper,
+        frieze, and spherical groups to general hyperbolic orbifolds, reaction-diffusion PDEs,
+        chaotic attractors, and symmetric vector drawing.
+      </p>
+      <p class="portal-hero__meta">
+        Authored by <a href="https://bulatov.org" target="_blank" rel="noopener noreferrer">Vladimir Bulatov</a>
+        and <a href="https://chaimgoodmanstrauss.com" target="_blank" rel="noopener noreferrer">Chaim Goodman-Strauss</a>,
+        with assistance from <a href="https://www.vzome.com/" target="_blank" rel="noopener noreferrer">Scott Vorthmann</a>.
+      </p>
+    </section>
 
-    <h2>Documentation</h2>
-    <ul>
-      <li>
-        <a href="outline.html">
-          <b>Architecture &amp; Project Outline</b> - detailed guide to the mathematical foundations, libraries, and application suite
+    <section class="portal-section" id="applications">
+      <h2>Applications</h2>
+      <div class="card-grid">
+        <a class="app-card" href="apps/sympix/index.html">
+          <div class="app-card__media">
+            <img src="./apps/sympix/img/tmb_klm.png" alt="SymPix symmetry pattern preview" loading="lazy">
+          </div>
+          <div class="app-card__body">
+            <div class="app-card__head">
+              <span class="app-card__title">SymPix</span>
+              <span class="badge">Interactive</span>
+            </div>
+            <p class="app-card__desc">Symmetry from pictures across wallpaper, triangle, orbifold, and color groups.</p>
+          </div>
         </a>
-      </li>
-    </ul>
 
-    <h2>Applications</h2>
-    <ul>
-      <li>
-        <a href="apps/sample/index.html" target="_blank" rel="noopener noreferrer">
-            <img class='thumb' src='./apps/sample/img/tmb_sample.png'>
-            Minimal Sample
+        <a class="app-card" href="apps/symdraw/index.html">
+          <div class="app-card__media">
+            <img src="./apps/symdraw/img/tmb_wp.png" alt="SymDraw symmetric vector drawing preview" loading="lazy">
+          </div>
+          <div class="app-card__body">
+            <div class="app-card__head">
+              <span class="app-card__title">SymDraw</span>
+              <span class="badge">Vector</span>
+            </div>
+            <p class="app-card__desc">Vector drawing with live symmetry folding, curved tiles, and SVG export.</p>
+          </div>
         </a>
-      </li>
-      <li>
-        <a href='apps/sympix/index.html'>
-            <img class='thumb' src='./apps/sympix/img/tmb_klm.png'>   
-          <b>SymPix</b> - Symmetry from pictures 
-        </a>
-      </li>
-      <li>
-        <a href='apps/symsim/gray_scott/index.html'>
-            <img class='thumb' src='./apps/symsim/gray_scott/img/tmb_wp.png'>   
-          <b>SymSim</b> - symmetry from simulation of Gray-Scott PDE 
-        </a>
-      </li>
-      <li>
-        <a href='apps/symsim/ginzburg_landau/index.html'>
-            <img class='thumb' src='./apps/symsim/ginzburg_landau/img/tmb_wp.png'>   
-          <b>SymSim</b> - symmetry from simulations of Ginzburg-Landau PDE
-        </a>
-      </li>
-      <li>
-        <a href='apps/attractors/index.html'>
-            <img class='thumb' src='./apps/attractors/img/tmb_wp.png'>   
-          <b>SymChaos</b> - symmetry from Chaotic Iterated Attractors
-        </a>
-      </li>
-    </ul>
-    <h2>Tutorials</h2>
-    <ul>
-      <li>
-        <a href="tutorials/orbifold-notation.html" target="_blank" rel="noopener noreferrer">
-          <b>Two Dollars of Symmetry</b> - Conway's orbifold notation, the Magic Theorem,
-          and what dragging a fundamental domain edge really does
-        </a>
-      </li>
-      <li>
-        <a href="tutorials/orbifold-showcase.html" target="_blank" rel="noopener noreferrer">
-          <b>Orbifold Showcase</b> - thirty-plus hyperbolic symmetries to try, each with its
-          Euler characteristic, its draggable parameters, and a one-click Visualize link
-        </a>
-      </li>
-    </ul>
-    <h2>Under Development</h2>
-    <ul>
-      <li>
-        <a href="apps/orbifold/Symmetry.html" target="_blank" rel="noopener noreferrer">
-          Orbifold (general hyperbolic orbifolds)
-        </a>
-      </li>
-      <li>
-        <a href="apps/groups/index.html" target="_blank" rel="noopener noreferrer">
-          Groups (subgroup enumeration playground)
-        </a>
-      </li>
-      <li>
-        <a href="apps/symdraw/index.html" target="_blank" rel="noopener noreferrer">
-          SymDraw (vector drawing with symmetry)
-        </a>
-      </li>
-      <li>
-        <a href="tests/index.html" target="_blank" rel="noopener noreferrer">
-          Tests
-        </a>
-      </li>      
-    </ul>
-    <h2>Source Code</h2>
-    <ul>
-     <li>
-     <a href='https://github.com/SymmHub/SymmHub' target="_blank" rel="noopener noreferrer">https://github.com/SymmHub/SymmHub </a>
-     </li>
-    </ul>
 
-  </div>
+        <a class="app-card" href="apps/symsim/gray_scott/index.html">
+          <div class="app-card__media">
+            <img src="./apps/symsim/gray_scott/img/tmb_wp.png" alt="SymSim Gray-Scott PDE simulation preview" loading="lazy">
+          </div>
+          <div class="app-card__body">
+            <div class="app-card__head">
+              <span class="app-card__title">SymSim — Gray-Scott</span>
+              <span class="badge">PDE</span>
+            </div>
+            <p class="app-card__desc">Symmetry from real-time GPU simulation of the Gray-Scott reaction-diffusion PDE.</p>
+          </div>
+        </a>
+
+        <a class="app-card" href="apps/symsim/ginzburg_landau/index.html">
+          <div class="app-card__media">
+            <img src="./apps/symsim/ginzburg_landau/img/tmb_wp.png" alt="SymSim Ginzburg-Landau PDE simulation preview" loading="lazy">
+          </div>
+          <div class="app-card__body">
+            <div class="app-card__head">
+              <span class="app-card__title">SymSim — Ginzburg-Landau</span>
+              <span class="badge">PDE</span>
+            </div>
+            <p class="app-card__desc">Symmetry from GPU simulations of the complex Ginzburg-Landau PDE.</p>
+          </div>
+        </a>
+
+        <a class="app-card" href="apps/attractors/index.html">
+          <div class="app-card__media">
+            <img src="./apps/attractors/img/tmb_wp.png" alt="SymChaos chaotic iterated attractor preview" loading="lazy">
+          </div>
+          <div class="app-card__body">
+            <div class="app-card__head">
+              <span class="app-card__title">SymChaos</span>
+              <span class="badge">Chaos</span>
+            </div>
+            <p class="app-card__desc">Symmetry from chaotic iterated attractors (Clifford, De Jong, Conradi, and more).</p>
+          </div>
+        </a>
+
+        <a class="app-card" href="apps/sample/index.html">
+          <div class="app-card__media">
+            <img src="./apps/sample/img/tmb_sample.png" alt="Minimal Sample application preview" loading="lazy">
+          </div>
+          <div class="app-card__body">
+            <div class="app-card__head">
+              <span class="app-card__title">Minimal Sample</span>
+              <span class="badge">Template</span>
+            </div>
+            <p class="app-card__desc">Compact reference application showing how to build on the SymmHub engine.</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section class="portal-section" id="tutorials">
+      <h2>Documentation &amp; Tutorials</h2>
+      <div class="doc-grid">
+        <a class="doc-card" href="outline.html">
+          <span class="doc-card__title">Architecture &amp; Project Outline →</span>
+          <p class="doc-card__desc">Detailed guide to the mathematical foundations, shared WebGL libraries, and application suite.</p>
+        </a>
+        <a class="doc-card" href="tutorials/orbifold-notation.html">
+          <span class="doc-card__title">Two Dollars of Symmetry →</span>
+          <p class="doc-card__desc">Conway's orbifold notation, the Magic Theorem, and what dragging a fundamental domain edge really does.</p>
+        </a>
+        <a class="doc-card" href="tutorials/orbifold-showcase.html">
+          <span class="doc-card__title">Orbifold Showcase →</span>
+          <p class="doc-card__desc">Thirty-plus hyperbolic symmetries to try, each with its Euler characteristic, draggable parameters, and one-click Visualize link.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="portal-section" id="labs">
+      <h2>Tools &amp; Under Development</h2>
+      <div class="doc-grid">
+        <a class="doc-card" href="apps/orbifold/Symmetry.html">
+          <span class="doc-card__title">Orbifold →</span>
+          <p class="doc-card__desc">General hyperbolic orbifolds with direct fundamental-domain edge dragging and twisting.</p>
+        </a>
+        <a class="doc-card" href="apps/groups/index.html">
+          <span class="doc-card__title">Groups →</span>
+          <p class="doc-card__desc">Subgroup enumeration playground generating coset permutations and color-group JSON.</p>
+        </a>
+        <a class="doc-card" href="tests/index.html">
+          <span class="doc-card__title">Tests &amp; Diagnostics →</span>
+          <p class="doc-card__desc">Interactive test harnesses for UI components, shaders, transforms, and orbifold folding.</p>
+        </a>
+      </div>
+    </section>
+  </main>
 
   <footer>
+    <span>SymmHub</span>
+    <a href="outline.html">Architecture</a>
+    <a href="https://github.com/SymmHub/SymmHub" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
   </footer>
 </body>
 

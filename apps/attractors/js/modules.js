@@ -10,6 +10,7 @@ export {
     ParamChoice,
     setParamValues,
     getParam,
+    getHashParams,
     ObjectFactory,
 } from '../../../lib/uilib/uilib.js';
 

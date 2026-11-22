@@ -9,6 +9,7 @@ import {
     SymRenderer,
     ClassicUI,
     makeSamplesArray,
+    getHashParams,
     IteratedAttractorCreator,
     GroupMakerFactory,
 } from "./modules.js";
@@ -26,13 +27,18 @@ const visManager = VisualizationManager({
     ],
 });
 
+const samples = makeSamplesArray(presets, 'presets/spherical/');
+const hash = getHashParams() || {};
+const defaultPreset = (!hash.preset && !hash.params && samples.length) ? samples[0].data.jsonUrl : undefined;
+
 const app = SymRenderer({
       ui:             ClassicUI,
       patternCreator: IteratedAttractorCreator,
       visualization: visManager, 
       groupMakerFactory: GroupMakerFactory({defaultName: 'Spherical'}), 
       navigator:  new InversiveNavigator(),
-      samples:    makeSamplesArray(presets, 'presets/spherical/'),
+      samples,
+      ...(defaultPreset ? { preset: defaultPreset } : {}),
 });
 
 app.run();

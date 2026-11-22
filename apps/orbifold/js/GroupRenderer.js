@@ -84,7 +84,7 @@ export class GroupRenderer {
 
             this.mCanvas = createLayeredCanvas({
                 onresize: this.onCanvasResize.bind(this),
-                title: 'vizualization',
+                title: 'visualization',
                 storageId: 'viz'
             });
 

@@ -1,0 +1,203 @@
+/*
+ * tokens.css — Shared visual design tokens for SymmHub (apps, uilib, portal, galleries).
+ * Light is the default theme; [data-theme="dark"] enables Dark mode, and
+ * [data-theme="system"] follows the OS prefers-color-scheme preference.
+ */
+
+:root {
+  /* Typography */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Surfaces */
+  --bg-page: #eae8e3;
+  --bg-portal: #f5f6f8;
+  --bg-panel: #f9f9f9;
+  --bg-elevated: #ffffff;
+  --bg-header: #d4d6db;
+  --bg-header-hover: #0078d4;
+  --bg-input: #eceef2;
+  --bg-hover: #e8ecf1;
+  --bg-active: #cde8fb;
+  --bg-active-soft: #e4f3fd;
+  --bg-nav: rgba(245, 246, 248, 0.88);
+  --bg-chip: #eef2f6;
+
+  /* Text & Ink */
+  --text-primary: #181c22;
+  --text-secondary: #4a525e;
+  --text-muted: #687280;
+  --text-inverse: #ffffff;
+
+  /* Brand & Accent */
+  --accent: #0969da;
+  --accent-hover: #0550ae;
+  --accent-border: #0284c7;
+  --accent-soft: rgba(9, 105, 218, 0.12);
+  --danger: #c42b1c;
+  --danger-soft: rgba(196, 43, 28, 0.12);
+
+  /* Borders & Elevation */
+  --border-subtle: rgba(24, 28, 34, 0.12);
+  --border-strong: rgba(24, 28, 34, 0.26);
+  --border-input: #9aa3b0;
+  --shadow-panel: 0 5px 14px rgba(0, 0, 0, 0.16);
+  --shadow-popup: 0 6px 20px rgba(0, 0, 0, 0.18);
+  --shadow-card: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-card-hover: 0 8px 22px rgba(15, 23, 42, 0.12);
+
+  /* Metrics */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --drag-header-size: 17px;
+
+  /* Focus Ring */
+  --focus-ring: 0 0 0 2px var(--accent);
+
+  /* Slider & Control Accents */
+  --slider-track: #dcdfe5;
+  --slider-fill: #2589d0;
+
+  /* ── Legacy uilib / dat-gui-mod variable aliases ───────────────────────── */
+  --background-color: var(--bg-panel);
+  --page-background-color: var(--bg-page);
+  --text-color: var(--text-primary);
+  --soft-text-color: var(--text-muted);
+  --link-color: var(--accent);
+  --hover-color: var(--accent-hover);
+  --button-color: var(--accent);
+  --hover-background-color: var(--bg-hover);
+  --input-background-color: var(--bg-input);
+  --slider-fill-color: var(--slider-fill);
+  --active-button-background-color: var(--bg-active);
+  --tile-border-color: var(--border-subtle);
+  --ui-button-color: var(--text-secondary);
+  --ui-button-background-color: var(--bg-elevated);
+  --ui-button-border-color: var(--border-strong);
+  --ui-button-hover-color: var(--text-primary);
+  --ui-hint-color: var(--text-muted);
+  --ui-attention-color: var(--danger);
+  --folder_padding_left: -10px;
+}
+
+/* Explicit Dark Theme */
+:root[data-theme="dark"] {
+  --bg-page: #11141a;
+  --bg-portal: #0d1117;
+  --bg-panel: #1b2028;
+  --bg-elevated: #232a35;
+  --bg-header: #2c3442;
+  --bg-header-hover: #2574c7;
+  --bg-input: #272e3a;
+  --bg-hover: #2c3544;
+  --bg-active: #1c3f63;
+  --bg-active-soft: #1a334e;
+  --bg-nav: rgba(13, 17, 23, 0.88);
+  --bg-chip: #222935;
+
+  --text-primary: #e6edf3;
+  --text-secondary: #b4beca;
+  --text-muted: #8b949e;
+  --text-inverse: #ffffff;
+
+  --accent: #58a6ff;
+  --accent-hover: #79c0ff;
+  --accent-border: #388bfd;
+  --accent-soft: rgba(88, 166, 255, 0.16);
+  --danger: #f85149;
+  --danger-soft: rgba(248, 81, 73, 0.18);
+
+  --border-subtle: rgba(230, 237, 243, 0.12);
+  --border-strong: rgba(230, 237, 243, 0.28);
+  --border-input: #485364;
+  --shadow-panel: 0 6px 18px rgba(0, 0, 0, 0.45);
+  --shadow-popup: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --shadow-card-hover: 0 10px 26px rgba(0, 0, 0, 0.5);
+
+  --slider-track: #303947;
+  --slider-fill: #388bfd;
+  color-scheme: dark;
+}
+
+/* System-matched Dark Theme */
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] {
+    --bg-page: #11141a;
+    --bg-portal: #0d1117;
+    --bg-panel: #1b2028;
+    --bg-elevated: #232a35;
+    --bg-header: #2c3442;
+    --bg-header-hover: #2574c7;
+    --bg-input: #272e3a;
+    --bg-hover: #2c3544;
+    --bg-active: #1c3f63;
+    --bg-active-soft: #1a334e;
+    --bg-nav: rgba(13, 17, 23, 0.88);
+    --bg-chip: #222935;
+
+    --text-primary: #e6edf3;
+    --text-secondary: #b4beca;
+    --text-muted: #8b949e;
+    --text-inverse: #ffffff;
+
+    --accent: #58a6ff;
+    --accent-hover: #79c0ff;
+    --accent-border: #388bfd;
+    --accent-soft: rgba(88, 166, 255, 0.16);
+    --danger: #f85149;
+    --danger-soft: rgba(248, 81, 73, 0.18);
+
+    --border-subtle: rgba(230, 237, 243, 0.12);
+    --border-strong: rgba(230, 237, 243, 0.28);
+    --border-input: #485364;
+    --shadow-panel: 0 6px 18px rgba(0, 0, 0, 0.45);
+    --shadow-popup: 0 8px 24px rgba(0, 0, 0, 0.55);
+    --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.35);
+    --shadow-card-hover: 0 10px 26px rgba(0, 0, 0, 0.5);
+
+    --slider-track: #303947;
+    --slider-fill: #388bfd;
+    color-scheme: dark;
+  }
+}
+
+/*
+ * Dark-mode adaptation for external monochrome SVG image icons (Toolbox, ToolPalette, PropertyBar).
+ * invert + hue-rotate(180deg) turns dark strokes crisp light grey while preserving accent hues
+ * (e.g. yellow/blue/magenta marks).
+ */
+:root[data-theme="dark"] input.imgbutton,
+:root[data-theme="dark"] .tool-palette__button img,
+:root[data-theme="dark"] .property-bar__button:not(.property-bar__button--picture) img,
+:root[data-theme="dark"] .close-button-style,
+:root[data-theme="dark"] .dg ul li.title::before {
+  filter: invert(0.86) hue-rotate(180deg);
+}
+
+:root[data-theme="dark"] .property-bar__button svg [stroke="#303030"],
+:root[data-theme="dark"] .property-bar__button svg[stroke="#303030"] {
+  stroke: currentColor;
+}
+:root[data-theme="dark"] .property-bar__button svg [fill="#303030"] {
+  fill: currentColor;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] input.imgbutton,
+  :root[data-theme="system"] .tool-palette__button img,
+  :root[data-theme="system"] .property-bar__button:not(.property-bar__button--picture) img,
+  :root[data-theme="system"] .close-button-style,
+  :root[data-theme="system"] .dg ul li.title::before {
+    filter: invert(0.86) hue-rotate(180deg);
+  }
+  :root[data-theme="system"] .property-bar__button svg [stroke="#303030"],
+  :root[data-theme="system"] .property-bar__button svg[stroke="#303030"] {
+    stroke: currentColor;
+  }
+  :root[data-theme="system"] .property-bar__button svg [fill="#303030"] {
+    fill: currentColor;
+  }
+}

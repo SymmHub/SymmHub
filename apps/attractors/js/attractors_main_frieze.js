@@ -9,6 +9,7 @@ import {
     SymRenderer,
     ClassicUI,
     makeSamplesArray,
+    getHashParams,
     IteratedAttractorCreator,
     GroupMakerFactory,
 } from "./modules.js";
@@ -26,6 +27,10 @@ const visManager = VisualizationManager({
     ],
 });
 
+const samples = makeSamplesArray(presets, 'presets/frieze/');
+const hash = getHashParams() || {};
+const defaultPreset = (!hash.preset && !hash.params && samples.length) ? samples[0].data.jsonUrl : undefined;
+
 const app = SymRenderer({
       ui:             ClassicUI,
       patternCreator: IteratedAttractorCreator,
@@ -33,7 +38,8 @@ const app = SymRenderer({
       //groupMaker: new Group_Frieze({type: '*22∞',a: 0.4}), // maker of the groups
       groupMakerFactory: GroupMakerFactory({defaultName: 'Frieze'}), 
       navigator:  new InversiveNavigator(),
-      samples:    makeSamplesArray(presets, 'presets/frieze/'),
+      samples,
+      ...(defaultPreset ? { preset: defaultPreset } : {}),
 });
 
 app.run();
