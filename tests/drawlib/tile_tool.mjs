@@ -33,7 +33,7 @@
   - in the 632 group, of one polygon, the pointer changes nothing.
 */
 
-import { Group_WP, Group_KLMN, dirichletBase, selectDirichletSides, makeDirichletGroup } from '../../lib/grouplib/grouplib.js';
+import { Group_WP, Group_Frieze, Group_KLMN, dirichletBase, selectDirichletSides, makeDirichletGroup } from '../../lib/grouplib/grouplib.js';
 import { DrawingDocument } from '../../lib/drawlib/DrawingDocument.js';
 import { DrawingEditor } from '../../lib/drawlib/DrawingEditor.js';
 import { NodeTool } from '../../lib/drawlib/NodeTool.js';
@@ -318,6 +318,139 @@ function inside(item){
         const t = tilesOf(plain.doc, 'layer1');
         check(same(t[t.length - 1].nodes.map(n => n.p), first.nodes.map(n => n.p)), `632: Shift+T with the pointer at (${w}) adds the same tile`);
     }
+}
+
+// ── unbounded frieze domains: interactive cutoff corner editing ─────────────
+{
+    // *22∞: 2 fixed corners (disc), 2 mirror-sliding cutoff corners (square)
+    const gM = new Group_Frieze({ type: '*22∞', a: 0.5 }).getGroup();
+    const { doc, editor, tool } = setup(gM);
+    tool.setActive(true, true);
+    const tile = tilesOf(doc, 'layer1')[0];
+    check(!!tile && tile.nodes.length === 4, 'frieze *22∞: Tile tool creates a 4-node curved tile');
+
+    // overlay marks: fixed corners as disc, movable cutoff corners as square
+    const geo = tool.getOverlayGeometry();
+    const marks = geo.points.map(p => p.kind);
+    check(marks.filter(m => m === 'disc').length === 2 && marks.filter(m => m === 'square').length === 2,
+          `frieze *22∞: 2 fixed discs and 2 draggable squares (${marks.join(', ')})`);
+
+    // dragging fixed corner 1 changes nothing
+    const c1 = pointOf(tile, 1), c2 = pointOf(tile, 2), c3 = pointOf(tile, 3);
+    drag(tool, c1, [c1[0] + 0.15, c1[1] + 0.2]);
+    check(dist(pointOf(doc.getItem(tile.id), 1), c1) < 1e-15, 'frieze *22∞: fixed corner stays put on drag');
+
+    // dragging mirror cutoff corner 2 off the mirror slides it strictly along its mirror line
+    const R1 = editor.pairingMap(tile.tile.edges[1].word);
+    drag(tool, c2, [c2[0] + 0.25, c2[1] + 0.3]);
+    const moved = doc.getItem(tile.id);
+    const m2 = pointOf(moved, 2);
+    check(dist(m2, c2) > 0.1 && dist(R1(m2), m2) < 1e-12 && dist(pointOf(moved, 3), c3) < 1e-15,
+          'frieze *22∞: dragging mirror cutoff corner slides it along its mirror line, leaving the other corner untouched');
+    editor.undo();
+    check(dist(pointOf(doc.getItem(tile.id), 2), c2) < 1e-15, 'frieze *22∞: one undo restores the mirror corner');
+
+    // dragging mirror cutoff corner 2 right onto fixed corner 1, then grabbing at that spot recovers corner 2
+    editor.setSelection([{ id: tile.id, frame: null, frameInv: null }]);
+    drag(tool, c2, c1);
+    check(dist(pointOf(doc.getItem(tile.id), 2), c1) < 1e-12, 'frieze *22∞: mirror corner can slide onto the fixed corner');
+    drag(tool, c1, [c2[0] + 0.1, c2[1] + 0.25]);
+    const recovered = doc.getItem(tile.id);
+    check(dist(pointOf(recovered, 1), c1) < 1e-15 && dist(pointOf(recovered, 2), c1) > 0.2 && dist(R1(pointOf(recovered, 2)), pointOf(recovered, 2)) < 1e-12,
+          'frieze *22∞: overlapping movable corner beats fixed corner on pick and slides back out along the mirror');
+    editor.undo();
+    editor.undo();
+
+    // clicking the top cap edge picks both mirror corners; dragging moves both along their mirrors
+    editor.setSelection([{ id: tile.id, frame: null, frameInv: null }]);
+    const capMid = [0.5*(c2[0] + c3[0]), 0.5*(c2[1] + c3[1])];
+    click(tool, capMid);
+    check(editor.getSelectedVertices().length === 2, 'frieze *22∞: clicking the open cap edge picks both cutoff corners');
+    drag(tool, c2, [c2[0] + 0.12, c2[1] + 0.35]);
+    const both = doc.getItem(tile.id);
+    const R3 = editor.pairingMap(tile.tile.edges[3].word);
+    check(dist(pointOf(both, 2), c2) > 0.2 && dist(R1(pointOf(both, 2)), pointOf(both, 2)) < 1e-12
+          && dist(pointOf(both, 3), c3) > 0.2 && dist(R3(pointOf(both, 3)), pointOf(both, 3)) < 1e-12,
+          'frieze *22∞: dragging both picked cutoff corners slides each along its own mirror');
+    editor.undo();
+
+    // Delete and Shift+S (smooth) are refused on a picked cutoff corner, leaving the tile intact
+    editor.setSelection([{ id: tile.id, frame: null, frameInv: null }]);
+    click(tool, c2);
+    key(tool, 'Delete');
+    check(!!doc.getItem(tile.id) && doc.getItem(tile.id).nodes.length === 4, 'frieze *22∞: Delete on a picked cutoff corner removes neither corner nor tile');
+    key(tool, 'S', { shiftKey: true });
+    check(!doc.getItem(tile.id).nodes[2].smooth, 'frieze *22∞: Shift+S on a cutoff corner keeps it a corner');
+
+    // double-click on the open cap edge adds a free inner node that can move in 2D and be deleted
+    tool.handleEvent(pointer('dblclick', capMid));
+    const withInner = doc.getItem(tile.id);
+    check(withInner.nodes.length === 5, 'frieze *22∞: double-clicking the open cap edge adds a free node');
+    const innerPt = pointOf(withInner, 3);
+    drag(tool, innerPt, [innerPt[0] + 0.05, innerPt[1] + 0.1]);
+    check(dist(pointOf(doc.getItem(tile.id), 3), [innerPt[0] + 0.05, innerPt[1] + 0.1]) < 1e-12, 'frieze *22∞: cap edge inner node drags freely in 2D');
+    key(tool, 'Delete');
+    check(doc.getItem(tile.id).nodes.length === 4, 'frieze *22∞: Delete removes the cap edge inner node');
+
+    // dragging on a symmetry copy (reflected across x = a) slides cleanly along the copy's mirror
+    const copyCorner = R1(c3);
+    const copyCenter = R1(inside(doc.getItem(tile.id)));
+    editor.clearSelection();
+    click(tool, copyCenter);
+    const c3Before = pointOf(doc.getItem(tile.id), 3);
+    drag(tool, copyCorner, [copyCorner[0] + 0.15, copyCorner[1] + 0.2]);
+    const afterCopy = doc.getItem(tile.id);
+    check(dist(pointOf(afterCopy, 3), c3Before) > 0.1 && dist(R3(pointOf(afterCopy, 3)), pointOf(afterCopy, 3)) < 1e-12,
+          'frieze *22∞: dragging a cutoff corner on a reflected copy slides cleanly along its mirror');
+
+    // 2*∞: dragging the top cap edge's two picked corners slides the mirror corner AND moves the half-turn pair
+    const g2s = new Group_Frieze({ type: '2*∞', a: 0.5 }).getGroup();
+    const s2s = setup(g2s);
+    s2s.tool.setActive(true, true);
+    const t2s = tilesOf(s2s.doc, 'layer1')[0];
+    const pMirror = pointOf(t2s, 1), pTurn = pointOf(t2s, 2), pCenter = pointOf(t2s, 3), pPartner = pointOf(t2s, 4);
+    click(s2s.tool, [0.5*(pMirror[0] + pTurn[0]), 0.5*(pMirror[1] + pTurn[1])]);
+    drag(s2s.tool, pTurn, [pTurn[0] + 0.1, pTurn[1] + 0.25]);
+    const m2s = s2s.doc.getItem(t2s.id);
+    const Rm = s2s.editor.pairingMap(t2s.tile.edges[0].word);
+    const Ht = s2s.editor.pairingMap(t2s.tile.edges[2].word);
+    check(dist(Rm(pointOf(m2s, 1)), pointOf(m2s, 1)) < 1e-12 && dist(pointOf(m2s, 1), pMirror) > 0.1
+          && dist(pointOf(m2s, 2), [pTurn[0] + 0.1, pTurn[1] + 0.25]) < 1e-12
+          && dist(pointOf(m2s, 4), Ht(pointOf(m2s, 2))) < 1e-12
+          && dist(pointOf(m2s, 3), pCenter) < 1e-15 && dist(pointOf(m2s, 4), pPartner) > 0.1,
+          'frieze 2*∞: multi-drag of top cap corners slides mirror corner and moves half-turn pair while center stays fixed');
+    // bending the paired half-turn edge AFTER moving the cutoff corner still keeps its partner synced
+    const a2 = pointOf(m2s, 2), b2 = pointOf(m2s, 3);
+    const mid2 = [0.5*(a2[0] + b2[0]), 0.5*(a2[1] + b2[1])];
+    drag(s2s.tool, mid2, [mid2[0] + 0.08, mid2[1] - 0.04]);
+    const bent2s = s2s.doc.getItem(t2s.id);
+    check(!!bent2s.nodes[2].h2 && !!bent2s.nodes[4].h1 && dist(Ht(bent2s.nodes[2].h2), bent2s.nodes[4].h1) < 1e-12,
+          'frieze 2*∞: bending a paired edge after moving its cutoff corner keeps its pair exact');
+
+    // vertical mirror nudge perpendicular to mirror pushes no spurious undo step (unrotated PTC)
+    const docPlain = DrawingDocument();
+    docPlain.fromJSON({ layers: [{ id: 'layer1', items: [] }] });
+    const ptcId = { centerX: 0, centerY: 0, scale: 1, angle: 0 };
+    docPlain.setOutliner(groupOutliner(gM, ptcId));
+    const edPlain = DrawingEditor({
+        document: docPlain,
+        getContext: () => ({ group: gM, ptc: ptcId, sprites: false, visLayers: [] }),
+        view: { toCanvas: w => [PX*w[0], PX*w[1]], toWorld: c => ({ pnt: [c[0]/PX, c[1]/PX] }), isLinear: () => true, pixelSize: () => 1/PX },
+    });
+    edPlain.setStyleValue('snap', false);
+    docPlain.setActiveLayer('layer1');
+    const toolPlain = TileTool({ editor: edPlain });
+    toolPlain.setActive(true, true);
+    const tPlain = tilesOf(docPlain, 'layer1')[0];
+    const topR = pointOf(tPlain, 2);
+    click(toolPlain, topR);
+    key(toolPlain, 'ArrowRight');
+    check(dist(pointOf(docPlain.getItem(tPlain.id), 2), topR) < 1e-15, 'frieze *22∞: horizontal nudge on vertical mirror leaves corner in place');
+    key(toolPlain, 'ArrowUp');
+    const nudged = pointOf(docPlain.getItem(tPlain.id), 2);
+    check(Math.abs(nudged[0] - topR[0]) < 1e-15 && Math.abs(nudged[1] - topR[1]) > 1e-4, 'frieze *22∞: vertical nudge slides corner along vertical mirror');
+    edPlain.undo();
+    check(dist(pointOf(docPlain.getItem(tPlain.id), 2), topR) < 1e-15, 'frieze *22∞: single undo reverts only the vertical nudge (horizontal nudge pushed no no-op undo)');
 }
 
 console.log(failed ? `${failed} check(s) FAILED` : 'tile tool: all checks passed');

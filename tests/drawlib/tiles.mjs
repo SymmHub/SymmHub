@@ -68,16 +68,17 @@
     of the group the domain was made from).
 */
 
-import { Group_KLM, Group_WP, Group_Grandma, Group_Spherical, Group_Maskit2,
+import { Group_KLM, Group_WP, Group_Frieze, Group_Grandma, Group_Spherical, Group_Maskit2,
          Group_KLMN, Group_KLx, Group_5splanes, Group_6splanes, Group_22222, Group_s22222, Group_s222222,
          dirichletBase, selectDirichletSides, makeDirichletGroup } from '../../lib/grouplib/grouplib.js';
-import { U4, iPoint, iSphere, Group, ITransform } from '../../lib/invlib/invlib.js';
+import { U4, iPoint, iPlane, iSphere, Group, ITransform } from '../../lib/invlib/invlib.js';
 import { DrawingDocument } from '../../lib/drawlib/DrawingDocument.js';
 import { DrawingEditor } from '../../lib/drawlib/DrawingEditor.js';
 import { groupOutliner } from '../../lib/drawlib/DrawingGeometry.js';
 import { patternToWorldMap } from '../../lib/drawlib/Folder.js';
 import { outlinePoint } from '../../lib/drawlib/Paths.js';
-import { tileEdgeStarts, tileWithNodes, tileInsertedVertex, tileMovedVertex, tileRemovedVertex, tileReplacedEdge,
+import { tileEdgeStarts, tileCornerKind, tileVertexCorner, tileVertexFixed, tilePairedVertex,
+         tileWithNodes, tileInsertedVertex, tileMovedVertex, tileRemovedVertex, tileReplacedEdge,
          tileEdgeOfHandle, tileHandleFree, tileFromDomain, wordMap } from '../../lib/drawlib/Tiles.js';
 
 globalThis.window = globalThis.window || { addEventListener(){} };
@@ -1179,6 +1180,180 @@ for (const [name, group, kind] of [['237', klm(2, 3, 7, false), 'hyperbolic'], [
           `a node inserted ${fmt(outIns)} of the tile (at most ${outPieces.toFixed(1)} outline nodes a node); the marks follow the edit; ` +
           `the pattern box moved (the pairs no longer hold), the tile drawn by its nodes` + (badOutline.length ? ` (not: ${badOutline.join('; ')})` : ''));
     check(badConv.length === 0 && convErr < 1e-12, `Kleinian: To polyline gives a tile of points whose pairs are the images point by point (${fmt(convErr)}), To path a curved tile again` + (badConv.length ? ` (not: ${badConv.join('; ')})` : ''));
+}
+
+// ── unbounded Euclidean domains (frieze strips, rosette wedges, half-plane) ─
+{
+    const ptOf = (item, v) => item.nodes ? item.nodes[v % item.nodes.length].p : [item.points[2*v], item.points[2*v + 1]];
+    const mirrorErr = (map, p) => dist(map(p), p);
+
+    // 1. All 7 frieze groups (under rotated/scaled/translated PTC): cutoff corners
+    //    slide on mirrors or move in pairs, true domain corners stay fixed
+    const expectedFrieze = {
+        '*22∞': ['fixed', 'fixed', 'slide', 'slide'],
+        '22∞':  ['paired', 'fixed', 'paired', 'paired', 'fixed', 'paired'],
+        '2*∞':  ['slide', 'slide', 'paired', 'fixed', 'paired'],
+        '∞*':   ['fixed', 'fixed', 'paired', 'paired'],
+        '*∞∞':  ['slide', 'slide', 'slide', 'slide'],
+        '∞x':   ['paired', 'paired', 'paired', 'paired'],
+        '∞∞':   ['paired', 'paired', 'paired', 'paired'],
+    };
+    for (const [type, kinds] of Object.entries(expectedFrieze)) {
+        const group = new Group_Frieze({ type, a: 0.5 }).getGroup();
+        const { doc, editor } = newEditor(group);
+        const mapWord = editor.pairingMap;
+        editor.setStyleValue('curvedTiles', true);
+        const tile = editor.addTileFromDomain();
+        check(!!tile && tile.type === 'path' && tile.tile.edges.length === kinds.length,
+              `frieze ${type}: tile from domain (${tile ? tile.tile.edges.length : 0} edges)`);
+        if (!tile) continue;
+        const gotKinds = tile.tile.edges.map((_, k) => tileCornerKind(tile.tile, k).kind);
+        check(JSON.stringify(gotKinds) === JSON.stringify(kinds),
+              `frieze ${type}: corner kinds ${gotKinds.join(', ')}`);
+        check(pairError(tile, mapWord) < 1e-12, `frieze ${type}: pairs exact (${fmt(pairError(tile, mapWord))})`);
+
+        const starts = tileEdgeStarts(tile.tile);
+        tile.tile.edges.forEach((_, k) => {
+            const v = starts[k], info = tileCornerKind(tile.tile, k);
+            check(tileVertexCorner(tile.tile, v) && tileVertexFixed(tile.tile, v) === (info.kind === 'fixed'),
+                  `frieze ${type} corner ${k}: fixed=${tileVertexFixed(tile.tile, v)} for ${info.kind}`);
+            // no corner may ever be removed or made smooth
+            check(tileRemovedVertex(tile, v, mapWord) === null, `frieze ${type} corner ${k}: cannot be removed`);
+            const sm = tile.nodes.map((q, i) => i === v ? { ...q, smooth: true } : q);
+            check(tileWithNodes(tile, sm, mapWord) === null, `frieze ${type} corner ${k}: cannot be made smooth`);
+
+            const p0 = ptOf(tile, v);
+            const target = [p0[0] + 0.17, p0[1] + 0.23];
+            if (info.kind === 'fixed') {
+                check(tileMovedVertex(tile, v, target, mapWord) === null, `frieze ${type} corner ${k}: fixed corner refuses move`);
+            } else if (info.kind === 'slide') {
+                const mirrorEdge = tile.tile.edges[info.edge];
+                const R = mapWord(mirrorEdge.word);
+                const moved = tileMovedVertex(tile, v, target, mapWord);
+                const pm = moved && ptOf(moved, v);
+                // orthogonal projection onto the mirror line: R(pm) = pm and (target - pm) ⊥ mirror
+                const a0 = ptOf(tile, starts[info.edge]), b0 = ptOf(tile, starts[info.edge + 1]);
+                const dir = [b0[0] - a0[0], b0[1] - a0[1]], dL = Math.hypot(dir[0], dir[1]);
+                const orth = pm ? Math.abs((target[0] - pm[0])*dir[0] + (target[1] - pm[1])*dir[1]) / dL : Infinity;
+                check(!!moved && mirrorErr(R, pm) < 1e-12 && orth < 1e-12 && dist(pm, p0) > 0.05,
+                      `frieze ${type} corner ${k}: slides orthogonally along mirror (${fmt(pm ? mirrorErr(R, pm) : NaN)})`);
+                // off-mirror edit via tileWithNodes is refused; on-mirror edit succeeds
+                const offNodes = tile.nodes.map((q, i) => i === v ? { ...q, p: target } : q);
+                const onNodes = tile.nodes.map((q, i) => i === v ? { ...q, p: pm } : q);
+                check(tileWithNodes(tile, offNodes, mapWord) === null && !!tileWithNodes(tile, onNodes, mapWord),
+                      `frieze ${type} corner ${k}: tileWithNodes enforces mirror line`);
+                // collapsing mirror edge to zero length and dragging back out keeps the exact mirror line
+                const otherV = starts[info.edge] === v ? starts[info.edge + 1] % tile.nodes.length : starts[info.edge];
+                const collapsed = tileMovedVertex(tile, v, ptOf(tile, otherV), mapWord);
+                const recovered = collapsed && tileMovedVertex(collapsed, v, target, mapWord);
+                check(!!recovered && dist(ptOf(recovered, v), pm) < 1e-12,
+                      `frieze ${type} corner ${k}: recovers mirror line after collapsing edge to zero length`);
+                // legacy tile without mirror word falls back to edge line
+                const legacy = { ...tile, tile: { ...tile.tile, edges: tile.tile.edges.map((e, j) => j === info.edge ? { ...e, word: null } : e) } };
+                const legMoved = tileMovedVertex(legacy, v, target, mapWord);
+                check(!!legMoved && dist(ptOf(legMoved, v), pm) < 1e-12,
+                      `frieze ${type} corner ${k}: legacy tile without mirror word still slides on mirror`);
+                // unknown word (mapWord returns identity) must NOT bypass mirror projection
+                const idMoved = tileMovedVertex(tile, v, target, () => (w => [w[0], w[1]]));
+                check(!!idMoved && dist(ptOf(idMoved, v), pm) < 1e-12,
+                      `frieze ${type} corner ${k}: identity fallback map still projects onto edge line`);
+            } else if (info.kind === 'paired') {
+                const pv = tilePairedVertex(tile.tile, v);
+                check(pv === starts[info.partner], `frieze ${type} corner ${k}: tilePairedVertex matches partner corner ${info.partner}`);
+                // add curved handles on BOTH the paired edge and the open cap edge, then drag the cutoff corner
+                const openEdge = (k === info.edge) ? (k - 1 + tile.tile.edges.length) % tile.tile.edges.length : k;
+                const openHandle = (openEdge === k) ? 'h2' : 'h1';
+                const pairHandle = (openEdge === k) ? 'h1' : 'h2';
+                const partnerOpenHandle = tileHandleFree(tile.tile, pv, 'h2') && tileEdgeOfHandle(tile.tile, pv, 'h2') !== tile.tile.edges[info.edge].pair ? 'h2' : 'h1';
+                const nodes = tile.nodes.map(q => ({ ...q }));
+                nodes[v] = { ...nodes[v], [openHandle]: [p0[0] + 0.04, p0[1] - 0.03], [pairHandle]: [p0[0] - 0.02, p0[1] + 0.05] };
+                const pv0 = ptOf(tile, pv);
+                nodes[pv] = { ...nodes[pv], [partnerOpenHandle]: [pv0[0] + 0.03, pv0[1] + 0.04] };
+                const curved = tileWithNodes(tile, nodes, mapWord, info.edge);
+                const moved = curved && tileMovedVertex(curved, v, target, mapWord);
+                const map = mapWord(tile.tile.edges[info.edge].word);
+                const expectedP = map(target);
+                const dpv = [expectedP[0] - pv0[0], expectedP[1] - pv0[1]];
+                const oldCapH = curved.nodes[pv][partnerOpenHandle];
+                const newCapH = moved && moved.nodes[pv][partnerOpenHandle];
+                const capMoved = !!newCapH && dist(newCapH, [oldCapH[0] + dpv[0], oldCapH[1] + dpv[1]]) < 1e-12;
+                check(!!moved && dist(ptOf(moved, v), target) < 1e-12 && dist(ptOf(moved, pv), expectedP) < 1e-12
+                      && pairError(moved, mapWord) < 1e-12 && capMoved,
+                      `frieze ${type} corner ${k}: moves in 2D with partner corner & handles following (${fmt(moved ? pairError(moved, mapWord) : NaN)})`);
+            }
+        });
+
+        // polyline conversion round-trip keeps corner kinds and editability
+        editor.setSelection([{ id: tile.id, frame: null, frameInv: null }]);
+        editor.convertSelection(false);
+        const polyTile = doc.getItem(tile.id);
+        const firstMovable = tile.tile.edges.findIndex((_, k) => !tileVertexFixed(tile.tile, starts[k]));
+        const polyMoved = tileMovedVertex(polyTile, tileEdgeStarts(polyTile.tile)[firstMovable], [0.4, 0.9], mapWord);
+        check(polyTile.type === 'polyline' && !!polyMoved && pointPairError(polyMoved, mapWord) < 1e-12,
+              `frieze ${type}: polyline tile keeps cutoff corner editability and exact pairing`);
+    }
+
+    // 2. Rotated & translated frieze groups (especially glide frieze ∞x shifted off the origin)
+    {
+        const tr = ITransform.getRotation([0, 0, 1], 0.35).concat(ITransform.getTranslation([1.1, 2.4]));
+        const ID = { map: (x, y) => [x, y] };
+        for (const [type, kinds] of Object.entries(expectedFrieze)) {
+            const g0 = new Group_Frieze({ type, a: 0.5 }).getGroup();
+            const g1 = new Group({
+                s: g0.getFundDomain().map(sp => tr.transform(sp)),
+                t: g0.transforms.map(ref => ref.map(sp => tr.transform(sp))),
+            });
+            const t1 = tileFromDomain(g1, ID, {});
+            const gotKinds = t1 ? t1.tile.edges.map((_, k) => tileCornerKind(t1.tile, k).kind) : [];
+            const err = t1 ? pointPairError(t1, w => wordMap(g1, w)) : Infinity;
+            check(!!t1 && JSON.stringify(gotKinds) === JSON.stringify(kinds) && err < 1e-12,
+                  `rotated/translated frieze ${type}: capped & paired cleanly (${fmt(err)})`);
+        }
+    }
+
+    // 3. Unbounded Euclidean rosette wedges (*nn, nn centered) & single-mirror half-plane
+    {
+        for (const n of [2, 3, 5]) {
+            // dihedral *nn: apex fixed, two mirror cutoff corners slide along their rays
+            const gD = new Group_Spherical({ type: '*nn', n, centered: true }).getGroup();
+            const edD = newEditor(gD).editor;
+            const tD = edD.addTileFromDomain();
+            const kD = tD ? tD.tile.edges.map((_, k) => tileCornerKind(tD.tile, k).kind) : [];
+            const sD = tD ? tileEdgeStarts(tD.tile) : [];
+            const mD = tD && tileMovedVertex(tD, sD[1], [0.7, 0.4], edD.pairingMap);
+            const rD = tD && edD.pairingMap(tD.tile.edges[tileCornerKind(tD.tile, 1).edge].word);
+            check(!!tD && JSON.stringify(kD) === JSON.stringify(['fixed', 'slide', 'slide'])
+                  && !!mD && mirrorErr(rD, ptOf(mD, sD[1])) < 1e-12,
+                  `spherical *nn (n=${n}, centered): wedge tile with fixed apex and sliding mirror corners`);
+
+            // cyclic nn: n>=3 wedge with paired corners; n=2 half-plane with fixed center, 2 paired, 2 free corners
+            const gC = new Group_Spherical({ type: 'nn', n, centered: true }).getGroup();
+            const edC = newEditor(gC).editor;
+            const tC = edC.addTileFromDomain();
+            const kC = tC ? tC.tile.edges.map((_, k) => tileCornerKind(tC.tile, k).kind) : [];
+            const wantC = n === 2 ? ['paired', 'fixed', 'paired', 'free', 'free'] : ['fixed', 'paired', 'paired'];
+            const pairedIdx = kC.indexOf('paired');
+            const mC = tC && tileMovedVertex(tC, tileEdgeStarts(tC.tile)[pairedIdx], [0.6, 0.3], edC.pairingMap);
+            check(!!tC && JSON.stringify(kC) === JSON.stringify(wantC) && !!mC && pairError(mC, edC.pairingMap) < 1e-12,
+                  `spherical nn (n=${n}, centered): ${n === 2 ? 'half-plane' : 'wedge'} tile with paired${n === 2 ? ' and free' : ''} cutoff corners`);
+            if (n === 2 && tC) {
+                const freeIdx = kC.indexOf('free');
+                const mF = tileMovedVertex(tC, tileEdgeStarts(tC.tile)[freeIdx], [1.4, 0.8], edC.pairingMap);
+                check(!!mF && dist(ptOf(mF, tileEdgeStarts(tC.tile)[freeIdx]), [1.4, 0.8]) < 1e-12,
+                      `spherical nn (n=2, centered): free cutoff corner moves anywhere in 2D`);
+            }
+        }
+        // non-Euclidean lune nx stays null
+        const gNx = new Group_Spherical({ type: 'nx', n: 3, centered: true }).getGroup();
+        check(tileFromDomain(gNx, { map: (x, y) => [x, y] }, {}) === null, 'spherical nx (centered, non-Euclidean): not capped as a Euclidean wedge');
+        // single-mirror half-plane
+        const gMirror = new Group({ s: [iPlane([0, -1, 0, 0])] });
+        const edM = newEditor(gMirror).editor;
+        const tM = edM.addTileFromDomain();
+        const kM = tM ? tM.tile.edges.map((_, k) => tileCornerKind(tM.tile, k).kind) : [];
+        check(!!tM && JSON.stringify(kM) === JSON.stringify(['slide', 'slide', 'free', 'free']),
+              `single-mirror half-plane: 2 sliding mirror corners and 2 free corners (${kM.join(', ')})`);
+    }
 }
 
 console.log(failed ? `${failed} check(s) FAILED` : 'tiles: all checks passed');
