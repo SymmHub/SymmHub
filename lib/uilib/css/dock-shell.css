@@ -251,6 +251,204 @@
   background: var(--bg-page);
 }
 
+.studio-stage--floating {
+  background-color: var(--bg-page);
+  background-image: radial-gradient(var(--border-subtle) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.studio-canvas-win {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+.studio-canvas-win--floating {
+  inset: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.studio-canvas-win--dragging {
+  border-color: var(--accent);
+}
+
+.studio-canvas-win--dragging .studio-canvas-win__body {
+  pointer-events: none;
+}
+
+.studio-canvas-win__header {
+  display: none;
+}
+
+.studio-canvas-win--floating .studio-canvas-win__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--drag-header-size, 24px);
+  flex: 0 0 auto;
+  padding: 0 2px 0 8px;
+  background: var(--bg-header);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 5px 5px 0 0;
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+}
+
+.studio-canvas-win--floating .studio-canvas-win__header:hover {
+  background: var(--bg-header-hover);
+  color: var(--text-inverse);
+}
+
+.studio-canvas-win__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.studio-canvas-win__size {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.78;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+.studio-canvas-win__dock-btn {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.studio-canvas-win__dock-btn:hover {
+  background: var(--accent-soft);
+}
+
+.studio-canvas-win--floating .studio-canvas-win__header:hover .studio-canvas-win__dock-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.studio-canvas-win__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  overflow: auto;
+}
+
+.studio-canvas-win--floating .studio-canvas-win__body {
+  border-radius: 0 0 5px 5px;
+}
+
+.studio-canvas-win__resize {
+  display: none;
+}
+
+.studio-canvas-win--floating .studio-canvas-win__resize {
+  display: block;
+  position: absolute;
+  touch-action: none;
+  z-index: 5;
+}
+
+.studio-canvas-win__resize--n {
+  top: -4px;
+  left: 8px;
+  right: 28px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.studio-canvas-win__resize--s {
+  bottom: -4px;
+  left: 10px;
+  right: 16px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.studio-canvas-win__resize--e {
+  right: -4px;
+  top: var(--drag-header-size, 24px);
+  bottom: 16px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.studio-canvas-win__resize--w {
+  left: -4px;
+  top: var(--drag-header-size, 24px);
+  bottom: 12px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.studio-canvas-win__resize--sw {
+  left: -4px;
+  bottom: -4px;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+}
+
+.studio-canvas-win--floating .studio-canvas-win__resize--se {
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  cursor: nwse-resize;
+  color: var(--text-muted);
+  background: var(--bg-panel);
+  opacity: 0.82;
+  border-top-left-radius: 4px;
+  border-bottom-right-radius: 5px;
+}
+
+.studio-canvas-win--floating .studio-canvas-win__resize--se svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+.studio-canvas-win--floating .studio-canvas-win__resize--se:hover {
+  color: var(--accent);
+  opacity: 1;
+}
+
+.studio-canvas-win--floating .studio-canvas-win__resize--s:hover,
+.studio-canvas-win--floating .studio-canvas-win__resize--n:hover,
+.studio-canvas-win--floating .studio-canvas-win__resize--e:hover,
+.studio-canvas-win--floating .studio-canvas-win__resize--w:hover {
+  background: var(--accent-soft);
+}
+
 /* ── Right Inspector Dock ───────────────────────────────────────────────── */
 .studio-right-wrap {
   flex: 0 0 auto;

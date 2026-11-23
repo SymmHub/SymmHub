@@ -94,6 +94,22 @@ function makeElement(tag = 'div') {
             if (el.onclick) el.onclick({ preventDefault() {}, stopPropagation() {} });
             for (const fn of (listeners.get('click') || [])) fn({ preventDefault() {}, stopPropagation() {} });
         },
+        dispatch(type, ev = {}) {
+            const event = {
+                target: el,
+                button: 0,
+                pointerId: 1,
+                preventDefault() {},
+                stopPropagation() {},
+                ...ev,
+            };
+            for (const fn of [...(listeners.get(type) || [])]) fn(event);
+        },
+        closest(sel) {
+            if (sel === 'button' && el.tagName === 'BUTTON') return el;
+            return el.parentElement?.closest ? el.parentElement.closest(sel) : null;
+        },
+        setPointerCapture() {},
         getBoundingClientRect: () => ({ left: 0, top: 0, right: 320, bottom: 240, width: 320, height: 240 }),
     };
     return el;
@@ -233,6 +249,128 @@ check(storage.getItem('symdraw_doc_folder_docFileDialog_visible') === 'true',
 check(storage.getItem('symmhub_theme') === 'dark',
       '4: resetLayout did not touch global theme preference');
 check(stageResizes > 0, '4: onStageResize fired on layout changes');
+
+// 5. Floating canvas mode: toggle, resize handles, move without rerender, clamping, persistence, reset
+shell.stage.clientWidth = 1000;
+shell.stage.clientHeight = 700;
+
+check(shell.isCanvasFloating() === false, '5: canvas starts docked by default');
+check(shell.canvasHost.parentElement === shell.canvasWindow, '5: canvasHost lives inside canvasWindow');
+check(shell.canvasWindow.parentElement === shell.stage, '5: canvasWindow lives inside stage');
+
+const resizesBeforeFloat = stageResizes;
+shell.setCanvasFloating(true);
+check(shell.isCanvasFloating() === true, '5: setCanvasFloating(true) enables floating mode');
+check(shell.stage.classList.contains('studio-stage--floating'), '5: stage gets floating class');
+check(shell.canvasWindow.classList.contains('studio-canvas-win--floating'), '5: canvasWindow gets floating class');
+check(stageResizes === resizesBeforeFloat + 1, '5: entering floating mode fires onStageResize once');
+
+const initRect = shell.getCanvasRect();
+check(initRect && initRect.width >= 180 && initRect.height >= 140, '5: floating mode initializes valid rect');
+check(initRect.width < 1000 && initRect.height < 700, '5: default floating rect is smaller than stage');
+
+// Explicit size and position via setCanvasRect
+const resizesBeforeSet = stageResizes;
+shell.setCanvasRect({ left: 20, top: 20, width: 500, height: 400 });
+check(stageResizes === resizesBeforeSet + 1, '5: setCanvasRect fires onStageResize when size changes');
+check(shell.getCanvasRect().width === 500 && shell.getCanvasRect().height === 400, '5: canvas rect matches set size');
+
+// Moving without changing size must NOT trigger onStageResize (avoids heavy canvas rerender)
+const resizesBeforeMove = stageResizes;
+shell.setCanvasRect({ left: 100, top: 80, width: 500, height: 400 });
+check(stageResizes === resizesBeforeMove, '5: moving canvas without size change does not fire onStageResize');
+check(shell.getCanvasRect().left === 100 && shell.getCanvasRect().top === 80, '5: canvas moved cleanly');
+
+// Toggling right dock & drawer while floating canvas still fits must NOT trigger onStageResize
+const resizesBeforeChromeToggle = stageResizes;
+shell.setRightOpen(false);
+shell.setDrawerOpen(false);
+shell.setRightOpen(true);
+check(stageResizes === resizesBeforeChromeToggle, '5: toggling dock/drawer in floating mode avoids redundant canvas resize when canvas still fits');
+
+// Dragging header moves floating canvas without triggering onStageResize
+const canvasHeader = shell.canvasWindow.children.find(c => c.className === 'studio-canvas-win__header');
+const resizesBeforeDrag = stageResizes;
+canvasHeader.dispatch('pointerdown', { clientX: 200, clientY: 100 });
+canvasHeader.dispatch('pointermove', { clientX: 260, clientY: 140 });
+canvasHeader.dispatch('pointerup',   { clientX: 260, clientY: 140 });
+check(stageResizes === resizesBeforeDrag, '5: dragging floating canvas header does not fire onStageResize');
+check(shell.getCanvasRect().left === 160 && shell.getCanvasRect().top === 120, '5: dragging header updates position');
+
+// Dragging bottom edge ('s') adjusts height only and fires onStageResize
+const southHandle = shell.canvasWindow.children.find(c => c.className.includes('studio-canvas-win__resize--s'));
+const resizesBeforeSouth = stageResizes;
+southHandle.dispatch('pointerdown', { clientX: 250, clientY: 520 });
+southHandle.dispatch('pointermove', { clientX: 300, clientY: 420 });
+southHandle.dispatch('pointerup',   { clientX: 300, clientY: 420 });
+check(stageResizes === resizesBeforeSouth + 1, '5: dragging bottom edge fires onStageResize');
+check(shell.getCanvasRect().width === 500 && shell.getCanvasRect().height === 300, '5: bottom edge adjusts height only');
+
+// Dragging left edge ('w') adjusts left & width while keeping right edge fixed
+const westHandle = shell.canvasWindow.children.find(c => c.className.includes('studio-canvas-win__resize--w'));
+const rightBeforeWest = shell.getCanvasRect().left + shell.getCanvasRect().width;
+westHandle.dispatch('pointerdown', { clientX: 160, clientY: 200 });
+westHandle.dispatch('pointermove', { clientX: 210, clientY: 200 });
+westHandle.dispatch('pointerup',   { clientX: 210, clientY: 200 });
+check(shell.getCanvasRect().left === 210 && shell.getCanvasRect().width === 450, '5: left edge adjusts left and width');
+check(shell.getCanvasRect().left + shell.getCanvasRect().width === rightBeforeWest, '5: left edge keeps right edge anchored');
+
+// Stage narrowing: shifts left to keep canvas inside stage without resizing if width still fits
+shell.stage.clientWidth = 500;
+const resizesBeforeNarrowShift = stageResizes;
+shell.setRightOpen(false); // triggers onStageBoundsChanged
+check(stageResizes === resizesBeforeNarrowShift, '5: shifting floating canvas inside narrower stage avoids resize when width fits');
+check(shell.getCanvasRect().left === 50 && shell.getCanvasRect().width === 450, '5: floating canvas shifted to stay inside stage');
+
+// Stage shrinking smaller than canvas width clamps width and fires onStageResize, then restores when stage grows
+shell.stage.clientWidth = 360;
+const resizesBeforeClamp = stageResizes;
+shell.setRightOpen(true); // triggers onStageBoundsChanged
+check(stageResizes === resizesBeforeClamp + 1, '5: clamping floating canvas width fires onStageResize');
+check(shell.getCanvasRect().width === 360 && shell.getCanvasRect().left === 0, '5: floating canvas clamped to stage width');
+shell.stage.clientWidth = 1000;
+shell.setRightOpen(false);
+check(shell.getCanvasRect().width === 450, '5: preferred floating canvas width restores when stage expands');
+
+// Clicking floating canvas header Dock button docks canvas back and preserves saved rect
+const canvasDockBtn = canvasHeader.children.find(c => c.className === 'studio-canvas-win__dock-btn');
+const resizesBeforeRedock = stageResizes;
+canvasDockBtn.click();
+check(shell.isCanvasFloating() === false, '5: clicking canvas header Dock button docks canvas');
+check(!shell.stage.classList.contains('studio-stage--floating'), '5: floating stage class removed');
+check(stageResizes === resizesBeforeRedock + 1, '5: docking canvas fires onStageResize');
+check(shell.getState().canvasRect?.width === 450 && shell.getState().canvasRect?.height === 300, '5: saved floating rect preserved while docked');
+
+// Re-floating restores saved floating rect, and persists across reload
+shell.toggleCanvasFloating();
+check(shell.isCanvasFloating() === true, '5: toggleCanvasFloating re-enables floating mode');
+check(shell.getCanvasRect().width === 450 && shell.getCanvasRect().height === 300, '5: re-floating restores saved dimensions');
+
+const reloaded = createDockShell({ storagePrefix: 'symdraw_doc_folder_studio' });
+check(reloaded.isCanvasFloating() === true, '5: persisted floating canvas mode survives reload');
+check(reloaded.getState().canvasRect?.width === 450 && reloaded.getState().canvasRect?.height === 300,
+      '5: persisted preferred floating rect survives reload');
+check(reloaded.getCanvasRect().width === 320 && reloaded.getCanvasRect().height === 240,
+      '5: rendered floating rect clamps cleanly to smaller initial stage');
+reloaded.stage.clientWidth = 1000;
+reloaded.stage.clientHeight = 700;
+reloaded.setRightOpen(true);
+check(reloaded.getCanvasRect().width === 450 && reloaded.getCanvasRect().height === 300,
+      '5: rendered floating rect expands back to persisted size once stage lays out');
+
+// Corrupted / tiny persisted canvasRect is safely ignored
+storage.setItem('corrupt_canvas_studio_layout', JSON.stringify({
+    canvasFloating: true,
+    canvasRect: { left: 10, top: 10, width: 12, height: 8 },
+}));
+const safeShell = createDockShell({ storagePrefix: 'corrupt_canvas_studio' });
+check(safeShell.isCanvasFloating() === true, '5: floating flag preserved when rect is corrupt');
+check(safeShell.getCanvasRect().width >= 180 && safeShell.getCanvasRect().height >= 140, '5: corrupt tiny canvasRect rejected in favor of safe default');
+
+// resetLayout restores docked mode and clears saved canvasRect
+shell.resetLayout();
+check(shell.isCanvasFloating() === false, '5: resetLayout restores docked canvas mode');
+check(shell.getState().canvasRect === null, '5: resetLayout clears saved floating canvas rect');
 
 console.log(`${checks - failed} of ${checks} checks passed`);
 if (failed) process.exit(1);
