@@ -54,6 +54,10 @@ function startSymdraw(opt = {}) {
         ],
     });
 
+    const BareUI = {
+        create: (host, uiOptions = {}) => SimpleUI.create(host, { ...uiOptions, toolbar: false }),
+    };
+
     const hash = getHashParams() || {};
     const app = SymRenderer({
         patternCreator:    PatternDrawingCreator,
@@ -63,12 +67,13 @@ function startSymdraw(opt = {}) {
         samples:           makeSamplesArray(opt.presets || '', opt.presetsFolder || ''),
         docFolderId:       'symdraw_doc_folder',
         params:            (hash.preset || hash.params) ? undefined : START_PARAMS,
-        // docked studio workspace by default; ?ui=classic and ?ui=simple remain available
-        ui:                pickUI({ studio: StudioUI, classic: WorkspaceUI, simple: SimpleUI }, 'studio'),
+        // docked studio workspace by default; ?ui=classic, ?ui=simple, and ?ui=bare remain available
+        ui:                pickUI({ studio: StudioUI, classic: WorkspaceUI, simple: SimpleUI, bare: BareUI }, 'studio'),
         uiOptions: {
             // of the renderer's own tools the orientation, the pattern box and the symmetry
             tools:               ['move', 'patternTransform', 'symmetry'],
-            startTool:           'pattern.select',
+            // start in Move (Orientation) mode on both desktop and mobile
+            startTool:           'move',
             // the visualization layers in a window of their own, not in the settings
             visualizationWindow: true,
             // the symmetry too, the Symmetry tool's panel
@@ -78,6 +83,10 @@ function startSymdraw(opt = {}) {
             // StudioUI right-dock defaults: Layers on top, Style in the lower split pane
             defaultTab:          'layers',
             defaultSplitTab:     'style',
+            // SymDraw has no animation; omit the red video-recording button from toolbars
+            recording:           false,
+            // ?ui=simple (catalog Live preview & Explore): bare-minimum viewer toolbar
+            simpleMinimal:       true,
         },
         // a script loaded at startup, e.g. the catalog batch driver
         ...(opt.scriptUrl ? { scriptUrl: opt.scriptUrl } : {}),

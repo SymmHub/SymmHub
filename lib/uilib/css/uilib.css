@@ -522,6 +522,7 @@ input.imgbutton {
     border: 1px solid transparent !important;
     width: 40px;
     height: 40px;
+    flex: 0 0 auto;
     background-color: transparent;
 }
 
@@ -546,7 +547,17 @@ input.imgbutton.pressed {
     display: inline-flex;
     align-items: center;
     white-space: nowrap;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    box-sizing: border-box;
     background-color: var(--bg-panel, rgba(255, 255, 255, 0.9));
+}
+
+.toolbox-row::-webkit-scrollbar {
+    display: none;
 }
 
 .interior-style.toolbox-interior {
