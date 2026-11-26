@@ -76,7 +76,7 @@ import { DrawingDocument } from '../../lib/drawlib/DrawingDocument.js';
 import { DrawingEditor } from '../../lib/drawlib/DrawingEditor.js';
 import { groupOutliner } from '../../lib/drawlib/DrawingGeometry.js';
 import { patternToWorldMap } from '../../lib/drawlib/Folder.js';
-import { outlinePoint } from '../../lib/drawlib/Paths.js';
+import { outlinePoint, segmentBent } from '../../lib/drawlib/Paths.js';
 import { tileEdgeStarts, tileCornerKind, tileVertexCorner, tileVertexFixed, tilePairedVertex,
          tileWithNodes, tileInsertedVertex, tileMovedVertex, tileRemovedVertex, tileReplacedEdge,
          tileEdgeOfHandle, tileHandleFree, tileFromDomain, wordMap } from '../../lib/drawlib/Tiles.js';
@@ -1193,7 +1193,7 @@ for (const [name, group, kind] of [['237', klm(2, 3, 7, false), 'hyperbolic'], [
         '*22∞': ['fixed', 'fixed', 'slide', 'slide'],
         '22∞':  ['paired', 'fixed', 'paired', 'paired', 'fixed', 'paired'],
         '2*∞':  ['slide', 'slide', 'paired', 'fixed', 'paired'],
-        '∞*':   ['fixed', 'fixed', 'paired', 'paired'],
+        '∞*':   ['pairedSlide', 'pairedSlide', 'paired', 'paired'],
         '*∞∞':  ['slide', 'slide', 'slide', 'slide'],
         '∞x':   ['paired', 'paired', 'paired', 'paired'],
         '∞∞':   ['paired', 'paired', 'paired', 'paired'],
@@ -1207,16 +1207,16 @@ for (const [name, group, kind] of [['237', klm(2, 3, 7, false), 'hyperbolic'], [
         check(!!tile && tile.type === 'path' && tile.tile.edges.length === kinds.length,
               `frieze ${type}: tile from domain (${tile ? tile.tile.edges.length : 0} edges)`);
         if (!tile) continue;
-        const gotKinds = tile.tile.edges.map((_, k) => tileCornerKind(tile.tile, k).kind);
+        const gotKinds = tile.tile.edges.map((_, k) => tileCornerKind(tile, k, mapWord).kind);
         check(JSON.stringify(gotKinds) === JSON.stringify(kinds),
               `frieze ${type}: corner kinds ${gotKinds.join(', ')}`);
         check(pairError(tile, mapWord) < 1e-12, `frieze ${type}: pairs exact (${fmt(pairError(tile, mapWord))})`);
 
         const starts = tileEdgeStarts(tile.tile);
         tile.tile.edges.forEach((_, k) => {
-            const v = starts[k], info = tileCornerKind(tile.tile, k);
-            check(tileVertexCorner(tile.tile, v) && tileVertexFixed(tile.tile, v) === (info.kind === 'fixed'),
-                  `frieze ${type} corner ${k}: fixed=${tileVertexFixed(tile.tile, v)} for ${info.kind}`);
+            const v = starts[k], info = tileCornerKind(tile, k, mapWord);
+            check(tileVertexCorner(tile.tile, v) && tileVertexFixed(tile, v, mapWord) === (info.kind === 'fixed'),
+                  `frieze ${type} corner ${k}: fixed=${tileVertexFixed(tile, v, mapWord)} for ${info.kind}`);
             // no corner may ever be removed or made smooth
             check(tileRemovedVertex(tile, v, mapWord) === null, `frieze ${type} corner ${k}: cannot be removed`);
             const sm = tile.nodes.map((q, i) => i === v ? { ...q, smooth: true } : q);
@@ -1226,6 +1226,20 @@ for (const [name, group, kind] of [['237', klm(2, 3, 7, false), 'hyperbolic'], [
             const target = [p0[0] + 0.17, p0[1] + 0.23];
             if (info.kind === 'fixed') {
                 check(tileMovedVertex(tile, v, target, mapWord) === null, `frieze ${type} corner ${k}: fixed corner refuses move`);
+            } else if (info.kind === 'pairedSlide') {
+                const pv = tilePairedVertex(tile, v, mapWord);
+                check(pv === starts[info.partner], `frieze ${type} corner ${k}: tilePairedVertex matches partner corner ${info.partner}`);
+                const R = mapWord(tile.tile.edges[info.mirror].word);
+                const G = mapWord(tile.tile.edges[info.edge].word);
+                const moved = tileMovedVertex(tile, v, target, mapWord);
+                const pm = moved && ptOf(moved, v);
+                const pq = moved && ptOf(moved, pv);
+                check(!!moved && mirrorErr(R, pm) < 1e-12 && dist(pq, G(pm)) < 1e-12 && dist(pm, p0) > 0.05 && pairError(moved, mapWord) < 1e-12,
+                      `frieze ${type} corner ${k}: slides along mirror with partner following (${fmt(moved ? pairError(moved, mapWord) : NaN)})`);
+                const offNodes = tile.nodes.map((q, i) => i === v ? { ...q, p: target } : q);
+                const onNodes = tile.nodes.map((q, i) => i === v ? { ...q, p: pm } : q);
+                check(tileWithNodes(tile, offNodes, mapWord) === null && !!tileWithNodes(tile, onNodes, mapWord),
+                      `frieze ${type} corner ${k}: tileWithNodes enforces mirror line`);
             } else if (info.kind === 'slide') {
                 const mirrorEdge = tile.tile.edges[info.edge];
                 const R = mapWord(mirrorEdge.word);
@@ -1304,8 +1318,9 @@ for (const [name, group, kind] of [['237', klm(2, 3, 7, false), 'hyperbolic'], [
                 t: g0.transforms.map(ref => ref.map(sp => tr.transform(sp))),
             });
             const t1 = tileFromDomain(g1, ID, {});
-            const gotKinds = t1 ? t1.tile.edges.map((_, k) => tileCornerKind(t1.tile, k).kind) : [];
-            const err = t1 ? pointPairError(t1, w => wordMap(g1, w)) : Infinity;
+            const mw1 = w => wordMap(g1, w);
+            const gotKinds = t1 ? t1.tile.edges.map((_, k) => tileCornerKind(t1, k, mw1).kind) : [];
+            const err = t1 ? pointPairError(t1, mw1) : Infinity;
             check(!!t1 && JSON.stringify(gotKinds) === JSON.stringify(kinds) && err < 1e-12,
                   `rotated/translated frieze ${type}: capped & paired cleanly (${fmt(err)})`);
         }
@@ -1353,6 +1368,332 @@ for (const [name, group, kind] of [['237', klm(2, 3, 7, false), 'hyperbolic'], [
         const kM = tM ? tM.tile.edges.map((_, k) => tileCornerKind(tM.tile, k).kind) : [];
         check(!!tM && JSON.stringify(kM) === JSON.stringify(['slide', 'slide', 'free', 'free']),
               `single-mirror half-plane: 2 sliding mirror corners and 2 free corners (${kM.join(', ')})`);
+    }
+}
+
+// ── plain (non-geodesic) curved tiles in spherical and hyperbolic groups ────
+// Plain cubic Bezier tiles (!item.geodesic, e.g. saved presets like ax-223 or
+// Euclidean-converted tiles) in stereographic spherical / Poincare hyperbolic
+// groups have non-affine Mobius pairings (such as z -> 1/z on the equator of
+// centered 22n). Applying the Mobius map directly to Euclidean Bezier control
+// points causes the paired edge to jump off the curve; pairingMap must mark
+// fitImage and groupOutliner must expose tileOutline/tileKey so plain tiles
+// fit & render exact Mobius images without affecting geodesic tiles.
+{
+    const cubicOf = (item, v) => { const n = item.nodes.length, a = item.nodes[v % n], b = item.nodes[(v + 1) % n]; return [a.p, a.h2 || a.p, b.h1 || b.p, b.p]; };
+    const bez = (cp, t) => { const u = 1 - t; return [0, 1].map(i => u*u*u*cp[0][i] + 3*u*u*t*cp[1][i] + 3*u*t*t*cp[2][i] + t*t*t*cp[3][i]); };
+    const toSeg = (q, a, b) => { const d = [b[0] - a[0], b[1] - a[1]], L2 = d[0]*d[0] + d[1]*d[1]; const t = L2 > 0 ? Math.max(0, Math.min(1, ((q[0] - a[0])*d[0] + (q[1] - a[1])*d[1])/L2)) : 0; return dist(q, [a[0] + t*d[0], a[1] + t*d[1]]); };
+    const outlineErr = (item, mapWord) => {
+        const o = item.outline;
+        if (!o || !o.nodes) return Infinity;
+        const st = tileEdgeStarts(item.tile), on = o.nodes.length;
+        let worst = 0, fittedCount = 0;
+        item.tile.edges.forEach((e, j) => {
+            if (!e.fitted) return;
+            fittedCount++;
+            const k = e.pair, map = mapWord(item.tile.edges[k].word);
+            const fine = [];
+            for (let q = 0; q < on; q++) {
+                const s = o.source[q];
+                if (!s || s.seg < st[j] || s.seg >= st[j + 1]) continue;
+                const a = o.nodes[q], b = o.nodes[(q + 1) % on];
+                for (let i = 0; i <= 200; i++) fine.push(bez([a.p, a.h2 || a.p, b.h1 || b.p, b.p], i/200));
+            }
+            for (let v = st[k]; v < st[k + 1]; v++) for (let i = 0; i <= 32; i++) {
+                const q = map(bez(cubicOf(item, v), i/32));
+                let best = Infinity;
+                for (let f = 0; f + 1 < fine.length; f++) best = Math.min(best, toSeg(q, fine[f], fine[f + 1]));
+                worst = Math.max(worst, best);
+            }
+        });
+        return fittedCount > 0 ? worst : Infinity;
+    };
+    const edgeShift = (before, after, edgeIdx) => {
+        const st = tileEdgeStarts(before.tile);
+        let maxShift = 0;
+        for (let v = st[edgeIdx]; v < st[edgeIdx + 1]; v++) {
+            const c0 = cubicOf(before, v), c1 = cubicOf(after, v);
+            for (let i = 0; i <= 24; i++) maxShift = Math.max(maxShift, dist(bez(c0, i/24), bez(c1, i/24)));
+        }
+        return maxShift;
+    };
+
+    // 1. Spherical 223 (centered): equator edges 1 & 2 paired by z -> 1/z
+    {
+        const ID_PTC = { centerX: 0, centerY: 0, scale: 1, angle: 0 };
+        const g223 = new Group_Spherical({ type: '22n', n: 3, subtype: 0, centered: true }).getGroup();
+        const doc = DrawingDocument();
+        doc.clear();
+        const outliner = groupOutliner(g223, ID_PTC);
+        doc.setOutliner(outliner);
+        const editor = DrawingEditor({
+            document: doc,
+            getContext: () => ({ group: g223, ptc: ID_PTC, sprites: false, visLayers: [] }),
+            view: { toCanvas: w => w, toWorld: c => ({ pnt: c }), isLinear: () => true, pixelSize: () => 0.001 },
+        });
+        const mapWord = editor.pairingMap;
+        check(editor.drawingGeometry().kind === 'spherical' && !!outliner.tileOutline && !!outliner.tileKey && outliner.key === 'spherical 0 0 1',
+              'spherical 223: outliner exposes tileOutline & tileKey while preserving geometryKey');
+
+        // Plain curved tile (curves = true, geodesic omitted, matching ax-223.json)
+        const raw = tileFromDomain(g223, patternToWorldMap(ID_PTC), {}, null, true);
+        doc.insertItem({ ...raw, id: 'plain223' });
+        const plain = doc.getItem('plain223');
+        const eqEdge = plain.tile.edges.findIndex(e => e.fitted);
+        const eqPair = eqEdge >= 0 ? plain.tile.edges[eqEdge].pair : -1;
+        check(eqEdge >= 0 && eqPair >= 0 && !!mapWord(plain.tile.edges[eqEdge].word).fitImage,
+              'spherical 223 plain tile: equator pairingMap marks fitImage');
+        check(!!plain.outline && plain.outline.key === outliner.tileKey && outlineErr(plain, mapWord) < 1e-5,
+              `spherical 223 plain tile: initial tileOutline matches Mobius pair (${fmt(outlineErr(plain, mapWord))})`);
+
+        // Tiny drag near (r=1, angle=45 deg) on the fitted equator segment must NOT jump the paired segment
+        const st = tileEdgeStarts(plain.tile);
+        const seg = st[eqEdge];
+        const t45 = 0.75;
+        const p45 = bez(cubicOf(plain, seg), t45);
+        const tinyNodes = segmentBent(plain.nodes, true, seg, t45, p45, [p45[0] + 1e-3, p45[1] + 1e-3], null);
+        const tiny = tileWithNodes(plain, tinyNodes, mapWord, eqEdge);
+        editor.applyReplace(new Map([['plain223', tiny]]));
+        const tinyDoc = doc.getItem('plain223');
+        const shiftTiny = edgeShift(plain, tinyDoc, eqPair);
+        check(shiftTiny < 5e-3 && tinyDoc.tile.edges[eqPair].fitted === true && !tinyDoc.tile.edges[eqEdge].fitted
+              && outlineErr(tinyDoc, mapWord) < 1e-5,
+              `spherical 223 plain tile: tiny drag at 45 deg moves paired edge smoothly without jump (shift ${fmt(shiftTiny)}, outline err ${fmt(outlineErr(tinyDoc, mapWord))})`);
+
+        // Significant bend + bend back on paired edge keep exact tileOutline
+        const bigNodes = segmentBent(plain.nodes, true, seg, t45, p45, [p45[0] + 0.25, p45[1] + 0.15], null);
+        const big = tileWithNodes(plain, bigNodes, mapWord, eqEdge);
+        editor.applyReplace(new Map([['plain223', big]]));
+        const bigDoc = doc.getItem('plain223');
+        check(bigDoc.tile.edges[eqPair].fitted === true && !bigDoc.tile.edges[eqEdge].fitted && outlineErr(bigDoc, mapWord) < 1e-5,
+              `spherical 223 plain tile: large bend keeps exact Mobius outline (${fmt(outlineErr(bigDoc, mapWord))})`);
+
+        const segPair = tileEdgeStarts(bigDoc.tile)[eqPair];
+        const pPair = bez(cubicOf(bigDoc, segPair), 0.5);
+        const backNodes = segmentBent(bigDoc.nodes, true, segPair, 0.5, pPair, [pPair[0] - 0.15, pPair[1] + 0.12], null);
+        const back = tileWithNodes(bigDoc, backNodes, mapWord, eqPair);
+        editor.applyReplace(new Map([['plain223', back]]));
+        const backDoc = doc.getItem('plain223');
+        check(backDoc.tile.edges[eqEdge].fitted === true && !backDoc.tile.edges[eqPair].fitted && outlineErr(backDoc, mapWord) < 1e-5,
+              `spherical 223 plain tile: bending paired edge back swaps fitted flag and keeps outline exact (${fmt(outlineErr(backDoc, mapWord))})`);
+
+        // Geodesic tile in the same spherical 223 group stays purely geodesic (no fitted flag)
+        editor.setStyleValue('curvedTiles', true);
+        const geo = editor.addTileFromDomain();
+        const geoSeg = tileEdgeStarts(geo.tile)[eqEdge];
+        const geoP = outlinePoint(geo, geoSeg, 0.75);
+        const geoBentNodes = segmentBent(geo.nodes, true, geoSeg, 0.75, geoP, [geoP[0] + 0.12, geoP[1] + 0.08], editor.nodeChart(geo));
+        const geoBent = tileWithNodes(geo, geoBentNodes, mapWord, eqEdge);
+        editor.applyReplace(new Map([[geo.id, geoBent]]));
+        const geoDoc = doc.getItem(geo.id);
+        check(geoDoc.geodesic === true && !geoDoc.tile.edges.some(e => e.fitted) && pairError(geoDoc, mapWord) < 1e-9
+              && geoDoc.outline && geoDoc.outline.key === outliner.key,
+              `spherical 223 geodesic tile: unaffected by fitImage, keeps exact geodesic pairing (${fmt(pairError(geoDoc, mapWord))})`);
+
+        // Switching to a different group/orientation on the SAME unit sphere keeps
+        // geometryKey identical ('spherical 0 0 1') but changes tileKey, invalidating
+        // the plain tile's stale tileOutline while keeping the geodesic tile intact
+        const g224 = new Group_Spherical({ type: '22n', n: 4, subtype: 0, centered: true }).getGroup();
+        const ROT_PTC = { centerX: 0, centerY: 0, scale: 1, angle: 30 };
+        const outlinerRot = groupOutliner(g224, ROT_PTC);
+        check(outlinerRot.key === outliner.key && outlinerRot.tileKey !== outliner.tileKey,
+              'spherical 223 -> rotated 224: same geometryKey, distinct tileKey');
+        doc.setOutliner(outlinerRot);
+        const plainAfter = doc.getItem('plain223');
+        const geoAfter = doc.getItem(geo.id);
+        check(plainAfter.outline && plainAfter.outline.key === outlinerRot.tileKey && !plainAfter.outline.nodes
+              && geoAfter.outline && geoAfter.outline.key === outlinerRot.key && !!geoAfter.outline.nodes,
+              'spherical 223 -> rotated 224: plain tile drops stale tileOutline while geodesic tile keeps its outline');
+    }
+
+    // 2. Hyperbolic 237: plain (non-geodesic) curved tile fits Mobius pair & draws exact tileOutline
+    {
+        const g237 = klm(2, 3, 7, false);
+        const { doc, editor } = newEditor(g237);
+        const mapWord = editor.pairingMap;
+        const raw = tileFromDomain(g237, patternToWorldMap(PTC), {}, null, true);
+        doc.insertItem({ ...raw, id: 'plain237' });
+        const plain = doc.getItem('plain237');
+        const k = plain.tile.edges.findIndex(e => e.fitted);
+        const pair = plain.tile.edges[k].pair;
+        const seg = tileEdgeStarts(plain.tile)[k];
+        const pMid = bez(cubicOf(plain, seg), 0.5);
+        const bentNodes = segmentBent(plain.nodes, true, seg, 0.5, pMid, [pMid[0] + 0.04, pMid[1] - 0.03], null);
+        const bent = tileWithNodes(plain, bentNodes, mapWord, k);
+        editor.applyReplace(new Map([['plain237', bent]]));
+        const bentDoc = doc.getItem('plain237');
+        check(editor.drawingGeometry().kind === 'hyperbolic' && bentDoc.tile.edges[pair].fitted === true
+              && !bentDoc.tile.edges[k].fitted && outlineErr(bentDoc, mapWord) < 1e-5,
+              `hyperbolic 237 plain tile: bending paired edge fits Mobius image & keeps outline exact (${fmt(outlineErr(bentDoc, mapWord))})`);
+    }
+}
+
+// ── paired mirror-sliding corners (spherical 2*n, n*, 3*2; wallpaper **, *x, 22*, 2*22) ──
+{
+    const cubicOf = (item, v) => { const n = item.nodes.length, a = item.nodes[v % n], b = item.nodes[(v + 1) % n]; return [a.p, a.h2 || a.p, b.h1 || b.p, b.p]; };
+    const bez = (cp, t) => { const u = 1 - t; return [0, 1].map(i => u*u*u*cp[0][i] + 3*u*u*t*cp[1][i] + 3*u*t*t*cp[2][i] + t*t*t*cp[3][i]); };
+    const toSeg = (q, a, b) => { const d = [b[0] - a[0], b[1] - a[1]], L2 = d[0]*d[0] + d[1]*d[1]; const t = L2 > 0 ? Math.max(0, Math.min(1, ((q[0] - a[0])*d[0] + (q[1] - a[1])*d[1])/L2)) : 0; return dist(q, [a[0] + t*d[0], a[1] + t*d[1]]); };
+    const outlineErr = (item, mapWord) => {
+        const o = item.outline;
+        if (!o || !o.nodes) return Infinity;
+        const st = tileEdgeStarts(item.tile), on = o.nodes.length;
+        let worst = 0, fittedCount = 0;
+        item.tile.edges.forEach((e, j) => {
+            if (!e.fitted) return;
+            fittedCount++;
+            const k = e.pair, map = mapWord(item.tile.edges[k].word);
+            const fine = [];
+            for (let q = 0; q < on; q++) {
+                const s = o.source[q];
+                if (!s || s.seg < st[j] || s.seg >= st[j + 1]) continue;
+                const a = o.nodes[q], b = o.nodes[(q + 1) % on];
+                for (let i = 0; i <= 200; i++) fine.push(bez([a.p, a.h2 || a.p, b.h1 || b.p, b.p], i/200));
+            }
+            for (let v = st[k]; v < st[k + 1]; v++) for (let i = 0; i <= 32; i++) {
+                const q = map(bez(cubicOf(item, v), i/32));
+                let best = Infinity;
+                for (let f = 0; f + 1 < fine.length; f++) best = Math.min(best, toSeg(q, fine[f], fine[f + 1]));
+                worst = Math.max(worst, best);
+            }
+        });
+        return fittedCount > 0 ? worst : Infinity;
+    };
+    const ID_PTC = { centerX: 0, centerY: 0, scale: 1, angle: 0 };
+    const makeIdEditor = (group) => {
+        const doc = DrawingDocument();
+        doc.clear();
+        doc.setOutliner(groupOutliner(group, ID_PTC));
+        const editor = DrawingEditor({
+            document: doc,
+            getContext: () => ({ group, ptc: ID_PTC, sprites: false, visLayers: [] }),
+            view: { toCanvas: w => w, toWorld: c => ({ pnt: c }), isLinear: () => true, pixelSize: () => 0.001 },
+        });
+        return { doc, editor };
+    };
+
+    // 1. Spherical 2*2 centered (ax-2s2): x-axis corner 1 & y-axis corner 3 slide as b(r, 0) = (0, 1/r)
+    {
+        const g2s2 = new Group_Spherical({ type: '2*n', n: 2, subtype: 0, centered: true }).getGroup();
+        const { doc, editor } = makeIdEditor(g2s2);
+        const mapWord = editor.pairingMap;
+        const raw = tileFromDomain(g2s2, patternToWorldMap(ID_PTC), {}, null, true);
+        doc.insertItem({ ...raw, id: 'plain2s2' });
+        const t = doc.getItem('plain2s2');
+        const kindsItem = t.tile.edges.map((_, k) => tileCornerKind(t, k, mapWord).kind);
+        const kindsTile = t.tile.edges.map((_, k) => tileCornerKind(t.tile, k, mapWord).kind);
+        check(JSON.stringify(kindsItem) === JSON.stringify(['fixed', 'pairedSlide', 'fixed', 'pairedSlide'])
+              && JSON.stringify(kindsTile) === JSON.stringify(kindsItem),
+              `spherical 2*2: corner kinds ${kindsItem.join(', ')} (with or without item)`);
+        check(tilePairedVertex(t, 1, mapWord) === 3 && tilePairedVertex(t, 3, mapWord) === 1
+              && tileVertexFixed(t, 0, mapWord) && !tileVertexFixed(t, 1, mapWord)
+              && tileVertexFixed(t, 2, mapWord) && !tileVertexFixed(t, 3, mapWord),
+              'spherical 2*2: corners 1 & 3 are paired movable, corners 0 & 2 are fixed');
+
+        // Dragging corner 1 to (1.5, 0.4) projects onto x-axis (1.5, 0) and moves corner 3 to (0, 2/3)
+        const m1 = tileMovedVertex(t, 1, [1.5, 0.4], mapWord);
+        editor.applyReplace(new Map([['plain2s2', m1]]));
+        const d1 = doc.getItem('plain2s2');
+        check(!!d1 && dist(d1.nodes[1].p, [1.5, 0]) < 1e-12 && dist(d1.nodes[3].p, [0, 2/3]) < 1e-12
+              && dist(d1.nodes[0].p, [0, 0]) < 1e-15 && outlineErr(d1, mapWord) < 1e-5,
+              `spherical 2*2 plain tile: corner 1 slides along x-axis, corner 3 follows at 1/r (${fmt(outlineErr(d1, mapWord))})`);
+
+        // Dragging corner 3 to (0.3, 1.6) projects onto y-axis (0, 1.6) and moves corner 1 to (1/1.6, 0)
+        const m3 = tileMovedVertex(d1, 3, [0.3, 1.6], mapWord);
+        editor.applyReplace(new Map([['plain2s2', m3]]));
+        const d3 = doc.getItem('plain2s2');
+        check(!!d3 && dist(d3.nodes[3].p, [0, 1.6]) < 1e-12 && dist(d3.nodes[1].p, [1/1.6, 0]) < 1e-12
+              && outlineErr(d3, mapWord) < 1e-5,
+              `spherical 2*2 plain tile: corner 3 slides along y-axis, corner 1 follows at 1/y (${fmt(outlineErr(d3, mapWord))})`);
+
+        // Fixed corners and Mobius pole (0, 0) are refused cleanly; tileWithNodes rejects off-axis edit
+        check(tileMovedVertex(d3, 0, [0.2, 0.2], mapWord) === null
+              && tileMovedVertex(d3, 2, [0.8, 0.6], mapWord) === null
+              && tileMovedVertex(d3, 1, [0, 0], mapWord) === null,
+              'spherical 2*2: fixed corners 0 & 2 and Mobius pole (0, 0) refuse move');
+        const off = d3.nodes.map((q, i) => i === 1 ? { ...q, p: [1.2, 0.3] } : q);
+        const on = d3.nodes.map((q, i) => i === 1 ? { ...q, p: [1.2, 0] } : q);
+        const onOut = tileWithNodes(d3, on, mapWord);
+        check(tileWithNodes(d3, off, mapWord) === null && !!onOut && dist(onOut.nodes[3].p, [0, 1/1.2]) < 1e-12,
+              'spherical 2*2: tileWithNodes refuses off-axis corner move and syncs partner on-axis');
+
+        // Geodesic tile in spherical 2*2 slides cleanly and stays purely geodesic
+        editor.setStyleValue('curvedTiles', true);
+        const geo = editor.addTileFromDomain();
+        const geoM = tileMovedVertex(geo, 1, [1.4, 0.2], mapWord, editor.nodeChart(geo));
+        check(!!geoM && geoM.geodesic === true && !geoM.tile.edges.some(e => e.fitted)
+              && dist(geoM.nodes[1].p, [1.4, 0]) < 1e-12 && dist(geoM.nodes[3].p, [0, 1/1.4]) < 1e-12
+              && pairError(geoM, mapWord) < 1e-12,
+              `spherical 2*2 geodesic tile: slides along axes keeping exact geodesic pairing (${fmt(geoM ? pairError(geoM, mapWord) : NaN)})`);
+    }
+
+    // 2. Spherical 3* centered (circular unit-circle mirror): plain curved & polyline tiles keep arc on circle
+    {
+        const g3s = new Group_Spherical({ type: 'n*', n: 3, subtype: 0, centered: true }).getGroup();
+        const { doc, editor } = makeIdEditor(g3s);
+        const mapWord = editor.pairingMap;
+        const raw = tileFromDomain(g3s, patternToWorldMap(ID_PTC), {}, null, true);
+        doc.insertItem({ ...raw, id: 'plain3s' });
+        const t = doc.getItem('plain3s');
+        const st = tileEdgeStarts(t.tile);
+        const m = tileMovedVertex(t, st[1], [1.2, -0.7], mapWord);
+        editor.applyReplace(new Map([['plain3s', m]]));
+        const d = doc.getItem('plain3s');
+        const arcR = [];
+        for (let v = st[1]; v <= st[2]; v++) arcR.push(Math.hypot(d.nodes[v].p[0], d.nodes[v].p[1]));
+        const midPt = bez(cubicOf(d, st[1]), 0.5);
+        const arcOff = Math.max(...arcR.map(r => Math.abs(r - 1)), Math.abs(Math.hypot(midPt[0], midPt[1]) - 1));
+        check(!!d && dist(d.nodes[st[1]].p, t.nodes[st[1]].p) > 0.2 && arcOff < 3e-4 && outlineErr(d, mapWord) < 1e-5,
+              `spherical 3* circular mirror: sliding corner rotates arc strictly on unit circle (arc off ${fmt(arcOff)})`);
+
+        // Uncentered spherical 2*2 (mixed line + circle mirrors)
+        const mkU = new Group_Spherical({ type: '2*n', n: 2 });
+        mkU.mConfig.centered = false;
+        const g2u = mkU.getGroup();
+        const edU = makeIdEditor(g2u).editor;
+        const rawU = tileFromDomain(g2u, patternToWorldMap(ID_PTC), {}, null, true);
+        const stU = tileEdgeStarts(rawU.tile);
+        const mU = tileMovedVertex(rawU, stU[0], [0.25, 0.3], edU.pairingMap);
+        const c2u = mU && mU.nodes[stU[2]].p;
+        check(!!mU && Math.abs(mU.nodes[stU[0]].p[0] - 0.25) < 1e-12 && Math.abs(mU.nodes[stU[0]].p[1]) < 1e-12
+              && Math.abs(Math.hypot(c2u[0], c2u[1]) - 1) < 1e-12,
+              'spherical 2*2 uncentered (line + circle mirror): x-axis corner slides and partner follows along unit circle');
+    }
+
+    // 3. Spherical 3*2 (including legacy word: null mirrors as in ph-3s2.json)
+    {
+        const quiet = fn => { const l = console.log; console.log = () => {}; try { return fn(); } finally { console.log = l; } };
+        const g3s2 = quiet(() => new Group_Spherical({ type: '3*2', subtype: 0 }).getGroup());
+        const { editor } = makeIdEditor(g3s2);
+        const raw = tileFromDomain(g3s2, patternToWorldMap(ID_PTC), {}, null, true);
+        const legacy = { ...raw, tile: { ...raw.tile, edges: raw.tile.edges.map(e => e.locked ? { ...e, word: null } : e) } };
+        const m = tileMovedVertex(legacy, 1, [0.6, 0.2], editor.pairingMap);
+        check(!!m && dist(m.nodes[1].p, [0.6, 0]) < 1e-12 && dist(m.nodes[3].p, [0, 0.25]) < 1e-12,
+              'spherical 3*2 legacy (word: null mirrors): corner 1 slides to [0.6, 0], corner 3 follows to [0, 0.25]');
+    }
+
+    // 4. Wallpaper groups: conjugate mirrors slide (** , *x, 22*, 2*22); transverse mirrors stay fixed (4*2, 3*3)
+    for (const [type, slideCount] of [['**', 4], ['*x', 4], ['22*', 4], ['2*22', 2], ['4*2', 0], ['3*3', 0]]) {
+        const g = new Group_WP({ type }).getGroup();
+        const { editor } = newEditor(g);
+        const mapWord = editor.pairingMap;
+        editor.setStyleValue('curvedTiles', true);
+        const tile = editor.addTileFromDomain();
+        const kinds = tile.tile.edges.map((_, k) => tileCornerKind(tile, k, mapWord).kind);
+        const got = kinds.filter(x => x === 'pairedSlide').length;
+        let okMove = true;
+        const st = tileEdgeStarts(tile.tile);
+        tile.tile.edges.forEach((_, k) => {
+            const p0 = tile.nodes[st[k]].p;
+            const target = [p0[0] + 0.09, p0[1] + 0.13];
+            const moved = tileMovedVertex(tile, st[k], target, mapWord);
+            if (kinds[k] === 'pairedSlide') {
+                if (!moved || dist(moved.nodes[st[k]].p, p0) < 1e-3 || pairError(moved, mapWord) > 1e-12) okMove = false;
+            } else {
+                if (moved !== null) okMove = false;
+            }
+        });
+        check(got === slideCount && okMove,
+              `wallpaper ${type}: ${got} pairedSlide corners (${kinds.join(', ')}), moves exact and fixed corners stay fixed`);
     }
 }
 

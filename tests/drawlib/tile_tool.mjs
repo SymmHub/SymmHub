@@ -33,7 +33,7 @@
   - in the 632 group, of one polygon, the pointer changes nothing.
 */
 
-import { Group_WP, Group_Frieze, Group_KLMN, dirichletBase, selectDirichletSides, makeDirichletGroup } from '../../lib/grouplib/grouplib.js';
+import { Group_WP, Group_Frieze, Group_Spherical, Group_KLMN, dirichletBase, selectDirichletSides, makeDirichletGroup } from '../../lib/grouplib/grouplib.js';
 import { DrawingDocument } from '../../lib/drawlib/DrawingDocument.js';
 import { DrawingEditor } from '../../lib/drawlib/DrawingEditor.js';
 import { NodeTool } from '../../lib/drawlib/NodeTool.js';
@@ -451,6 +451,64 @@ function inside(item){
     check(Math.abs(nudged[0] - topR[0]) < 1e-15 && Math.abs(nudged[1] - topR[1]) > 1e-4, 'frieze *22∞: vertical nudge slides corner along vertical mirror');
     edPlain.undo();
     check(dist(pointOf(docPlain.getItem(tPlain.id), 2), topR) < 1e-15, 'frieze *22∞: single undo reverts only the vertical nudge (horizontal nudge pushed no no-op undo)');
+}
+
+// ── spherical 2*2: interactive paired mirror-sliding corners (ax-2s2) ───────
+{
+    const g2s2 = new Group_Spherical({ type: '2*n', n: 2, subtype: 0, centered: true }).getGroup();
+    const docS = DrawingDocument();
+    docS.fromJSON({ layers: [{ id: 'layer1', items: [] }] });
+    const ptcId = { centerX: 0, centerY: 0, scale: 1, angle: 0 };
+    docS.setOutliner(groupOutliner(g2s2, ptcId));
+    const edS = DrawingEditor({
+        document: docS,
+        getContext: () => ({ group: g2s2, ptc: ptcId, sprites: false, visLayers: [] }),
+        view: { toCanvas: w => [PX*w[0], PX*w[1]], toWorld: c => ({ pnt: [c[0]/PX, c[1]/PX] }), isLinear: () => true, pixelSize: () => 1/PX },
+    });
+    edS.setStyleValue('snap', false);
+    docS.setActiveLayer('layer1');
+    const raw = tileFromDomain(g2s2, patternToWorldMap(ptcId), {}, null, true);
+    docS.insertItem({ ...raw, id: 'tile2s2' });
+    const toolS = NodeTool({ editor: edS });
+    toolS.setActive(true);
+    edS.setSelection([{ id: 'tile2s2', frame: null, frameInv: null }]);
+
+    const marks = toolS.getOverlayGeometry().points.map(p => p.kind);
+    check(marks.filter(m => m === 'disc').length === 2 && marks.filter(m => m === 'square').length === 2,
+          `spherical 2*2: overlay shows 2 fixed discs and 2 movable squares (${marks.join(', ')})`);
+
+    // dragging x-axis corner (1, 0) off-axis slides it along x-axis while y-axis corner follows at 1/r
+    drag(toolS, [1, 0], [1.4, 0.35]);
+    const t1 = docS.getItem('tile2s2');
+    check(dist(pointOf(t1, 1), [1.4, 0]) < 1e-12 && dist(pointOf(t1, 3), [0, 1/1.4]) < 1e-12
+          && dist(pointOf(t1, 0), [0, 0]) < 1e-15,
+          'spherical 2*2: dragging x-axis corner slides along x-axis with y-axis corner following at 1/r');
+
+    // dragging y-axis corner slides it along y-axis with x-axis corner following at 1/y
+    drag(toolS, pointOf(t1, 3), [0.3, 1.6]);
+    const t2 = docS.getItem('tile2s2');
+    check(dist(pointOf(t2, 3), [0, 1.6]) < 1e-12 && dist(pointOf(t2, 1), [1/1.6, 0]) < 1e-12,
+          'spherical 2*2: dragging y-axis corner slides along y-axis with x-axis corner following at 1/y');
+
+    edS.undo();
+    edS.undo();
+    const tUndo = docS.getItem('tile2s2');
+    check(dist(pointOf(tUndo, 1), [1, 0]) < 1e-12 && dist(pointOf(tUndo, 3), [0, 1]) < 1e-12,
+          'spherical 2*2: undo restores both axis corners');
+
+    // perpendicular ArrowUp nudge on x-axis corner pushes no no-op undo; ArrowRight slides along x-axis
+    edS.setSelection([{ id: 'tile2s2', frame: null, frameInv: null }]);
+    click(toolS, [1, 0]);
+    key(toolS, 'ArrowUp');
+    check(dist(pointOf(docS.getItem('tile2s2'), 1), [1, 0]) < 1e-15, 'spherical 2*2: vertical nudge on x-axis corner leaves it in place');
+    key(toolS, 'ArrowRight');
+    const nudged = docS.getItem('tile2s2');
+    const nx = pointOf(nudged, 1)[0];
+    check(nx > 1 + 1e-4 && Math.abs(pointOf(nudged, 1)[1]) < 1e-15 && dist(pointOf(nudged, 3), [0, 1/nx]) < 1e-12,
+          'spherical 2*2: horizontal nudge slides x-axis corner and updates y-axis corner to 1/x');
+    edS.undo();
+    check(dist(pointOf(docS.getItem('tile2s2'), 1), [1, 0]) < 1e-15,
+          'spherical 2*2: single undo reverts only horizontal nudge (vertical nudge pushed no no-op undo)');
 }
 
 console.log(failed ? `${failed} check(s) FAILED` : 'tile tool: all checks passed');
