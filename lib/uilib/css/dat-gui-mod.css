@@ -350,3 +350,25 @@ input[type="range"] {
 .dg li.gui-row-in-title {
   display: none !important;
 }
+
+/* Touch ergonomics for sliders, color pickers, and popup menus */
+.dg .slider,
+.dg .saturation-field,
+.dg .hue-field,
+.dg .alpha-field,
+input[type="range"] {
+  touch-action: none;
+}
+
+@media (pointer: coarse) {
+  .gui-popup__item {
+    height: auto;
+    min-height: 36px;
+    line-height: 36px;
+    padding: 0 12px 0 14px;
+  }
+  .gui-list-menu-btn {
+    width: 28px;
+    height: 28px;
+  }
+}
