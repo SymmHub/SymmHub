@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Placement Transitions Prototype — SymmHub</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span>Placement Transitions Prototype</span>
+      </div>
+      <span id="geomBadge" class="badge ok">euclidean</span>
+    </div>
+
+    <div class="topbar-center">
+      <div class="seg" role="group" aria-label="Quick mode switcher">
+        <button data-quick-mode="0" type="button">Curtain Split</button>
+        <button data-quick-mode="1" type="button">S1: Domain SPlane</button>
+        <button data-quick-mode="2" type="button">S1: Shape SPlane</button>
+        <button data-quick-mode="3" class="active" type="button">S2: Trajectory</button>
+        <button data-quick-mode="4" type="button">Hybrid S1+S2</button>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button id="btnResetView" class="btn" type="button" title="Reset camera zoom & pan">Reset View</button>
+      <button id="btnSnapshot" class="btn" type="button" title="Save current frame as PNG">PNG</button>
+      <button id="btnRecord" class="btn primary" type="button" title="Record one transition or full placement cycle as WebM">● Record WebM</button>
+      <button id="btnPresent" class="btn" type="button" title="Clean presentation mode (F)">Present (F)</button>
+    </div>
+  </header>
+
+  <button id="btnExitPresent" class="btn present-exit" type="button">Exit Present (Esc / F)</button>
+
+  <main class="workspace">
+    <!-- LEFT SIDEBAR: Presets, Group/Subgroup, Placements & Layer B -->
+    <aside class="sidebar left">
+      <section class="section">
+        <div class="section-title">
+          <span>Prototype Experiments</span>
+          <span style="font-weight:400;text-transform:none;">live GPU</span>
+        </div>
+        <div id="presetList" class="preset-list"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title"><span>Symmetry &amp; Color Group</span></div>
+
+        <div class="field">
+          <label for="selGroup">Symmetry Group G</label>
+          <select id="selGroup"></select>
+        </div>
+
+        <div class="field">
+          <label for="selSubgroupA">Subgroup H (Layer A)</label>
+          <select id="selSubgroupA"></select>
+        </div>
+
+        <label class="check-row" title="Color by orbits (right cosets) instead of left cosets">
+          <span>Use Orbits (Layer A)</span>
+          <input id="chkOrbitA" type="checkbox">
+        </label>
+
+        <div class="row-3">
+          <div class="field">
+            <label for="selPlace1">Placement 1</label>
+            <select id="selPlace1"></select>
+          </div>
+          <button id="btnSwapPlace" class="btn sm" type="button" title="Swap placements">⇄</button>
+          <div class="field">
+            <label for="selPlace2">Placement 2</label>
+            <select id="selPlace2"></select>
+          </div>
+        </div>
+
+        <div id="paletteStrip" class="palette-strip" title="Active color palette (white = Placement 1, gold = Placement 2)"></div>
+
+        <div class="field">
+          <label for="selPalette">Palette</label>
+          <select id="selPalette">
+            <option value="vibrant">Vibrant Categorical (Talk)</option>
+            <option value="earth">Warm Catalog (Earth)</option>
+            <option value="jewel">Jewel Tones</option>
+          </select>
+        </div>
+      </section>
+
+      <section id="secLayerB" class="section hidden">
+        <div class="section-title"><span>Curtain Split — Right Side</span></div>
+        <label class="check-row" title="Compare two independent color layers (different subgroup or cosets vs orbits) instead of Placement 1 vs 2">
+          <span>Dual Layer (Layer A | Layer B)</span>
+          <input id="chkDualLayer" type="checkbox">
+        </label>
+        <div id="dualLayerFields" class="hidden" style="display:flex;flex-direction:column;gap:6px;">
+          <div class="field">
+            <label for="selSubgroupB">Subgroup (Layer B)</label>
+            <select id="selSubgroupB"></select>
+          </div>
+          <div class="row-2">
+            <div class="field">
+              <label for="selPlaceB">Placement B</label>
+              <select id="selPlaceB"></select>
+            </div>
+            <label class="check-row" style="align-self:end;padding-bottom:4px;">
+              <span>Orbits B</span>
+              <input id="chkOrbitB" type="checkbox">
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title"><span>Motif &amp; Display</span></div>
+        <div class="field">
+          <label for="selMotif">Shape / Motif</label>
+          <select id="selMotif">
+            <option value="0">Colored Disk (Circle)</option>
+            <option value="1">Concentric Ring</option>
+            <option value="2">5-Point Symmetric Star</option>
+            <option value="3">Asymmetric Comma (Catalog)</option>
+            <option value="4">Asymmetric Pointer / Kite</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Motif Size <span id="valMotifSize" class="val">0.85</span></label>
+          <input id="rngMotifSize" type="range" min="0.20" max="1.80" step="0.02" value="0.85">
+        </div>
+
+        <div class="field">
+          <label for="selMotifColorMode">Motif Coloring</label>
+          <select id="selMotifColorMode">
+            <option value="0">Colored Motif (each copy colored)</option>
+            <option value="1">Black Ink Motif on Colored Tiles</option>
+          </select>
+        </div>
+
+        <label class="check-row">
+          <span>Show Colored Background Tiles</span>
+          <input id="chkTiles" type="checkbox">
+        </label>
+        <label class="check-row">
+          <span>Show Tiling Grid Lines</span>
+          <input id="chkGrid" type="checkbox" checked>
+        </label>
+        <label class="check-row">
+          <span>Show Interactive Guides</span>
+          <input id="chkGuides" type="checkbox" checked>
+        </label>
+      </section>
+    </aside>
+
+    <!-- CENTER STAGE: Live WebGL2 + Interactive Geometry Overlay -->
+    <section class="stage-col">
+      <div class="stage-wrap">
+        <div id="canvasFrame" class="canvas-frame">
+          <canvas id="glCanvas" width="840" height="840"></canvas>
+          <canvas id="overlayCanvas" width="840" height="840"></canvas>
+          <div id="stageHint" class="stage-hint">
+            Drag white dot A to move motif · Click green/amber target dot to pick path · Scroll zoom · Shift+drag pan
+          </div>
+          <div id="stageCaption" class="stage-caption">
+            <span id="capText">Loading…</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="transport">
+        <div class="scrub-row">
+          <span class="scrub-tag"><strong>From:</strong> <span id="lblFrom">p0</span></span>
+          <input id="rngScrub" type="range" min="0" max="1" step="0.001" value="0">
+          <span class="scrub-tag"><strong>To:</strong> <span id="lblTo">p1</span></span>
+        </div>
+
+        <div class="controls-row">
+          <div class="controls-group">
+            <button id="btnPlay" class="btn primary" type="button">❚❚ Pause</button>
+            <button id="btnZero" class="btn" type="button">0%</button>
+            <button id="btnMid" class="btn" type="button">50%</button>
+            <button id="btnOne" class="btn" type="button">100%</button>
+            <span id="lblT" style="font:11.5px var(--mono);color:var(--muted);min-width:48px;">t=0.00</span>
+          </div>
+
+          <div class="controls-group">
+            <select id="selPlayback" style="width:auto;">
+              <option value="pingpong">Ping-Pong (p1 ↔ p2)</option>
+              <option value="cycle">Cycle All Placements (Re-Anchor)</option>
+              <option value="loop">Loop (p1 → p2)</option>
+              <option value="once">Once (p1 → p2)</option>
+            </select>
+            <select id="selEasing" style="width:auto;">
+              <option value="cubic">Ease In-Out Cubic</option>
+              <option value="smooth">Smoothstep</option>
+              <option value="linear">Linear</option>
+              <option value="midpause">Midpoint Pause (Talk)</option>
+            </select>
+            <label class="check-row" style="font-size:11.5px;color:var(--muted);">
+              <input id="chkCaption" type="checkbox" checked> Caption
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT SIDEBAR: Transition Method & Specific Controls -->
+    <aside class="sidebar right">
+      <section class="section">
+        <div class="section-title"><span>Transition Method</span></div>
+        <div id="modeList" class="mode-list"></div>
+      </section>
+
+      <!-- SPlane controls (Curtain Split, Solution 1, Hybrid) -->
+      <section id="secSplane" class="section">
+        <div class="section-title"><span>SPlane Region Control</span></div>
+        <div class="field">
+          <label for="selSplaneKind">SPlane Type</label>
+          <select id="selSplaneKind">
+            <option value="line">Straight Line (Plane)</option>
+            <option value="circle">Expanding Circle (Sphere)</option>
+            <option value="geodesic">Hyperbolic Geodesic (World)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Sweep Angle <span id="valSplaneAngle" class="val">0°</span></label>
+          <input id="rngSplaneAngle" type="range" min="0" max="360" step="1" value="0">
+        </div>
+        <div class="field">
+          <label>Edge Softness <span id="valSplaneBlur" class="val">0.00</span></label>
+          <input id="rngSplaneBlur" type="range" min="0" max="0.25" step="0.005" value="0">
+        </div>
+        <label class="check-row">
+          <span>Invert Inside / Outside</span>
+          <input id="chkSplaneInvert" type="checkbox">
+        </label>
+        <label class="check-row">
+          <span>Show SPlane Cut Hairline</span>
+          <input id="chkCutLine" type="checkbox" checked>
+        </label>
+      </section>
+
+      <!-- Trajectory controls (Solution 2 & Hybrid) -->
+      <section id="secTraj" class="section">
+        <div class="section-title">
+          <span>Trajectory Targets (A → h(A))</span>
+          <span id="candCount" class="badge">0</span>
+        </div>
+
+        <div class="field">
+          <label for="selPathType">Trajectory Curve</label>
+          <select id="selPathType">
+            <option value="geodesic">Exact Geodesic (Shortest)</option>
+            <option value="arc">Orbital Rotation Arc (around cone)</option>
+          </select>
+        </div>
+
+        <label class="check-row" title="Prefer orientation-preserving direct isometries (h in G+) when picking defaults">
+          <span>Prefer Direct Motion (G⁺)</span>
+          <input id="chkPreferDirect" type="checkbox" checked>
+        </label>
+
+        <label class="check-row" title="Smoothly rotate orientation-preserving moves to match h'(A) at t=1 (never flips across mirrors)">
+          <span>Match Rotation on Direct Moves</span>
+          <input id="chkMatchRot" type="checkbox" checked>
+        </label>
+
+        <div id="candInfo" style="font:11px/1.35 var(--mono);color:var(--muted);padding:4px 6px;background:rgba(255,255,255,0.03);border-radius:4px;"></div>
+
+        <div id="candList" class="cand-list"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title"><span>Timing</span></div>
+        <div class="row-2">
+          <div class="field">
+            <label>Duration <span id="valDur" class="val">2.4s</span></label>
+            <input id="rngDur" type="range" min="0.5" max="8.0" step="0.1" value="2.4">
+          </div>
+          <div class="field">
+            <label>Hold Ends <span id="valHold" class="val">0.8s</span></label>
+            <input id="rngHold" type="range" min="0.0" max="3.0" step="0.1" value="0.8">
+          </div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Transitions Lab — SymmHub</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span>Color Transitions Lab</span>
+      </div>
+      <span id="statusPill" class="status-pill">Connecting to catalog…</span>
+    </div>
+
+    <div class="topbar-center">
+      <div class="seg" role="group" aria-label="View mode">
+        <button id="btnViewSingle" class="active" type="button">Single Stage</button>
+        <button id="btnViewGrid" type="button">Compare 3×3 Grid</button>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button id="btnSnapshot" class="btn" type="button" title="Save current frame as PNG">PNG Frame</button>
+      <button id="btnContactSheet" class="btn" type="button" title="Export 7-frame storyboard strip PNG for slides">Contact Sheet</button>
+      <button id="btnRecord" class="btn primary" type="button" title="Record one full cycle or sequence as WebM video">● Record WebM</button>
+      <button id="btnPresent" class="btn" type="button" title="Clean presentation mode (F)">Present (F)</button>
+    </div>
+  </header>
+
+  <button id="btnExitPresent" class="btn present-exit" type="button">Exit Present (Esc / F)</button>
+
+  <main class="workspace">
+    <!-- LEFT SIDEBAR: Catalog & Image Pairs / Sequences -->
+    <aside class="sidebar left">
+      <section class="section">
+        <div class="section-title">
+          <span>Quick Experiments</span>
+          <span style="font-weight:400;text-transform:none;">1-click presets</span>
+        </div>
+        <div id="presetList" class="preset-list"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <span>Color Groups Catalog</span>
+          <button id="btnReloadCatalog" class="btn sm" type="button" title="Reload catalog">↻</button>
+        </div>
+
+        <div class="field">
+          <label for="selVersion">Family / Version</label>
+          <select id="selVersion"></select>
+        </div>
+
+        <div class="field">
+          <label for="selGroup">Symmetry Group G</label>
+          <select id="selGroup"></select>
+        </div>
+
+        <div class="pair-row">
+          <div class="thumb-card">
+            <img id="thumbA" alt="Image A preview">
+            <div id="thumbALbl" class="lbl">A</div>
+          </div>
+          <button id="btnSwap" class="btn sm" type="button" title="Swap A and B">⇄</button>
+          <div class="thumb-card">
+            <img id="thumbB" alt="Image B preview">
+            <div id="thumbBLbl" class="lbl">B</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="selImgA">From (Image A)</label>
+          <select id="selImgA"></select>
+        </div>
+
+        <div class="field">
+          <label for="selImgB">To (Image B)</label>
+          <select id="selImgB"></select>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <span>Storyboard Sequence</span>
+          <div style="display:flex;gap:4px;">
+            <button id="btnAddSeq" class="btn sm" type="button" title="Add current Image B to sequence">+ Add B</button>
+            <button id="btnClearSeq" class="btn sm" type="button" title="Clear sequence">Clear</button>
+          </div>
+        </div>
+        <div id="seqItems" class="seq-items"></div>
+        <div style="font-size:11px;color:var(--muted);">
+          Switch playback mode to <b>Sequence</b> to animate continuously through all frames above.
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title"><span>Custom Images / Server</span></div>
+        <div id="dropZone" class="drop-hint">
+          <div>Load local PNG/WebP files or drop 2 images here:</div>
+          <div class="row-2">
+            <label class="btn sm" style="justify-content:center;">
+              Load A <input id="fileA" type="file" accept="image/*" hidden>
+            </label>
+            <label class="btn sm" style="justify-content:center;">
+              Load B <input id="fileB" type="file" accept="image/*" hidden>
+            </label>
+          </div>
+          <label class="btn sm" style="justify-content:center;">
+            Load Tiling Map (optional) <input id="fileTiling" type="file" accept="image/*" hidden>
+          </label>
+        </div>
+
+        <div class="field">
+          <label for="inpCatalogUrl">Catalog Base URL</label>
+          <input id="inpCatalogUrl" type="text" value="/catalog" spellcheck="false">
+        </div>
+      </section>
+    </aside>
+
+    <!-- CENTER: WebGL2 Stage & Transport -->
+    <section class="stage-col">
+      <div class="stage-wrap">
+        <div id="gridPager" class="grid-pager hidden">
+          <div class="seg">
+            <button id="btnGridP1" class="active" type="button">Page 1: Dots &amp; Color</button>
+            <button id="btnGridP2" type="button">Page 2: Symmetry &amp; Tiles</button>
+          </div>
+        </div>
+
+        <div id="canvasFrame" class="canvas-frame" title="Click or drag to move wave/lens/BFS origin">
+          <canvas id="glCanvas" width="800" height="800"></canvas>
+          <div id="originMarker" class="origin-marker"></div>
+          <div id="stageCaption" class="stage-caption">
+            <span id="capA">A</span>
+            <span class="arrow">→</span>
+            <span id="capB">B</span>
+            <span style="opacity:0.45;">|</span>
+            <span id="capMode" style="color:var(--accent-2);">Transition</span>
+          </div>
+          <div id="gridOverlay" class="grid-overlay hidden"></div>
+        </div>
+      </div>
+
+      <div class="transport">
+        <div class="scrub-row">
+          <span class="scrub-tag"><strong>A:</strong> <span id="lblA">-</span></span>
+          <input id="rngScrub" type="range" min="0" max="1" step="0.001" value="0">
+          <span class="scrub-tag" style="text-align:right;"><strong>B:</strong> <span id="lblB">-</span></span>
+        </div>
+
+        <div class="controls-row">
+          <div class="controls-group">
+            <button id="btnPlay" class="btn primary" type="button" title="Play / Pause (Space)">❚❚ Pause</button>
+            <button id="btnReset" class="btn" type="button" title="Jump to t=0">⏮ 0%</button>
+            <button id="btnMid" class="btn" type="button" title="Jump to t=50%">50%</button>
+            <span id="lblProgress" style="font:11.5px var(--mono);color:var(--muted);min-width:46px;">t=0.00</span>
+          </div>
+
+          <div class="controls-group">
+            <select id="selPlayback" style="width:auto;" title="Playback loop mode">
+              <option value="pingpong">Ping-Pong (A ↔ B)</option>
+              <option value="loop">Loop (A → B)</option>
+              <option value="once">Once (A → B)</option>
+              <option value="sequence">Sequence Storyboard</option>
+            </select>
+            <select id="selEasing" style="width:auto;" title="Easing curve">
+              <option value="cubic">Ease In-Out Cubic</option>
+              <option value="quint">Ease In-Out Quint</option>
+              <option value="smooth">Smoothstep</option>
+              <option value="linear">Linear</option>
+              <option value="midpause">Midpoint Pause (Talk)</option>
+            </select>
+            <label class="check-row" style="font-size:11.5px;color:var(--muted);">
+              <input id="chkCaption" type="checkbox" checked> Caption
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT SIDEBAR: Transition Picker & Parameters -->
+    <aside class="sidebar right">
+      <section class="section">
+        <div class="section-title">
+          <span>Transition Effect</span>
+          <span id="tileBadge" class="tile-badge off">No tiling map</span>
+        </div>
+        <div id="modeContainer"></div>
+        <div id="modeDesc" class="mode-desc"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title"><span>Blend &amp; Symmetry Options</span></div>
+
+        <div class="field">
+          <label for="selColorSpace">Color Interpolation</label>
+          <select id="selColorSpace">
+            <option value="1" selected>OKLab (Perceptual, vivid)</option>
+            <option value="0">sRGB (Classic alpha blend)</option>
+            <option value="2">OKLCH (Shortest hue arc)</option>
+            <option value="3">OKLCH Spin (Hue wheel)</option>
+          </select>
+        </div>
+
+        <label class="check-row" title="Keep unchanged tiles and black motif commas rock-solid while animating only what changed">
+          <span>Diff-Only (Preserve Unchanged)</span>
+          <input id="chkDiffOnly" type="checkbox" checked>
+        </label>
+
+        <label class="check-row" title="Invert spatial order (outside-in, mirror-to-center, CCW)">
+          <span>Reverse Mask Direction</span>
+          <input id="chkReverse" type="checkbox">
+        </label>
+
+        <div class="field">
+          <label>Edge Softness <span id="valSoftness" class="val">0.08</span></label>
+          <input id="rngSoftness" type="range" min="0.002" max="0.40" step="0.002" value="0.08">
+        </div>
+
+        <div class="field">
+          <label>Dot / Cell Scale <span id="valScale" class="val">36</span></label>
+          <input id="rngScale" type="range" min="6" max="96" step="1" value="36">
+        </div>
+
+        <div class="field">
+          <label>Symmetry Fold n <span id="valSym" class="val">6</span></label>
+          <input id="rngSym" type="range" min="1" max="12" step="1" value="6">
+        </div>
+
+        <div class="field">
+          <label>Sweep / Flip Angle <span id="valAngle" class="val">0°</span></label>
+          <input id="rngAngle" type="range" min="0" max="360" step="1" value="0">
+        </div>
+
+        <div class="field">
+          <label>Frontier Edge Accent <span id="valGlow" class="val">0.20</span></label>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input id="rngGlow" type="range" min="0" max="1" step="0.02" value="0.20">
+            <input id="inpEdgeColor" type="color" value="#ffd87a" title="Frontier accent color">
+          </div>
+          <div class="swatches">
+            <span class="swatch" data-color="#ffd87a" style="background:#ffd87a;" title="Warm Gold"></span>
+            <span class="swatch" data-color="#ffffff" style="background:#ffffff;" title="Crisp White"></span>
+            <span class="swatch" data-color="#14100d" style="background:#14100d;" title="Dark Ink"></span>
+            <span class="swatch" data-color="#5fb3ff" style="background:#5fb3ff;" title="Cyan"></span>
+            <span class="swatch" data-color="#ff6b6b" style="background:#ff6b6b;" title="Coral"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title"><span>Timing (Talk / Video)</span></div>
+        <div class="row-2">
+          <div class="field">
+            <label>Transition (s) <span id="valDur" class="val">2.4s</span></label>
+            <input id="rngDur" type="range" min="0.5" max="8.0" step="0.1" value="2.4">
+          </div>
+          <div class="field">
+            <label>Hold Ends (s) <span id="valHold" class="val">1.0s</span></label>
+            <input id="rngHold" type="range" min="0.0" max="3.0" step="0.1" value="1.0">
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);">
+          Tip: Click anywhere on the pattern to move the origin for BFS waves, pinwheels, and iris blooms.
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

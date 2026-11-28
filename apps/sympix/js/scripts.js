@@ -3,4 +3,7 @@
 export const scripts=`
 circular_motion.js
 linear_motion.js
+curtain_split.js
+placement_splane_mix.js
+placement_trajectory.js
 `; 
