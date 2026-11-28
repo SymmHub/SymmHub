@@ -8,11 +8,38 @@
         <title>SymDraw (Frieze)</title>
         <meta name="description" content="SymDraw: vector drawing with frieze group symmetry">
         <link rel="stylesheet" href="css/main.css"/>
+        <style id="sym-boot-loader-style">
+          @keyframes sym-boot-appear { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes sym-boot-spin { to { transform: rotate(360deg); } }
+          #sym-boot-loader {
+            position: fixed; inset: 0; z-index: 20000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+            background: #eae8e3; color: #181c22;
+            font: 500 14px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            opacity: 0; pointer-events: none;
+            animation: sym-boot-appear 0.25s ease-out 1s forwards;
+          }
+          #sym-boot-loader[data-theme="dark"] { background: #11141a; color: #e6edf3; }
+          #sym-boot-loader .sym-boot-ring {
+            width: 34px; height: 34px; border-radius: 50%;
+            border: 3px solid rgba(128, 128, 128, 0.28);
+            border-top-color: #0969da;
+            animation: sym-boot-spin 0.85s linear infinite;
+          }
+          #sym-boot-loader[data-theme="dark"] .sym-boot-ring { border-top-color: #58a6ff; }
+          #sym-boot-loader .sym-boot-sub { font-size: 12px; opacity: 0.72; text-align: center; padding: 0 16px; }
+        </style>
     </head>
     <body>
-
+      <div id="sym-boot-loader" role="status" aria-live="polite">
+        <div class="sym-boot-ring" aria-hidden="true"></div>
+        <div>Loading SymDraw&hellip;</div>
+        <div class="sym-boot-sub" id="sym-boot-status">Initializing graphics engine&hellip;</div>
+      </div>
+      <script>
+        (function(){try{var t=localStorage.getItem('symmhub_theme');if(t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme:dark)').matches)){document.getElementById('sym-boot-loader').dataset.theme='dark';}}catch(e){}})();
+      </script>
       <script type="module" src="./js/symdraw_frieze.js">
       </script>
-
     </body>
 </html>

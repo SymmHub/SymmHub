@@ -649,7 +649,7 @@ function OverlayExtractor(arg){
                 onMakeOverlay();
 
                 await canvasToLocalFile(glCanvas, folderHandle, name + ext, mime);
-                console.log(`OverlayExtractor: saved '${name + ext}' → ${folderHandle.name}`);
+                console.log(`OverlayExtractor: saved '${name + ext}' → ${folderHandle?.name ?? 'Browser Downloads'}`);
             },
         });
     }

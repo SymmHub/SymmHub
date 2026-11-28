@@ -59,41 +59,55 @@ function startSymdraw(opt = {}) {
     };
 
     const hash = getHashParams() || {};
-    const app = SymRenderer({
-        patternCreator:    PatternDrawingCreator,
-        visualization:     visManager,
-        groupMakerFactory: GroupMakerFactory({ defaultName: opt.groupType || 'Wallpaper' }),
-        navigator:         new InversiveNavigator(),
-        samples:           makeSamplesArray(opt.presets || '', opt.presetsFolder || ''),
-        docFolderId:       'symdraw_doc_folder',
-        params:            (hash.preset || hash.params) ? undefined : START_PARAMS,
-        // docked studio workspace by default; ?ui=classic, ?ui=simple, and ?ui=bare remain available
-        ui:                pickUI({ studio: StudioUI, classic: WorkspaceUI, simple: SimpleUI, bare: BareUI }, 'studio'),
-        uiOptions: {
-            // of the renderer's own tools the orientation, the pattern box and the symmetry
-            tools:               ['move', 'patternTransform', 'symmetry'],
-            // start in Move (Orientation) mode on both desktop and mobile
-            startTool:           'move',
-            // the visualization layers in a window of their own, not in the settings
-            visualizationWindow: true,
-            // the symmetry too, the Symmetry tool's panel
-            symmetryWindow:      true,
-            // and the conformal transformations: a list with the selected one's settings
-            transformsWindow:    true,
-            // StudioUI right-dock defaults: Layers on top, Style in the lower split pane
-            defaultTab:          'layers',
-            defaultSplitTab:     'style',
-            // SymDraw has no animation; omit the red video-recording button from toolbars
-            recording:           false,
-            // ?ui=simple (catalog Live preview & Explore): bare-minimum viewer toolbar
-            simpleMinimal:       true,
-        },
-        // a script loaded at startup, e.g. the catalog batch driver
-        ...(opt.scriptUrl ? { scriptUrl: opt.scriptUrl } : {}),
-    });
+    const boot = () => {
+        const app = SymRenderer({
+            patternCreator:    PatternDrawingCreator,
+            visualization:     visManager,
+            groupMakerFactory: GroupMakerFactory({ defaultName: opt.groupType || 'Wallpaper' }),
+            navigator:         new InversiveNavigator(),
+            samples:           makeSamplesArray(opt.presets || '', opt.presetsFolder || ''),
+            docFolderId:       'symdraw_doc_folder',
+            params:            (hash.preset || hash.params) ? undefined : START_PARAMS,
+            // docked studio workspace by default; ?ui=classic, ?ui=simple, and ?ui=bare remain available
+            ui:                pickUI({ studio: StudioUI, classic: WorkspaceUI, simple: SimpleUI, bare: BareUI }, 'studio'),
+            uiOptions: {
+                // of the renderer's own tools the orientation, the pattern box and the symmetry
+                tools:               ['move', 'patternTransform', 'symmetry'],
+                // start in Move (Orientation) mode on both desktop and mobile
+                startTool:           'move',
+                // the visualization layers in a window of their own, not in the settings
+                visualizationWindow: true,
+                // the symmetry too, the Symmetry tool's panel
+                symmetryWindow:      true,
+                // and the conformal transformations: a list with the selected one's settings
+                transformsWindow:    true,
+                // StudioUI right-dock defaults: Layers on top, Style in the lower split pane
+                defaultTab:          'layers',
+                defaultSplitTab:     'style',
+                // SymDraw has no animation; omit the red video-recording button from toolbars
+                recording:           false,
+                // ?ui=simple (catalog Live preview & Explore): bare-minimum viewer toolbar
+                simpleMinimal:       true,
+            },
+            // a script loaded at startup, e.g. the catalog batch driver
+            ...(opt.scriptUrl ? { scriptUrl: opt.scriptUrl } : {}),
+        });
+        app.run();
+        return app;
+    };
 
-    app.run();
-    return app;
+    // Let the browser commit #sym-boot-loader to the compositor before synchronous WebGL
+    // initialization & shader compilation so slow laptops see the 1s-delayed loader smoothly.
+    if (typeof requestAnimationFrame === 'function'
+        && typeof document !== 'undefined'
+        && document.getElementById('sym-boot-loader')) {
+        let started = false;
+        const go = () => { if (!started) { started = true; boot(); } };
+        requestAnimationFrame(() => setTimeout(go, 0));
+        setTimeout(go, 80);
+        return null;
+    }
+    return boot();
 }
 
 export { startSymdraw };
